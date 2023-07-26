@@ -19,11 +19,14 @@
 */
 
 #include <stdio.h>
+#include <unistd.h>
 #include <GL/glew.h>
 #include <GL/freeglut.h>
 #include "math_3d.h"
 
 GLuint VBO;
+int width = 1024;
+int height = 768;
 
 static void RenderSceneCB()
 {
@@ -33,6 +36,7 @@ static void RenderSceneCB()
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
+    // glTranslatef(0.0f,0.0f,0.1f);
     // glDrawArrays(GL_TRIANGLES, 0, 3);
 
     glDisableVertexAttribArray(0);
@@ -72,7 +76,8 @@ int main(int argc, char** argv)
 {
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE|GLUT_RGBA);
-    glutInitWindowSize(1024, 768);
+    glutInitWindowSize(width, height);
+    glScalef(height / width, 1, 1);
     glutInitWindowPosition(100, 100);
     glutCreateWindow("Tutorial 02");
 
@@ -88,6 +93,14 @@ int main(int argc, char** argv)
     glClearColor(0.2f, 0.4f, 0.8f, 0.0f);
 
     CreateVertexBuffer();
+
+    // for (int i = 0; i < 3; i++)
+    // {
+    //     glTranslatef(0.0f,0.0f,1.0f);
+    //     RenderSceneCB();
+    //     printf("*");
+    //     sleep(1);
+    // }
 
     // glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
