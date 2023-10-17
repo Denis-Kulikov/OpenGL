@@ -33,7 +33,7 @@ DEPS = $(APP_OBJECTS:.o=.d) $(LIB_OBJECTS:.o=.d)
 all: $(APP_PATH)
 
 $(APP_PATH): ${SRC_DIR}/${APP_NAME}/main.${SRC_EXT}
-	$(CC) -o $@ -Wall $< $(LDLIBS)
+	$(CC) -o $@ -Wall $< $(LDLIBS) -lm
 
 #-include $(DEPS)
 

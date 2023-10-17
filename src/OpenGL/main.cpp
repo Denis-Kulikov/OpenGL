@@ -1,5 +1,7 @@
 
 #include <iostream>
+#include <cmath>
+#include <cassert>
 #include <string.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -9,28 +11,55 @@
 #include "math_3d.h"
 
 
-static const GLchar* pVS = "#version 110                                      \n\
-                                                                              \n\
-void main()                                                                   \n\
-{                                                                             \n\
-    gl_Position = gl_Vertex;  \n\
+static const char* pVS = "                                                          \n\
+#version 330                                                                        \n\
+                                                                                    \n\
+layout (location = 0) in vec3 Position;                                             \n\
+                                                                                    \n\
+uniform mat4 gWorld;                                                                \n\
+                                                                                    \n\
+void main()                                                                         \n\
+{                                                                                   \n\
+    gl_Position = gWorld * vec4(Position, 1.0);                                     \n\
 }";
 
-static const GLchar* pFS = "#version 110                                      \n\
-                                                                              \n\
-void main()                                                                   \n\
-{                                                                             \n\
-    gl_FragColor = vec4(1.0, 1.0, 0.0, 1.0);                                  \n\
+static const char* pFS = "#version 330                                              \n\
+                                                                                    \n\
+out vec4 FragColor;                                                                 \n\
+                                                                                    \n\
+void main()                                                                         \n\
+{                                                                                   \n\
+    FragColor = vec4(1.0, 1.0, 0.0, 1.0);                                           \n\
 }";
 
 GLuint VBO;
-int width = 1024;
-int height = 768;
+GLuint gWorldLocation;
+const int width = 1024;
+const int height = 768;
+const float radius = 0.8f;
+bool flag_mr = false; 
+
+struct Matrix4f {
+    float m[4][4];
+};
 
 
 static void RenderSceneCB()
 {
     glClear(GL_COLOR_BUFFER_BIT);
+
+    static float Scale = 0.0f;
+
+    Scale += 0.001f;
+
+    Matrix4f World;
+
+    World.m[0][0]= radius * cosf(Scale); World.m[0][1]=-1 * radius * sinf(Scale); World.m[0][2]=0.0f; World.m[0][3]=sinf(Scale);
+    World.m[1][0]= radius * sinf(Scale); World.m[1][1]= radius * cosf(Scale);  World.m[1][2]=0.0f; World.m[1][3]=0.0f;
+    World.m[2][0]=0.0f;        World.m[2][1]=0.0f;         World.m[2][2]=1.0f; World.m[2][3]=0.0f;
+    World.m[3][0]=0.0f;        World.m[3][1]=0.0f;         World.m[3][2]=0.0f; World.m[3][3]=1.0f;
+
+    glUniformMatrix4fv(gWorldLocation, 1, GL_TRUE, &World.m[0][0]);
 
     glEnableVertexAttribArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
@@ -47,17 +76,15 @@ static void RenderSceneCB()
 static void InitializeGlutCallbacks()
 {
     glutDisplayFunc(RenderSceneCB);
+    glutIdleFunc(RenderSceneCB);
 }
 
 static void CreateVertexBuffer()
 {
-    // Vector3f Vertices[1];
-    // Vertices[0] = Vector3f(0.0f, 0.0f, 0.0f);
-
     Vector3f Vertices[3];
-    Vertices[0] = Vector3f(-1.0f, -1.0f, 0.0f);
-    Vertices[1] = Vector3f(1.0f, -1.0f, 0.0f);
-    Vertices[2] = Vector3f(0.0f, 1.0f, 0.0f);
+    Vertices[0] = Vector3f(-radius, -radius, 0.0f);
+    Vertices[1] = Vector3f(radius, -radius, 0.0f);
+    Vertices[2] = Vector3f(0.0f, radius, 0.0f);
 
  	glGenBuffers(1, &VBO);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
@@ -83,23 +110,27 @@ GLuint LoadShader(const GLchar** shader_code, GLuint type)
 
 static void CompileShaders()
 {
+    GLuint gScaleLocation;
     GLuint shader_color = LoadShader(&pFS, GL_FRAGMENT_SHADER);
     GLuint shader_position = LoadShader(&pVS, GL_VERTEX_SHADER);
 
-    GLuint prog = glCreateProgram();
-    glAttachShader(prog, shader_color);
-    glAttachShader(prog, shader_position);
-    glLinkProgram(prog);
+    GLuint ShaderProgram = glCreateProgram();
+    glAttachShader(ShaderProgram, shader_color);
+    glAttachShader(ShaderProgram, shader_position);
+    glLinkProgram(ShaderProgram);
 
     GLint ok;
     GLchar log[2000];
-    glGetShaderiv(prog, GL_COMPILE_STATUS, &ok);
+    glGetProgramiv(ShaderProgram, GL_COMPILE_STATUS, &ok);
     if (!ok) {
         glGetProgramInfoLog(shader_color, 2000, NULL, log);
         std::cout << log << std::endl;
     }
 
-    glUseProgram(prog);
+    glUseProgram(ShaderProgram);
+
+    gScaleLocation = glGetUniformLocation(ShaderProgram, "gWorld");
+    assert(gScaleLocation != 0xFFFFFFFF);
 }
 
 int main(int argc, char** argv)
