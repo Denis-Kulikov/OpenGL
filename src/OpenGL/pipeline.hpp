@@ -18,6 +18,8 @@ public:
     void WorldPos(float x, float y, float z) {m_worldPos.x = x; m_worldPos.y = y; m_worldPos.z = z;};
     void Rotate(float x, float y, float z) {m_rotateInfo.x = x; m_rotateInfo.y = y; m_rotateInfo.z = z;};
 
+    double WorldPosZ() {return m_worldPos.z;};
+
 private:
     Vector3f m_scale;
     Vector3f m_worldPos;

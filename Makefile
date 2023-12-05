@@ -32,8 +32,8 @@ DEPS = $(APP_OBJECTS:.o=.d) $(LIB_OBJECTS:.o=.d)
 .PHONY: all
 all: $(APP_PATH)
 
-$(APP_PATH): 
-	$(CC) -o $@ -Wall src/OpenGL/main.cpp src/OpenGL/pipeline.cpp $(LDLIBS) -lm
+$(APP_PATH): src/OpenGL/main.cpp src/OpenGL/pipeline.cpp src/OpenGL/n_body.cpp
+	$(CC) -o $@ -Wall $^ $(LDLIBS) -lm
 
 #-include $(DEPS)
 

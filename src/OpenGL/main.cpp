@@ -10,6 +10,7 @@
 #include <GL/freeglut.h>
 #include "math_3d.h"
 #include "pipeline.hpp"
+#include "lib.hpp"
 
 
 static const char* pVS = "                                                          \n\
@@ -24,8 +25,9 @@ out vec4 Color;                                                                 
 void main()                                                                         \n\
 {                                                                                   \n\
     gl_Position = gWorld * vec4(Position, 1.0);                                     \n\
-    Color = vec4(clamp(Position, 0.0, 1.0), 1.0);                                   \n\
+    Color = vec4(Position.x / 2 + 0.2, Position.y / 2 + 0.2, Position.z / 2 + 0.2, 1.0);                                   \n\
 }";
+    // Color = vec4(clamp(Position, 0.0, 1.0) / 2 + 0.4, 1.0);                                   \n
 
 static const char* pFS = "                                                          \n\
 #version 330                                                                        \n\
@@ -39,6 +41,9 @@ void main()                                                                     
     FragColor = Color;                                                              \n\
 }";
 
+#define NUMBER_VERTICES 14
+#define NUMBER_BODY 3
+
 GLuint VBO;
 GLuint IBO;
 GLuint gWorldLocation;
@@ -47,34 +52,46 @@ const int height = 768;
 const float radius = 0.8f;
 bool flag_mr = false; 
 
-static void RenderSceneCB()
+int n = NUMBER_BODY;
+Vector3f *p = (Vector3f*)malloc(sizeof(*p) * n);
+Vector3f *f = (Vector3f*)malloc(sizeof(*f) * n);
+Vector3f *v = (Vector3f*)malloc(sizeof(*v) * n);
+float *m = (float*)malloc(sizeof(*m) * n);
+
+pipeline body;
+
+void draw (double x, double y, double z)
 {
-    glClear(GL_COLOR_BUFFER_BIT);
+    body.WorldPos(x, y, z);
 
-
-    static float Scale = 0.0f;
-
-    Scale += 0.001f;
-
-    pipeline p;
-    // p.Scale(sinf(Scale * 0.1f), sinf(Scale * 0.1f), sinf(Scale * 0.1f));
-    // p.WorldPos(sinf(Scale), 0.0f, 0.0f);
-    // p.Rotate(sinf(Scale) * 90.0f, sinf(Scale) * 90.0f, sinf(Scale) * 90.0f);
-
-    p.Scale(0.5f, 0.5f, 0.5f);
-    p.WorldPos(0.0f, -0.2f, 0.0f);
-    p.Rotate(0.0f, Scale * 100.0f, 0.0f);
-
-    glUniformMatrix4fv(gWorldLocation, 1, GL_TRUE, (const GLfloat*)p.GetTransform());
+    glUniformMatrix4fv(gWorldLocation, 1, GL_TRUE, (const GLfloat*)body.GetTransform());
 
     glEnableVertexAttribArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
 
-    glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_TRIANGLES, 75, GL_UNSIGNED_INT, 0);
 
     glDisableVertexAttribArray(0);
+
+}
+
+static void RenderSceneCB()
+{
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    static float Scale = 0.0f;
+    Scale += 0.0005f * 4;
+
+    draw(sin(Scale ) / 2, cos(Scale) / 2, fabs(cos(Scale)));
+
+    // body.WorldPos(sin(Scale ) / 2, cos(Scale) / 2, 0);
+
+    // lin();
+
+    // for (int i = 0; i < n; i++) {
+    // }
 
     glutSwapBuffers();
 }
@@ -88,11 +105,21 @@ static void InitializeGlutCallbacks()
 
 static void CreateVertexBuffer()
 {
-    Vector3f Vertices[4];
-    Vertices[0] = Vector3f(0.0f, -1.0f, -1.0f);
-    Vertices[1] = Vector3f(-0.717f, -1.0f, 0.717f);
-    Vertices[2] = Vector3f(0.717f, -1.0f, 0.717f);
-    Vertices[3] = Vector3f(0.0f, 1.0f, 0.0f);
+    Vector3f Vertices[NUMBER_VERTICES];
+    Vertices[0] = Vector3f(0.0, 1.0, 0.0);
+    Vertices[1] = Vector3f(0.707, 0.707, 0.0);
+    Vertices[2] = Vector3f(1.0, 0.0, 0.0);
+    Vertices[3] = Vector3f(0.707, -0.707, 0.0);
+    Vertices[4] = Vector3f(0.0, -1.0, 0.0);
+    Vertices[5] = Vector3f(-0.707, -0.707, 0.0);
+    Vertices[6] = Vector3f(-1.0, 0.0, 0.0);
+    Vertices[7] = Vector3f(-0.707, 0.707, 0.0);
+    Vertices[8] = Vector3f(0.0, 0.0, 1.0);
+    Vertices[9] = Vector3f(0.0, 0.0, -1.0);
+    Vertices[10] = Vector3f(0.0, 0.707, -0.707);
+    Vertices[11] = Vector3f(0.0, -0.707, -0.707);
+    Vertices[12] = Vector3f(0.0, 0.707, 0.707);
+    Vertices[13] = Vector3f(0.0, -0.707, 0.707);
 
  	glGenBuffers(1, &VBO);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
@@ -101,10 +128,34 @@ static void CreateVertexBuffer()
 
 static void CreateIndexBuffer()
 {
-    unsigned int Indices[] = { 0, 3, 1,
-                               1, 3, 2,
-                               2, 3, 0,
-                               0, 2, 1 };
+    unsigned int Indices[] = {
+        0, 1, 12,
+        0, 7, 12,
+        6, 7, 12,
+        6, 8, 12,
+        6, 8, 13,
+        5, 6, 13,
+        4, 5, 13,
+        3, 4, 13,
+        2, 3, 13,
+        2, 8, 13,
+        2, 8, 12,
+        1, 2, 12,
+
+        0, 10, 1,
+        0, 7, 10,
+        6, 7, 10,
+        6, 9, 10,
+        6, 9, 11,
+        5, 6, 11,
+        4, 5, 11,
+        3, 4, 11,
+        2, 3, 11,
+        2, 9, 11,
+        2, 9, 10,
+        2, 10, 1,
+        1, 2, 10
+    };
 
     glGenBuffers(1, &IBO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
@@ -178,14 +229,19 @@ int main(int argc, char** argv)
       return 1;
     }
 
-    glClearColor(0.1f, 0.1f, 0.1f, 0.0f);
+    init_partiecle();
+    body.Scale(0.5f, 0.5f, 0.5f);
 
+    glClearColor(0.1f, 0.1f, 0.1f, 0.0f);
     CreateVertexBuffer();
     CreateIndexBuffer();
-
     CompileShaders();
-
     glutMainLoop();
+
+    free(m);
+    free(v);
+    free(f);
+    free(p);
 
     return 0;
 }
