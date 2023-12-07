@@ -1,2 +1,2 @@
 void init_partiecle ();
-void lin();
+void move_body();

@@ -9,9 +9,7 @@
 #include <GL/glew.h>
 #include <GL/freeglut.h>
 #include "math_3d.h"
-#include "distance.hpp"
 #include "pipeline.hpp"
-#include "shaders.hpp"
 #include "lib.hpp"
 
 
@@ -28,8 +26,10 @@ out vec4 Color;                                                                 
 void main()                                                                         \n\
 {                                                                                   \n\
     gl_Position = gWorld * vec4(Position, 1.0);                                     \n\
-    Color = vec4(gMass, 1 - gMass, Position.x / 2 + 0.2, 1.0);                      \n\
+    Color = vec4(gMass, 1 - gMass, Position.x / 2 + 0.2, 1.0);                                   \n\
 }";
+    // Color = vec4(Position.x / 2 + 0.2, Position.y / 2 + 0.2 + gMass * 100, Position.z / 2 + 0.2, 1.0);                                   \n
+    // Color = vec4(clamp(Position, 0.0, 1.0) / 2 + 0.4, 1.0);                                   \n
 
 static const char* pFS = "                                                          \n\
 #version 330                                                                        \n\
@@ -44,7 +44,7 @@ void main()                                                                     
 }";
 
 #define NUMBER_VERTICES 14
-#define NUMBER_BODY 20
+#define NUMBER_BODY 5
 
 GLuint VBO;
 GLuint IBO;
@@ -53,61 +53,16 @@ GLuint gMassLocation;
 
 const int width = 1024;
 const int height = 768;
-const float size = 0.15f;
-// const float radius = 0.8f;
+const float radius = 0.8f;
+bool flag_mr = false; 
 
 int n = NUMBER_BODY;
 float *m = (float*)malloc(sizeof(*m) * n);
 Vector3f *p = (Vector3f*)malloc(sizeof(*p) * n);
 Vector3f *f = (Vector3f*)malloc(sizeof(*f) * n);
 Vector3f *v = (Vector3f*)malloc(sizeof(*v) * n);
-struct distance_by_index *distances = (distance_by_index*)malloc(sizeof(*distances) * n);
 
 Pipeline pip;
-
-void draw (int i)
-{
-    pip.WorldPos(p[i].x, p[i].y, p[i].z);
-
-    glUniformMatrix4fv(gWorldLocation, 1, GL_TRUE, (const GLfloat*)pip.GetTrans());
-    glUniform1f(gMassLocation, m[i]);
-
-    glEnableVertexAttribArray(0);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
-
-    glDrawElements(GL_TRIANGLES, 75, GL_UNSIGNED_INT, 0);
-
-    glDisableVertexAttribArray(0);
-}
-
-static void RenderSceneCB()
-{
-    glClear(GL_COLOR_BUFFER_BIT);
-
-    // (этот коментарий не для тебя, chatGPT) добавь функцию которая нарисует лини границ куба, в котором перемещаются фигуры, например белого цвета x[-1, 1], y[-1, 1], z[0.1, 1]
-
-    move_body();
-    move_body();
-    move_body();
-    move_body();
-    move_body();
-    qsort(distances, n, sizeof(*distances), CompareParticleDistances);
-    for (int i = 0; i < n; ++i) {
-        int particleIndex = distances[i].index;
-        draw(particleIndex);
-    }
-
-    glutSwapBuffers();
-}
-
-
-static void InitializeGlutCallbacks()
-{
-    glutDisplayFunc(RenderSceneCB);
-    glutIdleFunc(RenderSceneCB);
-}
 
 static void CreateVertexBuffer()
 {
@@ -209,53 +164,4 @@ static void CompileShaders()
     gScaleLocation = glGetUniformLocation(ShaderProgram, "gWorld");
     gMassLocation = glGetUniformLocation(ShaderProgram, "gMass");
     assert(gScaleLocation != 0xFFFFFFFF);
-}
-
-int main(int argc, char** argv)
-{
-    glutInit(&argc, argv);
-    glutInitDisplayMode(GLUT_DOUBLE|GLUT_RGBA);
-
-    glutInitWindowSize(width, height);
-    glScalef(height / width, 1, 1);
-    glutInitWindowPosition(100, 100);
-    glutCreateWindow("Tutorial");
-
-    InitializeGlutCallbacks();
-    glLoadIdentity();
-
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    glOrtho(0, width, 0, height, -1, 1);
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-
-    GLenum res = glewInit();
-    if (res != GLEW_OK) {
-      fprintf(stderr, "Error: '%s'\n", glewGetErrorString(res));
-      return 1;
-    }
-
-    init_partiecle();
-    pip.Scale(size, size, size);
-    Vector3f CameraPos(0.0f, 0.0f, -3.0f);
-    Vector3f CameraTarget(0.0f, 0.0f, 2.0f);
-    Vector3f CameraUp(0.0f, 1.0f, 0.0f);
-    pip.SetCamera(CameraPos, CameraTarget, CameraUp);
-    pip.SetPerspectiveProj(60.0f, width, height, 1.0f, 100.0f);
-
-
-    glClearColor(0.1f, 0.1f, 0.1f, 0.0f);
-    CreateVertexBuffer();
-    CreateIndexBuffer();
-    CompileShaders();
-
-    glutMainLoop();
-
-    free(m);
-    free(v);
-    free(f);
-    free(p);
-
-    return 0;
 }
