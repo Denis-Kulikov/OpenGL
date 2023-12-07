@@ -49,10 +49,11 @@ public:
 
     const Matrix4f* GetTrans();
 
-private:
-    Vector3f m_scale;
-    Vector3f m_worldPos;
-    Vector3f m_rotateInfo;
+    struct {
+        Vector3f Pos;
+        Vector3f Target;
+        Vector3f Up;
+    } m_camera;
 
     struct {
         float FOV;
@@ -62,11 +63,10 @@ private:
         float zFar;
     } m_persProj;
 
-    struct {
-        Vector3f Pos;
-        Vector3f Target;
-        Vector3f Up;
-    } m_camera;
+private:
+    Vector3f m_scale;
+    Vector3f m_worldPos;
+    Vector3f m_rotateInfo;
 
     Matrix4f m_transformation;
 };

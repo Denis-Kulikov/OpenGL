@@ -12,7 +12,7 @@
 #include "distance.hpp"
 #include "pipeline.hpp"
 #include "shaders.hpp"
-#include "lib.hpp"
+#include "n_body.hpp"
 
 
 static const char* pVS = "                                                          \n\
@@ -28,8 +28,9 @@ out vec4 Color;                                                                 
 void main()                                                                         \n\
 {                                                                                   \n\
     gl_Position = gWorld * vec4(Position, 1.0);                                     \n\
-    Color = vec4(gMass, 1 - gMass, Position.x / 2 + 0.2, 1.0);                      \n\
+    Color = vec4(gMass, 1 - gMass, 0, 1.0);                      \n\
 }";
+    // Color = vec4(gMass, 1 - gMass, Position.x / 2 + 0.2, 1.0);                      \n
 
 static const char* pFS = "                                                          \n\
 #version 330                                                                        \n\
@@ -44,16 +45,17 @@ void main()                                                                     
 }";
 
 #define NUMBER_VERTICES 14
-#define NUMBER_BODY 20
+#define NUMBER_BODY 200
 
 GLuint VBO;
 GLuint IBO;
 GLuint gWorldLocation;
 GLuint gMassLocation;
+GLuint ShaderProgram;
 
 const int width = 1024;
 const int height = 768;
-const float size = 0.15f;
+const float size = 0.02f;
 // const float radius = 0.8f;
 
 int n = NUMBER_BODY;
@@ -63,41 +65,142 @@ Vector3f *f = (Vector3f*)malloc(sizeof(*f) * n);
 Vector3f *v = (Vector3f*)malloc(sizeof(*v) * n);
 struct distance_by_index *distances = (distance_by_index*)malloc(sizeof(*distances) * n);
 
-Pipeline pip;
+Pipeline pipeline;
+
+    // glBegin(GL_QUADS);
+
+    // glColor3f(1.0f, 1.0f, 1.0f);
+
+    // glVertex3f(-0.5f, -0.5f, -0.5f);
+    // glVertex3f(0.5f, -0.5f, -0.5f);
+    // glVertex3f(0.5f, 0.5f, -0.5f);
+    // glVertex3f(-0.5f, 0.5f, -0.5f);
+
+    // glVertex3f(-0.5f, -0.5f, 0.5f);
+    // glVertex3f(0.5f, -0.5f, 0.5f);
+    // glVertex3f(0.5f, 0.5f, 0.5f);
+    // glVertex3f(-0.5f, 0.5f, 0.5f);
+
+    // glVertex3f(-0.5f, -0.5f, -0.5f);
+    // glVertex3f(-0.5f, 0.5f, -0.5f);
+    // glVertex3f(-0.5f, 0.5f, 0.5f);
+    // glVertex3f(-0.5f, -0.5f, 0.5f);
+
+    // glVertex3f(0.5f, -0.5f, -0.5f);
+    // glVertex3f(0.5f, 0.5f, -0.5f);
+    // glVertex3f(0.5f, 0.5f, 0.5f);
+    // glVertex3f(0.5f, -0.5f, 0.5f);
+
+    // glVertex3f(-0.5f, -0.5f, -0.5f);
+    // glVertex3f(0.5f, -0.5f, -0.5f);
+    // glVertex3f(0.5f, -0.5f, 0.5f);
+    // glVertex3f(-0.5f, -0.5f, 0.5f);
+
+    // glVertex3f(-0.5f, 0.5f, -0.5f);
+    // glVertex3f(0.5f, 0.5f, -0.5f);
+    // glVertex3f(0.5f, 0.5f, 0.5f);
+    // glVertex3f(-0.5f, 0.5f, 0.5f);
+
+    // glEnd();
+
+void draw_cube ()
+{
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    gluLookAt(pipeline.m_camera.Pos.x, pipeline.m_camera.Pos.y, pipeline.m_camera.Pos.z,
+              pipeline.m_camera.Target.x, pipeline.m_camera.Target.y, pipeline.m_camera.Target.z,
+              pipeline.m_camera.Up.x, pipeline.m_camera.Up.y, pipeline.m_camera.Up.z);
+
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluPerspective(pipeline.m_persProj.FOV, pipeline.m_persProj.Width / pipeline.m_persProj.Height, pipeline.m_persProj.zNear, pipeline.m_persProj.zFar);
+
+    glPushMatrix();
+
+    glTranslatef(0, 0.0, 10.45);
+    glScalef(2.5f, 1.75, 4);
+    glutWireCube(1);
+
+    glPopMatrix();
+}
 
 void draw (int i)
 {
-    pip.WorldPos(p[i].x, p[i].y, p[i].z);
+    pipeline.WorldPos(p[i].x, p[i].y, p[i].z);
 
-    glUniformMatrix4fv(gWorldLocation, 1, GL_TRUE, (const GLfloat*)pip.GetTrans());
+    glUniformMatrix4fv(gWorldLocation, 1, GL_TRUE, (const GLfloat*)pipeline.GetTrans());
     glUniform1f(gMassLocation, m[i]);
 
-    glEnableVertexAttribArray(0);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
+        // освещение 
+    // glEnable(GL_LIGHTING);
+    // glEnable(GL_LIGHT0);
+    // glEnable(GL_DEPTH_TEST);
 
-    glDrawElements(GL_TRIANGLES, 75, GL_UNSIGNED_INT, 0);
+    // GLfloat light_position[] = { 1.0, 1.0, 1.0, 0.0 };
+    // glLightfv(GL_LIGHT0, GL_POSITION, light_position);
 
-    glDisableVertexAttribArray(0);
+    // материал
+    GLfloat mat_ambient[] = { 0.7, 0.7, 0.7, 1.0 };
+    GLfloat mat_diffuse[] = { 0.8, 0.8, 0.8, 1.0 };
+    GLfloat mat_specular[] = { 1.0, 1.0, 1.0, 1.0 };
+    GLfloat mat_shininess[] = { 100.0 };
+    glMaterialfv(GL_FRONT, GL_AMBIENT, mat_ambient);
+    glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
+    glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
+    glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
+
+    glEnable(GL_COLOR_MATERIAL);
+
+    glPushMatrix();
+    glutSolidSphere(1.0, 30, 30);
+    glPopMatrix();
 }
 
 static void RenderSceneCB()
 {
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // (этот коментарий не для тебя, chatGPT) добавь функцию которая нарисует лини границ куба, в котором перемещаются фигуры, например белого цвета x[-1, 1], y[-1, 1], z[0.1, 1]
 
-    move_body();
-    move_body();
-    move_body();
-    move_body();
-    move_body();
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    gluLookAt(pipeline.m_camera.Pos.x, pipeline.m_camera.Pos.y, pipeline.m_camera.Pos.z,
+              pipeline.m_camera.Target.x, pipeline.m_camera.Target.y, pipeline.m_camera.Target.z,
+              pipeline.m_camera.Up.x, pipeline.m_camera.Up.y, pipeline.m_camera.Up.z);
+
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluPerspective(pipeline.m_persProj.FOV, pipeline.m_persProj.Width / pipeline.m_persProj.Height,
+                   pipeline.m_persProj.zNear, pipeline.m_persProj.zFar);
+
+    // Очищаем модельную матрицу перед отрисовкой
+    glPushMatrix();
+
+    // Рисуем границы куба
+    glUseProgram(0);
+    draw_cube();
+
+    move_body(size);
+    move_body(size);
+    move_body(size);
+    move_body(size);
+    move_body(size);
+
+    move_body(size);
+    move_body(size);
+    move_body(size);
+    move_body(size);
+    move_body(size);
+
     qsort(distances, n, sizeof(*distances), CompareParticleDistances);
+
+    glUseProgram(ShaderProgram); 
     for (int i = 0; i < n; ++i) {
         int particleIndex = distances[i].index;
         draw(particleIndex);
     }
+
+    glPopMatrix();
 
     glutSwapBuffers();
 }
@@ -107,65 +210,6 @@ static void InitializeGlutCallbacks()
 {
     glutDisplayFunc(RenderSceneCB);
     glutIdleFunc(RenderSceneCB);
-}
-
-static void CreateVertexBuffer()
-{
-    Vector3f Vertices[NUMBER_VERTICES];
-    Vertices[0] = Vector3f(0.0, 1.0, 0.0);
-    Vertices[1] = Vector3f(0.707, 0.707, 0.0);
-    Vertices[2] = Vector3f(1.0, 0.0, 0.0);
-    Vertices[3] = Vector3f(0.707, -0.707, 0.0);
-    Vertices[4] = Vector3f(0.0, -1.0, 0.0);
-    Vertices[5] = Vector3f(-0.707, -0.707, 0.0);
-    Vertices[6] = Vector3f(-1.0, 0.0, 0.0);
-    Vertices[7] = Vector3f(-0.707, 0.707, 0.0);
-    Vertices[8] = Vector3f(0.0, 0.0, 1.0);
-    Vertices[9] = Vector3f(0.0, 0.0, -1.0);
-    Vertices[10] = Vector3f(0.0, 0.707, -0.707);
-    Vertices[11] = Vector3f(0.0, -0.707, -0.707);
-    Vertices[12] = Vector3f(0.0, 0.707, 0.707);
-    Vertices[13] = Vector3f(0.0, -0.707, 0.707);
-
- 	glGenBuffers(1, &VBO);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(Vertices), Vertices, GL_STATIC_DRAW);
-}
-
-static void CreateIndexBuffer()
-{
-    unsigned int Indices[] = {
-        0, 1, 12,
-        0, 7, 12,
-        6, 7, 12,
-        6, 8, 12,
-        6, 8, 13,
-        5, 6, 13,
-        4, 5, 13,
-        3, 4, 13,
-        2, 3, 13,
-        2, 8, 13,
-        2, 8, 12,
-        1, 2, 12,
-
-        0, 10, 1,
-        0, 7, 10,
-        6, 7, 10,
-        6, 9, 10,
-        6, 9, 11,
-        5, 6, 11,
-        4, 5, 11,
-        3, 4, 11,
-        2, 3, 11,
-        2, 9, 11,
-        2, 9, 10,
-        2, 10, 1,
-        1, 2, 10
-    };
-
-    glGenBuffers(1, &IBO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(Indices), Indices, GL_STATIC_DRAW);
 }
 
 GLuint LoadShader(const GLchar** shader_code, GLuint type)
@@ -191,7 +235,7 @@ static void CompileShaders()
     GLuint shader_color = LoadShader(&pFS, GL_FRAGMENT_SHADER);
     GLuint shader_position = LoadShader(&pVS, GL_VERTEX_SHADER);
 
-    GLuint ShaderProgram = glCreateProgram();
+    ShaderProgram = glCreateProgram();
     glAttachShader(ShaderProgram, shader_color);
     glAttachShader(ShaderProgram, shader_position);
     glLinkProgram(ShaderProgram);
@@ -214,7 +258,8 @@ static void CompileShaders()
 int main(int argc, char** argv)
 {
     glutInit(&argc, argv);
-    glutInitDisplayMode(GLUT_DOUBLE|GLUT_RGBA);
+    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
+    glEnable(GL_DEPTH_TEST);
 
     glutInitWindowSize(width, height);
     glScalef(height / width, 1, 1);
@@ -237,17 +282,14 @@ int main(int argc, char** argv)
     }
 
     init_partiecle();
-    pip.Scale(size, size, size);
+    pipeline.Scale(size, size, size);
     Vector3f CameraPos(0.0f, 0.0f, -3.0f);
     Vector3f CameraTarget(0.0f, 0.0f, 2.0f);
     Vector3f CameraUp(0.0f, 1.0f, 0.0f);
-    pip.SetCamera(CameraPos, CameraTarget, CameraUp);
-    pip.SetPerspectiveProj(60.0f, width, height, 1.0f, 100.0f);
-
+    pipeline.SetCamera(CameraPos, CameraTarget, CameraUp);
+    pipeline.SetPerspectiveProj(60.0f, width, height, 1.0f, 100.0f);
 
     glClearColor(0.1f, 0.1f, 0.1f, 0.0f);
-    CreateVertexBuffer();
-    CreateIndexBuffer();
     CompileShaders();
 
     glutMainLoop();
