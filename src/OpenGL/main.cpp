@@ -4,15 +4,16 @@
 #include <cassert>
 #include <string.h>
 #include <stdio.h>
+#include <vector>
 #include <unistd.h>
 
 #include <GL/glew.h>
 #include <GL/freeglut.h>
 #include "math_3d.h"
+#include "cluster.hpp"
 #include "distance.hpp"
 #include "pipeline.hpp"
 #include "shaders.hpp"
-#include "n_body.hpp"
 
 
 static const char* pVS = "                                                          \n\
@@ -28,9 +29,8 @@ out vec4 Color;                                                                 
 void main()                                                                         \n\
 {                                                                                   \n\
     gl_Position = gWorld * vec4(Position, 1.0);                                     \n\
-    Color = vec4(gMass, 1 - gMass, 0, 1.0);                      \n\
+    Color = vec4(gMass, 1 - gMass, 0, 1.0);                                                     \n\
 }";
-    // Color = vec4(gMass, 1 - gMass, Position.x / 2 + 0.2, 1.0);                      \n
 
 static const char* pFS = "                                                          \n\
 #version 330                                                                        \n\
@@ -44,8 +44,7 @@ void main()                                                                     
     FragColor = Color;                                                              \n\
 }";
 
-#define NUMBER_VERTICES 14
-#define NUMBER_BODY 200
+#define NUMBER_BODY 100
 
 GLuint VBO;
 GLuint IBO;
@@ -55,53 +54,13 @@ GLuint ShaderProgram;
 
 const int width = 1024;
 const int height = 768;
-const float size = 0.02f;
-// const float radius = 0.8f;
+const float size = 0.1f;
 
 int n = NUMBER_BODY;
-float *m = (float*)malloc(sizeof(*m) * n);
-Vector3f *p = (Vector3f*)malloc(sizeof(*p) * n);
-Vector3f *f = (Vector3f*)malloc(sizeof(*f) * n);
-Vector3f *v = (Vector3f*)malloc(sizeof(*v) * n);
-struct distance_by_index *distances = (distance_by_index*)malloc(sizeof(*distances) * n);
+struct cluster *p = (struct cluster*)calloc(sizeof(*p), n);
+struct distance_by_index *distances = (struct distance_by_index*)malloc(sizeof(*distances) * n);
 
 Pipeline pipeline;
-
-    // glBegin(GL_QUADS);
-
-    // glColor3f(1.0f, 1.0f, 1.0f);
-
-    // glVertex3f(-0.5f, -0.5f, -0.5f);
-    // glVertex3f(0.5f, -0.5f, -0.5f);
-    // glVertex3f(0.5f, 0.5f, -0.5f);
-    // glVertex3f(-0.5f, 0.5f, -0.5f);
-
-    // glVertex3f(-0.5f, -0.5f, 0.5f);
-    // glVertex3f(0.5f, -0.5f, 0.5f);
-    // glVertex3f(0.5f, 0.5f, 0.5f);
-    // glVertex3f(-0.5f, 0.5f, 0.5f);
-
-    // glVertex3f(-0.5f, -0.5f, -0.5f);
-    // glVertex3f(-0.5f, 0.5f, -0.5f);
-    // glVertex3f(-0.5f, 0.5f, 0.5f);
-    // glVertex3f(-0.5f, -0.5f, 0.5f);
-
-    // glVertex3f(0.5f, -0.5f, -0.5f);
-    // glVertex3f(0.5f, 0.5f, -0.5f);
-    // glVertex3f(0.5f, 0.5f, 0.5f);
-    // glVertex3f(0.5f, -0.5f, 0.5f);
-
-    // glVertex3f(-0.5f, -0.5f, -0.5f);
-    // glVertex3f(0.5f, -0.5f, -0.5f);
-    // glVertex3f(0.5f, -0.5f, 0.5f);
-    // glVertex3f(-0.5f, -0.5f, 0.5f);
-
-    // glVertex3f(-0.5f, 0.5f, -0.5f);
-    // glVertex3f(0.5f, 0.5f, -0.5f);
-    // glVertex3f(0.5f, 0.5f, 0.5f);
-    // glVertex3f(-0.5f, 0.5f, 0.5f);
-
-    // glEnd();
 
 void draw_cube ()
 {
@@ -124,43 +83,79 @@ void draw_cube ()
     glPopMatrix();
 }
 
-void draw (int i)
+void computeSphereNormals(float radius, int numSlices, int numStacks, std::vector<Vector3f>& normals)
 {
-    pipeline.WorldPos(p[i].x, p[i].y, p[i].z);
+    normals.clear();
+
+    for (int i = 0; i <= numStacks; ++i) {
+        float phi = M_PI * static_cast<float>(i) / numStacks;
+        for (int j = 0; j <= numSlices; ++j) {
+            float theta = 2.0f * M_PI * static_cast<float>(j) / numSlices;
+
+            float x = radius * sin(phi) * cos(theta);
+            float y = radius * cos(phi);
+            float z = radius * sin(phi) * sin(theta);
+
+            normals.push_back(Vector3f(x, y, z).Normalize());
+        }
+    }
+}
+
+void draw(int i)
+{
+    pipeline.WorldPos(p[i].pipeline.m_worldPos.x, p[i].pipeline.m_worldPos.y, p[i].pipeline.m_worldPos.z);
 
     glUniformMatrix4fv(gWorldLocation, 1, GL_TRUE, (const GLfloat*)pipeline.GetTrans());
-    glUniform1f(gMassLocation, m[i]);
+    glUniform1f(gMassLocation, p[i].pipeline.m_worldPos.z / 4);
 
-        // освещение 
-    // glEnable(GL_LIGHTING);
-    // glEnable(GL_LIGHT0);
-    // glEnable(GL_DEPTH_TEST);
+    glEnable(GL_LIGHTING);
+    glEnable(GL_LIGHT0);
 
-    // GLfloat light_position[] = { 1.0, 1.0, 1.0, 0.0 };
-    // glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+    GLfloat ambientColor[] = {0.2f, 0.2f, 0.2f, 1.0f};
+    glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambientColor);
 
-    // материал
-    GLfloat mat_ambient[] = { 0.7, 0.7, 0.7, 1.0 };
-    GLfloat mat_diffuse[] = { 0.8, 0.8, 0.8, 1.0 };
-    GLfloat mat_specular[] = { 1.0, 1.0, 1.0, 1.0 };
-    GLfloat mat_shininess[] = { 100.0 };
-    glMaterialfv(GL_FRONT, GL_AMBIENT, mat_ambient);
-    glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
-    glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
-    glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
+    GLfloat lightColor[] = {1.0f, 1.0f, 1.0f, 1.0f};
+    GLfloat lightPos[] = {0.0f, 0.0f, -1.0f, 0.0f};
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, lightColor);
+    glLightfv(GL_LIGHT0, GL_POSITION, lightPos);
 
-    glEnable(GL_COLOR_MATERIAL);
+    // Material properties
+    GLfloat matAmbient[] = {0.7f, 0.7f, 0.7f, 1.0f};
+    GLfloat matDiffuse[] = {0.8f, 0.8f, 0.8f, 1.0f};
+    GLfloat matSpecular[] = {1.0f, 1.0f, 1.0f, 1.0f};
+    GLfloat matShininess[] = {100.0f};
+
+    glMaterialfv(GL_FRONT, GL_AMBIENT, matAmbient);
+    glMaterialfv(GL_FRONT, GL_DIFFUSE, matDiffuse);
+    glMaterialfv(GL_FRONT, GL_SPECULAR, matSpecular);
+    glMaterialfv(GL_FRONT, GL_SHININESS, matShininess);
+
+    // Новый код для нормалей и вершин
+    glEnableVertexAttribArray(0);  // Атрибут для вершин
+    glEnableVertexAttribArray(1);  // Атрибут для нормалей
+
+    std::vector<Vector3f> sphereNormals;
+    computeSphereNormals(1.0f, 30, 30, sphereNormals);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);  // Атрибут вершин
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, &sphereNormals[0]);  // Атрибут нормалей
 
     glPushMatrix();
+    glScalef(1.0f, 1.0f, 1.0f);
     glutSolidSphere(1.0, 30, 30);
     glPopMatrix();
+
+    glDisableVertexAttribArray(0);
+    glDisableVertexAttribArray(1);
+
+    glDisable(GL_LIGHTING);
+    glDisable(GL_LIGHT0);
 }
+
 
 static void RenderSceneCB()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    // (этот коментарий не для тебя, chatGPT) добавь функцию которая нарисует лини границ куба, в котором перемещаются фигуры, например белого цвета x[-1, 1], y[-1, 1], z[0.1, 1]
 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
@@ -173,24 +168,10 @@ static void RenderSceneCB()
     gluPerspective(pipeline.m_persProj.FOV, pipeline.m_persProj.Width / pipeline.m_persProj.Height,
                    pipeline.m_persProj.zNear, pipeline.m_persProj.zFar);
 
-    // Очищаем модельную матрицу перед отрисовкой
     glPushMatrix();
 
-    // Рисуем границы куба
     glUseProgram(0);
     draw_cube();
-
-    move_body(size);
-    move_body(size);
-    move_body(size);
-    move_body(size);
-    move_body(size);
-
-    move_body(size);
-    move_body(size);
-    move_body(size);
-    move_body(size);
-    move_body(size);
 
     qsort(distances, n, sizeof(*distances), CompareParticleDistances);
 
@@ -245,7 +226,14 @@ static void CompileShaders()
     glGetProgramiv(ShaderProgram, GL_COMPILE_STATUS, &ok);
     if (!ok) {
         glGetProgramInfoLog(shader_color, 2000, NULL, log);
-        std::cout << log << std::endl;
+        std::cout << "shader_color:" << log << std::endl;
+    
+        GLint infoLogLength;
+        glGetShaderiv(shader_color, GL_INFO_LOG_LENGTH, &infoLogLength);
+        GLchar *infoLog = new GLchar[infoLogLength + 1];
+        glGetShaderInfoLog(shader_color, infoLogLength, NULL, infoLog);
+        std::cout << "Shader Compilation Log:\n" << infoLog << std::endl;
+        delete[] infoLog;
     }
 
     glUseProgram(ShaderProgram);
@@ -281,22 +269,21 @@ int main(int argc, char** argv)
       return 1;
     }
 
-    init_partiecle();
-    pipeline.Scale(size, size, size);
-    Vector3f CameraPos(0.0f, 0.0f, -3.0f);
+    init_pos(n, size, p, distances);
+    Vector3f CameraPos(0.0f, 0.05f, -3.0f);
     Vector3f CameraTarget(0.0f, 0.0f, 2.0f);
     Vector3f CameraUp(0.0f, 1.0f, 0.0f);
+    pipeline.Scale(size, size, size);
     pipeline.SetCamera(CameraPos, CameraTarget, CameraUp);
     pipeline.SetPerspectiveProj(60.0f, width, height, 1.0f, 100.0f);
 
+    glEnable(GL_COLOR_MATERIAL);
+    glEnable(GL_NORMALIZE);
     glClearColor(0.1f, 0.1f, 0.1f, 0.0f);
     CompileShaders();
 
     glutMainLoop();
 
-    free(m);
-    free(v);
-    free(f);
     free(p);
 
     return 0;

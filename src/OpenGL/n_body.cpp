@@ -9,7 +9,7 @@ extern Vector3f *p;
 extern Vector3f *f;
 extern Vector3f *v;
 extern float *m;
-extern struct distance_by_index *distances;
+struct distance_by_index *distances;
 
 float width_space = 2.5f;
 float hight_space = 1.75f;

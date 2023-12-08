@@ -1,3 +1,4 @@
+#pragma once
 #include <stdlib.h>
 
 struct distance_by_index {

@@ -48,7 +48,11 @@ struct Vector3f
 
     void Print() const
     {
-        printf("(%.02f, %.02f, %.02f", x, y, z);
+        printf("%.02f, %.02f, %.02f\n", x, y, z);
+    }
+    
+    float distance(const Vector3f &p) {
+        return sqrt(pow(p.x - x, 2) + pow(p.y - y, 2) + pow(p.z - z, 2));
     }
 };
 

@@ -1,3 +1,4 @@
+#pragma once
 #include "math_3d.h"
 
 class Pipeline
@@ -63,7 +64,6 @@ public:
         float zFar;
     } m_persProj;
 
-private:
     Vector3f m_scale;
     Vector3f m_worldPos;
     Vector3f m_rotateInfo;
