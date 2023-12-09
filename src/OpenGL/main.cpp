@@ -1,7 +1,9 @@
 
+#include <fstream>
 #include <iostream>
 #include <cmath>
 #include <cassert>
+#include <sstream>
 #include <string.h>
 #include <stdio.h>
 #include <vector>
@@ -9,47 +11,22 @@
 
 #include <GL/glew.h>
 #include <GL/freeglut.h>
+
+// #include <glm/glm.hpp>
+// #include <glm/gtc/matrix_transform.hpp>
+// #include <glm/gtc/type_ptr.hpp>
+
 #include "math_3d.h"
 #include "cluster.hpp"
 #include "distance.hpp"
 #include "pipeline.hpp"
 #include "shaders.hpp"
 
-
-static const char* pVS = "                                                          \n\
-#version 330                                                                        \n\
-                                                                                    \n\
-layout (location = 0) in vec3 Position;                                             \n\
-                                                                                    \n\
-uniform mat4 gWorld;                                                                \n\
-uniform float gMass;                                                                \n\
-                                                                                    \n\
-out vec4 Color;                                                                     \n\
-                                                                                    \n\
-void main()                                                                         \n\
-{                                                                                   \n\
-    gl_Position = gWorld * vec4(Position, 1.0);                                     \n\
-    Color = vec4(gMass, 1 - gMass, 0, 1.0);                                                     \n\
-}";
-
-static const char* pFS = "                                                          \n\
-#version 330                                                                        \n\
-                                                                                    \n\
-in vec4 Color;                                                                      \n\
-                                                                                    \n\
-out vec4 FragColor;                                                                 \n\
-                                                                                    \n\
-void main()                                                                         \n\
-{                                                                                   \n\
-    FragColor = Color;                                                              \n\
-}";
-
 #define NUMBER_BODY 100
 
 GLuint VBO;
 GLuint IBO;
 GLuint gWorldLocation;
-GLuint gMassLocation;
 GLuint ShaderProgram;
 
 const int width = 1024;
@@ -83,73 +60,40 @@ void draw_cube ()
     glPopMatrix();
 }
 
-void computeSphereNormals(float radius, int numSlices, int numStacks, std::vector<Vector3f>& normals)
-{
-    normals.clear();
-
-    for (int i = 0; i <= numStacks; ++i) {
-        float phi = M_PI * static_cast<float>(i) / numStacks;
-        for (int j = 0; j <= numSlices; ++j) {
-            float theta = 2.0f * M_PI * static_cast<float>(j) / numSlices;
-
-            float x = radius * sin(phi) * cos(theta);
-            float y = radius * cos(phi);
-            float z = radius * sin(phi) * sin(theta);
-
-            normals.push_back(Vector3f(x, y, z).Normalize());
-        }
-    }
-}
-
 void draw(int i)
 {
     pipeline.WorldPos(p[i].pipeline.m_worldPos.x, p[i].pipeline.m_worldPos.y, p[i].pipeline.m_worldPos.z);
+    GLuint FragPosLocation = glGetUniformLocation(ShaderProgram, "FragPos");
 
+    // В вершинном шейдере
     glUniformMatrix4fv(gWorldLocation, 1, GL_TRUE, (const GLfloat*)pipeline.GetTrans());
-    glUniform1f(gMassLocation, p[i].pipeline.m_worldPos.z / 4);
+    glUniform3fv(FragPosLocation, 1, &p[i].pipeline.m_worldPos.x);
 
-    glEnable(GL_LIGHTING);
-    glEnable(GL_LIGHT0);
+    GLuint lightPosLocation = glGetUniformLocation(ShaderProgram, "lightPosition");
+    const Vector3f lightPosition(0.0f, 1.0f, 0.0f);
 
-    GLfloat ambientColor[] = {0.2f, 0.2f, 0.2f, 1.0f};
-    glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambientColor);
+    // Переменные для материала
+    const Vector3f materialAmbient(0.7f, 0.7f, 0.7f);
+    const Vector3f materialDiffuse(0.8f, 0.8f, 0.8f);
+    const Vector3f materialSpecular(1.0f, 1.0f, 1.0f);
+    float materialShininess = 100.0f;
 
-    GLfloat lightColor[] = {1.0f, 1.0f, 1.0f, 1.0f};
-    GLfloat lightPos[] = {0.0f, 0.0f, -1.0f, 0.0f};
-    glLightfv(GL_LIGHT0, GL_DIFFUSE, lightColor);
-    glLightfv(GL_LIGHT0, GL_POSITION, lightPos);
+    // Получение локаций uniform-переменных для материала
+    GLuint materialAmbientLocation = glGetUniformLocation(ShaderProgram, "materialAmbient");
+    GLuint materialDiffuseLocation = glGetUniformLocation(ShaderProgram, "materialDiffuse");
+    GLuint materialSpecularLocation = glGetUniformLocation(ShaderProgram, "materialSpecular");
+    GLuint materialShininessLocation = glGetUniformLocation(ShaderProgram, "materialShininess");
 
-    // Material properties
-    GLfloat matAmbient[] = {0.7f, 0.7f, 0.7f, 1.0f};
-    GLfloat matDiffuse[] = {0.8f, 0.8f, 0.8f, 1.0f};
-    GLfloat matSpecular[] = {1.0f, 1.0f, 1.0f, 1.0f};
-    GLfloat matShininess[] = {100.0f};
-
-    glMaterialfv(GL_FRONT, GL_AMBIENT, matAmbient);
-    glMaterialfv(GL_FRONT, GL_DIFFUSE, matDiffuse);
-    glMaterialfv(GL_FRONT, GL_SPECULAR, matSpecular);
-    glMaterialfv(GL_FRONT, GL_SHININESS, matShininess);
-
-    // Новый код для нормалей и вершин
-    glEnableVertexAttribArray(0);  // Атрибут для вершин
-    glEnableVertexAttribArray(1);  // Атрибут для нормалей
-
-    std::vector<Vector3f> sphereNormals;
-    computeSphereNormals(1.0f, 30, 30, sphereNormals);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);  // Атрибут вершин
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, &sphereNormals[0]);  // Атрибут нормалей
+    // Во фрагментном шейдере
+    glUniform3fv(lightPosLocation, 1, &lightPosition.x);
+    glUniform3fv(materialAmbientLocation, 1, &materialAmbient.x);
+    glUniform3fv(materialDiffuseLocation, 1, &materialDiffuse.x);
+    glUniform3fv(materialSpecularLocation, 1, &materialSpecular.x); 
+    glUniform1f(materialShininessLocation, materialShininess);
 
     glPushMatrix();
-    glScalef(1.0f, 1.0f, 1.0f);
     glutSolidSphere(1.0, 30, 30);
     glPopMatrix();
-
-    glDisableVertexAttribArray(0);
-    glDisableVertexAttribArray(1);
-
-    glDisable(GL_LIGHTING);
-    glDisable(GL_LIGHT0);
 }
 
 
@@ -193,10 +137,28 @@ static void InitializeGlutCallbacks()
     glutIdleFunc(RenderSceneCB);
 }
 
-GLuint LoadShader(const GLchar** shader_code, GLuint type)
+GLuint LoadShader(const char *shader_path, GLuint type)
 {
+    ifstream shader_file(shader_path);
+
+    if (!shader_file.is_open()) {
+        cerr << "Error: Could not open shader file '" << shader_path << "'" << endl;
+        return 0;
+    }
+
+    stringstream shader_stream;
+    shader_stream << shader_file.rdbuf();
+    shader_file.close();
+
+    char* code = (char*)malloc(shader_stream.str().length() + 1);
+    for (size_t i = 0; i < shader_stream.str().length(); ++i) {
+        code[i] = shader_stream.str()[i];
+    }
+    code[shader_stream.str().length()] = '\0';
+    const GLchar* shader_code = code;
+
     GLuint shader = glCreateShader(type);
-    glShaderSource(shader, 1, shader_code, NULL);
+    glShaderSource(shader, 1, &shader_code, NULL);
     glCompileShader(shader);
 
     GLint ok;
@@ -205,6 +167,7 @@ GLuint LoadShader(const GLchar** shader_code, GLuint type)
     if (!ok) {
         glGetShaderInfoLog(shader, 2000, NULL, log);
         printf("Shader: %s\n", log);
+        cout << shader_stream.str().c_str() << endl;
     }
 
     return shader;
@@ -213,8 +176,9 @@ GLuint LoadShader(const GLchar** shader_code, GLuint type)
 static void CompileShaders()
 {
     GLuint gScaleLocation;
-    GLuint shader_color = LoadShader(&pFS, GL_FRAGMENT_SHADER);
-    GLuint shader_position = LoadShader(&pVS, GL_VERTEX_SHADER);
+
+    GLuint shader_color = LoadShader("shaders/point_fs.glsl", GL_FRAGMENT_SHADER);
+    GLuint shader_position = LoadShader("shaders/point_vs.glsl", GL_VERTEX_SHADER);
 
     ShaderProgram = glCreateProgram();
     glAttachShader(ShaderProgram, shader_color);
@@ -239,8 +203,15 @@ static void CompileShaders()
     glUseProgram(ShaderProgram);
 
     gScaleLocation = glGetUniformLocation(ShaderProgram, "gWorld");
-    gMassLocation = glGetUniformLocation(ShaderProgram, "gMass");
     assert(gScaleLocation != 0xFFFFFFFF);
+}
+
+static void KeyboardCB(unsigned char Key, int x, int y)
+{
+    switch (Key) {
+        case 'q':
+            glutLeaveMainLoop();
+    }
 }
 
 int main(int argc, char** argv)
@@ -282,6 +253,7 @@ int main(int argc, char** argv)
     glClearColor(0.1f, 0.1f, 0.1f, 0.0f);
     CompileShaders();
 
+    glutKeyboardFunc(KeyboardCB);
     glutMainLoop();
 
     free(p);
