@@ -14,7 +14,7 @@ void init_pos(int n, float _size, struct cluster *p, struct distance_by_index *d
     for (int i = 0; i < n; i++) {
         p[i].pipeline.m_worldPos.x = (rand() / (float)RAND_MAX - 0.5) * 2 * width_space;
         p[i].pipeline.m_worldPos.y = (rand() / (float)RAND_MAX - 0.5) * 2 * hight_space; 
-        p[i].pipeline.m_worldPos.z = (rand() / (float)RAND_MAX * (length_space - 0.1) + 0.1);
+        p[i].pipeline.m_worldPos.z = (rand() / (float)RAND_MAX * (length_space - 0.03) + 0.03);
         p[i].pipeline.Scale(_size, _size, _size);
         distances[i].index = i; 
         distances[i].dist = p[i].pipeline.m_worldPos.distance(Vector3f(0.0f, 0.0f, 0.0f)); 

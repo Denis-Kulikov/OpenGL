@@ -23,6 +23,7 @@
 #include "shaders.hpp"
 
 #define NUMBER_BODY 100
+#define CLUSTER 3
 
 GLuint VBO;
 GLuint IBO;
@@ -31,13 +32,37 @@ GLuint ShaderProgram;
 
 const int width = 1024;
 const int height = 768;
-const float size = 0.1f;
+const float size = 0.075f;
 
 int n = NUMBER_BODY;
 struct cluster *p = (struct cluster*)calloc(sizeof(*p), n);
+struct cluster *с = (struct cluster*)calloc(sizeof(*p), CLUSTER);
 struct distance_by_index *distances = (struct distance_by_index*)malloc(sizeof(*distances) * n);
 
 Pipeline pipeline;
+
+void draw_clusters()
+{
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    gluLookAt(pipeline.m_camera.Pos.x, pipeline.m_camera.Pos.y, pipeline.m_camera.Pos.z,
+              pipeline.m_camera.Target.x, pipeline.m_camera.Target.y, pipeline.m_camera.Target.z,
+              pipeline.m_camera.Up.x, pipeline.m_camera.Up.y, pipeline.m_camera.Up.z);
+
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluPerspective(pipeline.m_persProj.FOV, pipeline.m_persProj.Width / pipeline.m_persProj.Height, pipeline.m_persProj.zNear, pipeline.m_persProj.zFar);
+
+    glPushMatrix();
+
+    glTranslatef(0, 0, 0);
+    glScalef(0.5f, 0.5, 0.5);
+    glColor3f(1.0, 1.0, 1.0);  // Устанавливаем цвет куба
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    glutWireCube(1);
+
+    glPopMatrix();
+}
 
 void draw_cube ()
 {
@@ -64,32 +89,10 @@ void draw(int i)
 {
     pipeline.WorldPos(p[i].pipeline.m_worldPos.x, p[i].pipeline.m_worldPos.y, p[i].pipeline.m_worldPos.z);
     GLuint FragPosLocation = glGetUniformLocation(ShaderProgram, "FragPos");
-
-    // В вершинном шейдере
-    glUniformMatrix4fv(gWorldLocation, 1, GL_TRUE, (const GLfloat*)pipeline.GetTrans());
+    GLuint LengthLocation = glGetUniformLocation(ShaderProgram, "Cluster");
+    glUniform1f(LengthLocation, 0);
     glUniform3fv(FragPosLocation, 1, &p[i].pipeline.m_worldPos.x);
-
-    GLuint lightPosLocation = glGetUniformLocation(ShaderProgram, "lightPosition");
-    const Vector3f lightPosition(0.0f, 1.0f, 0.0f);
-
-    // Переменные для материала
-    const Vector3f materialAmbient(0.7f, 0.7f, 0.7f);
-    const Vector3f materialDiffuse(0.8f, 0.8f, 0.8f);
-    const Vector3f materialSpecular(1.0f, 1.0f, 1.0f);
-    float materialShininess = 100.0f;
-
-    // Получение локаций uniform-переменных для материала
-    GLuint materialAmbientLocation = glGetUniformLocation(ShaderProgram, "materialAmbient");
-    GLuint materialDiffuseLocation = glGetUniformLocation(ShaderProgram, "materialDiffuse");
-    GLuint materialSpecularLocation = glGetUniformLocation(ShaderProgram, "materialSpecular");
-    GLuint materialShininessLocation = glGetUniformLocation(ShaderProgram, "materialShininess");
-
-    // Во фрагментном шейдере
-    glUniform3fv(lightPosLocation, 1, &lightPosition.x);
-    glUniform3fv(materialAmbientLocation, 1, &materialAmbient.x);
-    glUniform3fv(materialDiffuseLocation, 1, &materialDiffuse.x);
-    glUniform3fv(materialSpecularLocation, 1, &materialSpecular.x); 
-    glUniform1f(materialShininessLocation, materialShininess);
+    glUniformMatrix4fv(gWorldLocation, 1, GL_TRUE, (const GLfloat*)pipeline.GetTrans());
 
     glPushMatrix();
     glutSolidSphere(1.0, 30, 30);
@@ -116,6 +119,8 @@ static void RenderSceneCB()
 
     glUseProgram(0);
     draw_cube();
+
+    draw_clusters();
 
     qsort(distances, n, sizeof(*distances), CompareParticleDistances);
 
