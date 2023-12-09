@@ -12,10 +12,6 @@
 #include <GL/glew.h>
 #include <GL/freeglut.h>
 
-// #include <glm/glm.hpp>
-// #include <glm/gtc/matrix_transform.hpp>
-// #include <glm/gtc/type_ptr.hpp>
-
 #include "math_3d.h"
 #include "cluster.hpp"
 #include "distance.hpp"
@@ -23,7 +19,7 @@
 #include "shaders.hpp"
 
 #define NUMBER_BODY 100
-#define CLUSTER 3
+#define NUMBER_CLUSTER 3
 
 GLuint VBO;
 GLuint IBO;
@@ -35,8 +31,8 @@ const int height = 768;
 const float size = 0.075f;
 
 int n = NUMBER_BODY;
-struct cluster *p = (struct cluster*)calloc(sizeof(*p), n);
-struct cluster *с = (struct cluster*)calloc(sizeof(*p), CLUSTER);
+int cn = NUMBER_CLUSTER;
+struct cluster *p = (struct cluster*)calloc(sizeof(*p), n + cn);
 struct distance_by_index *distances = (struct distance_by_index*)malloc(sizeof(*distances) * n);
 
 Pipeline pipeline;
@@ -122,12 +118,16 @@ static void RenderSceneCB()
 
     draw_clusters();
 
-    qsort(distances, n, sizeof(*distances), CompareParticleDistances);
+    qsort(distances, n + cn, sizeof(*distances), CompareParticleDistances);
 
     glUseProgram(ShaderProgram); 
-    for (int i = 0; i < n; ++i) {
+    for (int i = 0; i < cn; ++i) {
         int particleIndex = distances[i].index;
-        draw(particleIndex);
+        if (p[particleIndex].is_cluster) {
+            draw_cluster(particleIndex);
+        } else {
+            draw(particleIndex);
+        }
     }
 
     glPopMatrix();
@@ -245,7 +245,7 @@ int main(int argc, char** argv)
       return 1;
     }
 
-    init_pos(n, size, p, distances);
+    init_points(n, cn, size, p, distances);
     Vector3f CameraPos(0.0f, 0.05f, -3.0f);
     Vector3f CameraTarget(0.0f, 0.0f, 2.0f);
     Vector3f CameraUp(0.0f, 1.0f, 0.0f);

@@ -12,7 +12,7 @@ struct cluster
     Pipeline pipeline;
     int index;
     int cluster;
+    bool is_cluster;
 };
 
-void init_pos(int n, float _size, struct cluster *p, struct distance_by_index *distances);
-// void init_pos(struct cluster *p, int n, float size);
+void init_points(int n, int cn, float _size, struct cluster *p, struct distance_by_index *distances);
