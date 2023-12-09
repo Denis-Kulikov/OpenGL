@@ -33,30 +33,21 @@ const float size = 0.075f;
 int n = NUMBER_BODY;
 int cn = NUMBER_CLUSTER;
 struct cluster *p = (struct cluster*)calloc(sizeof(*p), n + cn);
-struct distance_by_index *distances = (struct distance_by_index*)malloc(sizeof(*distances) * n);
+struct distance_by_index *distances = (struct distance_by_index*)malloc(sizeof(*distances) * (n + cn));
 
 Pipeline pipeline;
 
-void draw_clusters()
+void draw_clusters(int i)
 {
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-    gluLookAt(pipeline.m_camera.Pos.x, pipeline.m_camera.Pos.y, pipeline.m_camera.Pos.z,
-              pipeline.m_camera.Target.x, pipeline.m_camera.Target.y, pipeline.m_camera.Target.z,
-              pipeline.m_camera.Up.x, pipeline.m_camera.Up.y, pipeline.m_camera.Up.z);
-
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    gluPerspective(pipeline.m_persProj.FOV, pipeline.m_persProj.Width / pipeline.m_persProj.Height, pipeline.m_persProj.zNear, pipeline.m_persProj.zFar);
+    pipeline.WorldPos(p[i].pipeline.m_worldPos.x, p[i].pipeline.m_worldPos.y, p[i].pipeline.m_worldPos.z);
+    GLuint FragPosLocation = glGetUniformLocation(ShaderProgram, "FragPos");
+    GLuint LengthLocation = glGetUniformLocation(ShaderProgram, "Cluster");
+    glUniform1f(LengthLocation, 3);
+    glUniform3fv(FragPosLocation, 1, &p[i].pipeline.m_worldPos.x);
+    glUniformMatrix4fv(gWorldLocation, 1, GL_TRUE, (const GLfloat*)pipeline.GetTrans());
 
     glPushMatrix();
-
-    glTranslatef(0, 0, 0);
-    glScalef(0.5f, 0.5, 0.5);
-    glColor3f(1.0, 1.0, 1.0);  // Устанавливаем цвет куба
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    glutWireCube(1);
-
+    glutSolidSphere(1.0, 30, 30);
     glPopMatrix();
 }
 
@@ -95,6 +86,13 @@ void draw(int i)
     glPopMatrix();
 }
 
+void calculate_distances() {
+    for (int i = 0; i < n + cn; ++i) {
+        distances[i].index = i;
+        distances[i].dist = p[i].pipeline.m_worldPos.distance(Vector3f(0.0f, 0.0f, 0.0f));
+    }
+}
+
 
 static void RenderSceneCB()
 {
@@ -116,15 +114,14 @@ static void RenderSceneCB()
     glUseProgram(0);
     draw_cube();
 
-    draw_clusters();
-
+    calculate_distances();
     qsort(distances, n + cn, sizeof(*distances), CompareParticleDistances);
 
     glUseProgram(ShaderProgram); 
-    for (int i = 0; i < cn; ++i) {
+    for (int i = 0; i < n + cn; i++) {
         int particleIndex = distances[i].index;
         if (p[particleIndex].is_cluster) {
-            draw_cluster(particleIndex);
+            draw_clusters(particleIndex);
         } else {
             draw(particleIndex);
         }

@@ -30,7 +30,7 @@ void init_points(int n, int cn, float _size, struct cluster *p, struct distance_
         p[i].is_cluster = true;
         distances[i].index = i; 
         distances[i].dist = p[i].pipeline.m_worldPos.distance(Vector3f(0.0f, 0.0f, 0.0f)); 
-        cluster_index += n / (cn - 1);
+        cluster_index += 1 + n / (cn - 1);
     }
 }
 
