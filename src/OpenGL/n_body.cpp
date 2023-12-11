@@ -2,7 +2,7 @@
 #include "distance.hpp"
 
 // const float G = 6.67e-11;
-const float G = 15;
+const float G = 10;
 
 extern int n;
 extern Vector3f *p;
@@ -149,7 +149,7 @@ void init_partiecle ()
 
 void move_body(float size)
 {
-    float dt = 1e-4;
+    float dt = 1e-3;
     calculate_forces(size); 
     move_particles(dt);
 }

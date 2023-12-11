@@ -25,6 +25,22 @@
 #define ToRadian(x) ((x) * M_PI / 180.0f)
 #define ToDegree(x) ((x) * 180.0f / M_PI)
 
+struct Vector2f
+{
+    float x;
+    float y;
+
+    Vector2f()
+    {
+    }
+
+    Vector2f(float _x, float _y)
+    {
+        x = _x;
+        y = _y;
+    }
+};
+
 struct Vector3f
 {
     float x;
@@ -48,7 +64,11 @@ struct Vector3f
 
     void Print() const
     {
-        printf("(%.02f, %.02f, %.02f", x, y, z);
+        printf("%.02f, %.02f, %.02f\n", x, y, z);
+    }
+    
+    float distance(const Vector3f &p) {
+        return sqrt(pow(p.x - x, 2) + pow(p.y - y, 2) + pow(p.z - z, 2));
     }
 };
 
