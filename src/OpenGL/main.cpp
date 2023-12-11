@@ -55,7 +55,7 @@ GLuint ShaderProgram;
 
 const int width = 1024;
 const int height = 768;
-const float size = 0.02f;
+const float size = 0.04f;
 // const float radius = 0.8f;
 
 int n = NUMBER_BODY;
@@ -105,76 +105,41 @@ Pipeline pipeline;
 
 void draw_cube ()
 {
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-    gluLookAt(pipeline.m_camera.Pos.x, pipeline.m_camera.Pos.y, pipeline.m_camera.Pos.z,
-              pipeline.m_camera.Target.x, pipeline.m_camera.Target.y, pipeline.m_camera.Target.z,
-              pipeline.m_camera.Up.x, pipeline.m_camera.Up.y, pipeline.m_camera.Up.z);
+    float width_space = 2.5f;
+    float hight_space = 1.75f;
+    float length_space = 4.0f;
 
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    gluPerspective(pipeline.m_persProj.FOV, pipeline.m_persProj.Width / pipeline.m_persProj.Height, pipeline.m_persProj.zNear, pipeline.m_persProj.zFar);
+    pipeline.WorldPos(0, 3, 10);
+    pipeline.Scale(width_space * 2.0f, hight_space * 2.0f, length_space);
+    glUniformMatrix4fv(gWorldLocation, 1, GL_TRUE, (const GLfloat*)pipeline.GetTrans());
 
-    glPushMatrix();
-
-    glTranslatef(0, 0.0, 10.45);
-    glScalef(2.5f, 1.75, 4);
     glutWireCube(1);
 
-    glPopMatrix();
+    pipeline.Scale(size, size, size);
 }
+
+
+    // glTranslatef(0, 0.0, 10.45);
+    // glScalef(2.5f, 1.75, 4);
+    
+    // glTranslatef(0, 0.0, 2.0);
+    // glScalef(2.5f, 1.75, 4);
+
+    // glTranslatef(0.0f, 0.0f, 2.0f);
+    // glScalef(width_space * 2.0f, hight_space * 2.0f, length_space);
 
 void draw (int i)
 {
     pipeline.WorldPos(p[i].x, p[i].y, p[i].z);
-
     glUniformMatrix4fv(gWorldLocation, 1, GL_TRUE, (const GLfloat*)pipeline.GetTrans());
     glUniform1f(gMassLocation, m[i]);
 
-        // освещение 
-    // glEnable(GL_LIGHTING);
-    // glEnable(GL_LIGHT0);
-    // glEnable(GL_DEPTH_TEST);
-
-    // GLfloat light_position[] = { 1.0, 1.0, 1.0, 0.0 };
-    // glLightfv(GL_LIGHT0, GL_POSITION, light_position);
-
-    // материал
-    GLfloat mat_ambient[] = { 0.7, 0.7, 0.7, 1.0 };
-    GLfloat mat_diffuse[] = { 0.8, 0.8, 0.8, 1.0 };
-    GLfloat mat_specular[] = { 1.0, 1.0, 1.0, 1.0 };
-    GLfloat mat_shininess[] = { 100.0 };
-    glMaterialfv(GL_FRONT, GL_AMBIENT, mat_ambient);
-    glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
-    glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
-    glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
-
-    glEnable(GL_COLOR_MATERIAL);
-
-    glPushMatrix();
     glutSolidSphere(1.0, 30, 30);
-    glPopMatrix();
 }
 
 static void RenderSceneCB()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    // (этот коментарий не для тебя, chatGPT) добавь функцию которая нарисует лини границ куба, в котором перемещаются фигуры, например белого цвета x[-1, 1], y[-1, 1], z[0.1, 1]
-
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-    gluLookAt(pipeline.m_camera.Pos.x, pipeline.m_camera.Pos.y, pipeline.m_camera.Pos.z,
-              pipeline.m_camera.Target.x, pipeline.m_camera.Target.y, pipeline.m_camera.Target.z,
-              pipeline.m_camera.Up.x, pipeline.m_camera.Up.y, pipeline.m_camera.Up.z);
-
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    gluPerspective(pipeline.m_persProj.FOV, pipeline.m_persProj.Width / pipeline.m_persProj.Height,
-                   pipeline.m_persProj.zNear, pipeline.m_persProj.zFar);
-
-    // Очищаем модельную матрицу перед отрисовкой
-    glPushMatrix();
 
     // Рисуем границы куба
     glUseProgram(0);
@@ -205,6 +170,21 @@ static void RenderSceneCB()
     glutSwapBuffers();
 }
 
+void PushMatrix(Pipeline &pipe)
+{
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    gluLookAt(pipe.m_camera.Pos.x, pipe.m_camera.Pos.y, pipe.m_camera.Pos.z,
+              pipe.m_camera.Target.x, pipe.m_camera.Target.y, pipe.m_camera.Target.z,
+              pipe.m_camera.Up.x, pipe.m_camera.Up.y, pipe.m_camera.Up.z);
+
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluPerspective(pipe.m_persProj.FOV, pipe.m_persProj.Width / pipe.m_persProj.Height,
+                   pipe.m_persProj.zNear, pipe.m_persProj.zFar);
+
+    glPushMatrix();
+}
 
 static void InitializeGlutCallbacks()
 {
@@ -283,16 +263,19 @@ int main(int argc, char** argv)
 
     init_partiecle();
     pipeline.Scale(size, size, size);
-    Vector3f CameraPos(0.0f, 0.0f, -3.0f);
+    Vector3f CameraPos(0.0f, 0.0f, -7.0f);
     Vector3f CameraTarget(0.0f, 0.0f, 2.0f);
     Vector3f CameraUp(0.0f, 1.0f, 0.0f);
     pipeline.SetCamera(CameraPos, CameraTarget, CameraUp);
     pipeline.SetPerspectiveProj(60.0f, width, height, 1.0f, 100.0f);
+    PushMatrix(pipeline);
 
     glClearColor(0.1f, 0.1f, 0.1f, 0.0f);
     CompileShaders();
 
     glutMainLoop();
+
+    glPopMatrix();
 
     free(m);
     free(v);

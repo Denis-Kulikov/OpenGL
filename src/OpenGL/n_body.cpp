@@ -2,7 +2,7 @@
 #include "distance.hpp"
 
 // const float G = 6.67e-11;
-const float G = 4;
+const float G = 15;
 
 extern int n;
 extern Vector3f *p;
