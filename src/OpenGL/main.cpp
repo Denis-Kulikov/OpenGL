@@ -29,41 +29,40 @@ GLuint gMassLocation;
 GLuint ShaderSphere;
 GLuint ShaderCube;
 
-const int width = 1600;
-const int height = 900;
-const float size = 0.075f;
+const int width = 1280;
+const int height = 768;
+
+float width_space   = 2.0f;
+float hight_space   = 2.0f;
+float length_space  = 2.0f;
 
 int n = NUMBER_BODY;
-float *m = (float*)malloc(sizeof(*m) * n);
+const float size = 0.15f;
+
+Pipeline pipeline;
+struct distance_by_index *distances = (distance_by_index*)malloc(sizeof(*distances) * n);
 Vector3f *p = (Vector3f*)malloc(sizeof(*p) * n);
 Vector3f *f = (Vector3f*)malloc(sizeof(*f) * n);
 Vector3f *v = (Vector3f*)malloc(sizeof(*v) * n);
-struct distance_by_index *distances = (distance_by_index*)malloc(sizeof(*distances) * n);
-
-Pipeline pipeline;
+float *m = (float*)malloc(sizeof(*m) * n);
 
 void DrawCube()
 {
-    float width_space = 2.5f;
-    float hight_space = 1.75f;
-    float length_space = 4.0f;
-
-    pipeline.WorldPos(0, 0, 2);
-    pipeline.Scale(width_space * 2.0f, hight_space * 2.0f, length_space);
+    pipeline.object.SetWorldPos(0, 0, 0);
+    pipeline.object.SetRotate(0, 0, 0);
+    pipeline.object.SetScale(width_space * 2.0f, hight_space * 2.0f, length_space * 2.0f);
     glUniformMatrix4fv(gWorldLocation, 1, GL_TRUE, (const GLfloat*)pipeline.GetTrans());
 
-    glutWireCube(1);
-
-    pipeline.Scale(size, size, size);
+    glutWireCube(1.0f);
 }
 
 void DrawSphere(int i)
 {
-    pipeline.WorldPos(p[i].x, p[i].y, p[i].z);
+    pipeline.object.SetWorldPos(p[i].x, p[i].y, p[i].z);
     glUniformMatrix4fv(gWorldLocation, 1, GL_TRUE, (const GLfloat*)pipeline.GetTrans());
     glUniform1f(gMassLocation, m[i]);
 
-    glutSolidSphere(1.0, 30, 30);
+    glutSolidSphere(1.0f, 30, 30);
 }
 
 static void RenderSceneCB()
@@ -74,32 +73,17 @@ static void RenderSceneCB()
     DrawCube();
 
     move_body(size);
-    move_body(size);
-    move_body(size);
 
+    qsort(distances, n, sizeof(*distances), CompareParticleDistances);
     glUseProgram(ShaderSphere); 
+    pipeline.object.SetScale(size, size, size);
+    pipeline.object.SetRotate(0, 0, 0);
     for (int i = 0; i < n; i++) {
         int particleIndex = distances[i].index;
         DrawSphere(particleIndex);
     }
 
     glutSwapBuffers();
-}
-
-void PushMatrix(Pipeline &pipe)
-{
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-    gluLookAt(pipe.m_camera.Pos.x, pipe.m_camera.Pos.y, pipe.m_camera.Pos.z,
-              pipe.m_camera.Target.x, pipe.m_camera.Target.y, pipe.m_camera.Target.z,
-              pipe.m_camera.Up.x, pipe.m_camera.Up.y, pipe.m_camera.Up.z);
-
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    gluPerspective(pipe.m_persProj.FOV, pipe.m_persProj.Width / pipe.m_persProj.Height,
-                   pipe.m_persProj.zNear, pipe.m_persProj.zFar);
-
-    glPushMatrix();
 }
 
 static void InitializeGlutCallbacks()
@@ -217,34 +201,35 @@ void CompileShaders()
 
 static void KeyboardCB(unsigned char Key, int x, int y)
 {
-    double speed = 0.075;
+    double speed_movement = 0.125;
+    double speed_rotation = 0.075;
     switch (Key) {
     case 'f':
         glutLeaveMainLoop();
         break;
     case 'w':
-        pipeline.m_camera.Pos.z += speed;
+        pipeline.camera.Params.WorldPos.z += speed_movement;
         break;
     case 's':
-        pipeline.m_camera.Pos.z -= speed;
+        pipeline.camera.Params.WorldPos.z -= speed_movement;
         break;
     case 'd':
-        pipeline.m_camera.Pos.x += speed;
+        pipeline.camera.Params.WorldPos.x += speed_movement;
         break;
     case 'a':
-        pipeline.m_camera.Pos.x -= speed;
+        pipeline.camera.Params.WorldPos.x -= speed_movement;
         break;
     case ' ':
-        pipeline.m_camera.Pos.y += speed;
+        pipeline.camera.Params.WorldPos.y += speed_movement;
         break;
     case 'c':
-        pipeline.m_camera.Pos.y -= speed;
+        pipeline.camera.Params.WorldPos.y -= speed_movement;
         break;
     case 'e':
-        pipeline.m_camera.Target.x += speed;
+        pipeline.camera.Params.Target.x += speed_rotation;
         break;
     case 'q':
-        pipeline.m_camera.Target.x -= speed;
+        pipeline.camera.Params.Target.x -= speed_rotation;
         break;
     }
 }
@@ -258,7 +243,7 @@ int main(int argc, char** argv)
     glutInitWindowSize(width, height);
     glScalef(height / width, 1, 1);
     glutInitWindowPosition(10, 10);
-    glutCreateWindow("KMeans");
+    glutCreateWindow("NBody");
 
     InitializeGlutCallbacks();
     glLoadIdentity();
@@ -275,25 +260,19 @@ int main(int argc, char** argv)
       return 1;
     }
 
-    pipeline.Scale(size, size, size);
-    Vector3f CameraPos(0.0f, 0.5f, -5.0f);
-    Vector3f CameraTarget(0.0f, 0.0f, 2.0f);
+    Vector3f CameraPos(0.0f, 0.1f, -7.0f);
+    Vector3f CameraTarget(0.0f, 0.0f, 1.0f);
     Vector3f CameraUp(0.0f, 1.0f, 0.0f);
-    pipeline.Scale(size, size, size);
-    pipeline.SetCamera(CameraPos, CameraTarget, CameraUp);
-    pipeline.SetPerspectiveProj(60.0f, width, height, 1.0f, 100.0f);
-    PushMatrix(pipeline);
+    pipeline.camera.SetCamera(CameraPos, CameraTarget, CameraUp);
+    pipeline.camera.SetPerspectiveProj(60.0f, width, height, 0.5f, 100.0f);
+    pipeline.object.SetScale(size, size, size);
 
-    glEnable(GL_COLOR_MATERIAL);
-    glEnable(GL_NORMALIZE);
     glClearColor(0.1f, 0.1f, 0.1f, 0.0f);
     CompileShaders();
     init_partiecle();
 
     glutKeyboardFunc(KeyboardCB);
     glutMainLoop();
-
-    glPopMatrix();
 
     free(m);
     free(v);
