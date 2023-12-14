@@ -50,7 +50,7 @@ void DrawCube()
 {
     pipeline.object.SetWorldPos(0, 0, 0);
     pipeline.object.SetRotate(0, 0, 0);
-    pipeline.object.SetScale(width_space * 2.0f, height_space * 2.0f, length_space * 2.0f);
+    pipeline.object.SetScale((width_space + size) * 2.0f, (height_space + size) * 2.0f, (length_space + size) * 2.0f);
     glUniformMatrix4fv(gWorldLocation, 1, GL_TRUE, (const GLfloat*)pipeline.GetTrans());
 
     glutWireCube(1.0f);

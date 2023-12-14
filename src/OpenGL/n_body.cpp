@@ -19,6 +19,8 @@ extern float length_space;
 
 void move_particles(float dt)
 {
+    float boundary_offset = 0.001;
+
     for (int i = 0; i < n; i++) {
         Vector3f dv(
             f[i].x / m[i] * dt,
@@ -27,39 +29,35 @@ void move_particles(float dt)
         );
         
         Vector3f dp(
-            (v[i].x + dv.x / 2) * dt,
-            (v[i].y + dv.y / 2) * dt,
-            (v[i].z + dv.z / 2) * dt
+            (v[i].x + dv.x * 0.5) * dt,
+            (v[i].y + dv.y * 0.5) * dt,
+            (v[i].z + dv.z * 0.5) * dt
         );
 
-        // v[i].x += dv.x - 2 * (v[i].x) * (p[i].x < -2 || p[i].x > 2);
-        // v[i].y += dv.y - 2 * (v[i].y) * (p[i].y < 1.75 || p[i].y >1.75);
-        // v[i].z += dv.z - 2 * (v[i].z) * (p[i].z < 0.1 || p[i].z > 4);
-
         if (p[i].x < -width_space) {
-            p[i].x = -width_space; 
+            p[i].x = -width_space + boundary_offset; 
             v[i].x = -v[i].x; 
         }
         if (p[i].x > width_space) {
-            p[i].x = width_space;
+            p[i].x = width_space - boundary_offset;
             v[i].x = -v[i].x;
         }
 
         if (p[i].y < -height_space) {
-            p[i].y = -height_space;
+            p[i].y = -height_space + boundary_offset;
             v[i].y = -v[i].y;
         }
         if (p[i].y > height_space) {
-            p[i].y = height_space;
+            p[i].y = height_space - boundary_offset;
             v[i].y = -v[i].y;
         }
 
         if (p[i].z < -length_space) {
-            p[i].z = -length_space;
+            p[i].z = -length_space + boundary_offset;
             v[i].z = -v[i].z;
         }
         if (p[i].z > length_space) {
-            p[i].z = length_space;
+            p[i].z = length_space - boundary_offset;
             v[i].z = -v[i].z;
         }
 
