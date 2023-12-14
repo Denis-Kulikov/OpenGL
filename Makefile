@@ -5,7 +5,7 @@ LIB_NAME = Lib
 CC = g++
 CFLAGS = -c -Wall -Wextra -Werror
 CPPFLAGS = -I src -MP -MMD
-LDLIBS = -lglut -lGL  -lGLU -lGLEW
+LDLIBS = -lglut -lglfw -lGL -lGLEW -lm
 #CFLAGS_TEST = -I test -MMD
 
 BIN_DIR = bin

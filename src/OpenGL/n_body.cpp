@@ -14,7 +14,7 @@ extern struct distance_by_index *distances;
 extern Pipeline pipeline;
 
 extern float width_space;
-extern float hight_space;
+extern float height_space;
 extern float length_space;
 
 void move_particles(float dt)
@@ -45,12 +45,12 @@ void move_particles(float dt)
             v[i].x = -v[i].x;
         }
 
-        if (p[i].y < -hight_space) {
-            p[i].y = -hight_space;
+        if (p[i].y < -height_space) {
+            p[i].y = -height_space;
             v[i].y = -v[i].y;
         }
-        if (p[i].y > hight_space) {
-            p[i].y = hight_space;
+        if (p[i].y > height_space) {
+            p[i].y = height_space;
             v[i].y = -v[i].y;
         }
 
@@ -102,7 +102,7 @@ void init_partiecle ()
 {
     for (int i = 0; i < n; i++) {
         p[i].x = (rand() / (float)RAND_MAX - 0.5) * 2 * (width_space - pipeline.object.Scale.x);
-        p[i].y = (rand() / (float)RAND_MAX - 0.5) * 2 * (hight_space - pipeline.object.Scale.x);
+        p[i].y = (rand() / (float)RAND_MAX - 0.5) * 2 * (height_space - pipeline.object.Scale.x);
         p[i].z = (rand() / (float)RAND_MAX - 0.5) * 2 * (length_space - pipeline.object.Scale.x);
         v[i].x = rand() / (float)RAND_MAX - G;
         v[i].y = rand() / (float)RAND_MAX - G;

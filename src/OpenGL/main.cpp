@@ -1,4 +1,3 @@
-
 #include <fstream>
 #include <iostream>
 #include <cmath>
@@ -25,6 +24,7 @@ using namespace std;
 GLuint VBO;
 GLuint IBO;
 GLuint gWorldLocation;
+GLuint gScaleLocation;
 GLuint gMassLocation;
 GLuint ShaderSphere;
 GLuint ShaderCube;
@@ -33,7 +33,7 @@ const int width = 1280;
 const int height = 768;
 
 float width_space   = 2.0f;
-float hight_space   = 2.0f;
+float height_space  = 2.0f;
 float length_space  = 2.0f;
 
 int n = NUMBER_BODY;
@@ -50,7 +50,7 @@ void DrawCube()
 {
     pipeline.object.SetWorldPos(0, 0, 0);
     pipeline.object.SetRotate(0, 0, 0);
-    pipeline.object.SetScale(width_space * 2.0f, hight_space * 2.0f, length_space * 2.0f);
+    pipeline.object.SetScale(width_space * 2.0f, height_space * 2.0f, length_space * 2.0f);
     glUniformMatrix4fv(gWorldLocation, 1, GL_TRUE, (const GLfloat*)pipeline.GetTrans());
 
     glutWireCube(1.0f);
@@ -128,75 +128,63 @@ GLuint LoadShader(const char *shader_path, GLuint type)
     return shader;
 }
 
-void CompileShadersCube()
+void CompileShadersProgram(GLuint ShaderProgram, const char *FS, const char *VS)
 {
-    GLuint gScaleLocation;
+    GLuint shader_color;
+    GLuint shader_position;
 
-    GLuint shader_position = LoadShader("shaders/cube_vs.glsl", GL_VERTEX_SHADER);
-
-    ShaderCube = glCreateProgram();
-    glAttachShader(ShaderCube, shader_position);
-    glLinkProgram(ShaderCube);
-
-    GLint ok;
-    GLchar log[2000];
-    glGetProgramiv(ShaderCube, GL_LINK_STATUS, &ok);
-    if (!ok) {
-        glGetProgramInfoLog(ShaderCube, 2000, NULL, log);
-        std::cout << "ShaderCube Compilation Log:\n" << log << std::endl;
-    
-        GLint infoLogLength;
-        glGetShaderiv(shader_position, GL_INFO_LOG_LENGTH, &infoLogLength);
-        GLchar *infoLog = new GLchar[infoLogLength + 1];
-        glGetShaderInfoLog(shader_position, infoLogLength, NULL, infoLog);
-        std::cout << "ShaderCube shader_position Log:\n" << infoLog << std::endl;
-        delete[] infoLog;
+    if (FS != nullptr) {
+        shader_color = LoadShader(FS, GL_FRAGMENT_SHADER);
+        glAttachShader(ShaderProgram, shader_color);
+    }
+    if (VS != nullptr) {
+        shader_position = LoadShader(VS, GL_VERTEX_SHADER);
+        glAttachShader(ShaderProgram, shader_position);
     }
 
-    glUseProgram(ShaderCube);
-
-    gScaleLocation = glGetUniformLocation(ShaderCube, "gWorld");
-    assert(gScaleLocation != 0xFFFFFFFF);
-}
-
-void CompileShadersSphere()
-{
-    GLuint gScaleLocation;
-
-    GLuint shader_color = LoadShader("shaders/sphere_fs.glsl", GL_FRAGMENT_SHADER);
-    GLuint shader_position = LoadShader("shaders/sphere_vs.glsl", GL_VERTEX_SHADER);
-
-    ShaderSphere = glCreateProgram();
-    glAttachShader(ShaderSphere, shader_color);
-    glAttachShader(ShaderSphere, shader_position);
-    glLinkProgram(ShaderSphere);
+    glLinkProgram(ShaderProgram);
 
     GLint ok;
     GLchar log[2000];
-    glGetProgramiv(ShaderSphere, GL_LINK_STATUS, &ok);
+    glGetProgramiv(ShaderProgram, GL_LINK_STATUS, &ok);
     if (!ok) {
-        glGetProgramInfoLog(ShaderSphere, 2000, NULL, log);
+        glGetProgramInfoLog(ShaderProgram, 2000, NULL, log);
         std::cout << "ShaderSphere Compilation Log:\n" << log << std::endl;
     
-        GLint infoLogLength;
-        glGetShaderiv(shader_color, GL_INFO_LOG_LENGTH, &infoLogLength);
-        GLchar *infoLog = new GLchar[infoLogLength + 1];
-        glGetShaderInfoLog(shader_color, infoLogLength, NULL, infoLog);
-        std::cout << "ShaderSphere shader_color Log:\n" << infoLog << std::endl;
-        delete[] infoLog;
+        if (FS != nullptr) {
+            GLint infoLogLength;
+            glGetShaderiv(shader_color, GL_INFO_LOG_LENGTH, &infoLogLength);
+            GLchar *infoLog = new GLchar[infoLogLength + 1];
+            glGetShaderInfoLog(shader_color, infoLogLength, NULL, infoLog);
+            std::cout << "ShaderSphere shader_color Log:\n" << infoLog << std::endl;
+            delete[] infoLog;
+        }
+        if (VS != nullptr) {
+            GLint infoLogLength;
+            glGetShaderiv(shader_position, GL_INFO_LOG_LENGTH, &infoLogLength);
+            GLchar *infoLog = new GLchar[infoLogLength + 1];
+            glGetShaderInfoLog(shader_position, infoLogLength, NULL, infoLog);
+            std::cout << "ShaderSphere shader_position Log:\n" << infoLog << std::endl;
+            delete[] infoLog;
+        }
     }
 
-    glUseProgram(ShaderSphere);
-
-    gScaleLocation = glGetUniformLocation(ShaderSphere, "gWorld");
-    gMassLocation = glGetUniformLocation(ShaderSphere, "gMass");
-    assert(gScaleLocation != 0xFFFFFFFF);
+    glUseProgram(ShaderProgram);
 }
 
 void CompileShaders()
 {
-    CompileShadersSphere();
-    CompileShadersCube();
+    ShaderSphere = glCreateProgram();
+    ShaderCube   = glCreateProgram();
+
+    CompileShadersProgram(ShaderSphere, "shaders/sphere_fs.glsl", "shaders/sphere_vs.glsl");
+    gScaleLocation = glGetUniformLocation(ShaderSphere, "gWorld");
+    gMassLocation = glGetUniformLocation(ShaderSphere, "gMass");
+    assert((gScaleLocation != 0xFFFFFFFF) || (gMassLocation != 0xFFFFFFFF));
+
+    CompileShadersProgram(ShaderCube, nullptr, "shaders/cube_vs.glsl");
+    gScaleLocation = glGetUniformLocation(ShaderCube, "gWorld");
+    assert(gScaleLocation != 0xFFFFFFFF);
 }
 
 static void KeyboardCB(unsigned char Key, int x, int y)
