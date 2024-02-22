@@ -1,0 +1,4 @@
+add_subdirectory(glfw)
+add_subdirectory(main)
+add_subdirectory(math)
+add_subdirectory(objects)

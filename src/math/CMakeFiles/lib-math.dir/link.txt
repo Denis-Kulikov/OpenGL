@@ -1,0 +1,2 @@
+/usr/bin/ar qc liblib-math.a CMakeFiles/lib-math.dir/math_3d.cpp.o
+/usr/bin/ranlib liblib-math.a

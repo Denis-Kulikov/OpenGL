@@ -1,0 +1,2 @@
+/usr/bin/ar qc liblib-object.a CMakeFiles/lib-object.dir/ObjectTransform.cpp.o
+/usr/bin/ranlib liblib-object.a
