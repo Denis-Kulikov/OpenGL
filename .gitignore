@@ -4,7 +4,7 @@ build
 
 _deps
 external/CMakeLists.txt
-external/cli11
+external/stb_image
 
 CMakeFiles
 cmake_install.cmake

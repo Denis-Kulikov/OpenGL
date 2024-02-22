@@ -12,4 +12,28 @@ add_subdirectory(src)
 add_subdirectory(external)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-set(CMAKE_INSTALL_PREFIX ${CMAKE_SOURCE_DIR}/bin)
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake)
+
+message(STATUS "CMAKE_RUNTIME_OUTPUT_DIRECTORY set to ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
+
+add_custom_target(clear
+    COMMAND find . -name "CMakeFiles" -exec rm -rf {} +
+    COMMAND find . -name "cmake_install.cmake" -exec rm -rf {} +
+    COMMAND find . -name "CMakeCache.txt" -exec rm -rf {} +
+    COMMAND find . -name "CPackConfig.cmake" -exec rm -rf {} +
+    COMMAND find . -name "CPackSourceConfig.cmake" -exec rm -rf {} +
+    COMMAND find . -name "DartConfiguration.tcl" -exec rm -rf {} +
+    COMMAND find . -name "Makefile" -exec rm -rf {} +
+    COMMAND find . -name "bin/full-text-search" -exec rm -rf {} +
+    COMMAND find . -name "bin/lib-parser-test" -exec rm -rf {} +
+    COMMAND rm -rf build
+    COMMAND rm -rf build.ninja
+    COMMAND rm -rf .ninja_log
+    COMMAND rm -rf .ninja_deps
+    COMMAND rm -rf _deps
+    COMMAND find ./external/ -type d -name "tmp" -exec rm -rf {} +
+    COMMAND find ./external/ -type d -name "src" -exec rm -rf {} +
+    DEPENDS clean
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+    COMMENT "Clear"
+)
