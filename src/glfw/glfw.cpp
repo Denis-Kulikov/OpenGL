@@ -396,7 +396,7 @@ void CompileShaders()
     ShaderCube   = glCreateProgram();
     ShaderCircle = glCreateProgram();
 
-    CompileShadersProgram(ShaderSphere, "shaders/sphere_fs.glsl", "shaders/sphere_vs.glsl");
+    CompileShadersProgram(ShaderSphere, "shaders/sphere_fs.glsl", "shaders/base_vs.glsl");
     gWorldLocation = glGetUniformLocation(ShaderSphere, "gWorld");
     assert(gWorldLocation != 0xFFFFFFFF);
 

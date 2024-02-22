@@ -1,2 +1,0 @@
-/usr/bin/ar qc liblib-glfw.a CMakeFiles/lib-glfw.dir/distance.cpp.o CMakeFiles/lib-glfw.dir/glfw.cpp.o CMakeFiles/lib-glfw.dir/pipeline.cpp.o
-/usr/bin/ranlib liblib-glfw.a

@@ -10,7 +10,6 @@ target_link_libraries(
   ${target}
   PRIVATE
 	glfw GL GLEW
-	stb_image
 	lib-math
 	lib-object
 )

@@ -1,3 +1,0 @@
-repository='https://github.com/planetack/stb_image'
-module=''
-tag='origin'

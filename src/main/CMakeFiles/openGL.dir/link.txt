@@ -1,1 +1,0 @@
-/usr/bin/c++ CMakeFiles/openGL.dir/main.cpp.o -o openGL  ../glfw/liblib-glfw.a ../math/liblib-math.a ../objects/liblib-object.a ../math/liblib-math.a -lglfw -lGL -lGLEW -lstb_image 
