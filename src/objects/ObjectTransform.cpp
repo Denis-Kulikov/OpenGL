@@ -1,29 +1,29 @@
 #include "../include/glfw.hpp"
 
-Vector3f ObjectTransform::GetScale()
+Vector3<GLfloat> objectTransform::GetScale()
 {
     return Scale;
 }
 
-Vector3f ObjectTransform::GetWorldPos()
+Vector3<GLfloat> objectTransform::GetWorldPos()
 {
     return WorldPos;
 }
 
-Vector3f ObjectTransform::GetRotate()
+Vector3<GLfloat> objectTransform::GetRotate()
 {
     return Rotate;
 }
 
 
-void ObjectTransform::SetScale(double ScaleX, double ScaleY, double ScaleZ)
+void objectTransform::SetScale(GLfloat ScaleX, GLfloat ScaleY, GLfloat ScaleZ)
 {
     Scale.x = ScaleX;
     Scale.y = ScaleY;
     Scale.z = ScaleZ;
 }
 
-void ObjectTransform::SetScale(Vector3f v_Scale)
+void objectTransform::SetScale(Vector3<GLfloat> v_Scale)
 {
     Scale.x = v_Scale.x;
     Scale.y = v_Scale.y;
@@ -31,14 +31,14 @@ void ObjectTransform::SetScale(Vector3f v_Scale)
 }
 
 
-void ObjectTransform::SetWorldPos(double WorldPosX, double WorldPosY, double WorldPosZ)
+void objectTransform::SetWorldPos(GLfloat WorldPosX, GLfloat WorldPosY, GLfloat WorldPosZ)
 {
     WorldPos.x = WorldPosX;
     WorldPos.y = WorldPosY;
     WorldPos.z = WorldPosZ;
 }
 
-void ObjectTransform::SetWorldPos(Vector3f v_WorldPos)
+void objectTransform::SetWorldPos(Vector3<GLfloat> v_WorldPos)
 {
     WorldPos.x = v_WorldPos.x;
     WorldPos.y = v_WorldPos.y;
@@ -46,14 +46,14 @@ void ObjectTransform::SetWorldPos(Vector3f v_WorldPos)
 }
 
 
-void ObjectTransform::SetRotate(double RotateX, double RotateY, double RotateZ)
+void objectTransform::SetRotate(GLfloat RotateX, GLfloat RotateY, GLfloat RotateZ)
 {
     Rotate.x = RotateX;
     Rotate.y = RotateY;
     Rotate.z = RotateZ;
 }
 
-void ObjectTransform::SetRotate(Vector3f v_Rotate)
+void objectTransform::SetRotate(Vector3<GLfloat> v_Rotate)
 {
     Rotate.x = v_Rotate.x;
     Rotate.y = v_Rotate.y;
@@ -61,7 +61,7 @@ void ObjectTransform::SetRotate(Vector3f v_Rotate)
 }
 
 
-void ObjectTransform::SetTransform(ObjectTransform trans)
+void objectTransform::SetTransform(objectTransform trans)
 {
     SetScale(trans.GetScale());
     SetRotate(trans.GetRotate());

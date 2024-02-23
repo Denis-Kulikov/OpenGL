@@ -1,8 +1,7 @@
 #ifndef MATH_3D_H
 #define	MATH_3D_H
 
-#include <stdio.h>
-#include <cmath>
+#include "lib.hpp"
 
 # define M_PI           3.14159265358979323846
 
@@ -11,90 +10,86 @@
 
 float radians(float degrees);
 
-struct Vector2f
-{
-    float x;
-    float y;
+// struct Vector2f
+// {
+//     float x;
+//     float y;
 
-    Vector2f()
-    {
-    }
+//     Vector2f() {}
 
-    Vector2f(float _x, float _y)
-    {
-        x = _x;
-        y = _y;
-    }
-};
+//     Vector2f(float _x, float _y) {
+//         x = _x;
+//         y = _y;
+//     }
+// };
 
-class Vector3i
+// class Vector3i
+// {
+// public:
+//     int x, y, z;
+//     Vector3i() {};
+//     Vector3i(int _x, int _y, int _z)
+//     {
+//         x = _x;
+//         y = _y;
+//         z = _z;
+//     }
+
+//     Vector3i VMul(Vector3i v) {return Vector3i(x * v.x, y * v.y, z * v.z);};
+//     Vector3i VScale(float s) {return VMul(Vector3i(s, s, s));};
+//     int* GetData() { return &x; }
+// };
+
+template<typename T>
+class Vector3
 {
 public:
-    int x, y, z;
-    Vector3i() {};
-    Vector3i(int _x, int _y, int _z)
-    {
+    T x;
+    T y;
+    T z;
+
+    Vector3() {}
+
+    Vector3(T _x, T _y, T _z) {
         x = _x;
         y = _y;
         z = _z;
     }
 
-    Vector3i VMul(Vector3i v) {return Vector3i(x * v.x, y * v.y, z * v.z);};
-    Vector3i VScale(float s) {return VMul(Vector3i(s, s, s));};
-    int* GetData() { return &x; }
-};
-
-class Vector3f
-{
-public:
-    float x;
-    float y;
-    float z;
-
-    Vector3f()
-    {
-    }
-
-    Vector3f(float _x, float _y, float _z)
-    {
-        x = _x;
-        y = _y;
-        z = _z;
-    }
-
-    Vector3f& Normalize();
-    float VDot(const Vector3f &v);
-    float VLenSq();
-    float VLen();
-    float VCSum();
-    float Distance(const Vector3f &v);
-    Vector3f VAdd(const Vector3f &v);
-    Vector3f VSub(const Vector3f &v);
-    Vector3f VMul(const Vector3f &v);
-    Vector3f VDiv(const Vector3f &v);
-    Vector3f VDiv(const Vector3i &v);
-    Vector3f VScale(float s);
-    void VSet(const Vector3f &v);
-    void VSet(float s);
-    void VSet(float sx, float sy, float sz);
-    void VSetI(const Vector3i &v);
+    Vector3<T>& Normalize();
+    T VDot(const Vector3<T> &v);
+    T VLenSq();
+    T VLen();
+    T VCSum();
+    T Distance(const Vector3<T> &v);
+    Vector3<T> operator+(const Vector3<T> &v);
+    Vector3<T> operator+(const T s);
+    Vector3<T> operator-(const Vector3<T> &v);
+    Vector3<T> operator-(const T s);
+    Vector3<T> operator*(const Vector3<T> &v);
+    Vector3<T> operator*(const T s);
+    Vector3<T> operator/(const Vector3<T> &v);
+    // Vector3<T> operator/(const Vector3i &v);
+    Vector3<T> operator/(const T s);
+    void VSet(const Vector3<T> &v);
+    void VSet(T s);
+    void VSet(T sx, T sy, T sz);
+    // void VSetI(const Vector3i &v);
     void VZero();
-    Vector3f VVV();
+    Vector3<T> VVV();
 
-    Vector3f Cross(const Vector3f& v) const;
+    Vector3 Cross(const Vector3& v) const;
 
     void Print() const;
 };
 
+template<typename T>
 class Matrix4f
 {
 public:
-    float m[4][4];
+    T m[4][4];
 
-    Matrix4f()
-    {        
-    }
-
+    Matrix4f() {}
 
     inline void InitIdentity()
     {
@@ -104,7 +99,7 @@ public:
         m[3][0] = 0.0f; m[3][1] = 0.0f; m[3][2] = 0.0f; m[3][3] = 1.0f;
     }
 
-    inline Matrix4f operator*(const Matrix4f& Right) const
+    inline Matrix4f<T> operator*(const Matrix4f<T>& Right) const
     {
         Matrix4f Ret;
 
@@ -120,11 +115,11 @@ public:
         return Ret;
     }
 
-    void InitScaleTransform(float ScaleX, float ScaleY, float ScaleZ);
-    void InitRotateTransform(float RotateX, float RotateY, float RotateZ);
-    void InitTranslationTransform(float x, float y, float z);
-    void InitCameraTransform(const Vector3f& Target, const Vector3f& Up);
-    void InitPersProjTransform(float FOV, float Width, float Height, float zNear, float zFar);
+    void InitScaleTransform(T ScaleX, T ScaleY, T ScaleZ);
+    void InitRotateTransform(T RotateX, T RotateY, T RotateZ);
+    void InitTranslationTransform(T x, T y, T z);
+    void InitCameraTransform(const Vector3<T>& Target, const Vector3<T>& Up);
+    void InitPersProjTransform(T FOV, T Width, T Height, T zNear, T zFar);
 };
 
 

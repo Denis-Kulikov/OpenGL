@@ -1,7 +1,7 @@
 set(target lib-object)
 
 add_library(${target} STATIC
-	ObjectTransform.cpp
+	objectTransform.cpp
 )
 
 target_link_libraries(

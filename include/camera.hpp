@@ -1,17 +1,17 @@
 #pragma once
-#include "math_3d.hpp"
+#include "objectTransform.hpp"
 
 class Camera
 {
 public:
     Camera()
     {
-        Params.WorldPos    = Vector3f(0.0f, 0.0f, 0.0f);
-        Params.Target      = Vector3f(0.0f, 0.0f, 1.0f);
-        Params.Up          = Vector3f(0.0f, 1.0f, 0.0f);
+        Params.WorldPos    = Vector3<GLfloat>(0.0f, 0.0f, 0.0f);
+        Params.Target      = Vector3<GLfloat>(0.0f, 0.0f, 1.0f);
+        Params.Up          = Vector3<GLfloat>(0.0f, 1.0f, 0.0f);
     }
 
-    void SetPerspectiveProj(double FOV, double Width, double Height, double zNear, double zFar)
+    void SetPerspectiveProj(GLfloat FOV, GLfloat Width, GLfloat Height, GLfloat zNear, GLfloat zFar)
     {
         PersProj.FOV    = FOV;
         PersProj.Width  = Width;
@@ -20,7 +20,7 @@ public:
         PersProj.zFar   = zFar;
     }
 
-    void SetCamera(const Vector3f& WorldPos, const Vector3f& Target, const Vector3f& Up)
+    void SetCamera(const Vector3<GLfloat>& WorldPos, const Vector3<GLfloat>& Target, const Vector3<GLfloat>& Up)
     {
         Params.WorldPos = WorldPos;
         Params.Target = Target;
@@ -28,16 +28,16 @@ public:
     }
 
     struct {
-        Vector3f WorldPos;
-        Vector3f Target;
-        Vector3f Up;
+        Vector3<GLfloat> WorldPos;
+        Vector3<GLfloat> Target;
+        Vector3<GLfloat> Up;
     } Params;
 
     struct {
-        double FOV;
-        double Width;
-        double Height;
-        double zNear;
-        double zFar;
+        GLfloat FOV;
+        GLfloat Width;
+        GLfloat Height;
+        GLfloat zNear;
+        GLfloat zFar;
     } PersProj;
 };

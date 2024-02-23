@@ -1,32 +1,31 @@
 #include "math_3d.hpp"
 
-class ObjectTransform 
+class objectTransform 
 {
 public:
-    ObjectTransform()
-    {
-        Scale = Vector3f(1.0f, 1.0f, 1.0f);
-        WorldPos = Vector3f(0.0f, 0.0f, 0.0f);
-        Rotate = Vector3f(0.0f, 0.0f, 0.0f);
+    objectTransform() {
+        Scale       = Vector3<GLfloat>(1.0f, 1.0f, 1.0f);
+        WorldPos    = Vector3<GLfloat>(0.0f, 0.0f, 0.0f);
+        Rotate      = Vector3<GLfloat>(0.0f, 0.0f, 0.0f);
     }
 
-    Vector3f GetScale();
-    Vector3f GetWorldPos();
-    Vector3f GetRotate();
+    Vector3<GLfloat> GetScale();
+    Vector3<GLfloat> GetWorldPos();
+    Vector3<GLfloat> GetRotate();
 
 
-    void SetScale(double ScaleX, double ScaleY, double ScaleZ);
-    void SetScale(Vector3f v_Scale);
+    void SetScale(GLfloat ScaleX, GLfloat ScaleY, GLfloat ScaleZ);
+    void SetScale(Vector3<GLfloat> v_Scale);
 
-    void SetWorldPos(double WorldPosX, double WorldPosY, double WorldPosZ);
-    void SetWorldPos(Vector3f v_WorldPos);
+    void SetWorldPos(GLfloat WorldPosX, GLfloat WorldPosY, GLfloat WorldPosZ);
+    void SetWorldPos(Vector3<GLfloat> v_WorldPos);
 
-    void SetRotate(double RotateX, double RotateY, double RotateZ);
-    void SetRotate(Vector3f v_Rotate);
+    void SetRotate(GLfloat RotateX, GLfloat RotateY, GLfloat RotateZ);
+    void SetRotate(Vector3<GLfloat> v_Rotate);
 
-    void SetTransform(ObjectTransform trans);
+    void SetTransform(objectTransform trans);
 
-    Vector3f Scale;
-    Vector3f WorldPos;
-    Vector3f Rotate;
+    Vector3<GLfloat> Scale;
+    Vector3<GLfloat> WorldPos;
+    Vector3<GLfloat> Rotate;
 };

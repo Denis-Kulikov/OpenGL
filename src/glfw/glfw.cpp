@@ -30,10 +30,11 @@ int numVertices;
 int numIndices;
 
 Pipeline pipeline;
-Vector3f region;
+Vector3<GLfloat> region;
 bool IsEnd = false;
 
-const char PATH_IMG_FLOOR[] = "img/floor.jpg";
+const char PATH_IMG_FLOOR[] = "img/chess.jpg";
+// const char PATH_IMG_FLOOR[] = "img/floor.jpg";
 
 void CreateCircle(size_t vert_count, const char texture[])
 {
@@ -281,7 +282,7 @@ GLuint LoadTexures(const char *texture_path)
     std::string path = std::string("assets/") + texture_path;
     unsigned char *img = stbi_load(path.c_str(), &x, &y, &n, 0);
 
-    TRY(img == nullptr, string("Failed to load texture: " + path))
+    TRY(img == nullptr, std::string("Failed to load texture: " + path))
 
     glGenTextures(1, &textureID);
     glBindTexture(GL_TEXTURE_2D, textureID);
@@ -312,14 +313,14 @@ GLuint LoadShader(const char *shader_path, GLuint type)
         std::cout << __LINE__ << "\t" << shader_path << std::endl; 
     #endif
 
-    ifstream shader_file(shader_path);
+    std::ifstream shader_file(shader_path);
 
     if (!shader_file.is_open()) {
-        cerr << "Error: Could not open shader file '" << shader_path << "'" << endl;
+        std::cerr << "Error: Could not open shader file '" << shader_path << "'" << std::endl;
         return 0;
     }
 
-    stringstream shader_stream;
+    std::stringstream shader_stream;
     shader_stream << shader_file.rdbuf();
     shader_file.close();
 
@@ -340,7 +341,7 @@ GLuint LoadShader(const char *shader_path, GLuint type)
     if (!ok) {
         glGetShaderInfoLog(shader, 2000, NULL, log);
         printf("Shader(%s): %s\n", shader_path, log);
-        cout << shader_stream.str().c_str() << endl;
+        std::cout << shader_stream.str().c_str() << std::endl;
     }
 
     return shader;
@@ -456,9 +457,14 @@ void InitializeGLFW(GLFWwindow* &window)
         exit(EXIT_FAILURE);
     }
 
-    Vector3f CameraPos(0.0f, 0.1f, -region.z * 2 - 1);
-    Vector3f CameraTarget(0.0f, 0.0f, 1.0f);
-    Vector3f CameraUp(0.0f, 1.0f, 0.0f);
+    // Vector3<GLfloat> CameraPos(0.0f, 0.1f, -region.z * 2 - 1);
+    // Vector3<GLfloat> CameraTarget(0.0f, 0.0f, 1.0f);
+    // Vector3<GLfloat> CameraUp(0.0f, 1.0f, 0.0f);
+    
+    Vector3<GLfloat> CameraPos;
+    Vector3<GLfloat> CameraTarget;
+    Vector3<GLfloat> CameraUp;
+
     pipeline.camera.SetCamera(CameraPos, CameraTarget, CameraUp);
     pipeline.camera.SetPerspectiveProj(60.0f, width, height, 0.5f, 1000.0f);
     pipeline.object.SetScale(0, 0, 0);
@@ -467,7 +473,7 @@ void InitializeGLFW(GLFWwindow* &window)
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    window = glfwCreateWindow(width, height, "NBody", NULL, NULL);
+    window = glfwCreateWindow(width, height, "Game", NULL, NULL);
     if (!window) {
         std::cerr << "Failed to create GLFW window" << std::endl;
         glfwTerminate();

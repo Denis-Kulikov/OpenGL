@@ -1,21 +1,23 @@
-#include "../include/math_3d.hpp"
+#include <glfw.hpp>
 
 float radians(float degrees) {
     return degrees * M_PI / 180.0;
 }
 
-Vector3f Vector3f::Cross(const Vector3f& v) const
+template<typename T>
+Vector3<T> Vector3<T>::Cross(const Vector3<T>& v) const
 {
-    const float _x = y * v.z - z * v.y;
-    const float _y = z * v.x - x * v.z;
-    const float _z = x * v.y - y * v.x;
+    const T _x = y * v.z - z * v.y;
+    const T _y = z * v.x - x * v.z;
+    const T _z = x * v.y - y * v.x;
 
-    return Vector3f(_x, _y, _z);
+    return Vector3(_x, _y, _z);
 }
 
-Vector3f& Vector3f::Normalize()
+template<typename T>
+Vector3<T>& Vector3<T>::Normalize()
 {
-    const float Length = sqrtf(x * x + y * y + z * z);
+    const T Length = sqrtf(x * x + y * y + z * z);
 
     x /= Length;
     y /= Length;
@@ -24,151 +26,192 @@ Vector3f& Vector3f::Normalize()
     return *this;
 }
 
-float Vector3f::VDot(const Vector3f &v)
+template<typename T>
+T Vector3<T>::VDot(const Vector3<T> &v)
 {
     return x * v.x + y * v.y + z * v.z;
 }
 
-float Vector3f::VLenSq()
+template<typename T>
+T Vector3<T>::VLenSq()
 {
     return VDot(*this);
 }
 
-float Vector3f::VLen()
+template<typename T>
+T Vector3<T>::VLen()
 {
     return sqrt(VLenSq());
 }
 
-float Vector3f::VCSum()
+template<typename T>
+T Vector3<T>::VCSum()
 {
     return x + y + z;
 }
 
-float Vector3f::Distance(const Vector3f &v)
+template<typename T>
+T Vector3<T>::Distance(const Vector3<T> &v)
 {
     return sqrt(pow(v.x - x, 2) + pow(v.y - y, 2) + pow(v.z - z, 2));
 }
 
-Vector3f Vector3f::VAdd(const Vector3f &v)
+template<typename T>
+Vector3<T> Vector3<T>::operator+(const Vector3<T> &v)
 {
-    return Vector3f(x + v.x, y + v.y, z + v.z);
+    return Vector3(x + v.x, y + v.y, z + v.z);
 }
 
-Vector3f Vector3f::VSub(const Vector3f &v)
+template<typename T>
+Vector3<T> Vector3<T>::operator+(const T s)
 {
-    return Vector3f(x - v.x, y - v.y, z - v.z);
+    return Vector3(x, y, z) + Vector3(s, s, s);
 }
 
-Vector3f Vector3f::VMul(const Vector3f &v)
+template<typename T>
+Vector3<T> Vector3<T>::operator-(const Vector3<T> &v)
 {
-
-    return Vector3f(x * v.x, y * v.y, z * v.z);
+    return Vector3(x - v.x, y - v.y, z - v.z);
 }
 
-Vector3f Vector3f::VDiv(const Vector3f &v)
+template<typename T>
+Vector3<T> Vector3<T>::operator-(const T s)
 {
-    return Vector3f(x / v.x, y / v.y, z / v.z);
+    return Vector3(x, y, z) - Vector3(s, s, s);
 }
 
-Vector3f Vector3f::VDiv(const Vector3i &v)
+template<typename T>
+Vector3<T> Vector3<T>::operator*(const Vector3<T> &v)
 {
-    return Vector3f(x / v.x, y / v.y, z / v.z);
+    return Vector3(x * v.x, y * v.y, z * v.z);
 }
 
-Vector3f Vector3f::VScale(float s)
+template<typename T>
+Vector3<T> Vector3<T>::operator*(const T s)
 {
-    return VMul(Vector3f(s, s, s));
+    return Vector3(x, y, z) * Vector3(s, s, s);
 }
 
-void Vector3f::VSet(const Vector3f &v)
+template<typename T>
+Vector3<T> Vector3<T>::operator/(const Vector3<T> &v)
+{
+    return Vector3(x / v.x, y / v.y, z / v.z);
+}
+
+// template<typename T>
+// Vector3<T> Vector3<T>::operator/(const Vector3i &v)
+// {
+//     return Vector3(x / v.x, y / v.y, z / v.z);
+// }
+
+template<typename T>
+Vector3<T> Vector3<T>::operator/(const T s)
+{
+    return Vector3(x, y, z) / Vector3(s, s, s);
+}
+
+
+template<typename T>
+void Vector3<T>::VSet(const Vector3<T> &v)
 {
     x = v.x;
     y = v.y;
     z = v.z;
 }
 
-void Vector3f::VSet(float s)
+template<typename T>
+void Vector3<T>::VSet(T s)
 {
     x = s;
     y = s;
     z = s;
 }
 
-void Vector3f::VSet(float sx, float sy, float sz)
+template<typename T>
+void Vector3<T>::VSet(T sx, T sy, T sz)
 {
     x = sx;
     y = sy;
     z = sz;
 }
 
-void Vector3f::VSetI(const Vector3i &v)
-{
-    x = v.x;
-    y = v.y;
-    z = v.z;
-}
+// void Vector3::VSetI(const Vector3i &v)
+// {
+//     x = v.x;
+//     y = v.y;
+//     z = v.z;
+// }
 
-void Vector3f::VZero()
+template<typename T>
+void Vector3<T>::VZero()
 {
     VSet(0);
 }
 
-Vector3f Vector3f::VVV()
+template<typename T>
+Vector3<T> Vector3<T>::VVV()
 {
-    return Vector3f(0, 0, 0);
+    return Vector3(0, 0, 0);
 }
 
-float VectorDot(Vector3f a, Vector3f b)
+template<typename T>
+T VectorDot(Vector3<T> a, Vector3<T> b)
 {
     return a.x * b.x + a.y * b.y + a.z * b.z;
 }
 
-Vector3f VectorNormalize(Vector3f v)
-{
-    float len = sqrtf(v.x * v.x + v.y * v.y + v.z * v.z);
-    if (len > 0.0f) {
-        float invLen = 1.0f / len;
-        v.x *= invLen;
-        v.y *= invLen;
-        v.z *= invLen;
-    }
-    return v;
-}
+// template<typename T>
+// Vector3<T> Vector3<T>::VectorNormalize(Vector3<T> v)
+// {
+//     T len = sqrtf(v.x * v.x + v.y * v.y + v.z * v.z);
+//     if (len > 0.0f) {
+//         T invLen = 1.0f / len;
+//         v.x *= invLen;
+//         v.y *= invLen;
+//         v.z *= invLen;
+//     }
+//     return v;
+// }
 
-Vector3f VectorSubtract(Vector3f a, Vector3f b)
-{
-    Vector3f result;
-    result.x = a.x - b.x;
-    result.y = a.y - b.y;
-    result.z = a.z - b.z;
-    return result;
-}
+// template<typename T>
+// Vector3<T> VectorSubtract(Vector3<T> a, Vector3<T> b)
+// {
+//     Vector3<T> result;
+//     result.x = a.x - b.x;
+//     result.y = a.y - b.y;
+//     result.z = a.z - b.z;
+//     return result;
+// }
 
-Vector3f VectorAdd(Vector3f a, Vector3f b)
-{
-    Vector3f result;
-    result.x = a.x + b.x;
-    result.y = a.y + b.y;
-    result.z = a.z + b.z;
-    return result;
-}
+// template<typename T>
+// Vector3<T> VectorAdd(Vector3<T> a, Vector3<T> b)
+// {
+//     Vector3<T> result;
+//     result.x = a.x + b.x;
+//     result.y = a.y + b.y;
+//     result.z = a.z + b.z;
+//     return result;
+// }
 
-Vector3f VectorScale(const Vector3f &v, float s)
+template<typename T>
+Vector3<T> VectorScale(const Vector3<T> &v, T s)
 {
-    Vector3f result;
+    Vector3<T> result;
     result.x = v.x * s;
     result.y = v.y * s;
     result.z = v.z * s;
     return result;
 }
 
-void Vector3f::Print() const
+template<typename T>
+void Vector3<T>::Print() const
 {
     printf("%.02f, %.02f, %.02f\n", x, y, z);
 }
 
 
-void Matrix4f::InitScaleTransform(float ScaleX, float ScaleY, float ScaleZ)
+template<typename T>
+void Matrix4f<T>::InitScaleTransform(T ScaleX, T ScaleY, T ScaleZ)
 {
     m[0][0] = ScaleX; m[0][1] = 0.0f;   m[0][2] = 0.0f;   m[0][3] = 0.0f;
     m[1][0] = 0.0f;   m[1][1] = ScaleY; m[1][2] = 0.0f;   m[1][3] = 0.0f;
@@ -176,13 +219,14 @@ void Matrix4f::InitScaleTransform(float ScaleX, float ScaleY, float ScaleZ)
     m[3][0] = 0.0f;   m[3][1] = 0.0f;   m[3][2] = 0.0f;   m[3][3] = 1.0f;
 }
 
-void Matrix4f::InitRotateTransform(float RotateX, float RotateY, float RotateZ)
+template<typename T>
+void Matrix4f<T>::InitRotateTransform(T RotateX, T RotateY, T RotateZ)
 {
     Matrix4f rx, ry, rz;
 
-    const float x = ToRadian(RotateX);
-    const float y = ToRadian(RotateY);
-    const float z = ToRadian(RotateZ);
+    const T x = ToRadian(RotateX);
+    const T y = ToRadian(RotateY);
+    const T z = ToRadian(RotateZ);
 
     rx.m[0][0] = 1.0f; rx.m[0][1] = 0.0f   ; rx.m[0][2] = 0.0f    ; rx.m[0][3] = 0.0f;
     rx.m[1][0] = 0.0f; rx.m[1][1] = cosf(x); rx.m[1][2] = -sinf(x); rx.m[1][3] = 0.0f;
@@ -202,7 +246,8 @@ void Matrix4f::InitRotateTransform(float RotateX, float RotateY, float RotateZ)
     *this = rz * ry * rx;
 }
 
-void Matrix4f::InitTranslationTransform(float x, float y, float z)
+template<typename T>
+void Matrix4f<T>::InitTranslationTransform(T x, T y, T z)
 {
     m[0][0] = 1.0f; m[0][1] = 0.0f; m[0][2] = 0.0f; m[0][3] = x;
     m[1][0] = 0.0f; m[1][1] = 1.0f; m[1][2] = 0.0f; m[1][3] = y;
@@ -211,14 +256,15 @@ void Matrix4f::InitTranslationTransform(float x, float y, float z)
 }
 
 
-void Matrix4f::InitCameraTransform(const Vector3f& Target, const Vector3f& Up)
+template<typename T>
+void Matrix4f<T>::InitCameraTransform(const Vector3<T>& Target, const Vector3<T>& Up)
 {
-    Vector3f N = Target;
+    Vector3<T> N = Target;
     N.Normalize();
-    Vector3f U = Up;
+    Vector3<T> U = Up;
     U.Normalize();
     U = U.Cross(N);
-    Vector3f V = N.Cross(U);
+    Vector3<T> V = N.Cross(U);
        
     m[0][0] = U.x;   m[0][1] = U.y;   m[0][2] = U.z;   m[0][3] = 0.0f;
     m[1][0] = V.x;   m[1][1] = V.y;   m[1][2] = V.z;   m[1][3] = 0.0f;
@@ -226,11 +272,12 @@ void Matrix4f::InitCameraTransform(const Vector3f& Target, const Vector3f& Up)
     m[3][0] = 0.0f;  m[3][1] = 0.0f;  m[3][2] = 0.0f;  m[3][3] = 1.0f;        
 }
 
-void Matrix4f::InitPersProjTransform(float FOV, float Width, float Height, float zNear, float zFar)
+template<typename T>
+void Matrix4f<T>::InitPersProjTransform(T FOV, T Width, T Height, T zNear, T zFar)
 {
-    const float ar         = Width / Height;
-    const float zRange     = zNear - zFar;
-    const float tanHalfFOV = tanf(ToRadian(FOV / 2.0f));
+    const T ar         = Width / Height;
+    const T zRange     = zNear - zFar;
+    const T tanHalfFOV = tanf(ToRadian(FOV / 2.0f));
 
     m[0][0] = 1.0f/(tanHalfFOV * ar); m[0][1] = 0.0f;            m[0][2] = 0.0f;          m[0][3] = 0.0;
     m[1][0] = 0.0f;                   m[1][1] = 1.0f/tanHalfFOV; m[1][2] = 0.0f;          m[1][3] = 0.0;
