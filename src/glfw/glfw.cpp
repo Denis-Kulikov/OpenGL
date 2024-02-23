@@ -448,22 +448,14 @@ static void KeyboardCB(GLFWwindow* window, int key, int scancode, int action, in
 
 void InitializeGLFW(GLFWwindow* &window)
 {
-    #if DEBUG 
-        std::cout << __LINE__ << std::endl;
-    #endif
-
     if (!glfwInit()) {
         std::cerr << "Failed to initialize GLFW" << std::endl;
         exit(EXIT_FAILURE);
     }
 
-    // Vector3<GLfloat> CameraPos(0.0f, 0.1f, -region.z * 2 - 1);
-    // Vector3<GLfloat> CameraTarget(0.0f, 0.0f, 1.0f);
-    // Vector3<GLfloat> CameraUp(0.0f, 1.0f, 0.0f);
-    
-    Vector3<GLfloat> CameraPos;
-    Vector3<GLfloat> CameraTarget;
-    Vector3<GLfloat> CameraUp;
+    Vector3<GLfloat> CameraPos(0.0f, 0.1f, -region.z * 2 - 1);
+    Vector3<GLfloat> CameraTarget(0.0f, 0.0f, 1.0f);
+    Vector3<GLfloat> CameraUp(0.0f, 1.0f, 0.0f);
 
     pipeline.camera.SetCamera(CameraPos, CameraTarget, CameraUp);
     pipeline.camera.SetPerspectiveProj(60.0f, width, height, 0.5f, 1000.0f);

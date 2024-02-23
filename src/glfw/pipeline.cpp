@@ -1,8 +1,8 @@
 #include <glfw.hpp>
 
-const Matrix4f<GLfloat>* Pipeline::GetTrans()
+const Matrix4f* Pipeline::GetTrans()
 {
-    Matrix4f<GLfloat> ScaleTrans, RotateTrans, TranslationTrans, CameraTranslationTrans, CameraRotateTrans, PersProjTrans;
+    Matrix4f ScaleTrans, RotateTrans, TranslationTrans, CameraTranslationTrans, CameraRotateTrans, PersProjTrans;
 
     ScaleTrans.InitScaleTransform(object.Scale.x, object.Scale.y, object.Scale.z);
     RotateTrans.InitRotateTransform(object.Rotate.x, object.Rotate.y, object.Rotate.z);
