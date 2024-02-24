@@ -4,6 +4,7 @@ add_library(${target} STATIC
 	distance.cpp
 	glfw.cpp
 	pipeline.cpp
+	render.cpp
 )
 
 target_link_libraries(

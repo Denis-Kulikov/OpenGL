@@ -9,21 +9,21 @@ public:
         Rotate      = Vector3<GLfloat>(0.0f, 0.0f, 0.0f);
     }
 
-    Vector3<GLfloat> GetScale();
-    Vector3<GLfloat> GetWorldPos();
-    Vector3<GLfloat> GetRotate();
+    Vector3<GLfloat> GetScale() const;
+    Vector3<GLfloat> GetWorldPos() const;
+    Vector3<GLfloat> GetRotate() const;
 
 
-    void SetScale(GLfloat ScaleX, GLfloat ScaleY, GLfloat ScaleZ);
-    void SetScale(Vector3<GLfloat> v_Scale);
+    void SetScale(const GLfloat &ScaleX, const GLfloat &ScaleY, const GLfloat &ScaleZ);
+    void SetScale(const Vector3<GLfloat> &v_Scale);
 
-    void SetWorldPos(GLfloat WorldPosX, GLfloat WorldPosY, GLfloat WorldPosZ);
-    void SetWorldPos(Vector3<GLfloat> v_WorldPos);
+    void SetWorldPos(const GLfloat &WorldPosX, const GLfloat &WorldPosY, const GLfloat &WorldPosZ);
+    void SetWorldPos(const Vector3<GLfloat> &v_WorldPos);
 
-    void SetRotate(GLfloat RotateX, GLfloat RotateY, GLfloat RotateZ);
-    void SetRotate(Vector3<GLfloat> v_Rotate);
+    void SetRotate(const GLfloat &RotateX, const GLfloat &RotateY, const GLfloat &RotateZ);
+    void SetRotate(const Vector3<GLfloat> &v_Rotate);
 
-    void SetTransform(objectTransform trans);
+    void SetTransform(const objectTransform &trans);
 
     Vector3<GLfloat> Scale;
     Vector3<GLfloat> WorldPos;

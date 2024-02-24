@@ -1,16 +1,51 @@
-#include "math_3d.hpp"
-#include "object_transform.hpp"
+#include <glfw.hpp>
+#include <sprite.hpp>
+#include <try.hpp>
+
+void sprite::initializeRenderingData()
+{
+
+}
+
+void sprite::loadTexures(const char *texturePath)
+{
+    int x, y, n;
+    std::string path = std::string("assets/") + texturePath;
+    unsigned char *img = stbi_load(path.c_str(), &x, &y, &n, 0);
+
+    TRY(img == nullptr, std::string("Failed to load texture: " + path))
+
+    glGenTextures(1, &texture);
+    glBindTexture(GL_TEXTURE_2D, texture);
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, x, y, 0, (n == 4) ? GL_RGBA : GL_RGB, GL_UNSIGNED_BYTE, img);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    stbi_image_free(img);
+
+    glGenerateMipmap(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    GLenum error = glGetError();
+    if (error != GL_NO_ERROR) {
+        std::cerr << "OpenGL error: " << error << std::endl;
+    }
+}
 
 GLuint sprite::loadShader(const char *shaderPath, GLuint type)
 {
-    ifstream shaderFile(shaderPath);
+    std::ifstream shaderFile(shaderPath);
 
     if (!shaderFile.is_open()) {
-        cerr << "Error: Could not open shader file '" << shaderPath << "'" << endl;
+        std::cerr << "Error: Could not open shader file '" << shaderPath << "'" << std::endl;
         return 0;
     }
 
-    stringstream shaderStream;
+    std::stringstream shaderStream;
     shaderStream << shaderFile.rdbuf();
     shaderFile.close();
 
@@ -31,7 +66,7 @@ GLuint sprite::loadShader(const char *shaderPath, GLuint type)
     if (!ok) {
         glGetShaderInfoLog(shader, 2000, NULL, log);
         printf("Shader(%s): %s\n", shaderPath, log);
-        cout << shaderStream.str().c_str() << endl;
+        std::cout << shaderStream.str().c_str() << std::endl;
     }
 
     return shader;
@@ -46,11 +81,11 @@ void sprite::compileShaders(const char *FS, const char *VS)
     GLuint vertexShader;
 
     if (FS != nullptr) {
-        fragmentShader = LoadShader(FS, GL_FRAGMENT_SHADER);
+        fragmentShader = loadShader(FS, GL_FRAGMENT_SHADER);
         glAttachShader(shader, fragmentShader);
     }
     if (VS != nullptr) {
-        vertexShader = LoadShader(VS, GL_VERTEX_SHADER);
+        vertexShader = loadShader(VS, GL_VERTEX_SHADER);
         glAttachShader(shader, vertexShader);
     }
 
@@ -81,39 +116,8 @@ void sprite::compileShaders(const char *FS, const char *VS)
         }
     }
 
-    GLuint gWorldLocation = glGetUniformLocation(Shader, "gWorld");
+    GLuint gWorldLocation = glGetUniformLocation(shader, "gWorld");
     assert(gWorldLocation != 0xFFFFFFFF);
-}
-
-void sprite::loadTexures(const char *texture_path)
-{
-    int x, y, n;
-    std::string path = std::string("assets/") + texture_path;
-    unsigned char *img = stbi_load(path.c_str(), &x, &y, &n, 0);
-
-    TRY(img == nullptr, string("Failed to load texture: " + path))
-
-    glGenTextures(1, &texture);
-    glBindTexture(GL_TEXTURE_2D, texture);
-
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, (n == 4) ? GL_RGBA : GL_RGB, GL_UNSIGNED_BYTE, img);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    stbi_image_free(img);
-
-    glGenerateMipmap(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, 0);
-
-    GLenum error = glGetError();
-    if (error != GL_NO_ERROR) {
-        std::cerr << "OpenGL error: " << error << std::endl;
-    }
-
-    return texture;
 }
 
 void sprite::initializeGeometry()
@@ -130,7 +134,7 @@ void sprite::initializeGeometry()
         0, 2, 3
     };
 
-    numVertices = indices.size();
+    GLint numVertices = indices.size();
 
     glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
@@ -151,13 +155,13 @@ void sprite::initializeGeometry()
 }
 
 
-void sprite::draw()
+sprite::sprite(const std::string &_name, const objectTransform &_trans, const Vector3<GLfloat> &_color, const char *FS, const char *VS, const char *texturePath)
 {
+    name = _name;
+    trans.SetTransform(_trans);
+    color.VSet(_color);
 
-}
-
-
-void sprite::compileShadersProgram(GLuint ShaderProgram, const char *FS, const char *VS)
-{
-
+    initializeGeometry();
+    compileShaders(FS, VS);
+    loadTexures(texturePath);
 }

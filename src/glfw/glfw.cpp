@@ -1,8 +1,6 @@
 #include <glfw.hpp>
+#include <scene.hpp>
 #include <try.hpp>
-
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb_image.h>
 
 #define DEBUG !true
 
@@ -35,6 +33,8 @@ bool IsEnd = false;
 
 const char PATH_IMG_FLOOR[] = "img/chess.jpg";
 // const char PATH_IMG_FLOOR[] = "img/floor.jpg";
+
+Scene mainScene(std::string("Main scene"));
 
 void CreateCircle(size_t vert_count, const char texture[])
 {
@@ -287,7 +287,7 @@ GLuint LoadTexures(const char *texture_path)
     glGenTextures(1, &textureID);
     glBindTexture(GL_TEXTURE_2D, textureID);
 
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, (n == 4) ? GL_RGBA : GL_RGB, GL_UNSIGNED_BYTE, img);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, x, y, 0, (n == 4) ? GL_RGBA : GL_RGB, GL_UNSIGNED_BYTE, img);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -489,4 +489,7 @@ void InitializeGLFW(GLFWwindow* &window)
     CompileShaders();
     TextureFloor = LoadTexures("img/floor.jpg");
     region.VSet(1.0f, 1.0f, 1.0f);
+
+
+    
 }

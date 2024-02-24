@@ -1,29 +1,29 @@
 #include "../include/glfw.hpp"
 
-Vector3<GLfloat> objectTransform::GetScale()
+Vector3<GLfloat> objectTransform::GetScale() const
 {
     return Scale;
 }
 
-Vector3<GLfloat> objectTransform::GetWorldPos()
+Vector3<GLfloat> objectTransform::GetWorldPos() const
 {
     return WorldPos;
 }
 
-Vector3<GLfloat> objectTransform::GetRotate()
+Vector3<GLfloat> objectTransform::GetRotate() const
 {
     return Rotate;
 }
 
 
-void objectTransform::SetScale(GLfloat ScaleX, GLfloat ScaleY, GLfloat ScaleZ)
+void objectTransform::SetScale(const GLfloat &ScaleX, const GLfloat &ScaleY, const GLfloat &ScaleZ)
 {
     Scale.x = ScaleX;
     Scale.y = ScaleY;
     Scale.z = ScaleZ;
 }
 
-void objectTransform::SetScale(Vector3<GLfloat> v_Scale)
+void objectTransform::SetScale(const Vector3<GLfloat> &v_Scale)
 {
     Scale.x = v_Scale.x;
     Scale.y = v_Scale.y;
@@ -31,14 +31,14 @@ void objectTransform::SetScale(Vector3<GLfloat> v_Scale)
 }
 
 
-void objectTransform::SetWorldPos(GLfloat WorldPosX, GLfloat WorldPosY, GLfloat WorldPosZ)
+void objectTransform::SetWorldPos(const GLfloat &WorldPosX, const GLfloat &WorldPosY, const GLfloat &WorldPosZ)
 {
     WorldPos.x = WorldPosX;
     WorldPos.y = WorldPosY;
     WorldPos.z = WorldPosZ;
 }
 
-void objectTransform::SetWorldPos(Vector3<GLfloat> v_WorldPos)
+void objectTransform::SetWorldPos(const Vector3<GLfloat> &v_WorldPos)
 {
     WorldPos.x = v_WorldPos.x;
     WorldPos.y = v_WorldPos.y;
@@ -46,14 +46,14 @@ void objectTransform::SetWorldPos(Vector3<GLfloat> v_WorldPos)
 }
 
 
-void objectTransform::SetRotate(GLfloat RotateX, GLfloat RotateY, GLfloat RotateZ)
+void objectTransform::SetRotate(const GLfloat &RotateX, const GLfloat &RotateY, const GLfloat &RotateZ)
 {
     Rotate.x = RotateX;
     Rotate.y = RotateY;
     Rotate.z = RotateZ;
 }
 
-void objectTransform::SetRotate(Vector3<GLfloat> v_Rotate)
+void objectTransform::SetRotate(const Vector3<GLfloat> &v_Rotate)
 {
     Rotate.x = v_Rotate.x;
     Rotate.y = v_Rotate.y;
@@ -61,7 +61,7 @@ void objectTransform::SetRotate(Vector3<GLfloat> v_Rotate)
 }
 
 
-void objectTransform::SetTransform(objectTransform trans)
+void objectTransform::SetTransform(const objectTransform &trans)
 {
     SetScale(trans.GetScale());
     SetRotate(trans.GetRotate());

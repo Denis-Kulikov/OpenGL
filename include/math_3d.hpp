@@ -61,18 +61,22 @@ class Matrix4f
 public:
     float m[4][4];
 
-    Matrix4f() {}
+    Matrix4f() {};
+    
+    void SetMatrix4f(const Matrix4f &_Matrix4f) {
+        for (unsigned int i = 0 ; i < 4 ; i++)
+            for (unsigned int j = 0 ; j < 4 ; j++)
+                m[i][j] = _Matrix4f.m[i][j];
+    };
 
-    inline void InitIdentity()
-    {
+    inline void InitIdentity() {
         m[0][0] = 1.0f; m[0][1] = 0.0f; m[0][2] = 0.0f; m[0][3] = 0.0f;
         m[1][0] = 0.0f; m[1][1] = 1.0f; m[1][2] = 0.0f; m[1][3] = 0.0f;
         m[2][0] = 0.0f; m[2][1] = 0.0f; m[2][2] = 1.0f; m[2][3] = 0.0f;
         m[3][0] = 0.0f; m[3][1] = 0.0f; m[3][2] = 0.0f; m[3][3] = 1.0f;
     }
 
-    inline Matrix4f operator*(const Matrix4f& Right) const
-    {
+    inline Matrix4f operator*(const Matrix4f& Right) const {
         Matrix4f Ret;
 
         for (unsigned int i = 0 ; i < 4 ; i++) {

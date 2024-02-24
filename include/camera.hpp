@@ -20,11 +20,27 @@ public:
         PersProj.zFar   = zFar;
     }
 
+    void SetPerspectiveProj(const Camera &_camera)
+    {
+        PersProj.FOV    = _camera.PersProj.FOV;
+        PersProj.Width  = _camera.PersProj.Width;
+        PersProj.Height = _camera.PersProj.Height;
+        PersProj.zNear  = _camera.PersProj.zNear;
+        PersProj.zFar   = _camera.PersProj.zFar;
+    }
+
     void SetCamera(const Vector3<GLfloat>& WorldPos, const Vector3<GLfloat>& Target, const Vector3<GLfloat>& Up)
     {
         Params.WorldPos = WorldPos;
-        Params.Target = Target;
-        Params.Up = Up;
+        Params.Target   = Target;
+        Params.Up       = Up;
+    }
+
+    void SetCamera(const Camera &_camera)
+    {
+        Params.WorldPos = _camera.Params.WorldPos;
+        Params.Target   = _camera.Params.Target;
+        Params.Up       = _camera.Params.Up;
     }
 
     struct {
