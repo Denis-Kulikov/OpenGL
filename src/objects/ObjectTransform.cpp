@@ -67,3 +67,8 @@ void objectTransform::SetTransform(const objectTransform &trans)
     SetRotate(trans.GetRotate());
     SetWorldPos(trans.GetWorldPos());
 }
+
+void objectTransform::Move(const GLfloat &X, const GLfloat &Y, const GLfloat &Z)
+{
+    SetWorldPos(WorldPos.x + X, WorldPos.y + Y, WorldPos.z + Z);
+}

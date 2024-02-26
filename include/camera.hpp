@@ -38,9 +38,8 @@ public:
 
     void SetCamera(const Camera &_camera)
     {
-        Params.WorldPos = _camera.Params.WorldPos;
-        Params.Target   = _camera.Params.Target;
-        Params.Up       = _camera.Params.Up;
+        SetCamera(_camera.Params.WorldPos, _camera.Params.Target, _camera.Params.Up);
+        SetPerspectiveProj(_camera.PersProj.FOV, _camera.PersProj.Width, _camera.PersProj.Height, _camera.PersProj.zNear, _camera.PersProj.zFar);
     }
 
     struct {

@@ -8,7 +8,7 @@ public:
 
     const Matrix4f* GetTrans();
 
-    Camera camera;
-    objectTransform object;
+    Camera *camera;
+    objectTransform *object;
     Matrix4f m_transformation;
 };

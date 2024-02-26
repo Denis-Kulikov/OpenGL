@@ -2,13 +2,13 @@
 #include <sprite.hpp>
 #include <try.hpp>
 
-void sprite::initializeRenderingData()
-{
-
-}
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
 
 void sprite::loadTexures(const char *texturePath)
 {
+    if (texturePath == nullptr) return;
+
     int x, y, n;
     std::string path = std::string("assets/") + texturePath;
     unsigned char *img = stbi_load(path.c_str(), &x, &y, &n, 0);
@@ -25,6 +25,8 @@ void sprite::loadTexures(const char *texturePath)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
+    gTextureSamplerLocation = glGetUniformLocation(shader, "textureSampler");
+
     stbi_image_free(img);
 
     glGenerateMipmap(GL_TEXTURE_2D);
@@ -39,7 +41,6 @@ void sprite::loadTexures(const char *texturePath)
 GLuint sprite::loadShader(const char *shaderPath, GLuint type)
 {
     std::ifstream shaderFile(shaderPath);
-
     if (!shaderFile.is_open()) {
         std::cerr << "Error: Could not open shader file '" << shaderPath << "'" << std::endl;
         return 0;
@@ -49,15 +50,11 @@ GLuint sprite::loadShader(const char *shaderPath, GLuint type)
     shaderStream << shaderFile.rdbuf();
     shaderFile.close();
 
-    char* code = (char*)malloc(shaderStream.str().length() + 1);
-    for (size_t i = 0; i < shaderStream.str().length(); ++i) {
-        code[i] = shaderStream.str()[i];
-    }
-    code[shaderStream.str().length()] = '\0';
-    const GLchar* shaderCode = code;
+    std::string shaderCode = shaderStream.str();
+    const GLchar* shaderCodePtr = shaderCode.c_str();
 
     GLuint shader = glCreateShader(type);
-    glShaderSource(shader, 1, &shaderCode, NULL);
+    glShaderSource(shader, 1, &shaderCodePtr, NULL);
     glCompileShader(shader);
 
     GLint ok;
@@ -66,15 +63,16 @@ GLuint sprite::loadShader(const char *shaderPath, GLuint type)
     if (!ok) {
         glGetShaderInfoLog(shader, 2000, NULL, log);
         printf("Shader(%s): %s\n", shaderPath, log);
-        std::cout << shaderStream.str().c_str() << std::endl;
+        std::cout << shaderCode << std::endl;
     }
 
     return shader;
 }
 
+
 void sprite::compileShaders(const char *FS, const char *VS)
 {
-    if (shader != 0) 
+    if (shader == 0) 
         shader = glCreateProgram();
 
     GLuint fragmentShader;
@@ -96,7 +94,7 @@ void sprite::compileShaders(const char *FS, const char *VS)
     glGetProgramiv(shader, GL_LINK_STATUS, &ok);
     if (!ok) {
         glGetProgramInfoLog(shader, 2000, NULL, log);
-        std::cout << "Shader" << name << "compilation Log:\n" << log << std::endl;
+        std::cout << "Shader " << name << " compilation Log:\n" << log << std::endl;
     
         if (FS != nullptr) {
             GLint infoLogLength;
@@ -114,19 +112,21 @@ void sprite::compileShaders(const char *FS, const char *VS)
             std::cout << "Shader vertexShader Log:\n" << infoLog << std::endl;
             delete[] infoLog;
         }
+        std::cout << std::endl;
     }
 
-    GLuint gWorldLocation = glGetUniformLocation(shader, "gWorld");
+    gWorldLocation = glGetUniformLocation(shader, "gWorld");
+    gColorLocation = glGetUniformLocation(shader, "gColor"); // assert(gColorLocation != 0xFFFFFFFF);
     assert(gWorldLocation != 0xFFFFFFFF);
 }
 
 void sprite::initializeGeometry()
 {
     std::vector<GLfloat> vertices = {
-        -1, -1, 0,
-        -1,  1, 0,
-         1,  1, 0,
-         1, -1, 0,
+        -1.0f, -1.0f, 0.0f,  0.0f, 0.0f,
+        -1.0f,  1.0f, 0.0f,  0.0f, 1.0f,
+        1.0f,  1.0f, 0.0f,  1.0f, 1.0f,
+        1.0f, -1.0f, 0.0f,  1.0f, 0.0f
     };
 
     std::vector<GLuint> indices = {
@@ -134,7 +134,8 @@ void sprite::initializeGeometry()
         0, 2, 3
     };
 
-    GLint numVertices = indices.size();
+    numVertices = vertices.size();
+    numIndices = indices.size();
 
     glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
@@ -143,23 +144,33 @@ void sprite::initializeGeometry()
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(GLfloat), vertices.data(), GL_STATIC_DRAW);
 
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)0);
+    glEnableVertexAttribArray(0);
+
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
+    glEnableVertexAttribArray(1);
+
     glGenBuffers(1, &EBO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), indices.data(), GL_STATIC_DRAW);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
-    glEnableVertexAttribArray(0);
-
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 }
 
-
-sprite::sprite(const std::string &_name, const objectTransform &_trans, const Vector3<GLfloat> &_color, const char *FS, const char *VS, const char *texturePath)
+sprite::sprite(const objectTransform &_trans, const char *FS, const char *VS, const char *texturePath)
 {
-    name = _name;
     trans.SetTransform(_trans);
-    color.VSet(_color);
+
+    compileShaders(FS, VS);
+    loadTexures(texturePath);
+}
+
+sprite::sprite(const std::string &_name, const objectTransform &_trans, const char *FS, const char *VS, const char *texturePath)
+    : name(_name)
+{
+    trans.SetTransform(_trans);
 
     initializeGeometry();
     compileShaders(FS, VS);

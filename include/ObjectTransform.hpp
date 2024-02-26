@@ -25,6 +25,8 @@ public:
 
     void SetTransform(const objectTransform &trans);
 
+    void Move(const GLfloat &X, const GLfloat &Y, const GLfloat &Z);
+
     Vector3<GLfloat> Scale;
     Vector3<GLfloat> WorldPos;
     Vector3<GLfloat> Rotate;
