@@ -32,6 +32,9 @@ void sprite::loadTexures(const char *texturePath)
     glGenerateMipmap(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, 0);
 
+    trans.SetScale(1.0f, static_cast<GLfloat>(y) / static_cast<GLfloat>(x), 0.0f);
+    trans.SetRotate(0.0f, 180.0f, 180.0f);
+
     GLenum error = glGetError();
     if (error != GL_NO_ERROR) {
         std::cerr << "OpenGL error: " << error << std::endl;

@@ -65,12 +65,14 @@ Scene *createScene()
 
     sprite *mySprite;
     objectTransform _trans;
-    mySprite = new sprite(std::string("MySprite1"), _trans, "shaders/sprite_fs.glsl", "shaders/sprite_vs.glsl", "img/floor.jpg");
-    mySprite->trans.Move(2, -1, 4);
+    mySprite = new sprite(std::string("Grass"), _trans, "shaders/sprite_fs.glsl", "shaders/sprite_vs.glsl", "img/grass.png");
+    mySprite->trans.Move(1, -1, 2);
+    mySprite->trans.SetRotate(90, 0, 0);
+    mySprite->trans.SetScale(3, 3, 0);
     scene->pushObject(mySprite);
 
-    mySprite = new sprite(std::string("MySprite2"), _trans, "shaders/sprite_fs.glsl", "shaders/sprite_vs.glsl", "img/chess.jpg");
-    mySprite->trans.Move(-1, 2, 3);
+    mySprite = new sprite(std::string("Wilson"), _trans, "shaders/sprite_fs.glsl", "shaders/sprite_vs.glsl", "img/Wilson.png");
+    mySprite->trans.Move(1, -1 + (mySprite->trans.Scale.y), 2);
     scene->pushObject(mySprite);
 
     mySprite = new sprite(std::string("MySprite3"), _trans, "shaders/sprite_fs.glsl", "shaders/sprite_vs.glsl", "img/ball.png");
