@@ -1,11 +1,12 @@
 #pragma once
-#include "glfw.hpp"
 #include "sprite.hpp"
+#include "pipeline.hpp"
 
 class Render
 {
 public:
-    Render(const Pipeline &_pipeline);
+    Render(Pipeline &_pipeline);
+    Render(Camera *_camera);
     
     void clearRender();
     void drawObeject(sprite &_sprite);

@@ -1,5 +1,6 @@
 #pragma once
-#include "glfw.hpp"
+#include "lib.hpp"
+#include "objectTransform.hpp"
 
 class sprite 
 {

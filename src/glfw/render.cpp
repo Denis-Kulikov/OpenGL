@@ -1,10 +1,16 @@
 #include <render.hpp>
 
-Render::Render(const Pipeline &_pipeline)
+Render::Render(Pipeline &_pipeline)
 {
     pipeline.camera = _pipeline.camera;
     pipeline.object = _pipeline.object;
 }
+
+Render::Render(Camera *_camera)
+{
+    pipeline.camera = _camera;
+}
+
 
 void Render::clearRender() {
     glUseProgram(0);

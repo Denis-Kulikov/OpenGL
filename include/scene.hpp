@@ -1,5 +1,4 @@
 #pragma once
-#include "glfw.hpp"
 #include "sprite.hpp"
 
 class Scene {
@@ -18,8 +17,6 @@ public:
         return objects.begin();
     }
 
-
-private:
     std::string name;
     std::vector<sprite*> objects;
 };

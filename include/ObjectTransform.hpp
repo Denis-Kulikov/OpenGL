@@ -1,3 +1,4 @@
+#pragma once
 #include "math_3d.hpp"
 
 class objectTransform 

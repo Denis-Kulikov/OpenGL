@@ -1,5 +1,4 @@
 #pragma once
-#include "glfw.hpp"
 #include "sprite.hpp"
 
 class cube_bone : public sprite

@@ -1,27 +1,20 @@
+#include <glfw.hpp>
 #include <render.hpp>
 #include <scene.hpp>
 #include <sphere.hpp>
 #include <cube_bone.hpp>
 #include <try.hpp>
 
-int width = 1600;
-int height = 960;
-
 bool IsEnd = false;
 
-// Scene mainScene(std::string("Main scene"));
-
-Render *render;
-sprite *mySprite[5];
-
-bool RenderSceneCB()
+bool RenderSceneCB(Render *render, Scene *scene)
 {
-    render->drawObeject(*mySprite[0]);
-    render->drawObeject(*mySprite[1]);
-    render->drawObeject(*mySprite[2]);
-    render->drawObeject(*mySprite[3]);
-    render->drawObeject(*mySprite[4]);
-    render->drawObeject(*mySprite[5]);
+    std::vector<sprite*>::iterator it = scene->getIterator();
+
+    while (it != scene->objects.end()) {
+        render->drawObeject(**it);
+        ++it;
+    }
 
     return IsEnd;
 }
@@ -30,55 +23,91 @@ static void KeyboardCB(GLFWwindow* window, int key, int scancode, int action, in
 {
     double speed_movement = 0.2;
     double speed_rotation = 0.1;
+
+    CallbackData* callbackData = static_cast<CallbackData*>(glfwGetWindowUserPointer(window));
+    Camera* camera = callbackData->camera;
+
     switch (key) {
         case GLFW_KEY_F:
             glfwSetWindowShouldClose(window, GLFW_TRUE);
             IsEnd = true;
             break;
         case GLFW_KEY_W:
-            render->pipeline.camera->Params.WorldPos.z += speed_movement;
+            camera->Params.WorldPos.z += speed_movement;
             break;
         case GLFW_KEY_S:
-            render->pipeline.camera->Params.WorldPos.z -= speed_movement;
+            camera->Params.WorldPos.z -= speed_movement;
             break;
         case GLFW_KEY_D:
-            render->pipeline.camera->Params.WorldPos.x += speed_movement;
+            camera->Params.WorldPos.x += speed_movement;
             break;
         case GLFW_KEY_A:
-            render->pipeline.camera->Params.WorldPos.x -= speed_movement;
+            camera->Params.WorldPos.x -= speed_movement;
             break;
         case GLFW_KEY_SPACE:
-            render->pipeline.camera->Params.WorldPos.y += speed_movement;
+            camera->Params.WorldPos.y += speed_movement;
             break;
         case GLFW_KEY_C:
-            render->pipeline.camera->Params.WorldPos.y -= speed_movement;
+            camera->Params.WorldPos.y -= speed_movement;
             break;
         case GLFW_KEY_E:
-            render->pipeline.camera->Params.Target.x += speed_rotation;
+            camera->Params.Target.x += speed_rotation;
             break;
         case GLFW_KEY_Q:
-            render->pipeline.camera->Params.Target.x -= speed_rotation;
+            camera->Params.Target.x -= speed_rotation;
             break;
     }
 }
 
-void InitializeGLFW(GLFWwindow* &window)
+Scene *createScene()
 {
-    if (!glfwInit()) {
-        std::cerr << "Failed to initialize GLFW" << std::endl;
-        exit(EXIT_FAILURE);
-    }
+    auto *scene = new Scene(std::string("Main scene"));
+
+    sprite *mySprite;
+    objectTransform _trans;
+    mySprite = new sprite(std::string("MySprite1"), _trans, "shaders/sprite_fs.glsl", "shaders/sprite_vs.glsl", "img/floor.jpg");
+    mySprite->trans.Move(2, -1, 4);
+    scene->pushObject(mySprite);
+
+    mySprite = new sprite(std::string("MySprite2"), _trans, "shaders/sprite_fs.glsl", "shaders/sprite_vs.glsl", "img/chess.jpg");
+    mySprite->trans.Move(-1, 2, 3);
+    scene->pushObject(mySprite);
+
+    mySprite = new sprite(std::string("MySprite3"), _trans, "shaders/sprite_fs.glsl", "shaders/sprite_vs.glsl", "img/ball.png");
+    mySprite->trans.Move(-3, 1, 5);
+    scene->pushObject(mySprite);
+
+    mySprite = new sphere(std::string("MySphere"), _trans, "shaders/sphere_fs.glsl", "shaders/base_vs.glsl", nullptr, 4);
+    mySprite->trans.Move(-3, -3, 7);
+    scene->pushObject(mySprite);
+
+    mySprite = new cube_bone(std::string("MyCube"), _trans, Vector3<GLfloat>(1, 1, 1));
+    mySprite->trans.Move(0, -1, 3);
+    scene->pushObject(mySprite);
+
+    return scene;
+}
+
+Camera *createCamera(int width, int height)
+{
+    auto camera = new Camera();
 
     Vector3<GLfloat> CameraPos(0.0f, 0.1f, -3);
     Vector3<GLfloat> CameraTarget(0.0f, 0.0f, 1.0f);
     Vector3<GLfloat> CameraUp(0.0f, 1.0f, 0.0f);
 
-    Pipeline _pipeline;
-    _pipeline.camera = new Camera();
-    _pipeline.object = nullptr;
+    camera->SetCamera(CameraPos, CameraTarget, CameraUp);
+    camera->SetPerspectiveProj(60.0f, width, height, 0.5f, 1000.0f);
 
-    _pipeline.camera->SetCamera(CameraPos, CameraTarget, CameraUp);
-    _pipeline.camera->SetPerspectiveProj(60.0f, width, height, 0.5f, 1000.0f);
+    return camera;
+}
+
+Render *InitializeGLFW(GLFWwindow* &window, int width, int height)
+{
+    if (!glfwInit()) {
+        std::cerr << "Failed to initialize GLFW" << std::endl;
+        exit(EXIT_FAILURE);
+    }
 
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -91,8 +120,13 @@ void InitializeGLFW(GLFWwindow* &window)
         exit(EXIT_FAILURE);
     }
 
+    Camera *camera = createCamera(width, height);
+    CallbackData *callbackData = new CallbackData;
+    callbackData->camera = camera;
+
     glfwMakeContextCurrent(window);
     glfwSetKeyCallback(window, KeyboardCB);
+    glfwSetWindowUserPointer(window, callbackData);
 
     GLenum err = glewInit();
     if (err != GLEW_OK) {
@@ -104,18 +138,9 @@ void InitializeGLFW(GLFWwindow* &window)
 
     glClearColor(0.12f, 0.12f, 0.12f, 0.0f);
 
-    {
-        render = new Render(_pipeline);
-        objectTransform _trans;
-        mySprite[0] = new sprite(std::string("MySprite1"), _trans, "shaders/sprite_fs.glsl", "shaders/sprite_vs.glsl", "img/floor.jpg");
-        mySprite[0]->trans.Move(2, -1, 4);
-        mySprite[1] = new sprite(std::string("MySprite2"), _trans, "shaders/sprite_fs.glsl", "shaders/sprite_vs.glsl", "img/chess.jpg");
-        mySprite[1]->trans.Move(-1, 2, 3);
-        mySprite[2] = new sprite(std::string("MySprite3"), _trans, "shaders/sprite_fs.glsl", "shaders/sprite_vs.glsl", "img/ball.png");
-        mySprite[2]->trans.Move(-3, 1, 5);
-        mySprite[3] = new sphere(std::string("MySphere"), _trans, "shaders/sphere_fs.glsl", "shaders/base_vs.glsl", nullptr, 8);
-        mySprite[3]->trans.Move(-3, -3, 7);
-        mySprite[4] = new cube_bone(std::string("MyCube"), _trans, Vector3<GLfloat>(1, 1, 1));
-        mySprite[4]->trans.Move(0, -1, 3);
-    }
+    createScene();
+
+    Render *render = new Render(camera);
+
+    return render;
 }
