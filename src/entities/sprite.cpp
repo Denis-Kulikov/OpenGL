@@ -1,6 +1,6 @@
-#include <render/glfw.hpp>
-#include <object/sprite.hpp>
-#include <lib-project/try.hpp>
+#include <glfw.hpp>
+#include <sprite.hpp>
+#include <try.hpp>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>

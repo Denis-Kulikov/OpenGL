@@ -1,4 +1,4 @@
-#include "../include/glfw.hpp"
+#include <render/glfw.hpp>
 
 Vector3<GLfloat> objectTransform::GetScale() const
 {

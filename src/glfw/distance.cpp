@@ -1,4 +1,4 @@
-#include "../include/distance.hpp"
+#include <render/distance.hpp>
 
 int compare_distances(const void *a, const void *b) {
     double dist_a = *((double *)a);

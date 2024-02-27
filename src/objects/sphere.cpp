@@ -1,6 +1,5 @@
-#include <glfw.hpp>
-#include <sphere.hpp>
-#include <try.hpp>
+#include <render/glfw.hpp>
+#include <object/sphere.hpp>
 
 void sphere::initializeGeometry()
 {

@@ -1,6 +1,6 @@
-#include <glfw.hpp>
-#include <circle.hpp>
-#include <try.hpp>
+#include <render/glfw.hpp>
+#include <object/circle.hpp>
+#include <lib-project/try.hpp>
 
 void circle::initializeGeometry()
 {

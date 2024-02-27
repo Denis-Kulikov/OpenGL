@@ -1,5 +1,6 @@
 #pragma once
-#include "math_3d.hpp"
+#include "../lib-project/lib.hpp"
+#include "../lib-project/math_3d.hpp"
 
 class objectTransform 
 {

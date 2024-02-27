@@ -1,5 +1,4 @@
 #pragma once
-#include "lib.hpp"
 #include "objectTransform.hpp"
 
 class sprite 
@@ -23,8 +22,8 @@ public:
     GLint numIndices  = 0;
 
     GLuint gWorldLocation;
-    // GLuint gScaleLocation;
-    // GLuint gRotateLocation;
+    GLuint gScaleLocation;
+    GLuint gRotateLocation;
     GLuint gColorLocation;
 
     GLuint gTextureSamplerLocation;

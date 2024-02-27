@@ -1,9 +1,9 @@
-#include <glfw.hpp>
-#include <render.hpp>
-#include <scene.hpp>
-#include <sphere.hpp>
-#include <cube_bone.hpp>
-#include <try.hpp>
+#include <render/glfw.hpp>
+#include <render/render.hpp>
+#include <object/scene.hpp>
+#include <object/sphere.hpp>
+#include <object/cube_bone.hpp>
+#include <lib-project/try.hpp>
 
 bool IsEnd = false;
 

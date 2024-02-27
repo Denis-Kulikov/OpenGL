@@ -1,6 +1,6 @@
-#include <glfw.hpp>
-#include <cube_bone.hpp>
-#include <try.hpp>
+#include <render/glfw.hpp>
+#include <object/cube_bone.hpp>
+#include <lib-project/try.hpp>
 
 void cube_bone::initializeGeometry()
 {

@@ -1,6 +1,6 @@
 #pragma once
-#include "sprite.hpp"
 #include "pipeline.hpp"
+#include "../object/sprite.hpp"
 
 class Render
 {

@@ -1,5 +1,5 @@
 #pragma once
-#include "objectTransform.hpp"
+#include "../object/objectTransform.hpp"
 
 class Camera
 {
