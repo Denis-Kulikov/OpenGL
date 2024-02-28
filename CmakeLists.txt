@@ -6,6 +6,9 @@ project(
   LANGUAGES CXX
 )
 
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 include_directories(include)
 include_directories(_deps/stb_image-src)
 add_subdirectory(src)

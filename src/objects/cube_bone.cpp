@@ -2,6 +2,12 @@
 #include <object/cube_bone.hpp>
 #include <lib-project/try.hpp>
 
+GLuint cube_bone::VAO = 0;
+GLuint cube_bone::VBO = 0;
+GLuint cube_bone::EBO = 0;
+GLint cube_bone::numVertices = 0;
+GLint cube_bone::numIndices = 0;
+
 void cube_bone::initializeGeometry()
 {
     std::vector<GLfloat> vertices = {
@@ -35,11 +41,7 @@ void cube_bone::initializeGeometry()
 }
 
 cube_bone::cube_bone(const std::string &_name, const objectTransform &_trans, const Vector3<GLfloat> _color)
-    : sprite(_trans, "shaders/cube_bone_fs.glsl", "shaders/base_vs.glsl", nullptr)
-{
-    name = _name;
-    color.x = _color.x;
-    color.y = _color.y;
-    color.z = _color.z;
-    initializeGeometry();
-}
+    : line (_name, _trans, _color) {}
+
+cube_bone::cube_bone(const std::string &_name, const objectTransform &_trans, const Vector3<GLfloat> _color, GLfloat _lineWidth)
+    : line (_name, _trans, _color, _lineWidth) {}

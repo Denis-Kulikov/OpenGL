@@ -5,6 +5,12 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
+GLuint sprite::VAO = 0;
+GLuint sprite::VBO = 0;
+GLuint sprite::EBO = 0;
+GLint sprite::numVertices = 0;
+GLint sprite::numIndices = 0;
+
 void sprite::loadTexures(const char *texturePath)
 {
     if (texturePath == nullptr) return;
@@ -71,7 +77,6 @@ GLuint sprite::loadShader(const char *shaderPath, GLuint type)
 
     return shader;
 }
-
 
 void sprite::compileShaders(const char *FS, const char *VS)
 {
@@ -162,20 +167,11 @@ void sprite::initializeGeometry()
     glBindVertexArray(0);
 }
 
-sprite::sprite(const objectTransform &_trans, const char *FS, const char *VS, const char *texturePath)
-{
-    trans.SetTransform(_trans);
-
-    compileShaders(FS, VS);
-    loadTexures(texturePath);
-}
-
 sprite::sprite(const std::string &_name, const objectTransform &_trans, const char *FS, const char *VS, const char *texturePath)
     : name(_name)
 {
     trans.SetTransform(_trans);
 
-    initializeGeometry();
     compileShaders(FS, VS);
     loadTexures(texturePath);
 }

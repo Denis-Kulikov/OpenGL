@@ -32,7 +32,7 @@ public:
     T VLenSq();
     T VLen();
     T VCSum();
-    T Distance(const Vector3<T> &v);
+    T Distance(const Vector3<T> &v) const;
     Vector3<T> operator+(const Vector3<T> &v);
     Vector3<T> operator+(const T s);
     Vector3<T> operator-(const Vector3<T> &v);

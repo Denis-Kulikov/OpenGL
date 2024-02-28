@@ -62,8 +62,7 @@ void sphere::initializeGeometry()
 }
 
 sphere::sphere(const std::string &_name, const objectTransform &_trans, const char *FS, const char *VS, const char *texturePath, const GLint _numVertices)
-    : sprite(_name, _trans, FS, VS, texturePath)
+    : sprite(_name, _trans, FS, VS, texturePath), numVertices(_numVertices)
 {
-    numVertices = _numVertices;
     initializeGeometry();
 }

@@ -51,7 +51,7 @@ T Vector3<T>::VCSum()
 }
 
 template<typename T>
-T Vector3<T>::Distance(const Vector3<T> &v)
+T Vector3<T>::Distance(const Vector3<T> &v) const
 {
     return sqrt(pow(v.x - x, 2) + pow(v.y - y, 2) + pow(v.z - z, 2));
 }
