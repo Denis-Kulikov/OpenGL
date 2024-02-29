@@ -14,10 +14,10 @@ public:
     
     void clearRender();
     void drawObeject(sprite &_sprite);
-    void drawObeject(sphere &_sprite);
-    void drawObeject(circle &_sprite);
-    void drawObeject(line &_sprite);
-    void drawObeject(cube_bone &_sprite);
+    // void drawObeject(sphere &_sprite);
+    // void drawObeject(circle &_sprite);
+    // void drawObeject(line &_sprite);
+    // void drawObeject(cube_bone &_sprite);
 
     Pipeline pipeline;
 };

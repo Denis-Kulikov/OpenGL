@@ -6,9 +6,9 @@ class objectTransform
 {
 public:
     objectTransform() {
-        Scale       = Vector3<GLfloat>(1.0f, 1.0f, 1.0f);
-        WorldPos    = Vector3<GLfloat>(0.0f, 0.0f, 0.0f);
-        Rotate      = Vector3<GLfloat>(0.0f, 0.0f, 0.0f);
+        Scale    = Vector3<GLfloat>(1.0f, 1.0f, 1.0f);
+        WorldPos = Vector3<GLfloat>(0.0f, 0.0f, 0.0f);
+        Rotate   = Vector3<GLfloat>(0.0f, 0.0f, 0.0f);
     }
 
     Vector3<GLfloat> GetScale() const;
@@ -28,6 +28,7 @@ public:
     void SetTransform(const objectTransform &trans);
 
     void Move(const GLfloat &X, const GLfloat &Y, const GLfloat &Z);
+
 
     Vector3<GLfloat> Scale;
     Vector3<GLfloat> WorldPos;

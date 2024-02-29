@@ -1,13 +1,16 @@
 #pragma once
-#include "objectTransform.hpp"
+#include "../object/objectTransform.hpp"
+#include "../object/sprite.hpp"
+#include "../object/component.hpp"
 
-class actor 
+class Actor 
 {
 public:
-    actor();
+    Actor(const std::string &_name, const objectTransform &_trans);
 
-    std::string      name;
-    objectTransform  trans;
+    std::string name;
+    objectTransform trans;
 
-protected:
+    std::map<sprite, std::string> sprites; 
+    std::vector<Component> *components; 
 };

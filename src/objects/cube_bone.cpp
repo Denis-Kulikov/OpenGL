@@ -2,11 +2,7 @@
 #include <object/cube_bone.hpp>
 #include <lib-project/try.hpp>
 
-GLuint cube_bone::VAO = 0;
-GLuint cube_bone::VBO = 0;
-GLuint cube_bone::EBO = 0;
-GLint cube_bone::numVertices = 0;
-GLint cube_bone::numIndices = 0;
+struct GeometryInfo cube_bone::geometryInfo = {0, 0, 0, 0, 0};
 
 void cube_bone::initializeGeometry()
 {
@@ -24,13 +20,13 @@ void cube_bone::initializeGeometry()
         -1, -1, -1
     };
 
-    numVertices = static_cast<int>(vertices.size()) / 3;
+    geometryInfo.numVertices = static_cast<int>(vertices.size()) / 3;
 
-    glGenVertexArrays(1, &VAO);
-    glBindVertexArray(VAO);
+    glGenVertexArrays(1, &geometryInfo.VAO);
+    glBindVertexArray(geometryInfo.VAO);
 
-    glGenBuffers(1, &VBO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glGenBuffers(1, &geometryInfo.VBO);
+    glBindBuffer(GL_ARRAY_BUFFER, geometryInfo.VBO);
     glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(GLfloat), vertices.data(), GL_STATIC_DRAW);
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
@@ -41,7 +37,13 @@ void cube_bone::initializeGeometry()
 }
 
 cube_bone::cube_bone(const std::string &_name, const objectTransform &_trans, const Vector3<GLfloat> _color)
-    : line (_name, _trans, _color) {}
+    : line (_name, _trans, _color)
+{
+    geometry = &geometryInfo;
+}
 
 cube_bone::cube_bone(const std::string &_name, const objectTransform &_trans, const Vector3<GLfloat> _color, GLfloat _lineWidth)
-    : line (_name, _trans, _color, _lineWidth) {}
+    : line (_name, _trans, _color, _lineWidth)
+{
+    geometry = &geometryInfo;
+}

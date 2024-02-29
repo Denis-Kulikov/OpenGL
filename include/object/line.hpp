@@ -9,14 +9,10 @@ public:
 
     void setPoints(const Vector3<GLfloat> &_start, const Vector3<GLfloat> &_end);
     static void initializeGeometry();
-    void draw();
-
-    static GLuint VAO;
-    static GLuint VBO;
-    static GLuint EBO;
-
-    static GLint numVertices;
-    static GLint numIndices;
 
     GLfloat lineWidth;
+
+private:
+    static struct GeometryInfo geometryInfo;
+
 };

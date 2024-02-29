@@ -5,11 +5,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
-GLuint sprite::VAO = 0;
-GLuint sprite::VBO = 0;
-GLuint sprite::EBO = 0;
-GLint sprite::numVertices = 0;
-GLint sprite::numIndices = 0;
+struct GeometryInfo sprite::geometryInfo = {0, 0, 0, 0, 0};
 
 void sprite::loadTexures(const char *texturePath)
 {
@@ -142,14 +138,14 @@ void sprite::initializeGeometry()
         0, 2, 3
     };
 
-    numVertices = vertices.size();
-    numIndices = indices.size();
+    geometryInfo.numVertices = vertices.size();
+    geometryInfo.numIndices = indices.size();
 
-    glGenVertexArrays(1, &VAO);
-    glBindVertexArray(VAO);
+    glGenVertexArrays(1, &geometryInfo.VAO);
+    glBindVertexArray(geometryInfo.VAO);
 
-    glGenBuffers(1, &VBO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glGenBuffers(1, &geometryInfo.VBO);
+    glBindBuffer(GL_ARRAY_BUFFER, geometryInfo.VBO);
     glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(GLfloat), vertices.data(), GL_STATIC_DRAW);
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)0);
@@ -158,8 +154,8 @@ void sprite::initializeGeometry()
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
     glEnableVertexAttribArray(1);
 
-    glGenBuffers(1, &EBO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glGenBuffers(1, &geometryInfo.EBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, geometryInfo.EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), indices.data(), GL_STATIC_DRAW);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
@@ -171,6 +167,8 @@ sprite::sprite(const std::string &_name, const objectTransform &_trans, const ch
     : name(_name)
 {
     trans.SetTransform(_trans);
+    geometry = &geometryInfo;
+    if (geometry == nullptr) std::cout << "Error " << name << ": Creating an instance before initialization" << std::endl; 
 
     compileShaders(FS, VS);
     loadTexures(texturePath);

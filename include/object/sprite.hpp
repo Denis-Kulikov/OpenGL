@@ -1,6 +1,15 @@
 #pragma once
 #include "objectTransform.hpp"
 
+struct GeometryInfo {
+    GLuint VAO;
+    GLuint VBO;
+    GLuint EBO;
+
+    GLint numVertices;
+    GLint numIndices;
+};
+
 class sprite 
 {
 public:
@@ -22,16 +31,12 @@ public:
 
     GLuint gTextureSamplerLocation;
 
-    static GLuint VAO;
-    static GLuint VBO;
-    static GLuint EBO;
+    struct GeometryInfo *geometry = nullptr;
 
-    static GLint numVertices;
-    static GLint numIndices;
-    
 protected:
     GLuint loadShader(const char *shaderPath, GLuint type);
     void loadTexures(const char *texturePath);
     void compileShaders(const char *FS, const char *VS);
 
+    static struct GeometryInfo geometryInfo;
 };

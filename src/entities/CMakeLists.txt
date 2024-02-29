@@ -1,6 +1,7 @@
 set(target lib-entities)
 
 add_library(${target} STATIC
+	component.cpp
 	entities.cpp
 )
 

@@ -2,12 +2,7 @@
 #include <object/line.hpp>
 #include <lib-project/try.hpp>
 
-GLuint line::VAO = 0;
-GLuint line::VBO = 0;
-GLuint line::EBO = 0;
-GLint line::numVertices = 0;
-GLint line::numIndices = 0;
-
+struct GeometryInfo line::geometryInfo = {0, 0, 0, 0, 0};
 
 // this->trans.SetScale(_start.Distance(static_cast<Vector3<GLfloat>>(_end)), 0.0, 0.0);
 void line::setPoints(const Vector3<GLfloat> &_start, const Vector3<GLfloat> &_end)
@@ -33,13 +28,13 @@ void line::initializeGeometry() {
          0.5, 0, 0
     };
 
-    numVertices = 2;
+    geometryInfo.numVertices = 2;
 
-    glGenVertexArrays(1, &VAO);
-    glBindVertexArray(VAO);
+    glGenVertexArrays(1, &geometryInfo.VAO);
+    glBindVertexArray(geometryInfo.VAO);
 
-    glGenBuffers(1, &VBO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glGenBuffers(1, &geometryInfo.VBO);
+    glBindBuffer(GL_ARRAY_BUFFER, geometryInfo.VBO);
     glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(GLfloat), vertices.data(), GL_STATIC_DRAW);
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
@@ -55,6 +50,8 @@ line::line(const std::string &_name, const objectTransform &_trans, const Vector
     color.x = _color.x;
     color.y = _color.y;
     color.z = _color.z;
+
+    geometry = &geometryInfo;
 }
 
 
@@ -64,4 +61,6 @@ line::line(const std::string &_name, const objectTransform &_trans, const Vector
     color.x = _color.x;
     color.y = _color.y;
     color.z = _color.z;
+
+    geometry = &geometryInfo;
 }

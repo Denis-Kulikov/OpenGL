@@ -10,11 +10,12 @@ bool IsEnd = false;
 
 bool RenderSceneCB(Render *render, Scene *scene)
 {
-    for (std::vector<sprite*>::iterator it = scene->getIteratorSprite(); it != scene->sprites.end(); it++) render->drawObeject(**it);
-    for (std::vector<sphere*>::iterator it = scene->getIteratorSphere(); it != scene->spheres.end(); it++) render->drawObeject(**it);
-    for (std::vector<circle*>::iterator it = scene->getIteratorCircle(); it != scene->circles.end(); it++) render->drawObeject(**it);
-    for (std::vector<line*>::iterator   it = scene->getIteratorLine();   it != scene->lines.end();   it++) render->drawObeject(**it);
-    for (std::vector<cube_bone*>::iterator it = scene->getIteratorCube_bone(); it != scene->cube_bones.end(); it++) render->drawObeject(**it);
+    for (std::vector<sprite*>::iterator it = scene->getIterator(); it != scene->sprites.end(); it++) render->drawObeject(**it);
+    // for (std::vector<sprite*>::iterator it = scene->getIteratorSprite(); it != scene->sprites.end(); it++) render->drawObeject(**it);
+    // for (std::vector<sphere*>::iterator it = scene->getIteratorSphere(); it != scene->spheres.end(); it++) render->drawObeject(**it);
+    // for (std::vector<circle*>::iterator it = scene->getIteratorCircle(); it != scene->circles.end(); it++) render->drawObeject(**it);
+    // for (std::vector<line*>::iterator   it = scene->getIteratorLine();   it != scene->lines.end();   it++) render->drawObeject(**it);
+    // for (std::vector<cube_bone*>::iterator it = scene->getIteratorCube_bone(); it != scene->cube_bones.end(); it++) render->drawObeject(**it);
 
     return IsEnd;
 }
@@ -101,9 +102,9 @@ Scene *createScene()
     // mySphere->trans.Move(-3, -3, 7);
     // scene->pushObject(mySphere);
 
-    // cube_bone *myCube_bone = new cube_bone(std::string("MyCube"), _trans, whiteColor);
-    // myCube_bone->trans.Move(0, -1, 3);
-    // scene->pushObject(myCube_bone);
+    cube_bone *myCube_bone = new cube_bone(std::string("MyCube"), _trans, whiteColor);
+    myCube_bone->trans.Move(0, -1, 3);
+    scene->pushObject(myCube_bone);
 
 
     line *myLine = new line(std::string("MyLine"), _trans, redColor, 20.0);
