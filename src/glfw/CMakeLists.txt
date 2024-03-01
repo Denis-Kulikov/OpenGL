@@ -10,6 +10,6 @@ target_link_libraries(
   ${target}
   PRIVATE
 	glfw GL GLEW
-	lib-math
+	#lib-math
 	lib-object
 )

@@ -36,14 +36,19 @@ void cube_bone::initializeGeometry()
     glBindVertexArray(0);
 }
 
+
+
+// cube_bone::cube_bone(const std::string &_name, const objectTransform &_trans, const Vector3<GLfloat> _color, GLfloat _lineWidth)
+//     : line (_name, _trans, _color, _lineWidth)
+// {
+//     geometry = &geometryInfo;
+// }
+
+// cube_bone::cube_bone(const std::string &_name, const objectTransform &_trans, const Vector3<GLfloat> _color)
+//     : cube_bone (_name, _trans, _color, 1.0) {}
+
 cube_bone::cube_bone(const std::string &_name, const objectTransform &_trans, const Vector3<GLfloat> _color)
     : line (_name, _trans, _color)
-{
-    geometry = &geometryInfo;
-}
-
-cube_bone::cube_bone(const std::string &_name, const objectTransform &_trans, const Vector3<GLfloat> _color, GLfloat _lineWidth)
-    : line (_name, _trans, _color, _lineWidth)
 {
     geometry = &geometryInfo;
 }

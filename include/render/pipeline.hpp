@@ -6,9 +6,10 @@ class Pipeline
 public:
     Pipeline() {}
 
-    const Matrix4f* GetTrans();
+    Matrix4f<GLfloat>* GetTrans();
+    GLfloat* GetGLMatrix();
 
     Camera *camera;
     objectTransform *object;
-    Matrix4f m_transformation;
+    Matrix4f<GLfloat> m_transformation;
 };

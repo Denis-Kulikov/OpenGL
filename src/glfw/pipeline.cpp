@@ -1,8 +1,8 @@
 #include <render/glfw.hpp>
 
-const Matrix4f* Pipeline::GetTrans()
+Matrix4f<GLfloat>* Pipeline::GetTrans()
 {
-    Matrix4f ScaleTrans, RotateTrans, TranslationTrans, CameraTranslationTrans, CameraRotateTrans, PersProjTrans;
+    Matrix4f<GLfloat> ScaleTrans, RotateTrans, TranslationTrans, CameraTranslationTrans, CameraRotateTrans, PersProjTrans;
 
     ScaleTrans.InitScaleTransform(object->Scale.x, object->Scale.y, object->Scale.z);
     RotateTrans.InitRotateTransform(object->Rotate.x, object->Rotate.y, object->Rotate.z);
@@ -13,4 +13,8 @@ const Matrix4f* Pipeline::GetTrans()
 
     m_transformation = PersProjTrans * CameraRotateTrans * CameraTranslationTrans * TranslationTrans * RotateTrans * ScaleTrans;
     return &m_transformation;
+}
+
+GLfloat* Pipeline::GetGLMatrix() {
+    return reinterpret_cast<GLfloat*>(GetTrans());
 }

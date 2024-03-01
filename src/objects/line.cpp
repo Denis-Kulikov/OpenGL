@@ -11,7 +11,7 @@ void line::setPoints(const Vector3<GLfloat> &_start, const Vector3<GLfloat> &_en
     this->trans.SetWorldPos(_start.x + d.x / 2, _start.y + d.y / 2, _start.z + d.z / 2);
 
     GLfloat distance = sqrt(pow(d.x, 2) + pow(d.y, 2) + pow(d.z, 2));
-    this->trans.SetScale(distance, 0.0, 0.0);
+    this->trans.SetScale(distance, trans.GetScale().y, 0.0);
 
     GLfloat angleZ = atan2(d.y, d.x) * 180.0 / M_PI;
     GLfloat angleY = atan2(d.z, sqrt(d.x * d.x + d.y * d.y)) * 180.0 / M_PI;
@@ -44,19 +44,23 @@ void line::initializeGeometry() {
     glBindVertexArray(0);
 }
 
+// line::line(const std::string &_name, const objectTransform &_trans, const Vector3<GLfloat> _color, GLfloat _lineWidth)
+//     : sprite(_name, _trans, "shaders/bone_fs.glsl", "shaders/base_vs.glsl", nullptr)
+// {
+//     trans.SetScale(trans.GetScale().x, _lineWidth, 0.0);
+
+//     color.x = _color.x;
+//     color.y = _color.y;
+//     color.z = _color.z;
+
+//     geometry = &geometryInfo;
+// }
+
+// line::line(const std::string &_name, const objectTransform &_trans, const Vector3<GLfloat> _color)
+//     : line(_name, _trans, _color, 1.0) {}
+
 line::line(const std::string &_name, const objectTransform &_trans, const Vector3<GLfloat> _color)
-    : sprite(_name, _trans, "shaders/bone_fs.glsl", "shaders/base_vs.glsl", nullptr), lineWidth(1.0)
-{
-    color.x = _color.x;
-    color.y = _color.y;
-    color.z = _color.z;
-
-    geometry = &geometryInfo;
-}
-
-
-line::line(const std::string &_name, const objectTransform &_trans, const Vector3<GLfloat> _color, GLfloat _lineWidth)
-    : sprite(_name, _trans, "shaders/bone_fs.glsl", "shaders/base_vs.glsl", nullptr), lineWidth(_lineWidth)
+    : sprite(_name, _trans, "shaders/bone_fs.glsl", "shaders/base_vs.glsl", nullptr)
 {
     color.x = _color.x;
     color.y = _color.y;
