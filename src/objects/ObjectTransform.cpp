@@ -1,5 +1,12 @@
 #include <render/glfw.hpp>
 
+void objectTransform::print() const
+{
+    std::cout << "World Position: (" << WorldPos.x << ", " << WorldPos.y << ", " << WorldPos.z << ")" << std::endl;
+    std::cout << "Rotation: (" << Rotate.x << ", " << Rotate.y << ", " << Rotate.z << ")" << std::endl;
+    std::cout << "Scale: (" << Scale.x << ", " << Scale.y << ", " << Scale.z << ")" << std::endl;
+}
+
 Vector3<GLfloat> objectTransform::GetScale() const
 {
     return Scale;

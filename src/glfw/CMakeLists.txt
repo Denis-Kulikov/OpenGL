@@ -12,4 +12,5 @@ target_link_libraries(
 	glfw GL GLEW
 	#lib-math
 	lib-object
+	lib-entities
 )

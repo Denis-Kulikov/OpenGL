@@ -4,7 +4,6 @@
 
 struct GeometryInfo line::geometryInfo = {0, 0, 0, 0, 0};
 
-// this->trans.SetScale(_start.Distance(static_cast<Vector3<GLfloat>>(_end)), 0.0, 0.0);
 void line::setPoints(const Vector3<GLfloat> &_start, const Vector3<GLfloat> &_end)
 {
     Vector3<GLfloat> d(_end.x - _start.x, _end.y - _start.y, _end.z - _start.z);
@@ -15,8 +14,6 @@ void line::setPoints(const Vector3<GLfloat> &_start, const Vector3<GLfloat> &_en
 
     GLfloat angleZ = atan2(d.y, d.x) * 180.0 / M_PI;
     GLfloat angleY = atan2(d.z, sqrt(d.x * d.x + d.y * d.y)) * 180.0 / M_PI;
-
-    std::cout << "setPoints" << std::endl;
 
     this->trans.SetRotate(0.0, angleY, angleZ); 
 }

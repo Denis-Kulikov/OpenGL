@@ -1,20 +1,14 @@
-<!-- ~belly(playerSprite + "belly", 0, 0) {
-    head(playerSprite + "head", 0, 0) {
-        ~hair(playerSprite + "hair", 0, 0) 
-        face(playerSprite + "face", 0, 0)
-    }
-    
-    shoulder(playerSprite + "shoulder", 0, 0) {
-        ~arm(playerSprite + "arm", 0, 0) {
-            wrist(playerSprite + "wrist", 0, 0)
-        }
-    }
-    leg(playerSprite + "leg", 0, 0)
-    
-    belly hair head face arm shoulder wrist leg
-} -->
+<character name="Wilson">
+    <!-- <spritePath>sprite</spritePath> -->
+    <objectTransform>
+        <worldPos x="0.0" y="0.0" z="0.0" />
+        <rotate  deg="45" />
+        <scale   x="1.0" y="1.0" />
+    </objectTransform>
+    <!-- <models>models</models> -->
+</character>
 
-<?xml version="1.0" encoding="UTF-8"?>
+<!-- <?xml version="1.0" encoding="UTF-8"?>
 <characterModel>
     <modelName>Wilson</modelName>
     <spritePath>assets/img/wilson</spritePath>
@@ -37,4 +31,4 @@
             </component>
         </component>
     </components>
-</characterModel>
+</characterModel> -->

@@ -15,6 +15,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
 
 include_directories(include)
 include_directories(_deps/stb_image-src)
+include_directories(_deps/pigixml-src/src)
 add_subdirectory(src)
 add_subdirectory(external)
 

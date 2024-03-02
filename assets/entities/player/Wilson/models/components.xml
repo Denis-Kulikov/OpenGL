@@ -1,0 +1,47 @@
+<components>
+    <!-- <component name="head" posX="0.0" posY="0.0" posZ="0.0" scaleX="0.0" scaleY="0.0" rotateX="0.0" rotateY="0.0"> -->
+    <component name="head" sprite="head.png">
+        <objectTransform>
+            <wordPos x="0.0" y="0.0" z="0.0" />
+            <rotate  x="0.0" y="0.0" z="0.0" />
+            <scale   x="1.0" y="1.0" z="1.0" />
+        </objectTransform>
+        <anchorPoint>
+            <objectTransform>
+                <wordPos x="0.0" y="0.0" z="0.0" />
+                <rotate  x="0.0" y="0.0" z="0.0" />
+                <scale   x="1.0" y="1.0" z="1.0" />
+            </objectTransform>
+        </anchorPoint>
+
+        <component name="face" sprite="face.png">
+            <objectTransform>
+                <wordPos x="0.0" y="0.0" z="1.0" />
+                <rotate  x="0.0" y="0.0" z="0.0" />
+                <scale   x="1.0" y="1.0" z="1.0" />
+            </objectTransform>
+            <anchorPoint>
+                <objectTransform>
+                    <wordPos x="0.0" y="0.0" z="0.0" />
+                    <rotate  x="0.0" y="0.0" z="0.0" />
+                    <scale   x="1.0" y="1.0" z="1.0" />
+                </objectTransform>
+            </anchorPoint>
+        </component>
+
+        <component name="hair" sprite="hair_front.png">
+            <objectTransform>
+                <wordPos x="0.0" y="0.0" z="-1.0" />
+                <rotate  x="0.0" y="0.0" z="0.0" />
+                <scale   x="1.0" y="1.0" z="1.0" />
+            </objectTransform>
+            <anchorPoint>
+                <objectTransform>
+                    <wordPos x="0.0" y="0.0" z="0.0" />
+                    <rotate  x="0.0" y="0.0" z="0.0" />
+                    <scale   x="1.0" y="1.0" z="1.0" />
+                </objectTransform>
+            </anchorPoint>
+        </component>
+    </component>
+</components>

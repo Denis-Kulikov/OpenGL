@@ -5,6 +5,7 @@
 #include <object/line.hpp>
 #include <object/cube_bone.hpp>
 #include <lib-project/try.hpp>
+#include <entities/actor.hpp>
 
 bool IsEnd = false;
 
@@ -160,13 +161,14 @@ Render *InitializeGLFW(GLFWwindow* &window, int width, int height)
 
     glClearColor(0.12f, 0.12f, 0.12f, 0.0f);
 
-    createScene();
-
     Render *render = new Render(camera);
 
     sprite::initializeGeometry();
     line::initializeGeometry();
     cube_bone::initializeGeometry();
+
+    std::string path("player/Wilson");
+    Actor actor(path);
 
     return render;
 }
