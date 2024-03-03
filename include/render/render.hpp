@@ -13,11 +13,11 @@ public:
     Render(Camera *_camera);
     
     void clearRender();
-    void drawObeject(sprite &_sprite);
-    // void drawObeject(sphere &_sprite);
-    // void drawObeject(circle &_sprite);
-    // void drawObeject(line &_sprite);
-    // void drawObeject(cube_bone &_sprite);
+    void drawObject(Sprite &_sprite);
+    // void drawObject(sphere &_sprite);
+    // void drawObject(circle &_sprite);
+    // void drawObject(line &_sprite);
+    // void drawObject(cube_bone &_sprite);
 
     Pipeline pipeline;
 };

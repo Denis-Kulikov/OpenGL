@@ -10,7 +10,16 @@
 
 bool RenderSceneCB(Render *render, Scene *scene)
 {
-    for (std::vector<sprite*>::iterator it = scene->getIterator(); it != scene->sprites.end(); it++) render->drawObeject(**it);
+    for (std::vector<Sprite*>::iterator it = scene->getIterator(); it != scene->sprites.end(); it++) render->drawObject(**it);
+
+    auto it = Actor::sprites.find("face");
+
+    if (it != Actor::sprites.end()) {
+        Sprite& sprite = it->second; // получаем ссылку на спрайт
+        render->drawObject(sprite);
+    } else {
+        std::cout << "Sprite 'face.png' not found!" << std::endl;
+    }
     
     return GameManager::IsEnd;
 }
@@ -21,21 +30,21 @@ Scene *createScene()
 
     Vector3<GLfloat> whiteColor(1, 1, 1);
     Vector3<GLfloat> redColor(1, 0, 0);
-    sprite *mySprite;
+    Sprite *mySprite;
     objectTransform _trans;
 
-    // mySprite = new sprite(std::string("Grass"), _trans, "shaders/sprite_fs.glsl", "shaders/sprite_vs.glsl", "img/grass.png");
+    // mySprite = new Sprite(std::string("Grass"), _trans, "shaders/Sprite_fs.glsl", "shaders/Sprite_vs.glsl", "img/grass.png");
     // mySprite->trans.Move(1, -1, 2);
     // mySprite->trans.SetRotate(90, 0, 0);
     // mySprite->trans.SetScale(3, 3, 0);
     // scene->pushObject(mySprite);
     
-    // mySprite = new sprite(std::string("Wilson"), _trans, "shaders/sprite_fs.glsl", "shaders/sprite_vs.glsl", "img/Wilson.png");
+    // mySprite = new Sprite(std::string("Wilson"), _trans, "shaders/Sprite_fs.glsl", "shaders/Sprite_vs.glsl", "img/Wilson.png");
     // mySprite->trans.Move(1, -1 + (mySprite->trans.Scale.y), 2);
     // scene->pushObject(mySprite);
 
 
-    // mySprite = new sprite(std::string("chess1"), _trans, "shaders/sprite_fs.glsl", "shaders/sprite_vs.glsl", "img/chess.jpg");
+    // mySprite = new Sprite(std::string("chess1"), _trans, "shaders/Sprite_fs.glsl", "shaders/Sprite_vs.glsl", "img/chess.jpg");
     // mySprite->trans.Move(0, 1, 1);
     // scene->pushObject(mySprite);
 
@@ -49,7 +58,7 @@ Scene *createScene()
     scene->pushObject(mySphere);
 
 
-    mySprite = new sprite(std::string("chess1"), _trans, "shaders/sprite_fs.glsl", "shaders/sprite_vs.glsl", "img/chess.jpg");
+    mySprite = new Sprite(std::string("chess1"), _trans, "shaders/Sprite_fs.glsl", "shaders/Sprite_vs.glsl", "img/chess.jpg");
     mySprite->trans.Move(0, 1, 2);
     scene->pushObject(mySprite);
 
@@ -70,6 +79,7 @@ Scene *createScene()
 
     std::string path("player/Wilson");
     Actor actor(path);
+    actor.skelets.createSkelet("player/Wilson", "skelet");
 
     return scene;
 }

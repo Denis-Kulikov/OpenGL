@@ -11,12 +11,12 @@ public:
     Scene(std::string _name) : name(_name) {};
     ~Scene() {};
 
-    void pushObject(sprite* _sprite) { sprites.push_back(_sprite); }
+    void pushObject(Sprite* _sprite) { sprites.push_back(_sprite); };
 
-    void deleteObject(sprite* _sprite) {}
+    void deleteObject(Sprite* _sprite) {};
 
-    std::vector<sprite*>::iterator getIterator() { return sprites.begin(); }
+    std::vector<Sprite*>::iterator getIterator() { return sprites.begin(); }
 
     std::string name;
-    std::vector<sprite*> sprites;
+    std::vector<Sprite*> sprites;
 };

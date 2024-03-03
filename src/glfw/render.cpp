@@ -23,7 +23,7 @@ void Render::clearRender() {
 }
 
 
-void Render::drawObeject(sprite &_sprite)
+void Render::drawObject(Sprite&_sprite)
 {
     glUseProgram(_sprite.shader);
     glActiveTexture(GL_TEXTURE0);
@@ -33,7 +33,7 @@ void Render::drawObeject(sprite &_sprite)
 
     pipeline.object = &_sprite.trans;
     if ((pipeline.camera == nullptr) || (pipeline.object == nullptr)) {
-        std::cout << "Error Render.drawObeject(): " << std::endl;
+        std::cout << "Error Render.drawObject(): " << std::endl;
         if (pipeline.camera == nullptr) std::cout << "Not found Camera ";
         if (pipeline.object == nullptr) std::cout << "Not found ObjectTransform ";
         std::cout << std::endl;

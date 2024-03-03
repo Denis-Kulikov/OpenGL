@@ -5,9 +5,9 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
-struct GeometryInfo sprite::geometryInfo = {0, 0, 0, 0, 0};
+struct GeometryInfo Sprite::geometryInfo = {0, 0, 0, 0, 0};
 
-void sprite::loadTexures(const char *texturePath)
+void Sprite::loadTexures(const char *texturePath)
 {
     if (texturePath == nullptr) return;
 
@@ -43,7 +43,7 @@ void sprite::loadTexures(const char *texturePath)
     }
 }
 
-GLuint sprite::loadShader(const char *shaderPath, GLuint type)
+GLuint Sprite::loadShader(const char *shaderPath, GLuint type)
 {
     std::ifstream shaderFile(shaderPath);
     if (!shaderFile.is_open()) {
@@ -74,7 +74,7 @@ GLuint sprite::loadShader(const char *shaderPath, GLuint type)
     return shader;
 }
 
-void sprite::compileShaders(const char *FS, const char *VS)
+void Sprite::compileShaders(const char *FS, const char *VS)
 {
     if (shader == 0) 
         shader = glCreateProgram();
@@ -124,7 +124,7 @@ void sprite::compileShaders(const char *FS, const char *VS)
     assert(gWorldLocation != 0xFFFFFFFF);
 }
 
-void sprite::initializeGeometry()
+void Sprite::initializeGeometry()
 {
     std::vector<GLfloat> vertices = {
         -1.0f, -1.0f, 0.0f,  0.0f, 0.0f,
@@ -163,7 +163,17 @@ void sprite::initializeGeometry()
     glBindVertexArray(0);
 }
 
-sprite::sprite(const std::string &_name, const objectTransform &_trans, const char *FS, const char *VS, const char *texturePath)
+Sprite::Sprite(const std::string &_name, const char *FS, const char *VS, const char *texturePath)
+    : name(_name)
+{
+    geometry = &geometryInfo;
+    if (geometry == nullptr) std::cout << "Error " << name << ": Creating an instance before initialization" << std::endl; 
+
+    compileShaders(FS, VS);
+    loadTexures(texturePath);
+}
+
+Sprite::Sprite(const std::string &_name, const objectTransform &_trans, const char *FS, const char *VS, const char *texturePath)
     : name(_name)
 {
     trans.SetTransform(_trans);
@@ -173,3 +183,5 @@ sprite::sprite(const std::string &_name, const objectTransform &_trans, const ch
     compileShaders(FS, VS);
     loadTexures(texturePath);
 }
+
+Sprite::Sprite() {}

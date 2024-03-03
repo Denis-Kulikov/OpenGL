@@ -7,6 +7,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <vector>
+#include <map>
 #include <unistd.h>
 
 #include <GL/glew.h>

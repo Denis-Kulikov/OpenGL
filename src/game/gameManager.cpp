@@ -7,7 +7,7 @@ const char Bone::NAME[] = "name";
 
 void GameManager::InitializeObjects()
 {
-    sprite::initializeGeometry();
+    Sprite::initializeGeometry();
     line::initializeGeometry();
     cube_bone::initializeGeometry();
 }

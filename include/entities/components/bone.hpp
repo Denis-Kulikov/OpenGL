@@ -16,6 +16,7 @@ public:
     void addChildBone(std::string _name, Bone &_parent)
     {
         Bone child(_name, &_parent);
+        std::cout << child.name << std::endl;
         children.push_back(child);
     };
 
@@ -29,7 +30,8 @@ public:
     }
 
     void createSkelet(const std::string &_path, const std::string &_name) {
-        std::string full_path = "assets/entities/" + _path + "/model/skelet/" + _name + ".xml";
+        std::cout << __FUNCTION__  << std::endl;
+        std::string full_path = "assets/entities/" + _path + "/models/skelet/" + _name + ".xml";
         pugi::xml_document doc;
         pugi::xml_parse_result parse_result = doc.load_file(full_path.c_str());
 

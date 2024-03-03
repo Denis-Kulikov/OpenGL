@@ -57,7 +57,7 @@ void circle::initializeGeometry()
 }
 
 circle::circle(const std::string &_name, const objectTransform &_trans, const char *FS, const char *VS, const char *texturePath, const GLint _numVertices)
-    : sprite(_name, _trans, FS, VS, nullptr)
+    : Sprite(_name, _trans, FS, VS, nullptr)
 {
     numVertices = _numVertices;
     initializeGeometry();

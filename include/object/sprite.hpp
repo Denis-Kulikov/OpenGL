@@ -10,11 +10,12 @@ struct GeometryInfo {
     GLint numIndices;
 };
 
-class sprite 
+class Sprite
 {
 public:
-    sprite(const std::string &_name, const objectTransform &_trans, const char *FS, const char *VS, const char *texturePath);
-    sprite(const objectTransform &_trans, const char *FS, const char *VS, const char *texturePath);
+    Sprite(const std::string &_name, const objectTransform &_trans, const char *FS, const char *VS, const char *texturePath);
+    Sprite(const std::string &_name, const char *FS, const char *VS, const char *texturePath);
+    Sprite();
     static void initializeGeometry();
 
     std::string      name;

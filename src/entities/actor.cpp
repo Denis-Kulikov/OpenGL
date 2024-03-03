@@ -1,4 +1,11 @@
 #include <entities/actor.hpp>
+#include <filesystem>
+
+namespace fs = std::filesystem;
+
+std::map<std::string, Sprite> Actor::sprites;
+// std::map<std::string, Bone> Bone::children;
+// std::map<Sprite, std::string> Actor::sprites(Sprite(), "");
 
 bool Actor::loadComponents(const std::string &path)
 {
@@ -26,6 +33,27 @@ bool Actor::loadComponents(const std::string &path)
     //     stop_words.emplace_back(word.child_value());
     //     word = word.next_sibling("word");
     // }
+
+    return true;
+}
+
+// std::set<Sprite, std::string> Actor::sprites; загружать спрайты в эту структуру
+bool Actor::loadSprites(const std::string &path)
+{
+    std::cout << __FUNCTION__  << std::endl;
+    std::string full_path = "entities/" + path + "/models/sprites/";
+
+    for (const auto &entry : fs::directory_iterator("assets/" + full_path)) {
+        if (entry.is_regular_file()) {
+            std::string filename = entry.path().filename().string();
+            if ((filename.size() > 4) && (filename.substr(filename.size() - 4) == ".jpg" || filename.substr(filename.size() - 4) == ".png")) {
+                std::string spriteName = filename.substr(0, filename.size() - 4);
+                std::cout << spriteName  << std::endl;
+                Sprite sprite(spriteName, "shaders/sprite_fs.glsl", "shaders/sprite_vs.glsl", (full_path + filename).c_str());
+                sprites.insert({spriteName, sprite});
+            }
+        }
+    }
 
     return true;
 }
@@ -64,6 +92,7 @@ bool Actor::loadActor(const std::string &path)
     trans.print();
 
     if (!loadComponents(path)) return false;
+    if (!loadSprites(path))    return false;
 
     //  = stoi(doc.child("fts").child("parser").attribute("ngram_max_length").value());
     // word = doc.child("fts").child("parser").child("stop_words").child("word");
@@ -76,11 +105,11 @@ bool Actor::loadActor(const std::string &path)
 }
 
 
-Actor::Actor(const std::string &_name, const objectTransform &_trans)
-    : name(_name), trans(_trans)
-{
+// Actor::Actor(const std::string &_name, const objectTransform &_trans)
+//     : name(_name), trans(_trans)
+// {
 
-}
+// }
 
 Actor::Actor(const std::string &path)
 {

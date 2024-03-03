@@ -1,7 +1,7 @@
 #pragma once
 #include "sprite.hpp"
 
-class line : public sprite
+class line : public Sprite
 {
 public:
     // line(const std::string &_name, const objectTransform &_trans, const Vector3<GLfloat> _color, GLfloat _lineWidth);

@@ -42,7 +42,7 @@ void line::initializeGeometry() {
 }
 
 // line::line(const std::string &_name, const objectTransform &_trans, const Vector3<GLfloat> _color, GLfloat _lineWidth)
-//     : sprite(_name, _trans, "shaders/bone_fs.glsl", "shaders/base_vs.glsl", nullptr)
+//     : Sprite(_name, _trans, "shaders/bone_fs.glsl", "shaders/base_vs.glsl", nullptr)
 // {
 //     trans.SetScale(trans.GetScale().x, _lineWidth, 0.0);
 
@@ -57,7 +57,7 @@ void line::initializeGeometry() {
 //     : line(_name, _trans, _color, 1.0) {}
 
 line::line(const std::string &_name, const objectTransform &_trans, const Vector3<GLfloat> _color)
-    : sprite(_name, _trans, "shaders/bone_fs.glsl", "shaders/base_vs.glsl", nullptr)
+    : Sprite(_name, _trans, "shaders/bone_fs.glsl", "shaders/base_vs.glsl", nullptr)
 {
     color.x = _color.x;
     color.y = _color.y;

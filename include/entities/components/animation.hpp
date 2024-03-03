@@ -2,14 +2,12 @@
 #include "../object/sprite.hpp"
 #include "../object/sprite.hpp"
 
-class animation
+class Animation
 {
 public:
-    animation();
+    Animation();
 
     std::string name;
     
-    std::vector<transition*> transitions;
-    std::vector<sprite*> sprites;
-    int zIndex;
+    std::pair<std::string, std::string> *sprites;
 };
