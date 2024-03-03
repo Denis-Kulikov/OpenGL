@@ -1,0 +1,11 @@
+<bone name="head">
+    <bone name="face" />
+    <bone name="hair" />
+</bone>
+<bone name="belly">
+    <bone name="left_arm" />
+    <bone name="rigth_arm"/>
+
+    <bone name="left_leg" />
+    <bone name="rigth_leg"/>
+</bone>

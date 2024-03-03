@@ -1,10 +1,12 @@
 #include <render/glfw.hpp> 
+#include <game/gameManager.hpp> 
 
 int main(int argc, char** argv)
 {
     int width = 1600, height = 960;
     GLFWwindow* window = nullptr;
-    Render *render = InitializeGLFW(window, width, height);
+    Render *render = GameManager::InitializeGLFW(window, width, height);
+    GameManager::InitializeObjects();
     Scene *scene = createScene();
     glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
 
@@ -13,10 +15,9 @@ int main(int argc, char** argv)
         return -1;
     }
 
-    bool IsEnd = false;
-    while (!IsEnd) {
+    while (!GameManager::IsEnd) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        IsEnd = RenderSceneCB(render, scene);
+        GameManager::IsEnd = RenderSceneCB(render, scene);
         glfwSwapBuffers(window);
         glfwPollEvents();
     }

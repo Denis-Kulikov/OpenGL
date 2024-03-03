@@ -1,10 +1,7 @@
 #pragma once
 
-#include <pugixml.hpp>
-
-// #include "../object/objectTransform.hpp"
 #include "../object/sprite.hpp"
-// #include "../entities/components/component.hpp"
+#include "../entities/components/bone.hpp"
 
 class Actor 
 {
@@ -15,10 +12,11 @@ public:
     std::string name;
     objectTransform trans;
 
+    void addComponent();
+    bool loadComponents(const std::string &path);
     bool loadActor(const std::string &path);
-    // bool loadComponents(const string &path);
-    // void addComponent();
 
-    // std::vector<Component> components; 
+    Bone skelets; // skelets=&overallSkelets
+    // Model model; 
     // std::vector<overallAnimation> overallAnimation; 
 };

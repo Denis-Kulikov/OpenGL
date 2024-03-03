@@ -1,25 +1,34 @@
 #include <entities/actor.hpp>
 
-// bool Actor::loadComponents(const string &path)
-// {
-//     pugi::xml_document doc;
-//     pugi::xml_node word;
-//     pugi::xml_parse_result parse_result = doc.load_file(pathComponents.c_str());
+bool Actor::loadComponents(const std::string &path)
+{
+    std::string full_path = std::string("assets/entities/") + path + "/models/components.xml";
+    pugi::xml_document doc;
+    pugi::xml_node word;
+    pugi::xml_parse_result parse_result = doc.load_file(full_path.c_str());
 
-//     if (!parse_result) {
-//         std::cout << "Error " << name << ".loadComponents: file not found" << std::endl;
-//         return fasle;
-//     }
+    // word = doc.child("fts").child("parser").child("stop_words").child("word");
+    // while (static_cast<bool>(word)) {
+    //     stop_words.emplace_back(word.child_value());
+    //     word = word.next_sibling("word");
+    // }
+    if (!parse_result) {
+        std::cout << "Error " << name << ".loadComponents: file not found (" << full_path << ")" << std::endl;
+        return false;
+    }
 
-//     ngram_min_length = stoi(doc.child("fts").child("parser").attribute("ngram_min_length").value());
-//     ngram_max_length = stoi(doc.child("fts").child("parser").attribute("ngram_max_length").value());
-//     word = doc.child("fts").child("parser").child("stop_words").child("word");
-//     while (static_cast<bool>(word)) {
-//         stop_words.emplace_back(word.child_value());
-//         word = word.next_sibling("word");
-//     }
+    float n = std::stoi(doc.child("components").attribute("n").value());
+    std::cout << "N: " << n << std::endl;
+    
+    // ngram_max_length = std::stoi(doc.child("character").value());
+    // word = doc.child("fts").child("parser").child("stop_words").child("word");
+    // while (static_cast<bool>(word)) {
+    //     stop_words.emplace_back(word.child_value());
+    //     word = word.next_sibling("word");
+    // }
 
-// }
+    return true;
+}
 
 bool Actor::loadActor(const std::string &path)
 {
@@ -31,7 +40,7 @@ bool Actor::loadActor(const std::string &path)
     // pugi::xml_parse_result parse_result = doc.load_file("assets/entities/player/Wilson/actor.xml");
 
     if (!parse_result) {
-        std::cout << "Error " << name << ".loadComponents: file not found (" << full_path << ")" << std::endl;
+        std::cout << "Error " << name << ".loadActor: file not found (" << full_path << ")" << std::endl;
         return false;
     }
 
@@ -53,6 +62,8 @@ bool Actor::loadActor(const std::string &path)
 
     std::cout << "Name: " << name << std::endl;
     trans.print();
+
+    if (!loadComponents(path)) return false;
 
     //  = stoi(doc.child("fts").child("parser").attribute("ngram_max_length").value());
     // word = doc.child("fts").child("parser").child("stop_words").child("word");
