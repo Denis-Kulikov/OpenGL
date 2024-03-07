@@ -1,9 +1,12 @@
 #include <entities/actor.hpp>
+#include <entities/components/components.hpp>
 #include <filesystem>
+#include <pugixml.hpp>
 
 namespace fs = std::filesystem;
 
 std::map<std::string, Sprite> Actor::sprites;
+const struct NODE_STR Actor::NODE = {"name", "bone"};
 
 // std::map<std::string, Bone> Bone::children;
 // std::map<Sprite, std::string> Actor::sprites(Sprite(), "");
@@ -16,6 +19,74 @@ std::map<std::string, Sprite> Actor::sprites;
 
 //     return sprites
 // }
+
+
+void Actor::parseAnimation(pugi::xml_node &_node, Bone *_bone) {
+    std::cout << __FUNCTION__  << std::endl;
+    std::cout << _bone->children.size()  << std::endl;
+
+    for (int i = 0; i < _bone->children.size(); i++) {
+        std::cout << i << std::endl;
+        pugi::xml_node node = _node.child(_bone->children[i]->name.c_str());
+        objectTransform _transform;
+        Vector3<GLfloat> v;
+
+        v.x = std::stof(node.attribute("x").value());
+        v.y = std::stof(node.attribute("y").value());
+        v.z = std::stof(node.attribute("z").value());
+        _transform.SetWorldPos(v.x, v.y, v.z);
+
+        v.x = std::stof(node.attribute("width").value());
+        v.y = std::stof(node.attribute("height").value());
+        _transform.SetScale(v.x, v.y, 0.0);
+
+        v.z = std::stof(node.attribute("flip").value());
+        _transform.SetRotate(0.0, 0.0, v.z);
+
+        _bone->children[i]->component.SetChildAnimation(_transform);
+        // parseAnimation(node, _bone->children[i]);
+        // node = node.next_sibling(Actor::NODE.NAME)
+    }
+}
+
+bool Actor::loadAnimation(const std::string &_path, const std::string &_name)
+{
+    std::cout << __FUNCTION__  << std::endl;
+    std::string full_path = std::string("assets/entities/") + _path + std::string("/models/animations/") + _name + std::string(".xml");
+    pugi::xml_document doc;
+    pugi::xml_node node;
+    pugi::xml_parse_result parse_result = doc.load_file(full_path.c_str());
+
+    if (!parse_result) {
+        std::cout << "Error " << name << ".loadAnimation: file not found (" << full_path << ")" << std::endl;
+        return false;
+    }
+
+    node = doc.child("animation");
+    skelet.component.name = node.attribute(Actor::NODE.NAME).value();
+    
+    objectTransform _transform;
+    Vector3<GLfloat> v;
+
+    v.x = std::stof(node.attribute("x").value());
+    v.y = std::stof(node.attribute("y").value());
+    v.z = std::stof(node.attribute("z").value());
+    _transform.SetWorldPos(v.x, v.y, v.z);
+
+    v.x = std::stof(node.attribute("width").value());
+    v.y = std::stof(node.attribute("height").value());
+    _transform.SetScale(v.x, v.y, 0.0);
+
+    v.z = std::stof(node.attribute("flip").value());
+    _transform.SetRotate(0.0, 0.0, v.z);
+
+    skelet.component.trans.SetTransform(_transform);
+
+
+    // parseAnimation(node, &skelet);
+
+    return true;
+}
 
 std::vector<Sprite*> Actor::getActorComponents(Bone *_parent)
 {
@@ -35,19 +106,19 @@ std::vector<Sprite*> Actor::getActorComponents(Bone *_parent)
             // transParent->SetScale(1.0, 1.0, 1.0);
         // }
 
-        if (it->name == "head") {
-            transParent->Move(0.0, 0.0, 0.0);
-            transParent->SetScale(1.0, 1.0, 0);
-        }
-        if (it->name == "face") {
-            transParent->Move(0.0, 0.0, -0.1);
-            transParent->SetScale(0.6, 0.6, 0);
-        }
-        if (it->name == "hair_front") {
-            transParent->Move(0.0, 0.0, 0.1);
-            // transParent->Move(0.0, 0.5, 0.1);
-            transParent->SetScale(1.5, 1.5, 0);
-        }
+        // if (it->name == "head") {
+        //     transParent->Move(0.0, 0.0, 0.0);
+        //     transParent->SetScale(1.0, 1.0, 0);
+        // }
+        // if (it->name == "face") {
+        //     transParent->Move(0.0, 0.0, -0.1);
+        //     transParent->SetScale(0.6, 0.6, 0);
+        // }
+        // if (it->name == "hair_front") {
+        //     transParent->Move(0.0, 0.0, 0.1);
+        //     // transParent->Move(0.0, 0.5, 0.1);
+        //     transParent->SetScale(1.5, 1.5, 0);
+        // }
 
         it->component.sprite->trans.SetWorldPos(transChild->WorldPos.x + transParent->WorldPos.x, transChild->WorldPos.y + transParent->WorldPos.y, transChild->WorldPos.z + transParent->WorldPos.z);
         it->component.sprite->trans.SetRotate  (transChild->Rotate.x   + transParent->Rotate.x,   transChild->Rotate.y   + transParent->Rotate.y,   transChild->Rotate.z   + transParent->Rotate.z);
@@ -77,8 +148,8 @@ bool Actor::loadComponents(const std::string &path)
         return false;
     }
 
-    float n = std::stoi(doc.child("components").attribute("n").value());
-    std::cout << "N: " << n << std::endl;
+    // float n = std::stoi(doc.child("components").attribute("n").value());
+    // std::cout << "N: " << n << std::endl;
     
 
     return true;
@@ -87,7 +158,7 @@ bool Actor::loadComponents(const std::string &path)
 // std::set<Sprite, std::string> Actor::sprites; загружать спрайты в эту структуру
 bool Actor::loadSprites(const std::string &path)
 {
-    std::cout << __FUNCTION__  << std::endl;
+    // std::cout << __FUNCTION__  << std::endl;
     std::string full_path = "entities/" + path + "/models/sprites/";
 
     for (const auto &entry : fs::directory_iterator("assets/" + full_path)) {
@@ -95,7 +166,7 @@ bool Actor::loadSprites(const std::string &path)
             std::string filename = entry.path().filename().string();
             if ((filename.size() > 4) && (filename.substr(filename.size() - 4) == ".jpg" || filename.substr(filename.size() - 4) == ".png")) {
                 std::string spriteName = filename.substr(0, filename.size() - 4);
-                std::cout << spriteName  << std::endl;
+                // std::cout << spriteName  << std::endl;
                 Sprite sprite(spriteName, "shaders/sprite_fs.glsl", "shaders/sprite_vs.glsl", (full_path + filename).c_str());
                 sprites.insert({spriteName, sprite});
             }
@@ -160,7 +231,7 @@ bool Actor::loadActor(const std::string &path)
 Actor::Actor(const std::string &path)
 {
     loadActor(path);
-    skelets.component.trans.SetRotate(0.0, 0.0, 180);
+    skelet.component.trans.SetRotate(0.0, 0.0, 180);
 
-    // skelets.pushSprites(&sprites);
+    // skelet.pushSprites(&sprites);
 }

@@ -8,6 +8,8 @@ public:
     Animation();
 
     std::string name;
+
     
+    std::pair<std::string, *fun> motion;
     std::pair<std::string, std::string> *sprites;
 };

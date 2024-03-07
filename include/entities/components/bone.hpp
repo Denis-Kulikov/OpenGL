@@ -24,10 +24,11 @@ public:
             std::cout << child->name << "\t" << child->parent->name << std::endl;
             children.push_back(child);
         }
-        children.push_back(child);
+        // children.push_back(child);
     };
 
     void parseBone(pugi::xml_node &node, Bone *_parent, std::map<std::string, Sprite> *_sprites) {
+        std::cout << __FUNCTION__  << std::endl;
         for (pugi::xml_node boneNode = node.child(Bone::BONE); boneNode; boneNode = boneNode.next_sibling(Bone::BONE)) {
             std::string boneName = boneNode.attribute(Bone::NAME).as_string();
             // Bone newBone(boneName);
@@ -37,7 +38,7 @@ public:
     }
 
     void createSkelet(const std::string &_path, const std::string &_name, std::map<std::string, Sprite> *_sprites) {
-        std::cout << __FUNCTION__  << std::endl;
+        // std::cout << __FUNCTION__  << std::endl;
 
         if (_sprites == nullptr) {
             std::cout << "Not found &sprites" << std::endl;

@@ -17,7 +17,13 @@ public:
     // };
     // bool linkModel();
 
-    // std::string name;
+    void SetChildAnimation(const objectTransform &_transform)
+    {
+        std::cout << sprite->name << std::endl;
+        trans.SetTransform(_transform);
+    };
+
+    std::string name;
     objectTransform trans;
     // objectTransform anchorPoint;
     Sprite *sprite;

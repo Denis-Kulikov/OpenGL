@@ -18,7 +18,7 @@ bool RenderSceneCB(Render *render, Scene *scene)
     // actor->skelets.component.trans.SetWorldPos(0.0, 0.0, 0.0);
     // actor->skelets.component.trans.SetRotate(0.0, 0.0, 0.0);
     // actor->skelets.component.trans.SetScale(1.0, 1.0, 1.0);
-    std::vector<Sprite*> ActorComponents = actor->getActorComponents(&actor->skelets);
+    std::vector<Sprite*> ActorComponents = actor->getActorComponents(&actor->skelet);
 
     // std::cout << actor->skelets.parent << std::endl;
 
@@ -89,7 +89,8 @@ Scene *createScene()
     std::string path("player/Wilson");
     Actor::loadSprites(path);
     actor = new Actor(path);
-    actor->skelets.createSkelet("player/Wilson", "skelet", &Actor::sprites);
+    actor->skelet.createSkelet(path, "skelet", &Actor::sprites);
+    actor->loadAnimation(path, "stand");
 
     return scene;
 }
