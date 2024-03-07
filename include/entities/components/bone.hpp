@@ -20,7 +20,7 @@ public:
         auto it = _sprites->find(child->name); 
         if (it != _sprites->end()) {
             child->component.sprite = &(it->second); 
-            std::cout << child->name << "\t" << child->parent->name << std::endl;
+            // std::cout << child->name << "\t" << child->parent->name << std::endl;
             _parent->children.push_back(child);
             child->parseBone(node, child, _sprites);
         }
@@ -54,7 +54,7 @@ public:
 
         node = doc.child("skelet");
         name = node.attribute(Bone::NAME).as_string();
-        std::cout << name << std::endl;
+        // std::cout << name << std::endl;
 
         parseBone(node, this, _sprites);
     }

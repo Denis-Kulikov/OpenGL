@@ -10,6 +10,8 @@
 
 Actor *actor = nullptr;
 
+// Растеризация. Проекция перспективы. Скелетная анимация 2D моделей.
+
 bool RenderSceneCB(Render *render, Scene *scene)
 {
     for (std::vector<Sprite*>::iterator it = scene->getIterator(); it != scene->sprites.end(); it++) render->drawObject(**it);
@@ -57,33 +59,33 @@ Scene *createScene()
     // mySprite->trans.Move(0, 1, 1);
     // scene->pushObject(mySprite);
 
-    sphere *mySphere = new sphere(std::string("MySphere1"), _trans, "shaders/sphere_fs.glsl", "shaders/base_vs.glsl", nullptr, 4);
-    mySphere->trans.Move(-1, 0, 2);
-    mySphere->trans.SetScale(0.1, 0.1, 0.1);
-    scene->pushObject(mySphere);
-    mySphere = new sphere(std::string("MySphere1"), _trans, "shaders/sphere_fs.glsl", "shaders/base_vs.glsl", nullptr, 4);
-    mySphere->trans.Move(1, 1, 1);
-    mySphere->trans.SetScale(0.1, 0.1, 0.1);
-    scene->pushObject(mySphere);
+    // sphere *mySphere = new sphere(std::string("MySphere1"), _trans, "shaders/sphere_fs.glsl", "shaders/base_vs.glsl", nullptr, 4);
+    // mySphere->trans.Move(-1, 0, 2);
+    // mySphere->trans.SetScale(0.1, 0.1, 0.1);
+    // scene->pushObject(mySphere);
+    // mySphere = new sphere(std::string("MySphere1"), _trans, "shaders/sphere_fs.glsl", "shaders/base_vs.glsl", nullptr, 4);
+    // mySphere->trans.Move(1, 1, 1);
+    // mySphere->trans.SetScale(0.1, 0.1, 0.1);
+    // scene->pushObject(mySphere);
 
 
-    mySprite = new Sprite(std::string("chess1"), _trans, "shaders/Sprite_fs.glsl", "shaders/Sprite_vs.glsl", "img/chess.jpg");
-    mySprite->trans.Move(0, 1, 2);
-    scene->pushObject(mySprite);
+    // mySprite = new Sprite(std::string("chess1"), _trans, "shaders/Sprite_fs.glsl", "shaders/Sprite_vs.glsl", "img/chess.jpg");
+    // mySprite->trans.Move(0, 1, 2);
+    // scene->pushObject(mySprite);
 
     // sphere *mySphere = new sphere(std::string("MySphere"), _trans, "shaders/sphere_fs.glsl", "shaders/base_vs.glsl", nullptr, 4);
     // mySphere->trans.Move(-3, -3, 7);
     // scene->pushObject(mySphere);
 
-    cube_bone *myCube_bone = new cube_bone(std::string("MyCube"), _trans, whiteColor);
-    myCube_bone->trans.Move(0, -1, 3);
-    scene->pushObject(myCube_bone);
+    // cube_bone *myCube_bone = new cube_bone(std::string("MyCube"), _trans, whiteColor);
+    // myCube_bone->trans.Move(0, -1, 3);
+    // scene->pushObject(myCube_bone);
 
 
-    line *myLine = new line(std::string("MyLine"), _trans, redColor);
-    // myLine->trans.Move(0, 0, 1);
-    myLine->setPoints(Vector3<GLfloat>(1, 1, 1), Vector3<GLfloat>(-1, 0, 2));
-    scene->pushObject(myLine);
+    // line *myLine = new line(std::string("MyLine"), _trans, redColor);
+    // // myLine->trans.Move(0, 0, 1);
+    // myLine->setPoints(Vector3<GLfloat>(1, 1, 1), Vector3<GLfloat>(-1, 0, 2));
+    // scene->pushObject(myLine);
 
 
     std::string path("player/Wilson");

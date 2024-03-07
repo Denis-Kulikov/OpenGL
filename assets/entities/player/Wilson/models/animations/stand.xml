@@ -1,7 +1,7 @@
 <animation name="stand" x="0.0" y="0.0" z="0.0" flip="0.0" width="1.0" height="1.0">
-    <head x="0.0" y="0.0" z="0.0" flip="0.0" width="1.0" height="1.0">
-        <face x="0.0" y="0.0" z="0.0" flip="0.0" width="0.7" height="0.7"/>
-        <hair_front x="0.0" y="0.0" z="0.0" flip="0.0" width="1.0" height="1.0"/>
+    <head x="0.0" y="0.0" z="1.0" flip="180.0" width="1.0" height="1.0">
+        <face x="0.0" y="0.0" z="-0.01" flip="0.0" width="0.7" height="0.7"/>
+        <hair_front x="0.0" y="0.8" z="0.01" flip="0.0" width="1.4" height="1.4"/>
     </head>
 </animation>
 

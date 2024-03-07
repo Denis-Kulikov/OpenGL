@@ -23,11 +23,13 @@ const struct NODE_STR Actor::NODE = {"name", "bone"};
 
 void Actor::parseAnimation(pugi::xml_node &_node, Bone *_bone) {
     std::cout << __FUNCTION__  << std::endl;
-    std::cout << _bone->children.size()  << std::endl;
+    // std::cout << _bone->children.size()  << std::endl;
 
     for (int i = 0; i < _bone->children.size(); i++) {
-        std::cout << i << std::endl;
         pugi::xml_node node = _node.child(_bone->children[i]->name.c_str());
+
+        std::cout << i << std::endl;
+
         objectTransform _transform;
         Vector3<GLfloat> v;
 
@@ -44,14 +46,14 @@ void Actor::parseAnimation(pugi::xml_node &_node, Bone *_bone) {
         _transform.SetRotate(0.0, 0.0, v.z);
 
         _bone->children[i]->component.SetChildAnimation(_transform);
-        // parseAnimation(node, _bone->children[i]);
+        parseAnimation(node, _bone->children[i]);
         // node = node.next_sibling(Actor::NODE.NAME)
     }
 }
 
 bool Actor::loadAnimation(const std::string &_path, const std::string &_name)
 {
-    std::cout << __FUNCTION__  << std::endl;
+    // std::cout << __FUNCTION__  << std::endl;
     std::string full_path = std::string("assets/entities/") + _path + std::string("/models/animations/") + _name + std::string(".xml");
     pugi::xml_document doc;
     pugi::xml_node node;
@@ -83,7 +85,7 @@ bool Actor::loadAnimation(const std::string &_path, const std::string &_name)
     skelet.component.trans.SetTransform(_transform);
 
 
-    // parseAnimation(node, &skelet);
+    parseAnimation(node, &skelet);
 
     return true;
 }
@@ -206,8 +208,8 @@ bool Actor::loadActor(const std::string &path)
     v.y = std::stof(doc.child("character").child("objectTransform").child("scale").attribute("y").value());
     trans.SetScale(v.x, v.y, 0.0);
 
-    std::cout << "Name: " << name << std::endl;
-    trans.print();
+    // std::cout << "Name: " << name << std::endl;
+    // trans.print();
 
     if (!loadComponents(path)) return false;
 
