@@ -13,4 +13,5 @@ target_link_libraries(
 	#lib-math
 	lib-object
 	lib-entities
+	lib-components
 )

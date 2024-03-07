@@ -2,9 +2,6 @@
 
 bool GameManager::IsEnd = false;
 
-const char Bone::BONE[] = "bone";
-const char Bone::NAME[] = "name";
-
 void GameManager::InitializeObjects()
 {
     Sprite::initializeGeometry();

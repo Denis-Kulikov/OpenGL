@@ -4,10 +4,3 @@
         <bone name="hair_front" />
     </bone>
 </skelet>
-<!-- <bone name="belly">
-    <bone name="left_arm" />
-    <bone name="rigth_arm"/>
-
-    <bone name="left_leg" />
-    <bone name="rigth_leg"/>
-</bone> -->

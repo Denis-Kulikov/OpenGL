@@ -16,21 +16,13 @@ bool RenderSceneCB(Render *render, Scene *scene)
 {
     for (std::vector<Sprite*>::iterator it = scene->getIterator(); it != scene->sprites.end(); it++) render->drawObject(**it);
 
-    // actor->skelets.pushSprites(&Actor::sprites);
-    // actor->skelets.component.trans.SetWorldPos(0.0, 0.0, 0.0);
-    // actor->skelets.component.trans.SetRotate(0.0, 0.0, 0.0);
-    // actor->skelets.component.trans.SetScale(1.0, 1.0, 1.0);
     std::vector<Sprite*> ActorComponents = actor->getActorComponents(&actor->skelet);
-
-    // std::cout << actor->skelets.parent << std::endl;
 
     for (auto it : ActorComponents) {
         if (it == nullptr) continue;
         // it->trans.print();
         render->drawObject(*it);
     }
-    // for (auto& spritePtr : ActorComponents) render->drawObject(*spritePtr);
-    // for (auto it = ActorComponents.begin(); it != ActorComponents.end(); it++) render->drawObject(it);
 
     return GameManager::IsEnd;
 }

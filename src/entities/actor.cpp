@@ -8,28 +8,9 @@ namespace fs = std::filesystem;
 std::map<std::string, Sprite> Actor::sprites;
 const struct NODE_STR Actor::NODE = {"name", "bone"};
 
-// std::map<std::string, Bone> Bone::children;
-// std::map<Sprite, std::string> Actor::sprites(Sprite(), "");
-
-// std::vector<Sprite*> Actor::sortSpritesZ(std::vector<Sprite*> &sprites)
-// {
-//     for (auto it : sprites) {
-
-//     }
-
-//     return sprites
-// }
-
-
 void Actor::parseAnimation(pugi::xml_node &_node, Bone *_bone) {
-    std::cout << __FUNCTION__  << std::endl;
-    // std::cout << _bone->children.size()  << std::endl;
-
     for (int i = 0; i < _bone->children.size(); i++) {
         pugi::xml_node node = _node.child(_bone->children[i]->name.c_str());
-
-        std::cout << i << std::endl;
-
         objectTransform _transform;
         Vector3<GLfloat> v;
 
@@ -47,13 +28,11 @@ void Actor::parseAnimation(pugi::xml_node &_node, Bone *_bone) {
 
         _bone->children[i]->component.SetChildAnimation(_transform);
         parseAnimation(node, _bone->children[i]);
-        // node = node.next_sibling(Actor::NODE.NAME)
     }
 }
 
 bool Actor::loadAnimation(const std::string &_path, const std::string &_name)
 {
-    // std::cout << __FUNCTION__  << std::endl;
     std::string full_path = std::string("assets/entities/") + _path + std::string("/models/animations/") + _name + std::string(".xml");
     pugi::xml_document doc;
     pugi::xml_node node;
@@ -84,7 +63,6 @@ bool Actor::loadAnimation(const std::string &_path, const std::string &_name)
 
     skelet.component.trans.SetTransform(_transform);
 
-
     parseAnimation(node, &skelet);
 
     return true;
@@ -95,32 +73,8 @@ std::vector<Sprite*> Actor::getActorComponents(Bone *_parent)
     std::vector<Sprite*> ActorComponents;
 
     for (auto it : _parent->children) {
-        // std::cout << __FUNCTION__ << " " << it->name << std::endl;
-
         objectTransform *transChild  = &(it->component.trans);
-        objectTransform *transParent;
-
-        // if (it->parent != nullptr) {
-            transParent = &(it->parent->component.trans);
-            // transParent->print();
-        // } else {
-            // transParent = new objectTransform();
-            // transParent->SetScale(1.0, 1.0, 1.0);
-        // }
-
-        // if (it->name == "head") {
-        //     transParent->Move(0.0, 0.0, 0.0);
-        //     transParent->SetScale(1.0, 1.0, 0);
-        // }
-        // if (it->name == "face") {
-        //     transParent->Move(0.0, 0.0, -0.1);
-        //     transParent->SetScale(0.6, 0.6, 0);
-        // }
-        // if (it->name == "hair_front") {
-        //     transParent->Move(0.0, 0.0, 0.1);
-        //     // transParent->Move(0.0, 0.5, 0.1);
-        //     transParent->SetScale(1.5, 1.5, 0);
-        // }
+        objectTransform *transParent = &(it->parent->component.trans);
 
         it->component.sprite->trans.SetWorldPos(transChild->WorldPos.x + transParent->WorldPos.x, transChild->WorldPos.y + transParent->WorldPos.y, transChild->WorldPos.z + transParent->WorldPos.z);
         it->component.sprite->trans.SetRotate  (transChild->Rotate.x   + transParent->Rotate.x,   transChild->Rotate.y   + transParent->Rotate.y,   transChild->Rotate.z   + transParent->Rotate.z);
@@ -131,9 +85,6 @@ std::vector<Sprite*> Actor::getActorComponents(Bone *_parent)
         std::vector<Sprite*> componentsToAdd = getActorComponents(it);
         ActorComponents.insert(ActorComponents.end(), componentsToAdd.begin(), componentsToAdd.end());
     }
-
-    // vector<pair<int, double>> sortedVector(docs->begin(), docs->end());
-    // sort(ActorComponents.begin(), ActorComponents.end(), [](const auto& lhs, const auto& rhs) { return sprite.trans->WorldPos.z > sprite.trans->WorldPos.z;});
 
     return ActorComponents;
 }
@@ -150,17 +101,11 @@ bool Actor::loadComponents(const std::string &path)
         return false;
     }
 
-    // float n = std::stoi(doc.child("components").attribute("n").value());
-    // std::cout << "N: " << n << std::endl;
-    
-
     return true;
 }
 
-// std::set<Sprite, std::string> Actor::sprites; загружать спрайты в эту структуру
 bool Actor::loadSprites(const std::string &path)
 {
-    // std::cout << __FUNCTION__  << std::endl;
     std::string full_path = "entities/" + path + "/models/sprites/";
 
     for (const auto &entry : fs::directory_iterator("assets/" + full_path)) {
@@ -168,7 +113,6 @@ bool Actor::loadSprites(const std::string &path)
             std::string filename = entry.path().filename().string();
             if ((filename.size() > 4) && (filename.substr(filename.size() - 4) == ".jpg" || filename.substr(filename.size() - 4) == ".png")) {
                 std::string spriteName = filename.substr(0, filename.size() - 4);
-                // std::cout << spriteName  << std::endl;
                 Sprite sprite(spriteName, "shaders/sprite_fs.glsl", "shaders/sprite_vs.glsl", (full_path + filename).c_str());
                 sprites.insert({spriteName, sprite});
             }
@@ -181,11 +125,9 @@ bool Actor::loadSprites(const std::string &path)
 bool Actor::loadActor(const std::string &path)
 {
     std::string full_path = std::string("assets/entities/") + path + "/actor.xml";
-    // std::string full_path("assets/entities/player/Wilson/actor.xml");
     pugi::xml_document doc;
     pugi::xml_node word;
     pugi::xml_parse_result parse_result = doc.load_file(full_path.c_str());
-    // pugi::xml_parse_result parse_result = doc.load_file("assets/entities/player/Wilson/actor.xml");
 
     if (!parse_result) {
         std::cout << "Error " << name << ".loadActor: file not found (" << full_path << ")" << std::endl;
@@ -208,21 +150,10 @@ bool Actor::loadActor(const std::string &path)
     v.y = std::stof(doc.child("character").child("objectTransform").child("scale").attribute("y").value());
     trans.SetScale(v.x, v.y, 0.0);
 
-    // std::cout << "Name: " << name << std::endl;
-    // trans.print();
-
     if (!loadComponents(path)) return false;
-
-    //  = stoi(doc.child("fts").child("parser").attribute("ngram_max_length").value());
-    // word = doc.child("fts").child("parser").child("stop_words").child("word");
-    // while (static_cast<bool>(word)) {
-    //     stop_words.emplace_back(word.child_value());
-    //     word = word.next_sibling("word");
-    // }
 
     return true;
 }
-
 
 // Actor::Actor(const std::string &_name, const objectTransform &_trans)
 //     : name(_name), trans(_trans)

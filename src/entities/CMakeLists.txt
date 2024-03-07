@@ -10,4 +10,7 @@ target_link_libraries(
   PRIVATE
 	lib-object
 	pugixml
+	lib-components
 )
+
+add_subdirectory(components)

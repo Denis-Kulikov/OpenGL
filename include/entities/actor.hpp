@@ -23,23 +23,18 @@ public:
     objectTransform trans;
 
     void addComponent();
-    // std::vector<Sprite*> sortSpritesZ(Bone *parent)
     std::vector<Sprite*> getActorComponents(Bone *parent);
-    // bone следит за связанностью
-    // components привязывает спрайт и tran
-    // getActorComponents возвращает вектор спрайтво из отсотрированного вектора components по Z
 
     bool loadAnimation(const std::string &_path, const std::string &_name);
     bool loadComponents(const std::string &path);
     bool loadActor(const std::string &path);
     static bool loadSprites(const std::string &path);
 
-    Bone skelet; // skelet=&overallSkelets
+    Bone skelet;
     static std::map<std::string, Sprite> sprites;
     // Model model; 
     // std::vector<overallAnimation> overallAnimation; 
 protected:
-    // void SetChildAnimation(pugi::xml_node &_node);
     void parseAnimation(pugi::xml_node &_node, Bone *_bone);
 
 };

@@ -1,27 +1,12 @@
 #pragma once
-#include "bone.hpp"
-// #include "component.hpp"
-// #include "skelet.hpp"
 #include "../../object/sprite.hpp"
 
 class Components
 {
 public:
-    // Components(const std::string &_name, const objectTransform &_trans, const Vector3<GLfloat> &_anchorPoint, Components *_parent, const int _zIndex, const size_t _frameCount);
     Components() {};
 
-    // bool addChildComponent(const std::string &_name, const objectTransform &_anchorPoint, const objectTransform &_trans, Component *_parent, const int _zIndex, const size_t _frameCount);
-    // bool addBone(const std::string &_name, const objectTransform &_anchorPoint, const objectTransform &_trans, Components *_parent, const int _zIndex, const size_t _frameCount);
-    // std::pair<Bone*, float> createSkelet(cosnt std::string &path) 
-    // {
-    // };
-    // bool linkModel();
-
-    void SetChildAnimation(const objectTransform &_transform)
-    {
-        std::cout << sprite->name << std::endl;
-        trans.SetTransform(_transform);
-    };
+    void SetChildAnimation(const objectTransform &_transform);
 
     std::string name;
     objectTransform trans;
