@@ -8,19 +8,28 @@
 #include <entities/actor.hpp>
 #include <game/gameManager.hpp>
 
+Actor *actor = nullptr;
+
 bool RenderSceneCB(Render *render, Scene *scene)
 {
     for (std::vector<Sprite*>::iterator it = scene->getIterator(); it != scene->sprites.end(); it++) render->drawObject(**it);
 
-    auto it = Actor::sprites.find("face");
+    // actor->skelets.pushSprites(&Actor::sprites);
+    // actor->skelets.component.trans.SetWorldPos(0.0, 0.0, 0.0);
+    // actor->skelets.component.trans.SetRotate(0.0, 0.0, 0.0);
+    // actor->skelets.component.trans.SetScale(1.0, 1.0, 1.0);
+    std::vector<Sprite*> ActorComponents = actor->getActorComponents(&actor->skelets);
 
-    if (it != Actor::sprites.end()) {
-        Sprite& sprite = it->second; // получаем ссылку на спрайт
-        render->drawObject(sprite);
-    } else {
-        std::cout << "Sprite 'face.png' not found!" << std::endl;
+    // std::cout << actor->skelets.parent << std::endl;
+
+    for (auto it : ActorComponents) {
+        if (it == nullptr) continue;
+        // it->trans.print();
+        render->drawObject(*it);
     }
-    
+    // for (auto& spritePtr : ActorComponents) render->drawObject(*spritePtr);
+    // for (auto it = ActorComponents.begin(); it != ActorComponents.end(); it++) render->drawObject(it);
+
     return GameManager::IsEnd;
 }
 
@@ -78,8 +87,9 @@ Scene *createScene()
 
 
     std::string path("player/Wilson");
-    Actor actor(path);
-    actor.skelets.createSkelet("player/Wilson", "skelet");
+    Actor::loadSprites(path);
+    actor = new Actor(path);
+    actor->skelets.createSkelet("player/Wilson", "skelet", &Actor::sprites);
 
     return scene;
 }

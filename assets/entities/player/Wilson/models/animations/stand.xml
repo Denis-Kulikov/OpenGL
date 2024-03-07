@@ -1,12 +1,12 @@
-<bone name="head" />
+<head x="0.0" y="0.0" z="0.0" flip="0.0" width="1.0", high="1.0">
+    <face x="0.0" y="0.0" z="0.0" flip="0.0" width="1.0", high="1.0"/>
+    <hair_front x="0.0" y="0.0" z="0.0" flip="0.0" width="1.0", high="1.0"/>
+</head>
 
-<bone name="face" />
-<bone name="hair" />
+<!-- <belly"/>
 
-<!-- <bone name="belly"/>
+<left_arm" />
+<rigth_arm"/>
 
-<bone name="left_arm" />
-<bone name="rigth_arm"/>
-
-<bone name="left_leg" />
-<bone name="rigth_leg"/> -->
+<left_leg" />
+<rigth_leg"/> -->

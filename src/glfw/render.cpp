@@ -26,9 +26,6 @@ void Render::clearRender() {
 void Render::drawObject(Sprite&_sprite)
 {
     glUseProgram(_sprite.shader);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, _sprite.texture);
-    glUniform1i(_sprite.gTextureSamplerLocation, 0);
     if (_sprite.gColorLocation != 0xFFFFFFFF) glUniform3f(_sprite.gColorLocation, _sprite.color.x, _sprite.color.y, _sprite.color.z);
 
     pipeline.object = &_sprite.trans;
@@ -44,9 +41,13 @@ void Render::drawObject(Sprite&_sprite)
 
     glBindVertexArray(_sprite.geometry->VAO);
     glBindBuffer(GL_ARRAY_BUFFER, _sprite.geometry->VBO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _sprite.geometry->EBO);
 
     if (_sprite.geometry->EBO != 0) {
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _sprite.geometry->EBO);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, _sprite.texture);
+        glUniform1i(_sprite.gTextureSamplerLocation, 0);
+
         glDrawElements(GL_TRIANGLES, _sprite.geometry->numIndices, GL_UNSIGNED_INT, 0);
     } else {
         glDrawArrays(GL_LINE_STRIP, 0, _sprite.geometry ->numVertices);

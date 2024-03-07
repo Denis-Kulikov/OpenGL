@@ -1,13 +1,10 @@
-set(target lib-entities)
+set(target lib-components)
 
 add_library(${target} STATIC
-	actor.cpp
-	#entities.cpp
 )
 
 target_link_libraries(
   ${target}
   PRIVATE
-	lib-object
-	pugixml
+
 )

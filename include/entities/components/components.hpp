@@ -7,7 +7,7 @@
 class Components
 {
 public:
-    Components(const std::string &_name, const objectTransform &_trans, const Vector3<GLfloat> &_anchorPoint, Components *_parent, const int _zIndex, const size_t _frameCount);
+    // Components(const std::string &_name, const objectTransform &_trans, const Vector3<GLfloat> &_anchorPoint, Components *_parent, const int _zIndex, const size_t _frameCount);
     Components() {};
 
     // bool addChildComponent(const std::string &_name, const objectTransform &_anchorPoint, const objectTransform &_trans, Component *_parent, const int _zIndex, const size_t _frameCount);
@@ -17,10 +17,11 @@ public:
     // };
     // bool linkModel();
 
-    std::string name;
+    // std::string name;
     objectTransform trans;
-    objectTransform anchorPoint;
-    float time = 0;
+    // objectTransform anchorPoint;
+    Sprite *sprite;
+    // float time = 0;
 
     // sprite *getSprite();             // получение спрайта от анимации
     // objectTransform *getTransform(); // получение данных trans от кости

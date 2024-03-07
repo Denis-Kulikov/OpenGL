@@ -1,6 +1,6 @@
 <bone name="head">
     <bone name="face" />
-    <bone name="hair" />
+    <bone name="hair_front" />
 </bone>
 <!-- <bone name="belly">
     <bone name="left_arm" />
