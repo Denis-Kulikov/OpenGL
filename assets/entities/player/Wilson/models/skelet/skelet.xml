@@ -1,6 +1,21 @@
 <skelet name="Wilson skelet">
-    <bone name="head">
-        <bone name="face" />
-        <bone name="hair_front" />
+    <bone name="body">
+        <bone name="head">
+            <bone name="face" />
+            <bone name="hair_front" />
+        </bone>
+
+        <bone name="shoulder">
+            <bone name="arm">
+                <bone name="hand" />
+            </bone>
+        </bone>
+
+        <bone name="leg">
+            <bone name="foot" />
+        </bone>
+
+        <!-- <bone name="shoulder"> -->
+        <!-- </bone> -->
     </bone>
 </skelet>

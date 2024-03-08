@@ -10,8 +10,9 @@ public:
 
     std::string name;
     objectTransform trans;
+    Vector3<GLfloat> spriteScale;
     // objectTransform anchorPoint;
-    Sprite *sprite;
+    Sprite *sprite = nullptr;
     // float time = 0;
 
     // sprite *getSprite();             // получение спрайта от анимации

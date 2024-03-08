@@ -13,8 +13,8 @@ Camera *GameManager::createCamera(int width, int height)
 {
     auto camera = new Camera();
 
-    Vector3<GLfloat> CameraPos(0.0f, 0.1f, -3);
-    Vector3<GLfloat> CameraTarget(0.0f, 0.0f, 1.0f);
+    Vector3<GLfloat> CameraPos(0.0f, 0.1f, 3);
+    Vector3<GLfloat> CameraTarget(0.0f, 0.0f, -1.0f);
     Vector3<GLfloat> CameraUp(0.0f, 1.0f, 0.0f);
 
     camera->SetCamera(CameraPos, CameraTarget, CameraUp);
@@ -25,8 +25,8 @@ Camera *GameManager::createCamera(int width, int height)
 
 void GameManager::KeyboardCB(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-    double speed_movement = 0.25;
-    double speed_rotation = 0.125;
+    double speed_movement = -0.25;
+    double speed_rotation = -0.125;
 
     CallbackData* callbackData = static_cast<CallbackData*>(glfwGetWindowUserPointer(window));
     Camera* camera = callbackData->camera;
@@ -49,10 +49,10 @@ void GameManager::KeyboardCB(GLFWwindow* window, int key, int scancode, int acti
             camera->Params.WorldPos.x -= speed_movement;
             break;
         case GLFW_KEY_SPACE:
-            camera->Params.WorldPos.y += speed_movement;
+            camera->Params.WorldPos.y -= speed_movement;
             break;
         case GLFW_KEY_C:
-            camera->Params.WorldPos.y -= speed_movement;
+            camera->Params.WorldPos.y += speed_movement;
             break;
         case GLFW_KEY_E:
             camera->Params.Target.x += speed_rotation;

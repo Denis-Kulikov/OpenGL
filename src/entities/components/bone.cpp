@@ -9,7 +9,7 @@ void Bone::addChildBone(pugi::xml_node &node, std::string _name, Bone *_parent, 
     auto it = _sprites->find(child->name); 
     if (it != _sprites->end()) {
         child->component.sprite = &(it->second); 
-        // std::cout << child->name << "\t" << child->parent->name << std::endl;
+        child->component.spriteScale = child->component.sprite->trans.Scale; 
         _parent->children.push_back(child);
         child->parseBone(node, child, _sprites);
     }

@@ -8,6 +8,50 @@ namespace fs = std::filesystem;
 std::map<std::string, Sprite> Actor::sprites;
 const struct NODE_STR Actor::NODE = {"name", "bone"};
 
+
+void printBones(Bone *_bone)
+{
+    std::cout << std::endl;
+    std::cout << _bone->name << std::endl;
+    if (_bone->component.sprite != nullptr) _bone->component.sprite->trans.print();
+    for (auto it : _bone->children) printBones(it);
+}
+
+// нужно убрать tran у sprite и добавить его в components
+std::vector<Sprite*> Actor::getActorComponents(Bone *_parent)
+{
+    std::vector<Sprite*> ActorComponents;
+
+    for (auto it : _parent->children) {
+        objectTransform *transChild  = &(it->component.trans);
+        objectTransform *transParentComponent = &_parent->component.trans;
+        objectTransform *transParentSprite = (_parent->component.sprite != nullptr) ? &_parent->component.sprite->trans : transParentComponent;
+
+        it->component.sprite->trans.SetWorldPos(
+            transChild->WorldPos.x * transParentComponent->Scale.x + transParentSprite->WorldPos.x,
+            transChild->WorldPos.y * transParentComponent->Scale.y + transParentSprite->WorldPos.y, 
+            transChild->WorldPos.z + transParentSprite->WorldPos.z
+        );
+        it->component.sprite->trans.SetRotate(
+            transChild->Rotate.x * transParentComponent->Scale.x + transParentSprite->Rotate.x,
+            transChild->Rotate.y * transParentComponent->Scale.y + transParentSprite->Rotate.y,
+            transChild->Rotate.z + transParentSprite->Rotate.z
+        );
+        it->component.sprite->trans.SetScale(
+            it->component.spriteScale.x * transChild->Scale.x * transParentComponent->Scale.x,
+            it->component.spriteScale.y * transChild->Scale.y * transParentComponent->Scale.y,
+            it->component.spriteScale.z * transChild->Scale.z * transParentComponent->Scale.z
+        );
+
+        ActorComponents.push_back(it->component.sprite);
+        
+        std::vector<Sprite*> componentsToAdd = getActorComponents(it);
+        ActorComponents.insert(ActorComponents.end(), componentsToAdd.begin(), componentsToAdd.end());
+    }
+
+    return ActorComponents;
+}
+
 void Actor::parseAnimation(pugi::xml_node &_node, Bone *_bone) {
     for (int i = 0; i < _bone->children.size(); i++) {
         pugi::xml_node node = _node.child(_bone->children[i]->name.c_str());
@@ -26,7 +70,8 @@ void Actor::parseAnimation(pugi::xml_node &_node, Bone *_bone) {
         v.z = std::stof(node.attribute("flip").value());
         _transform.SetRotate(0.0, 0.0, v.z);
 
-        _bone->children[i]->component.SetChildAnimation(_transform);
+        _bone->children[i]->component.trans.SetTransform(_transform);
+
         parseAnimation(node, _bone->children[i]);
     }
 }
@@ -65,41 +110,7 @@ bool Actor::loadAnimation(const std::string &_path, const std::string &_name)
 
     parseAnimation(node, &skelet);
 
-    return true;
-}
-
-std::vector<Sprite*> Actor::getActorComponents(Bone *_parent)
-{
-    std::vector<Sprite*> ActorComponents;
-
-    for (auto it : _parent->children) {
-        objectTransform *transChild  = &(it->component.trans);
-        objectTransform *transParent = &(it->parent->component.trans);
-
-        it->component.sprite->trans.SetWorldPos(transChild->WorldPos.x + transParent->WorldPos.x, transChild->WorldPos.y + transParent->WorldPos.y, transChild->WorldPos.z + transParent->WorldPos.z);
-        it->component.sprite->trans.SetRotate  (transChild->Rotate.x   + transParent->Rotate.x,   transChild->Rotate.y   + transParent->Rotate.y,   transChild->Rotate.z   + transParent->Rotate.z);
-        it->component.sprite->trans.SetScale   (transChild->Scale.x    * transParent->Scale.x,    transChild->Scale.y    * transParent->Scale.y,    transChild->Scale.z    * transParent->Scale.z);
-        
-        ActorComponents.push_back(it->component.sprite);
-        
-        std::vector<Sprite*> componentsToAdd = getActorComponents(it);
-        ActorComponents.insert(ActorComponents.end(), componentsToAdd.begin(), componentsToAdd.end());
-    }
-
-    return ActorComponents;
-}
-
-bool Actor::loadComponents(const std::string &path)
-{
-    std::string full_path = std::string("assets/entities/") + path + "/models/components.xml";
-    pugi::xml_document doc;
-    pugi::xml_node word;
-    pugi::xml_parse_result parse_result = doc.load_file(full_path.c_str());
-
-    if (!parse_result) {
-        std::cout << "Error " << name << ".loadComponents: file not found (" << full_path << ")" << std::endl;
-        return false;
-    }
+    // printBones(&skelet);
 
     return true;
 }
@@ -117,6 +128,21 @@ bool Actor::loadSprites(const std::string &path)
                 sprites.insert({spriteName, sprite});
             }
         }
+    }
+
+    return true;
+}
+
+bool Actor::loadComponents(const std::string &path)
+{
+    std::string full_path = std::string("assets/entities/") + path + "/models/components.xml";
+    pugi::xml_document doc;
+    pugi::xml_node word;
+    pugi::xml_parse_result parse_result = doc.load_file(full_path.c_str());
+
+    if (!parse_result) {
+        std::cout << "Error " << name << ".loadComponents: file not found (" << full_path << ")" << std::endl;
+        return false;
     }
 
     return true;
@@ -150,7 +176,7 @@ bool Actor::loadActor(const std::string &path)
     v.y = std::stof(doc.child("character").child("objectTransform").child("scale").attribute("y").value());
     trans.SetScale(v.x, v.y, 0.0);
 
-    if (!loadComponents(path)) return false;
+    // if (!loadComponents(path)) return false;
 
     return true;
 }
@@ -164,6 +190,7 @@ bool Actor::loadActor(const std::string &path)
 Actor::Actor(const std::string &path)
 {
     loadActor(path);
+    skelet.component.trans.SetTransform(trans);
     skelet.component.trans.SetRotate(0.0, 0.0, 180);
 
     // skelet.pushSprites(&sprites);

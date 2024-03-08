@@ -2,7 +2,6 @@
 
 #include "../object/sprite.hpp"
 #include "../entities/components/bone.hpp"
-// #include "../entities/components/components.hpp"
 
 #define NODE_STR_LENGTH 16
 
@@ -14,7 +13,6 @@ struct NODE_STR {
 class Actor 
 {
 public:
-    // Actor(const std::string &_name, const objectTransform &_trans);
     Actor(const std::string &path);
 
     static const struct NODE_STR NODE;
@@ -32,9 +30,11 @@ public:
 
     Bone skelet;
     static std::map<std::string, Sprite> sprites;
-    // Model model; 
-    // std::vector<overallAnimation> overallAnimation; 
 protected:
     void parseAnimation(pugi::xml_node &_node, Bone *_bone);
 
 };
+
+
+    // Model model; 
+    // std::vector<overallAnimation> overallAnimation; 
