@@ -34,6 +34,7 @@ void Sprite::loadTexures(const char *texturePath)
     glGenerateMipmap(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, 0);
 
+    Scale.VSet(1.0, static_cast<GLfloat>(y) / static_cast<GLfloat>(x), 0.0);
     trans.SetScale(1.0f, static_cast<GLfloat>(y) / static_cast<GLfloat>(x), 0.0f);
     trans.SetRotate(0.0f, 180.0f, 180.0f);
 

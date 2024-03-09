@@ -8,21 +8,34 @@
 #include <entities/actor.hpp>
 #include <game/gameManager.hpp>
 
+#include <chrono>
+#include <ctime>
+
 Actor *actor = nullptr;
 
 // Растеризация. Проекция перспективы. Скелетная анимация 2D моделей.
 
+time_t prev = 0;
+int frame = 0;
+
 bool RenderSceneCB(Render *render, Scene *scene)
 {
-    for (std::vector<Sprite*>::iterator it = scene->getIterator(); it != scene->sprites.end(); it++) render->drawObject(**it);
+    // for (std::vector<Sprite*>::iterator it = scene->getIterator(); it != scene->sprites.end(); it++) render->drawObject(**it);
 
-    std::vector<Sprite*> ActorComponents = actor->getActorComponents(&actor->skelet);
+    std::vector<Component*> ActorComponents = actor->getActorComponents(&actor->skelet);
 
     for (auto it : ActorComponents) {
-        if (it == nullptr) continue;
+        if (it->sprite == nullptr) continue;
         // it->trans.print();
-        render->drawObject(*it);
+        render->drawObject(it->transform, *it->sprite);
     }
+    
+    frame++;
+    if ((time(0) - prev) > 1) {
+        std::cout << "FPS: " << frame << std::endl;
+        prev = time(0);
+        frame = 0;
+    } 
 
     return GameManager::IsEnd;
 }
@@ -83,7 +96,7 @@ Scene *createScene()
     std::string path("player/Wilson");
     Actor::loadSprites(path);
     actor = new Actor(path);
-    actor->skelet.createSkelet(path, "skelet", &Actor::sprites);
+    actor->skelet.createSkelet(path, "skelet");
     actor->loadAnimation(path, "stand");
 
     return scene;

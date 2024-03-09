@@ -13,8 +13,8 @@ Camera *GameManager::createCamera(int width, int height)
 {
     auto camera = new Camera();
 
-    Vector3<GLfloat> CameraPos(0.0f, 0.1f, 3);
-    Vector3<GLfloat> CameraTarget(0.0f, 0.0f, -1.0f);
+    Vector3<GLfloat> CameraPos(0.0f, 3.0f, 5);
+    Vector3<GLfloat> CameraTarget(0.0f, -0.2f, -1.0f);
     Vector3<GLfloat> CameraUp(0.0f, 1.0f, 0.0f);
 
     camera->SetCamera(CameraPos, CameraTarget, CameraUp);

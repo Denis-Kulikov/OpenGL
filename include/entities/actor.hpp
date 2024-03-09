@@ -21,10 +21,9 @@ public:
     objectTransform trans;
 
     void addComponent();
-    std::vector<Sprite*> getActorComponents(Bone *parent);
+    std::vector<Component*> getActorComponents(Bone *_parent);
 
     bool loadAnimation(const std::string &_path, const std::string &_name);
-    bool loadComponents(const std::string &path);
     bool loadActor(const std::string &path);
     static bool loadSprites(const std::string &path);
 

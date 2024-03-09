@@ -5,17 +5,22 @@
             <bone name="hair_front" />
         </bone>
 
-        <bone name="shoulder">
-            <bone name="arm">
-                <bone name="hand" />
+        <bone name="shoulder_left">
+            <bone name="arm_left">
+                <bone name="hand_left" />
+            </bone>
+        </bone>
+        <bone name="shoulder_right">
+            <bone name="arm_right">
+                <bone name="hand_right" />
             </bone>
         </bone>
 
-        <bone name="leg">
-            <bone name="foot" />
+        <bone name="leg_left">
+            <bone name="foot_left" />
         </bone>
-
-        <!-- <bone name="shoulder"> -->
-        <!-- </bone> -->
+        <bone name="leg_right">
+            <bone name="foot_right" />
+        </bone>
     </bone>
 </skelet>

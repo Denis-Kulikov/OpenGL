@@ -1,7 +1,8 @@
 #pragma once
 
 #include <pugixml.hpp>
-#include "components.hpp"
+#include "animation.hpp"
+// #include "component.hpp"
 
 class Bone
 {
@@ -13,15 +14,15 @@ public:
     static const char BONE[];
     static const char NAME[];
 
-    void addChildBone(pugi::xml_node &node, std::string _name, Bone *_parent, std::map<std::string, Sprite> *_sprites);
-    void parseBone(pugi::xml_node &node, Bone *_parent, std::map<std::string, Sprite> *_sprites);
-    void createSkelet(const std::string &_path, const std::string &_name, std::map<std::string, Sprite> *_sprites);
+    void addChildBone(pugi::xml_node &node, std::string _name, Bone *_parent);
+    void parseBone(pugi::xml_node &node, Bone *_parent);
+    void createSkelet(const std::string &_path, const std::string &_name);
 
 
     std::string name;
     Bone *parent = nullptr;
     std::vector<Bone*> children;
-    Components component;
+    Animation animation;
     // std::vector<Components> animation;
 };
     // objectTransform _anchorPoint

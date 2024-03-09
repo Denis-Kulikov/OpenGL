@@ -23,12 +23,10 @@ void Render::clearRender() {
 }
 
 
-void Render::drawObject(Sprite&_sprite)
+void Render::drawObject(objectTransform &_transform, Sprite&_sprite)
 {
-    glUseProgram(_sprite.shader);
-    if (_sprite.gColorLocation != 0xFFFFFFFF) glUniform3f(_sprite.gColorLocation, _sprite.color.x, _sprite.color.y, _sprite.color.z);
-
-    pipeline.object = &_sprite.trans;
+    pipeline.object = &_transform;
+    // pipeline.object->print();
     if ((pipeline.camera == nullptr) || (pipeline.object == nullptr)) {
         std::cout << "Error Render.drawObject(): " << std::endl;
         if (pipeline.camera == nullptr) std::cout << "Not found Camera ";
@@ -36,6 +34,9 @@ void Render::drawObject(Sprite&_sprite)
         std::cout << std::endl;
         return;
     }
+
+    glUseProgram(_sprite.shader);
+    if (_sprite.gColorLocation != 0xFFFFFFFF) glUniform3f(_sprite.gColorLocation, _sprite.color.x, _sprite.color.y, _sprite.color.z);
 
     glUniformMatrix4fv(_sprite.gWorldLocation, 1, GL_TRUE, pipeline.GetGLMatrix());
 

@@ -1,15 +1,18 @@
 #pragma once
-#include "../object/sprite.hpp"
-#include "../object/sprite.hpp"
+#include "../../object/sprite.hpp"
+#include "component.hpp"
 
 class Animation
 {
 public:
-    Animation();
+    Animation() {};
+
+    void SetChildAnimation(const objectTransform &_transform);
 
     std::string name;
-
-    
-    std::pair<std::string, *fun> motion;
-    std::pair<std::string, std::string> *sprites;
+    objectTransform trans;
+    Component component;
+    Vector3<GLfloat> spriteScale;
+    Sprite *sprite = nullptr;
+    // objectTransform anchorPoint;
 };
