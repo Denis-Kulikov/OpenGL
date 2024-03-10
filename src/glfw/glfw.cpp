@@ -21,7 +21,8 @@ int frame = 0;
 
 bool RenderSceneCB(Render *render, Scene *scene)
 {
-    // for (std::vector<Sprite*>::iterator it = scene->getIterator(); it != scene->sprites.end(); it++) render->drawObject(**it);
+    for (std::vector<Component>::iterator it = scene->getIterator(); it != scene->component.end(); it++)
+        render->drawObject(it->transform, *it->sprite);
 
     std::vector<Component*> ActorComponents = pawn->getActorComponents(&pawn->skelet);
 
@@ -52,11 +53,13 @@ Scene *createScene()
     Sprite *mySprite;
     objectTransform _trans;
 
-    // mySprite = new Sprite(std::string("Grass"), _trans, "shaders/Sprite_fs.glsl", "shaders/Sprite_vs.glsl", "img/grass.png");
-    // mySprite->trans.Move(1, -1, 2);
-    // mySprite->trans.SetRotate(90, 0, 0);
-    // mySprite->trans.SetScale(3, 3, 0);
-    // scene->pushObject(mySprite);
+    mySprite = new Sprite(std::string("Grass"), _trans, "shaders/Sprite_fs.glsl", "shaders/Sprite_vs.glsl", "img/grass.png");
+    objectTransform transformGrass;
+    transformGrass.Move(0, -3, 2);
+    transformGrass.SetRotate(90, 0, 0);
+    transformGrass.SetScale(5, 5, 0);
+    Component component(transformGrass, mySprite);
+    scene->pushObject(component);
     
     // mySprite = new Sprite(std::string("Wilson"), _trans, "shaders/Sprite_fs.glsl", "shaders/Sprite_vs.glsl", "img/Wilson.png");
     // mySprite->trans.Move(1, -1 + (mySprite->trans.Scale.y), 2);

@@ -4,6 +4,7 @@
 #include "circle.hpp"
 #include "line.hpp"
 #include "cube_bone.hpp"
+#include "../entities/components/component.hpp"
 
 class Scene 
 {
@@ -11,12 +12,12 @@ public:
     Scene(std::string _name) : name(_name) {};
     ~Scene() {};
 
-    void pushObject(Sprite* _sprite) { sprites.push_back(_sprite); };
+    void pushObject(Component _component) { component.push_back(_component); };
 
-    void deleteObject(Sprite* _sprite) {};
+    void deleteObject(Component _component) {};
 
-    std::vector<Sprite*>::iterator getIterator() { return sprites.begin(); }
+    std::vector<Component>::iterator getIterator() { return component.begin(); }
 
     std::string name;
-    std::vector<Sprite*> sprites;
+    std::vector<Component> component;
 };
