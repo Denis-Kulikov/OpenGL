@@ -25,7 +25,7 @@ bool RenderSceneCB(Render *render, Scene *scene)
 
     std::vector<Component*> ActorComponents = pawn->getActorComponents(&pawn->skelet);
 
-    pawn->Move(Vector3<GLfloat>(0.0, 0.0, 0.001));
+    pawn->Move(Vector3<GLfloat>(0.0, 0.0, 0.0));
 
     for (auto it : ActorComponents) {
         if (it->sprite == nullptr) continue;
@@ -101,6 +101,8 @@ Scene *createScene()
     pawn = new Pawn(path);
     pawn->skelet.createSkelet(path, "skelet");
     pawn->loadAnimation(path, "stand");
+    GameManager::PushPlayerTransform(&pawn->trans);
+    // GameManager::PushCamera(&pawn->trans);
 
     return scene;
 }

@@ -1,12 +1,23 @@
 #include <game/gameManager.hpp> 
 
 bool GameManager::IsEnd = false;
+CallbackData GameManager::callbackData{nullptr, nullptr};
 
 void GameManager::InitializeObjects()
 {
     Sprite::initializeGeometry();
     line::initializeGeometry();
     cube_bone::initializeGeometry();
+}
+
+void GameManager::PushCamera(Camera *_camera)
+{
+    callbackData.camera = _camera;
+}
+
+void GameManager::PushPlayerTransform(objectTransform *_transform)
+{
+    callbackData.transform = _transform;
 }
 
 Camera *GameManager::createCamera(int width, int height)
@@ -28,8 +39,9 @@ void GameManager::KeyboardCB(GLFWwindow* window, int key, int scancode, int acti
     double speed_movement = -0.25;
     double speed_rotation = -0.125;
 
-    CallbackData* callbackData = static_cast<CallbackData*>(glfwGetWindowUserPointer(window));
-    Camera* camera = callbackData->camera;
+    // CallbackData* callbackData = static_cast<CallbackData*>(glfwGetWindowUserPointer(window));
+    objectTransform* transform = callbackData.transform;
+    Camera* camera = callbackData.camera;
 
     switch (key) {
         case GLFW_KEY_F:
@@ -37,22 +49,22 @@ void GameManager::KeyboardCB(GLFWwindow* window, int key, int scancode, int acti
             GameManager::IsEnd = true;
             break;
         case GLFW_KEY_W:
-            camera->Params.WorldPos.z += speed_movement;
+            transform->WorldPos.z += speed_movement;
             break;
         case GLFW_KEY_S:
-            camera->Params.WorldPos.z -= speed_movement;
+            transform->WorldPos.z -= speed_movement;
             break;
         case GLFW_KEY_D:
-            camera->Params.WorldPos.x += speed_movement;
+            transform->WorldPos.x += speed_movement;
             break;
         case GLFW_KEY_A:
-            camera->Params.WorldPos.x -= speed_movement;
+            transform->WorldPos.x -= speed_movement;
             break;
         case GLFW_KEY_SPACE:
-            camera->Params.WorldPos.y -= speed_movement;
+            transform->WorldPos.y -= speed_movement;
             break;
         case GLFW_KEY_C:
-            camera->Params.WorldPos.y += speed_movement;
+            transform->WorldPos.y += speed_movement;
             break;
         case GLFW_KEY_E:
             camera->Params.Target.x += speed_rotation;
@@ -82,12 +94,12 @@ Render *GameManager::InitializeGLFW(GLFWwindow* &window, int width, int height)
     }
 
     Camera *camera = createCamera(width, height);
-    CallbackData *callbackData = new CallbackData;
-    callbackData->camera = camera;
+    // callbackData = new CallbackData;
+    callbackData.camera = camera;
 
     glfwMakeContextCurrent(window);
     glfwSetKeyCallback(window, GameManager::KeyboardCB);
-    glfwSetWindowUserPointer(window, callbackData);
+    glfwSetWindowUserPointer(window, &callbackData);
 
     GLenum err = glewInit();
     if (err != GLEW_OK) {

@@ -7,6 +7,7 @@
 
 struct CallbackData {
     Camera* camera;
+    objectTransform* transform;
 };
 
 
