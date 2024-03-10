@@ -8,11 +8,12 @@
 #include <game/gameManager.hpp>
 #include <entities/actor.hpp>
 #include <entities/pawn.hpp>
+#include <entities/character.hpp>
 
 #include <chrono>
 #include <ctime>
 
-Pawn *pawn = nullptr;
+Character *character = nullptr;
 
 // Растеризация. Проекция перспективы. Скелетная анимация 2D моделей.
 
@@ -22,21 +23,21 @@ int frame = 0;
 bool RenderSceneCB(Render *render, Scene *scene)
 {
     for (std::vector<Component>::iterator it = scene->getIterator(); it != scene->component.end(); it++)
-        render->drawObject(it->transform, *it->sprite);
+        GameManager::render->drawObject(it->transform, *it->sprite);
 
-    std::vector<Component*> ActorComponents = pawn->getActorComponents(&pawn->skelet);
+    std::vector<Component*> ActorComponents = character->getActorComponents(&character->skelet);
 
-    pawn->Move(Vector3<GLfloat>(0.0, 0.0, 0.0));
+    character->UpdateCameraPos();
 
     for (auto it : ActorComponents) {
         if (it->sprite == nullptr) continue;
         // it->trans.print();
-        render->drawObject(it->transform, *it->sprite);
+        GameManager::render->drawObject(it->transform, *it->sprite);
     }
     
     frame++;
-    if ((time(0) - prev) > 1) {
-        std::cout << "FPS: " << frame << std::endl;
+    if ((time(0) - prev) > 3) {
+        std::cout << "FPS: " << frame / 3 << std::endl;
         prev = time(0);
         frame = 0;
     } 
@@ -101,10 +102,14 @@ Scene *createScene()
 
     std::string path("player/Wilson");
     Actor::loadSprites(path);
-    pawn = new Pawn(path);
-    pawn->skelet.createSkelet(path, "skelet");
-    pawn->loadAnimation(path, "stand");
-    GameManager::PushPlayerTransform(&pawn->trans);
+    character = new Character(path);
+    character->skelet.createSkelet(path, "skelet");
+    character->loadAnimation(path, "stand");
+    GameManager::PushPlayerTransform(&character->trans);
+    character->createCamera(GameManager::width, GameManager::height);
+
+    GameManager::render->SetCamera(character->camera);
+    GameManager::PushCamera(character->camera);
     // GameManager::PushCamera(&pawn->trans);
 
     return scene;

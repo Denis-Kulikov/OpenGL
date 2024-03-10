@@ -1,6 +1,9 @@
 #include <entities/pawn.hpp>
 
-Pawn::Pawn(const std::string &path) : Actor(path) {}
+Pawn::Pawn(const std::string &path) : Actor(path) 
+{
+    cameraPos = Vector3<GLfloat>(0.0f, 6.0f, 15);
+}
 
 void Pawn::Teleport(const Vector3<GLfloat> newPosition) {
     trans.WorldPos = newPosition;
@@ -32,4 +35,32 @@ void Pawn::SetScale(const Vector3<GLfloat> _scale) {
 
 void Pawn::MultiplyScale(const Vector3<GLfloat> _scale) {
     trans.Scale *= _scale;
+}
+
+
+void Pawn::attachCamera(Camera *_camera)
+{
+    camera = _camera;
+}
+
+bool Pawn::createCamera(int width, int height)
+{
+    auto _camera = new Camera();
+
+    Vector3<GLfloat> CameraPos(0.0f, 3.0f, 15);
+    Vector3<GLfloat> CameraTarget(0.0f, -0.4f, -1.0f);
+    Vector3<GLfloat> CameraUp(0.0f, 1.0f, 0.0f);
+
+    _camera->SetCamera(CameraPos, CameraTarget, CameraUp);
+    _camera->SetPerspectiveProj(60.0f, width, height, 0.5f, 1000.0f);
+
+    attachCamera(_camera);
+
+    return true;
+}
+
+
+void Pawn::UpdateCameraPos()
+{
+    camera->Params.WorldPos = cameraPos + trans.WorldPos;
 }

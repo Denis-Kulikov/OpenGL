@@ -8,9 +8,13 @@ Render::Render(Pipeline &_pipeline)
 
 Render::Render(Camera *_camera)
 {
-    pipeline.camera = _camera;
+    SetCamera(_camera);
 }
 
+void Render::SetCamera(Camera *_camera)
+{
+    pipeline.camera = _camera;
+}
 
 void Render::clearRender() {
     glUseProgram(0);
@@ -51,7 +55,7 @@ void Render::drawObject(objectTransform &_transform, Sprite&_sprite)
 
         glDrawElements(GL_TRIANGLES, _sprite.geometry->numIndices, GL_UNSIGNED_INT, 0);
     } else {
-        glDrawArrays(GL_LINE_STRIP, 0, _sprite.geometry ->numVertices);
+        glDrawArrays(GL_LINE_STRIP, 0, _sprite.geometry->numVertices);
     }
 
 

@@ -1,7 +1,10 @@
 #include <game/gameManager.hpp> 
 
 bool GameManager::IsEnd = false;
+int GameManager::width = 0;
+int GameManager::height = 0;
 CallbackData GameManager::callbackData{nullptr, nullptr};
+Render *GameManager::render = nullptr;
 
 void GameManager::InitializeObjects()
 {
@@ -20,12 +23,12 @@ void GameManager::PushPlayerTransform(objectTransform *_transform)
     callbackData.transform = _transform;
 }
 
-Camera *GameManager::createCamera(int width, int height)
+Camera *GameManager::createCamera()
 {
     auto camera = new Camera();
 
     Vector3<GLfloat> CameraPos(0.0f, 3.0f, 15);
-    Vector3<GLfloat> CameraTarget(0.0f, -0.2f, -1.0f);
+    Vector3<GLfloat> CameraTarget(0.0f, -0.3f, -1.0f);
     Vector3<GLfloat> CameraUp(0.0f, 1.0f, 0.0f);
 
     camera->SetCamera(CameraPos, CameraTarget, CameraUp);
@@ -75,7 +78,7 @@ void GameManager::KeyboardCB(GLFWwindow* window, int key, int scancode, int acti
     }
 }
 
-Render *GameManager::InitializeGLFW(GLFWwindow* &window, int width, int height)
+Render *GameManager::InitializeGLFW(GLFWwindow* &window, int _width, int _height)
 {
     if (!glfwInit()) {
         std::cerr << "Failed to initialize GLFW" << std::endl;
@@ -86,6 +89,9 @@ Render *GameManager::InitializeGLFW(GLFWwindow* &window, int width, int height)
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
+    width = _width;
+    height = _height;
+
     window = glfwCreateWindow(width, height, "Game", NULL, NULL);
     if (!window) {
         std::cerr << "Failed to create GLFW window" << std::endl;
@@ -93,9 +99,9 @@ Render *GameManager::InitializeGLFW(GLFWwindow* &window, int width, int height)
         exit(EXIT_FAILURE);
     }
 
-    Camera *camera = createCamera(width, height);
+    // Camera *camera = createCamera();
     // callbackData = new CallbackData;
-    callbackData.camera = camera;
+    callbackData.camera = nullptr;
 
     glfwMakeContextCurrent(window);
     glfwSetKeyCallback(window, GameManager::KeyboardCB);
@@ -111,7 +117,7 @@ Render *GameManager::InitializeGLFW(GLFWwindow* &window, int width, int height)
 
     glClearColor(0.12f, 0.12f, 0.12f, 0.0f);
 
-    Render *render = new Render(camera);
+    render = new Render(callbackData.camera);
 
     return render;
 }

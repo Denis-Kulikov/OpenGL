@@ -16,11 +16,14 @@ public:
     static void PushPlayerTransform(objectTransform *_transform);
 
     static void InitializeObjects();
-    static Camera *createCamera(int width, int height);
+    static Camera *createCamera();
     static void KeyboardCB(GLFWwindow* window, int key, int scancode, int action, int mods);
-    static Render *InitializeGLFW(GLFWwindow* &window, int width, int height);
+    static Render *InitializeGLFW(GLFWwindow* &window, int _width, int _height);
 
     static bool IsEnd;
+    static int width;
+    static int height;
+    static Render *render;
 protected:
     static CallbackData callbackData;
 };

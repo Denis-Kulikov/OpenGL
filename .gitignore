@@ -2,6 +2,8 @@ bin/*
 !bin/.keep
 build
 
+callgrind.*
+
 _deps
 external/CMakeLists.txt
 external/stb_image

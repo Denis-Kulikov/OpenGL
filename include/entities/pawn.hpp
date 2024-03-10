@@ -1,6 +1,7 @@
 #pragma once
 
 #include "actor.hpp"
+#include "../render/camera.hpp"
 
 class Pawn : public Actor
 {
@@ -17,6 +18,14 @@ public:
 
     void SetScale(const Vector3<GLfloat> _scale);
     void MultiplyScale(const Vector3<GLfloat> _scale);
+
+
+    void attachCamera(Camera *_camera);
+    bool createCamera(int width, int height);
+    void UpdateCameraPos();
+
+    Camera *camera;
+    Vector3<GLfloat> cameraPos;
 
 protected:
 
