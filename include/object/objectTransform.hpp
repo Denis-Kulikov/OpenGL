@@ -15,9 +15,6 @@ public:
     Vector3<GLfloat> GetRotate() const;
     Vector3<GLfloat> GetScale() const;
 
-
-    void print() const;
-
     void SetWorldPos(const GLfloat &WorldPosX, const GLfloat &WorldPosY, const GLfloat &WorldPosZ);
     void SetWorldPos(const Vector3<GLfloat> &v_WorldPos);
 
@@ -29,8 +26,20 @@ public:
 
     void SetTransform(const objectTransform &trans);
 
-    void Move(const GLfloat &X, const GLfloat &Y, const GLfloat &Z);
+    // void MoveForward(const GLfloat distance);
 
+    void Move(const GLfloat &X, const GLfloat &Y, const GLfloat &Z);
+    void Move(const Vector3<GLfloat> offset);
+    void Move(const GLfloat distance, const Vector3<GLfloat> direction);
+    void MoveForward(const GLfloat distance);
+
+    void AddRotate(const Vector3<GLfloat> _rotate);
+
+    void MultiplyScale(const Vector3<GLfloat> _scale);
+
+    Vector3<GLfloat> GetForwardVector() const;
+
+    void print() const;
 
     Vector3<GLfloat> WorldPos;
     Vector3<GLfloat> Rotate;

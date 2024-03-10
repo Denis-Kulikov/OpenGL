@@ -2,6 +2,7 @@ set(target lib-entities)
 
 add_library(${target} STATIC
 	actor.cpp
+	pawn.cpp
 	#entities.cpp
 )
 

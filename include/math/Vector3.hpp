@@ -89,6 +89,43 @@ public:
     }
 
 
+    Vector3<T>& operator*=(const Vector3<T> &v) {
+        x *= v.x;
+        y *= v.y;
+        z *= v.z;
+        return *this;
+    }
+
+    Vector3<T>& operator*=(const T &s) {
+        Vector3<T> temp(s, s, s);
+        *this *= temp;
+        return *this;
+    }
+
+
+    Vector3<T>& operator+=(const Vector3<T> &v) {
+        x += v.x;
+        y += v.y;
+        z += v.z;
+        return *this;
+    }
+
+    Vector3<T>& operator-=(const Vector3<T> &v) {
+        x -= v.x;
+        y -= v.y;
+        z -= v.z;
+        return *this;
+    }
+
+    Vector3<T>& operator/=(const Vector3<T> &v) {
+        x /= v.x;
+        y /= v.y;
+        z /= v.z;
+        return *this;
+    }
+
+
+
     void VSet(const Vector3<T> &v) {
         x = v.x;
         y = v.y;

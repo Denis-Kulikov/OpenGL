@@ -17,9 +17,10 @@ void printBones(Bone *_bone)
     for (auto it : _bone->children) printBones(it);
 }
 
-// Исправить масштабирование
+// нужно убрать tran у sprite и добавить его в components
 std::vector<Component*> Actor::getActorComponents(Bone *_parent)
 {
+    skelet.animation.component.transform = trans;
     std::vector<Component*> ActorComponents;
 
     for (auto it : _parent->children) {
@@ -27,21 +28,9 @@ std::vector<Component*> Actor::getActorComponents(Bone *_parent)
         objectTransform *transParentComponent = &_parent->animation.trans;
         objectTransform *transParentSprite = &_parent->animation.component.transform;
 
-        it->animation.component.transform.SetWorldPos(
-            transChild->WorldPos.x * transParentComponent->Scale.x * transParentSprite->WorldPos.x,
-            transChild->WorldPos.y * transParentComponent->Scale.y * transParentSprite->WorldPos.y, 
-            transChild->WorldPos.z + transParentSprite->WorldPos.z
-        );
-        it->animation.component.transform.SetRotate(
-            transChild->Rotate.x + transParentSprite->Rotate.x,
-            transChild->Rotate.y + transParentSprite->Rotate.y,
-            transChild->Rotate.z + transParentSprite->Rotate.z
-        );
-        it->animation.component.transform.SetScale(
-            it->animation.spriteScale.x * transChild->Scale.x * transParentComponent->Scale.x,
-            it->animation.spriteScale.y * transChild->Scale.y * transParentComponent->Scale.y,
-            it->animation.spriteScale.z * transChild->Scale.z * transParentComponent->Scale.z
-        );
+        it->animation.component.transform.WorldPos  = transChild->WorldPos + transParentSprite->WorldPos;
+        it->animation.component.transform.Rotate    = transChild->Rotate + transParentSprite->Rotate;
+        it->animation.component.transform.Scale     = transChild->Scale * it->animation.spriteScale * transParentComponent->Scale;
 
         it->animation.component.sprite = it->animation.sprite;
         ActorComponents.push_back(&it->animation.component);
@@ -72,7 +61,7 @@ void Actor::parseAnimation(pugi::xml_node &_node, Bone *_bone) {
         v.x = std::stof(node.attribute("x").value());
         v.y = std::stof(node.attribute("y").value());
         v.z = std::stof(node.attribute("z").value());
-        _transform.SetWorldPos(v.x, v.y, v.z);
+        _transform.SetWorldPos(v.x, v.y, v.z / 10);
 
         v.x = std::stof(node.attribute("width").value());
         v.y = std::stof(node.attribute("height").value());
@@ -83,12 +72,7 @@ void Actor::parseAnimation(pugi::xml_node &_node, Bone *_bone) {
 
         if (node.attribute("mirrorX")) {
             _transform.SetRotate(0.0, 180.0, v.z);
-            std::cout << "!!!" << std::endl;
         } 
-
-
-        // _transform.print();
-        // std::cout << std::endl;
 
         _bone->children[i]->animation.trans.SetTransform(_transform);
 
@@ -194,6 +178,6 @@ bool Actor::loadActor(const std::string &path)
 Actor::Actor(const std::string &path)
 {
     loadActor(path);
-    skelet.animation.trans.SetTransform(trans);
-    skelet.animation.trans.SetRotate(0.0, 0.0, 180);
+    // skelet.animation.trans = trans;
+    trans.Rotate = Vector3<GLfloat>(0.0, 0.0, 180);
 }

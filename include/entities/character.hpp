@@ -1,8 +1,8 @@
 #pragma once
-#include "actor.hpp"
+#include "pawn.hpp"
 #include "../render/camera.hpp"
 
-class Character : public Actor
+class Character : public Pawn
 {
 public:
     Character(const std::string &_name, const objectTransform &_trans) : Actor(const std::string &_name, const objectTransform &_trans);

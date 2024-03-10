@@ -1,12 +1,5 @@
 #include <render/glfw.hpp>
 
-void objectTransform::print() const
-{
-    std::cout << "World Position: (" << WorldPos.x << ", " << WorldPos.y << ", " << WorldPos.z << ")" << std::endl;
-    std::cout << "Rotation: (" << Rotate.x << ", " << Rotate.y << ", " << Rotate.z << ")" << std::endl;
-    std::cout << "Scale: (" << Scale.x << ", " << Scale.y << ", " << Scale.z << ")" << std::endl;
-}
-
 Vector3<GLfloat> objectTransform::GetScale() const
 {
     return Scale;
@@ -78,4 +71,43 @@ void objectTransform::SetTransform(const objectTransform &trans)
 void objectTransform::Move(const GLfloat &X, const GLfloat &Y, const GLfloat &Z)
 {
     SetWorldPos(WorldPos.x + X, WorldPos.y + Y, WorldPos.z + Z);
+}
+
+Vector3<GLfloat> objectTransform::GetForwardVector() const
+{
+    GLfloat radianAngle = ToRadian(Rotate.y);
+    return Vector3<GLfloat>(cos(radianAngle), 0.0f, sin(radianAngle));
+}
+
+void objectTransform::Move(const Vector3<GLfloat> offset) {
+    WorldPos += Vector3<GLfloat>(offset.x, offset.y, offset.z);
+}
+
+void objectTransform::Move(const GLfloat distance, const Vector3<GLfloat> direction) {
+    Vector3<GLfloat> offset = direction;
+    offset.Normalize();
+    offset *= distance;
+    Move(offset);
+}
+
+void objectTransform::MoveForward(const GLfloat distance) {
+    Vector3<GLfloat> forward = GetForwardVector();
+    Move(distance, forward);
+}
+
+void objectTransform::AddRotate(const Vector3<GLfloat> _rotate) {
+    Rotate += _rotate;
+}
+
+
+void objectTransform::MultiplyScale(const Vector3<GLfloat> _scale) {
+    Scale *= _scale;
+}
+
+
+void objectTransform::print() const
+{
+    std::cout << "World Position: (" << WorldPos.x << ", " << WorldPos.y << ", " << WorldPos.z << ")" << std::endl;
+    std::cout << "Rotation: (" << Rotate.x << ", " << Rotate.y << ", " << Rotate.z << ")" << std::endl;
+    std::cout << "Scale: (" << Scale.x << ", " << Scale.y << ", " << Scale.z << ")" << std::endl;
 }

@@ -5,13 +5,14 @@
 #include <object/line.hpp>
 #include <object/cube_bone.hpp>
 #include <lib-project/try.hpp>
-#include <entities/actor.hpp>
 #include <game/gameManager.hpp>
+#include <entities/actor.hpp>
+#include <entities/pawn.hpp>
 
 #include <chrono>
 #include <ctime>
 
-Actor *actor = nullptr;
+Pawn *pawn = nullptr;
 
 // Растеризация. Проекция перспективы. Скелетная анимация 2D моделей.
 
@@ -22,7 +23,9 @@ bool RenderSceneCB(Render *render, Scene *scene)
 {
     // for (std::vector<Sprite*>::iterator it = scene->getIterator(); it != scene->sprites.end(); it++) render->drawObject(**it);
 
-    std::vector<Component*> ActorComponents = actor->getActorComponents(&actor->skelet);
+    std::vector<Component*> ActorComponents = pawn->getActorComponents(&pawn->skelet);
+
+    pawn->Move(Vector3<GLfloat>(0.0, 0.0, 0.001));
 
     for (auto it : ActorComponents) {
         if (it->sprite == nullptr) continue;
@@ -95,9 +98,9 @@ Scene *createScene()
 
     std::string path("player/Wilson");
     Actor::loadSprites(path);
-    actor = new Actor(path);
-    actor->skelet.createSkelet(path, "skelet");
-    actor->loadAnimation(path, "stand");
+    pawn = new Pawn(path);
+    pawn->skelet.createSkelet(path, "skelet");
+    pawn->loadAnimation(path, "stand");
 
     return scene;
 }

@@ -34,6 +34,5 @@ protected:
 
 };
 
-
     // Model model; 
     // std::vector<overallAnimation> overallAnimation; 
