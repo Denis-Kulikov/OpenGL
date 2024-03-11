@@ -24,6 +24,8 @@ public:
     bool createCamera(int width, int height);
     void UpdateCameraPos();
 
+    void MoveTowards(Pawn* targetPawn, GLfloat speed);
+
     Camera *camera;
     Vector3<GLfloat> cameraPos;
 

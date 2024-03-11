@@ -60,6 +60,23 @@ bool Pawn::createCamera(int width, int height)
 }
 
 
+void Pawn::MoveTowards(Pawn* targetPawn, GLfloat speed) {
+    // Получаем позиции текущей пешки и целевой пешки
+    Vector3<GLfloat> currentPosition = trans.WorldPos;
+    Vector3<GLfloat> targetPosition = targetPawn->trans.WorldPos;
+
+    // Вычисляем вектор направления от текущей позиции к целевой позиции
+    Vector3<GLfloat> direction = targetPosition - currentPosition;
+    direction.Normalize(); // Нормализуем вектор направления
+
+    // Вычисляем вектор перемещения, умножая вектор направления на скорость
+    Vector3<GLfloat> offset = direction * speed;
+
+    // Двигаем текущую пешку по вычисленному вектору перемещения
+    Move(offset);
+}
+
+
 void Pawn::UpdateCameraPos()
 {
     camera->Params.WorldPos = cameraPos + trans.WorldPos;

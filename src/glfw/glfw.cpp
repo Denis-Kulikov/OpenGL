@@ -9,11 +9,18 @@
 #include <entities/actor.hpp>
 #include <entities/pawn.hpp>
 #include <entities/character.hpp>
+#include <entities/templates/playable/Wilson.hpp>
+#include <entities/templates/playable/spider.hpp>
 
 #include <chrono>
 #include <ctime>
 
-Character *character = nullptr;
+// Bone Wilson::Skelet;
+// Bone Spider::Skelet;
+
+// Character *character = nullptr;
+Wilson *character = nullptr;
+Spider *spider = nullptr;
 
 // Растеризация. Проекция перспективы. Скелетная анимация 2D моделей.
 
@@ -34,6 +41,17 @@ bool RenderSceneCB(Render *render, Scene *scene)
         // it->trans.print();
         GameManager::render->drawObject(it->transform, *it->sprite);
     }
+
+    if (spider != nullptr) {
+        spider->MoveTowards(character, 0.006);
+        ActorComponents = spider->getActorComponents(&spider->skelet);
+        for (auto it : ActorComponents) {
+            if (it->sprite == nullptr) continue;
+            // it->trans.print();
+            GameManager::render->drawObject(it->transform, *it->sprite);
+        }
+    }
+
     
     frame++;
     if ((time(0) - prev) > 3) {
@@ -100,13 +118,17 @@ Scene *createScene()
     // scene->pushObject(myLine);
 
 
-    std::string path("player/Wilson");
-    Actor::loadSprites(path);
-    character = new Character(path);
-    character->skelet.createSkelet(path, "skelet");
-    character->loadAnimation(path, "stand");
+    // std::string path("player/Wilson");
+    // Actor::loadSprites(path);
+    // character = new Character(path);
+    character = new Wilson();
+    // character.skelet.createSkelet(path, "skelet");
+    // character->loadAnimation(path, "stand");
     GameManager::PushPlayerTransform(&character->trans);
     character->createCamera(GameManager::width, GameManager::height);
+
+    spider = new Spider();
+
 
     GameManager::render->SetCamera(character->camera);
     GameManager::PushCamera(character->camera);

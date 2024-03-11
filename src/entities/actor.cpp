@@ -5,7 +5,8 @@
 
 namespace fs = std::filesystem;
 
-std::map<std::string, Sprite> Actor::sprites;
+// Bone Actor::skelet;
+std::map<std::string, Sprite> Actor::Sprites;
 const struct NODE_STR Actor::NODE = {"name", "bone"};
 
 
@@ -20,8 +21,8 @@ void printBones(Bone *_bone)
 // нужно убрать tran у sprite и добавить его в components
 std::vector<Component*> Actor::getActorComponents(Bone *_parent)
 {
-    skelet.animation.component.transform = trans;
     std::vector<Component*> ActorComponents;
+    skelet.animation.component.transform = trans;
 
     for (auto it : _parent->children) {
         objectTransform *transChild  = &(it->animation.trans);
@@ -33,6 +34,7 @@ std::vector<Component*> Actor::getActorComponents(Bone *_parent)
         it->animation.component.transform.Scale     = transChild->Scale * it->animation.spriteScale * transParentComponent->Scale;
 
         it->animation.component.sprite = it->animation.sprite;
+        // it->animation.component.transform.print();
         ActorComponents.push_back(&it->animation.component);
         
         std::vector<Component*> componentsToAdd = getActorComponents(it);
@@ -47,8 +49,8 @@ void Actor::parseAnimation(pugi::xml_node &_node, Bone *_bone) {
         pugi::xml_node node = _node.child(_bone->children[i]->name.c_str());
 
         std::string spriteName = node.attribute("sprite").as_string();
-        auto it = sprites.find(spriteName); 
-        if (it != sprites.end()) { // try
+        auto it = Sprites.find(spriteName); 
+        if (it != Sprites.end()) { // try
             _bone->children[i]->animation.sprite = &(it->second); 
             _bone->children[i]->animation.spriteScale = it->second.Scale; 
         } else {
@@ -88,7 +90,7 @@ bool Actor::loadAnimation(const std::string &_path, const std::string &_name)
     pugi::xml_parse_result parse_result = doc.load_file(full_path.c_str());
 
     if (!parse_result) {
-        std::cout << "Error " << name << ".loadAnimation: file not found (" << full_path << ")" << std::endl;
+        std::cout << "Error Actor.loadAnimation: file not found (" << full_path << ")" << std::endl;
         return false;
     }
 
@@ -130,7 +132,7 @@ bool Actor::loadSprites(const std::string &path)
             if ((filename.size() > 4) && (filename.substr(filename.size() - 4) == ".jpg" || filename.substr(filename.size() - 4) == ".png")) {
                 std::string spriteName = filename.substr(0, filename.size() - 4);
                 Sprite sprite(spriteName, "shaders/sprite_fs.glsl", "shaders/sprite_vs.glsl", (full_path + filename).c_str());
-                sprites.insert({spriteName, sprite});
+                Sprites.insert({spriteName, sprite});
             }
         }
     }
@@ -178,6 +180,8 @@ bool Actor::loadActor(const std::string &path)
 Actor::Actor(const std::string &path)
 {
     loadActor(path);
+    sprites = &Sprites;
+    // skelet = &skelet;
     // skelet.animation.trans = trans;
     trans.Rotate = Vector3<GLfloat>(0.0, 0.0, 180);
 }

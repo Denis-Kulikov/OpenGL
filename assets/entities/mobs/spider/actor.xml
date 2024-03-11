@@ -1,0 +1,34 @@
+<character name="Wilson">
+    <!-- <spritePath>sprite</spritePath> -->
+    <objectTransform>
+        <worldPos x="2.0" y="0.0" z="0.0" />
+        <rotate  deg="0" />
+        <scale   x="1.0" y="1.0" />
+    </objectTransform>
+    <!-- <models>models</models> -->
+</character>
+
+<!-- <?xml version="1.0" encoding="UTF-8"?>
+<characterModel>
+    <modelName>Wilson</modelName>
+    <spritePath>assets/img/wilson</spritePath>
+    <components>
+        <component type="body">
+            <sprite src="body.png" x="0" y="0" width="100" height="200" visibility="visible" />
+        </component>
+        <component type="head">
+            <sprite src="head.png" x="0" y="-50" width="80" height="80" visibility="visible" />
+            <component type="hair">
+                <sprite src="hair.png" x="0" y="-30" width="50" height="50" visibility="visible" />
+            </component>
+        </component>
+        <component type="arms">
+            <component type="leftArm">
+                <sprite src="left_arm.png" x="-30" y="50" width="40" height="100" visibility="visible" />
+            </component>
+            <component type="rightArm">
+                <sprite src="right_arm.png" x="30" y="50" width="40" height="100" visibility="visible" />
+            </component>
+        </component>
+    </components>
+</characterModel> -->

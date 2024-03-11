@@ -15,11 +15,6 @@ class Actor
 public:
     Actor(const std::string &path);
 
-    static const struct NODE_STR NODE;
-
-    std::string name;
-    objectTransform trans;
-
     void addComponent();
     std::vector<Component*> getActorComponents(Bone *_parent);
 
@@ -27,11 +22,15 @@ public:
     bool loadActor(const std::string &path);
     static bool loadSprites(const std::string &path);
 
-    Bone skelet;
-    static std::map<std::string, Sprite> sprites;
-protected:
-    void parseAnimation(pugi::xml_node &_node, Bone *_bone);
 
+    std::string name;
+    objectTransform trans;
+    Bone skelet;
+    std::map<std::string, Sprite> *sprites = nullptr;
+protected:
+    static void parseAnimation(pugi::xml_node &_node, Bone *_bone);
+    static std::map<std::string, Sprite> Sprites;
+    static const struct NODE_STR NODE;
 };
 
     // Model model; 
