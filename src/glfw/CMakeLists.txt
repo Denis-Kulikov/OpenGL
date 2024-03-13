@@ -14,4 +14,5 @@ target_link_libraries(
 	lib-object
 	lib-entities
 	lib-components
+	lib-playable
 )

@@ -8,10 +8,13 @@ public:
     Spider() : Character(std::string("mobs/spider"))
     {
         std::string path("mobs/spider");
-        Spider::loadSprites(path);
-        // character = new Character(path);
+
+        std::cout << __FUNCTION__ << std::endl; 
+        // std::cout << "Address: " << &Sprites << std::endl;
+
+        Spider::loadSprites(&Sprites, path);
         skelet.createSkelet(path, "skelet");
-        Spider::loadAnimation(path, "stand");
+        Spider::loadAnimation(path, "stand", &skelet, sprites);
     }
     
 protected:

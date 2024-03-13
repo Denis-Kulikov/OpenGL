@@ -10,7 +10,7 @@
 #include <entities/pawn.hpp>
 #include <entities/character.hpp>
 #include <entities/templates/playable/Wilson.hpp>
-#include <entities/templates/playable/spider.hpp>
+// #include <entities/templates/playable/spider.hpp>
 
 #include <chrono>
 #include <ctime>
@@ -20,7 +20,7 @@
 
 // Character *character = nullptr;
 Wilson *character = nullptr;
-Spider *spider = nullptr;
+// Spider *spider = nullptr;
 
 // Растеризация. Проекция перспективы. Скелетная анимация 2D моделей.
 
@@ -32,25 +32,25 @@ bool RenderSceneCB(Render *render, Scene *scene)
     for (std::vector<Component>::iterator it = scene->getIterator(); it != scene->component.end(); it++)
         GameManager::render->drawObject(it->transform, *it->sprite);
 
-    std::vector<Component*> ActorComponents = character->getActorComponents(&character->skelet);
+    // std::vector<Component*> ActorComponents = character->getActorComponents(&character->skelet);
 
-    character->UpdateCameraPos();
+    // character->UpdateCameraPos();
 
-    for (auto it : ActorComponents) {
-        if (it->sprite == nullptr) continue;
-        // it->trans.print();
-        GameManager::render->drawObject(it->transform, *it->sprite);
-    }
+    // for (auto it : ActorComponents) {
+    //     if (it->sprite == nullptr) continue;
+    //     // it->trans.print();
+    //     GameManager::render->drawObject(it->transform, *it->sprite);
+    // }
 
-    if (spider != nullptr) {
-        spider->MoveTowards(character, 0.006);
-        ActorComponents = spider->getActorComponents(&spider->skelet);
-        for (auto it : ActorComponents) {
-            if (it->sprite == nullptr) continue;
-            // it->trans.print();
-            GameManager::render->drawObject(it->transform, *it->sprite);
-        }
-    }
+    // if (spider != nullptr) {
+    //     spider->MoveTowards(character, 0.006);
+    //     ActorComponents = spider->getActorComponents(&spider->skelet);
+    //     for (auto it : ActorComponents) {
+    //         if (it->sprite == nullptr) continue;
+    //         // it->trans.print();
+    //         GameManager::render->drawObject(it->transform, *it->sprite);
+    //     }
+    // }
 
     
     frame++;
@@ -118,6 +118,9 @@ Scene *createScene()
     // scene->pushObject(myLine);
 
 
+    // Actor<Wilson>::loadSprites(&Wilson::Sprites, "player/Wilson");
+
+
     // std::string path("player/Wilson");
     // Actor::loadSprites(path);
     // character = new Character(path);
@@ -125,9 +128,11 @@ Scene *createScene()
     // character.skelet.createSkelet(path, "skelet");
     // character->loadAnimation(path, "stand");
     GameManager::PushPlayerTransform(&character->trans);
-    character->createCamera(GameManager::width, GameManager::height);
+    // character->createCamera(GameManager::width, GameManager::height);
 
-    spider = new Spider();
+    // std::cout << "Address: " << &Wilson::Sprites << std::endl;
+
+    // spider = new Spider();
 
 
     GameManager::render->SetCamera(character->camera);

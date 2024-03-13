@@ -3,7 +3,8 @@
 #include "actor.hpp"
 #include "../render/camera.hpp"
 
-class Pawn : public Actor
+template <typename Derived>
+class Pawn : public Actor<Derived>
 {
 public:
     Pawn(const std::string &path);

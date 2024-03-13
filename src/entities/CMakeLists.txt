@@ -4,7 +4,6 @@ add_library(${target} STATIC
 	actor.cpp
 	pawn.cpp
 	character.cpp
-	#entities.cpp
 )
 
 target_link_libraries(
@@ -16,3 +15,4 @@ target_link_libraries(
 )
 
 add_subdirectory(components)
+add_subdirectory(templates)

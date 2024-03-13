@@ -5,21 +5,16 @@
 
 namespace fs = std::filesystem;
 
-// Bone Actor::skelet;
-std::map<std::string, Sprite> Actor::Sprites;
-const struct NODE_STR Actor::NODE = {"name", "bone"};
+template <typename Derived>
+std::map<std::string, Sprite> Actor<Derived>::Sprites;
+
+// Bone Actor<Derived>::skelet;
+// std::map<std::string, Sprite> Actor<Derived>::Sprites;
+// const struct NODE_STR Actor<Derived>::NODE = {"name", "bone"};
 
 
-void printBones(Bone *_bone)
-{
-    std::cout << std::endl;
-    std::cout << _bone->name << std::endl;
-    if (_bone->animation.sprite != nullptr) _bone->animation.sprite->trans.print();
-    for (auto it : _bone->children) printBones(it);
-}
-
-// нужно убрать tran у sprite и добавить его в components
-std::vector<Component*> Actor::getActorComponents(Bone *_parent)
+template <typename Derived>
+std::vector<Component*> Actor<Derived>::getActorComponents(Bone *_parent)
 {
     std::vector<Component*> ActorComponents;
     skelet.animation.component.transform = trans;
@@ -34,7 +29,6 @@ std::vector<Component*> Actor::getActorComponents(Bone *_parent)
         it->animation.component.transform.Scale     = transChild->Scale * it->animation.spriteScale * transParentComponent->Scale;
 
         it->animation.component.sprite = it->animation.sprite;
-        // it->animation.component.transform.print();
         ActorComponents.push_back(&it->animation.component);
         
         std::vector<Component*> componentsToAdd = getActorComponents(it);
@@ -44,13 +38,14 @@ std::vector<Component*> Actor::getActorComponents(Bone *_parent)
     return ActorComponents;
 }
 
-void Actor::parseAnimation(pugi::xml_node &_node, Bone *_bone) {
+template <typename Derived>
+void Actor<Derived>::parseAnimation(pugi::xml_node &_node, Bone *_bone, std::map<std::string, Sprite> *_Sprites) {
     for (int i = 0; i < _bone->children.size(); i++) {
         pugi::xml_node node = _node.child(_bone->children[i]->name.c_str());
 
         std::string spriteName = node.attribute("sprite").as_string();
-        auto it = Sprites.find(spriteName); 
-        if (it != Sprites.end()) { // try
+        auto it = _Sprites->find(spriteName); 
+        if (it != _Sprites->end()) { // try
             _bone->children[i]->animation.sprite = &(it->second); 
             _bone->children[i]->animation.spriteScale = it->second.Scale; 
         } else {
@@ -78,11 +73,12 @@ void Actor::parseAnimation(pugi::xml_node &_node, Bone *_bone) {
 
         _bone->children[i]->animation.trans.SetTransform(_transform);
 
-        parseAnimation(node, _bone->children[i]);
+        parseAnimation(node, _bone->children[i], _Sprites);
     }
 }
 
-bool Actor::loadAnimation(const std::string &_path, const std::string &_name)
+template <typename Derived>
+bool Actor<Derived>::loadAnimation(const std::string &_path, const std::string &_name, Bone *_skelet, std::map<std::string, Sprite> *_Sprites)
 {
     std::string full_path = std::string("assets/entities/") + _path + std::string("/models/animations/") + _name + std::string(".xml");
     pugi::xml_document doc;
@@ -95,7 +91,7 @@ bool Actor::loadAnimation(const std::string &_path, const std::string &_name)
     }
 
     node = doc.child("animation");
-    // skelet.animation.name = node.attribute(Actor::NODE.NAME).value();
+    // skelet.animation.name = node.attribute(Actor<Derived>::NODE.NAME).value();
 
     objectTransform _transform;
     Vector3<GLfloat> v;
@@ -112,18 +108,23 @@ bool Actor::loadAnimation(const std::string &_path, const std::string &_name)
     v.z = std::stof(node.attribute("flip").value());
     _transform.SetRotate(0.0, 0.0, v.z);
 
-    skelet.animation.trans.SetTransform(_transform);
-    skelet.animation.component.transform = skelet.animation.trans;
+    _skelet->animation.trans.SetTransform(_transform);
+    _skelet->animation.component.transform = _skelet->animation.trans;
 
-    parseAnimation(node, &skelet);
+    parseAnimation(node, _skelet, _Sprites);
 
     // printBones(&skelet);
 
     return true;
 }
 
-bool Actor::loadSprites(const std::string &path)
+template <typename Derived>
+bool Actor<Derived>::loadSprites(std::map<std::string, Sprite> *_Sprites, const std::string &path)
 {
+    if (_Sprites == nullptr) return false;
+    std::cout << __FUNCTION__ << std::endl; 
+    std::cout << "Address: " << _Sprites << std::endl;
+
     std::string full_path = "entities/" + path + "/models/sprites/";
 
     for (const auto &entry : fs::directory_iterator("assets/" + full_path)) {
@@ -132,7 +133,7 @@ bool Actor::loadSprites(const std::string &path)
             if ((filename.size() > 4) && (filename.substr(filename.size() - 4) == ".jpg" || filename.substr(filename.size() - 4) == ".png")) {
                 std::string spriteName = filename.substr(0, filename.size() - 4);
                 Sprite sprite(spriteName, "shaders/sprite_fs.glsl", "shaders/sprite_vs.glsl", (full_path + filename).c_str());
-                Sprites.insert({spriteName, sprite});
+                _Sprites->insert({spriteName, sprite});
             }
         }
     }
@@ -140,7 +141,8 @@ bool Actor::loadSprites(const std::string &path)
     return true;
 }
 
-bool Actor::loadActor(const std::string &path)
+template <typename Derived>
+bool Actor<Derived>::loadActor(const std::string &path)
 {
     std::string full_path = std::string("assets/entities/") + path + "/actor.xml";
     pugi::xml_document doc;
@@ -171,16 +173,11 @@ bool Actor::loadActor(const std::string &path)
     return true;
 }
 
-// Actor::Actor(const std::string &_name, const objectTransform &_trans)
-//     : name(_name), trans(_trans)
-// {
-
-// }
-
-Actor::Actor(const std::string &path)
+template <typename Derived>
+Actor<Derived>::Actor(const std::string &path)
 {
-    loadActor(path);
-    sprites = &Sprites;
+    // Actor<Derived>::loadActor(path);
+    // sprites = &Sprites;
     // skelet = &skelet;
     // skelet.animation.trans = trans;
     trans.Rotate = Vector3<GLfloat>(0.0, 0.0, 180);

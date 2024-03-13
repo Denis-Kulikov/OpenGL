@@ -2,19 +2,17 @@
 
 #include "../../character.hpp"
 
-class Wilson : public Character
+class Wilson : public Character<Wilson>
 {
 public:
-    Wilson() : Character(std::string("player/Wilson"))
-    {
-        std::string path("player/Wilson");
-        Wilson::loadSprites(path);
-        // character = new Character(path);
-        skelet.createSkelet(path, "skelet");
-        Wilson::loadAnimation(path, "stand");
-    }
+    Wilson();
+    // Wilson() : Character<Wilson>(std::string("player/Wilson"))
+    // {
+    //     std::string path("player/Wilson");
+    //     skelet.createSkelet(path, "skelet");
+    //     loadAnimation(path, "stand", &skelet, &Sprites);
+    //     sprites = &Sprites;
+    // }
     
-protected:
     static std::map<std::string, Sprite> Sprites;
-
 };

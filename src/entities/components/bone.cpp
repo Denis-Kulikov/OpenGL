@@ -3,6 +3,14 @@
 const char Bone::BONE[] = "bone";
 const char Bone::NAME[] = "name";
 
+void Bone::printBones(int lvl)
+{
+    for (int i = 0; i < lvl; i++) std::cout << '\t'; 
+    int color = 32 + (lvl % 5);
+    std::cout << "\033[" << std::to_string(color) << "m" << name << "\033[39m" << std::endl;
+    for (auto it : this->children) it->printBones(lvl + 1);
+}
+
 void Bone::addChildBone(pugi::xml_node &node, std::string _name, Bone *_parent)
 {
     Bone *child = new Bone(_name, _parent);

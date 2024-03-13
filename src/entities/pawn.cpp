@@ -1,49 +1,56 @@
 #include <entities/pawn.hpp>
 
-Pawn::Pawn(const std::string &path) : Actor(path) 
-{
-    cameraPos = Vector3<GLfloat>(0.0f, 6.0f, 15);
+
+
+template <typename Derived>
+void Pawn<Derived>::Teleport(const Vector3<GLfloat> newPosition) {
+    this->trans.WorldPos = newPosition;
 }
 
-void Pawn::Teleport(const Vector3<GLfloat> newPosition) {
-    trans.WorldPos = newPosition;
+template <typename Derived>
+void Pawn<Derived>::Move(const Vector3<GLfloat> offset) {
+    this->trans.Move(offset);
 }
 
-void Pawn::Move(const Vector3<GLfloat> offset) {
-    trans.Move(offset);
+template <typename Derived>
+void Pawn<Derived>::Move(const GLfloat distance, const Vector3<GLfloat> direction) {
+    this->trans.Move(distance, direction);
 }
 
-void Pawn::Move(const GLfloat distance, const Vector3<GLfloat> direction) {
-    trans.Move(distance, direction);
+template <typename Derived>
+void Pawn<Derived>::MoveForward(const GLfloat distance) {
+    this->trans.MoveForward(distance);
 }
 
-void Pawn::MoveForward(const GLfloat distance) {
-    trans.MoveForward(distance);
+template <typename Derived>
+void Pawn<Derived>::Rotate(const Vector3<GLfloat> _rotate) {
+    this->trans.Rotate = _rotate;
 }
 
-void Pawn::Rotate(const Vector3<GLfloat> _rotate) {
-    trans.Rotate = _rotate;
+template <typename Derived>
+void Pawn<Derived>::AddRotate(const Vector3<GLfloat> _rotate) {
+    this->trans.Rotate += _rotate;
 }
 
-void Pawn::AddRotate(const Vector3<GLfloat> _rotate) {
-    trans.Rotate += _rotate;
+template <typename Derived>
+void Pawn<Derived>::SetScale(const Vector3<GLfloat> _scale) {
+    this->trans.Scale = _scale;
 }
 
-void Pawn::SetScale(const Vector3<GLfloat> _scale) {
-    trans.Scale = _scale;
-}
-
-void Pawn::MultiplyScale(const Vector3<GLfloat> _scale) {
-    trans.Scale *= _scale;
+template <typename Derived>
+void Pawn<Derived>::MultiplyScale(const Vector3<GLfloat> _scale) {
+    this->trans.Scale *= _scale;
 }
 
 
-void Pawn::attachCamera(Camera *_camera)
+template <typename Derived>
+void Pawn<Derived>::attachCamera(Camera *_camera)
 {
     camera = _camera;
 }
 
-bool Pawn::createCamera(int width, int height)
+template <typename Derived>
+bool Pawn<Derived>::createCamera(int width, int height)
 {
     auto _camera = new Camera();
 
@@ -60,9 +67,10 @@ bool Pawn::createCamera(int width, int height)
 }
 
 
-void Pawn::MoveTowards(Pawn* targetPawn, GLfloat speed) {
+template <typename Derived>
+void Pawn<Derived>::MoveTowards(Pawn* targetPawn, GLfloat speed) {
     // Получаем позиции текущей пешки и целевой пешки
-    Vector3<GLfloat> currentPosition = trans.WorldPos;
+    Vector3<GLfloat> currentPosition = this->trans.WorldPos;
     Vector3<GLfloat> targetPosition = targetPawn->trans.WorldPos;
 
     // Вычисляем вектор направления от текущей позиции к целевой позиции
@@ -77,7 +85,8 @@ void Pawn::MoveTowards(Pawn* targetPawn, GLfloat speed) {
 }
 
 
-void Pawn::UpdateCameraPos()
+template <typename Derived>
+void Pawn<Derived>::UpdateCameraPos()
 {
-    camera->Params.WorldPos = cameraPos + trans.WorldPos;
+    this->camera->Params.WorldPos = cameraPos + this->trans.WorldPos;
 }
