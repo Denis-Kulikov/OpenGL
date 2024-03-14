@@ -1,184 +1,181 @@
-#include <entities/actor.hpp>
-#include <entities/components/component.hpp>
-#include <filesystem>
-#include <pugixml.hpp>
+// #include <entities/actor.hpp>
+// #include <entities/components/component.hpp>
+// #include <filesystem>
+// #include <pugixml.hpp>
 
-namespace fs = std::filesystem;
+// namespace fs = std::filesystem;
 
-template <typename Derived>
-std::map<std::string, Sprite> Actor<Derived>::Sprites;
-
-// Bone Actor<Derived>::skelet;
+// template <typename Derived>
 // std::map<std::string, Sprite> Actor<Derived>::Sprites;
-// const struct NODE_STR Actor<Derived>::NODE = {"name", "bone"};
 
+// template <typename Derived>
+// Bone Actor<Derived>::skelet;
 
-template <typename Derived>
-std::vector<Component*> Actor<Derived>::getActorComponents(Bone *_parent)
-{
-    std::vector<Component*> ActorComponents;
-    skelet.animation.component.transform = trans;
+// // const struct NODE_STR Actor<Derived>::NODE = {"name", "bone"};
 
-    for (auto it : _parent->children) {
-        objectTransform *transChild  = &(it->animation.trans);
-        objectTransform *transParentComponent = &_parent->animation.trans;
-        objectTransform *transParentSprite = &_parent->animation.component.transform;
+// template <typename Derived>
+// std::vector<Component*> Actor<Derived>::getActorComponents(Bone *_parent)
+// {
+//     std::vector<Component*> ActorComponents;
+//     skelet.animation.component.transform = trans;
 
-        it->animation.component.transform.WorldPos  = transChild->WorldPos + transParentSprite->WorldPos;
-        it->animation.component.transform.Rotate    = transChild->Rotate + transParentSprite->Rotate;
-        it->animation.component.transform.Scale     = transChild->Scale * it->animation.spriteScale * transParentComponent->Scale;
+//     for (auto it : _parent->children) {
+//         objectTransform *transChild  = &(it->animation.trans);
+//         objectTransform *transParentComponent = &_parent->animation.trans;
+//         objectTransform *transParentSprite = &_parent->animation.component.transform;
 
-        it->animation.component.sprite = it->animation.sprite;
-        ActorComponents.push_back(&it->animation.component);
+//         it->animation.component.transform.WorldPos  = transChild->WorldPos + transParentSprite->WorldPos;
+//         it->animation.component.transform.Rotate    = transChild->Rotate + transParentSprite->Rotate;
+//         it->animation.component.transform.Scale     = transChild->Scale * it->animation.spriteScale * transParentComponent->Scale;
+
+//         it->animation.component.sprite = it->animation.sprite;
+//         // it->animation.component.transform.print();
+//         ActorComponents.push_back(&it->animation.component);
         
-        std::vector<Component*> componentsToAdd = getActorComponents(it);
-        ActorComponents.insert(ActorComponents.end(), componentsToAdd.begin(), componentsToAdd.end());
-    }
+//         std::vector<Component*> componentsToAdd = getActorComponents(it);
+//         ActorComponents.insert(ActorComponents.end(), componentsToAdd.begin(), componentsToAdd.end());
+//     }
 
-    return ActorComponents;
-}
+//     return ActorComponents;
+// }
 
-template <typename Derived>
-void Actor<Derived>::parseAnimation(pugi::xml_node &_node, Bone *_bone, std::map<std::string, Sprite> *_Sprites) {
-    for (int i = 0; i < _bone->children.size(); i++) {
-        pugi::xml_node node = _node.child(_bone->children[i]->name.c_str());
+// template <typename Derived>
+// void Actor<Derived>::parseAnimation(pugi::xml_node &_node, Bone *_bone) {
+//     for (int i = 0; i < _bone->children.size(); i++) {
+//         pugi::xml_node node = _node.child(_bone->children[i]->name.c_str());
 
-        std::string spriteName = node.attribute("sprite").as_string();
-        auto it = _Sprites->find(spriteName); 
-        if (it != _Sprites->end()) { // try
-            _bone->children[i]->animation.sprite = &(it->second); 
-            _bone->children[i]->animation.spriteScale = it->second.Scale; 
-        } else {
-            std::cout << "Error Actor.parseAnimation: not found " << spriteName << std::endl;
-        }
+//         std::string spriteName = node.attribute("sprite").as_string();
+//         auto it = Sprites.find(spriteName); 
+//         if (it != Sprites.end()) { // try
+//             _bone->children[i]->animation.sprite = &(it->second); 
+//             _bone->children[i]->animation.spriteScale = it->second.Scale; 
+//         } else {
+//             std::cout << "Error Actor.parseAnimation: not found " << spriteName << std::endl;
+//         }
 
-        objectTransform _transform;
-        Vector3<GLfloat> v;
+//         objectTransform _transform;
+//         Vector3<GLfloat> v;
 
-        v.x = std::stof(node.attribute("x").value());
-        v.y = std::stof(node.attribute("y").value());
-        v.z = std::stof(node.attribute("z").value());
-        _transform.SetWorldPos(v.x, v.y, v.z / 10);
+//         v.x = std::stof(node.attribute("x").value());
+//         v.y = std::stof(node.attribute("y").value());
+//         v.z = std::stof(node.attribute("z").value());
+//         _transform.SetWorldPos(v.x, v.y, v.z / 10);
 
-        v.x = std::stof(node.attribute("width").value());
-        v.y = std::stof(node.attribute("height").value());
-        _transform.SetScale(v.x, v.y, 0.0);
+//         v.x = std::stof(node.attribute("width").value());
+//         v.y = std::stof(node.attribute("height").value());
+//         _transform.SetScale(v.x, v.y, 0.0);
 
-        v.z = std::stof(node.attribute("flip").value());
-        _transform.SetRotate(0.0, 0.0, v.z);
+//         v.z = std::stof(node.attribute("flip").value());
+//         _transform.SetRotate(0.0, 0.0, v.z);
 
-        if (node.attribute("mirrorX")) {
-            _transform.SetRotate(0.0, 180.0, v.z);
-        } 
+//         if (node.attribute("mirrorX")) {
+//             _transform.SetRotate(0.0, 180.0, v.z);
+//         } 
 
-        _bone->children[i]->animation.trans.SetTransform(_transform);
+//         _bone->children[i]->animation.trans.SetTransform(_transform);
 
-        parseAnimation(node, _bone->children[i], _Sprites);
-    }
-}
+//         parseAnimation(node, _bone->children[i]);
+//     }
+// }
 
-template <typename Derived>
-bool Actor<Derived>::loadAnimation(const std::string &_path, const std::string &_name, Bone *_skelet, std::map<std::string, Sprite> *_Sprites)
-{
-    std::string full_path = std::string("assets/entities/") + _path + std::string("/models/animations/") + _name + std::string(".xml");
-    pugi::xml_document doc;
-    pugi::xml_node node;
-    pugi::xml_parse_result parse_result = doc.load_file(full_path.c_str());
+// template <typename Derived>
+// bool Actor<Derived>::loadAnimation(const std::string &_path, const std::string &_name)
+// {
+//     std::string full_path = std::string("assets/entities/") + _path + std::string("/models/animations/") + _name + std::string(".xml");
+//     pugi::xml_document doc;
+//     pugi::xml_node node;
+//     pugi::xml_parse_result parse_result = doc.load_file(full_path.c_str());
 
-    if (!parse_result) {
-        std::cout << "Error Actor.loadAnimation: file not found (" << full_path << ")" << std::endl;
-        return false;
-    }
+//     if (!parse_result) {
+//         std::cout << "Error Actor.loadAnimation: file not found (" << full_path << ")" << std::endl;
+//         return false;
+//     }
 
-    node = doc.child("animation");
-    // skelet.animation.name = node.attribute(Actor<Derived>::NODE.NAME).value();
+//     node = doc.child("animation");
+//     // skelet.animation.name = node.attribute(Actor<Derived>::NODE.NAME).value();
 
-    objectTransform _transform;
-    Vector3<GLfloat> v;
+//     objectTransform _transform;
+//     Vector3<GLfloat> v;
 
-    v.x = std::stof(node.attribute("x").value());
-    v.y = std::stof(node.attribute("y").value());
-    v.z = std::stof(node.attribute("z").value());
-    _transform.SetWorldPos(v.x, v.y, v.z);
+//     v.x = std::stof(node.attribute("x").value());
+//     v.y = std::stof(node.attribute("y").value());
+//     v.z = std::stof(node.attribute("z").value());
+//     _transform.SetWorldPos(v.x, v.y, v.z);
 
-    v.x = std::stof(node.attribute("width").value());
-    v.y = std::stof(node.attribute("height").value());
-    _transform.SetScale(v.x, v.y, 0.0);
+//     v.x = std::stof(node.attribute("width").value());
+//     v.y = std::stof(node.attribute("height").value());
+//     _transform.SetScale(v.x, v.y, 0.0);
 
-    v.z = std::stof(node.attribute("flip").value());
-    _transform.SetRotate(0.0, 0.0, v.z);
+//     v.z = std::stof(node.attribute("flip").value());
+//     _transform.SetRotate(0.0, 0.0, v.z);
 
-    _skelet->animation.trans.SetTransform(_transform);
-    _skelet->animation.component.transform = _skelet->animation.trans;
+//     skelet.animation.trans.SetTransform(_transform);
+//     skelet.animation.component.transform = skelet.animation.trans;
 
-    parseAnimation(node, _skelet, _Sprites);
+//     parseAnimation(node, &skelet);
 
-    // printBones(&skelet);
+//     // printBones(&skelet);
 
-    return true;
-}
+//     return true;
+// }
 
-template <typename Derived>
-bool Actor<Derived>::loadSprites(std::map<std::string, Sprite> *_Sprites, const std::string &path)
-{
-    if (_Sprites == nullptr) return false;
-    std::cout << __FUNCTION__ << std::endl; 
-    std::cout << "Address: " << _Sprites << std::endl;
+// template <typename Derived>
+// bool Actor<Derived>::loadSprites(const std::string &path)
+// {
+//     std::string full_path = "entities/" + path + "/models/sprites/";
 
-    std::string full_path = "entities/" + path + "/models/sprites/";
+//     for (const auto &entry : fs::directory_iterator("assets/" + full_path)) {
+//         if (entry.is_regular_file()) {
+//             std::string filename = entry.path().filename().string();
+//             if ((filename.size() > 4) && (filename.substr(filename.size() - 4) == ".jpg" || filename.substr(filename.size() - 4) == ".png")) {
+//                 std::string spriteName = filename.substr(0, filename.size() - 4);
+//                 Sprite sprite(spriteName, "shaders/sprite_fs.glsl", "shaders/sprite_vs.glsl", (full_path + filename).c_str());
+//                 Sprites.insert({spriteName, sprite});
+//             }
+//         }
+//     }
 
-    for (const auto &entry : fs::directory_iterator("assets/" + full_path)) {
-        if (entry.is_regular_file()) {
-            std::string filename = entry.path().filename().string();
-            if ((filename.size() > 4) && (filename.substr(filename.size() - 4) == ".jpg" || filename.substr(filename.size() - 4) == ".png")) {
-                std::string spriteName = filename.substr(0, filename.size() - 4);
-                Sprite sprite(spriteName, "shaders/sprite_fs.glsl", "shaders/sprite_vs.glsl", (full_path + filename).c_str());
-                _Sprites->insert({spriteName, sprite});
-            }
-        }
-    }
+//     return true;
+// }
 
-    return true;
-}
+// template <typename Derived>
+// bool Actor<Derived>::loadActor(const std::string &path)
+// {
+//     std::string full_path = std::string("assets/entities/") + path + "/actor.xml";
+//     pugi::xml_document doc;
+//     pugi::xml_node word;
+//     pugi::xml_parse_result parse_result = doc.load_file(full_path.c_str());
 
-template <typename Derived>
-bool Actor<Derived>::loadActor(const std::string &path)
-{
-    std::string full_path = std::string("assets/entities/") + path + "/actor.xml";
-    pugi::xml_document doc;
-    pugi::xml_node word;
-    pugi::xml_parse_result parse_result = doc.load_file(full_path.c_str());
+//     if (!parse_result) {
+//         std::cout << "Error " << name << ".loadActor: file not found (" << full_path << ")" << std::endl;
+//         return false;
+//     }
 
-    if (!parse_result) {
-        std::cout << "Error " << name << ".loadActor: file not found (" << full_path << ")" << std::endl;
-        return false;
-    }
+//     name = doc.child("character").attribute("name").value();
 
-    name = doc.child("character").attribute("name").value();
+//     Vector3<GLfloat> v;
 
-    Vector3<GLfloat> v;
+//     v.x = std::stof(doc.child("character").child("objectTransform").child("worldPos").attribute("x").value());
+//     v.y = std::stof(doc.child("character").child("objectTransform").child("worldPos").attribute("y").value());
+//     v.z = std::stof(doc.child("character").child("objectTransform").child("worldPos").attribute("z").value());
+//     trans.SetWorldPos(v.x, v.y, v.z);
 
-    v.x = std::stof(doc.child("character").child("objectTransform").child("worldPos").attribute("x").value());
-    v.y = std::stof(doc.child("character").child("objectTransform").child("worldPos").attribute("y").value());
-    v.z = std::stof(doc.child("character").child("objectTransform").child("worldPos").attribute("z").value());
-    trans.SetWorldPos(v.x, v.y, v.z);
+//     v.x = std::stof(doc.child("character").child("objectTransform").child("rotate").attribute("deg").value());
+//     trans.SetRotate(0.0, 0.0, v.x);
 
-    v.x = std::stof(doc.child("character").child("objectTransform").child("rotate").attribute("deg").value());
-    trans.SetRotate(0.0, 0.0, v.x);
+//     v.x = std::stof(doc.child("character").child("objectTransform").child("scale").attribute("x").value());
+//     v.y = std::stof(doc.child("character").child("objectTransform").child("scale").attribute("y").value());
+//     trans.SetScale(v.x, v.y, 0.0);
 
-    v.x = std::stof(doc.child("character").child("objectTransform").child("scale").attribute("x").value());
-    v.y = std::stof(doc.child("character").child("objectTransform").child("scale").attribute("y").value());
-    trans.SetScale(v.x, v.y, 0.0);
+//     return true;
+// }
 
-    return true;
-}
-
-template <typename Derived>
-Actor<Derived>::Actor(const std::string &path)
-{
-    // Actor<Derived>::loadActor(path);
-    // sprites = &Sprites;
-    // skelet = &skelet;
-    // skelet.animation.trans = trans;
-    trans.Rotate = Vector3<GLfloat>(0.0, 0.0, 180);
-}
+// template <typename Derived>
+// Actor<Derived>::Actor(const std::string &path)
+// {
+//     loadActor(path);
+//     sprites = &Sprites;
+//     // skelet = &skelet;
+//     // skelet.animation.trans = trans;
+//     trans.Rotate = Vector3<GLfloat>(0.0, 0.0, 180);
+// }

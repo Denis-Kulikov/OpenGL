@@ -2,22 +2,21 @@
 
 #include "../../character.hpp"
 
-class Spider : public Character
+class Spider : public Character<Spider>
 {
 public:
     Spider() : Character(std::string("mobs/spider"))
     {
+    }
+
+    static void Initialize()
+    {
         std::string path("mobs/spider");
-
-        std::cout << __FUNCTION__ << std::endl; 
-        // std::cout << "Address: " << &Sprites << std::endl;
-
-        Spider::loadSprites(&Sprites, path);
+        loadSprites(path);
         skelet.createSkelet(path, "skelet");
-        Spider::loadAnimation(path, "stand", &skelet, sprites);
+        loadAnimation(path, "stand");
     }
     
-protected:
     static std::map<std::string, Sprite> Sprites;
-
+    static Bone skelet;
 };

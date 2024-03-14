@@ -7,5 +7,5 @@ template<typename Derived>
 class Character : public Pawn<Derived>
 {
 public:
-    Character(const std::string &path);
+    Character(const std::string &path) : Pawn<Derived>(path) {};
 };
