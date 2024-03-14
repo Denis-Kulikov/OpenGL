@@ -11,22 +11,25 @@ void Bone::printBones(int lvl)
     for (auto it : this->children) it->printBones(lvl + 1);
 }
 
-void Bone::addChildBone(pugi::xml_node &node, std::string _name, Bone *_parent)
+size_t Bone::addChildBone(pugi::xml_node &node, std::string _name, Bone *_parent)
 {
     Bone *child = new Bone(_name, _parent);
     _parent->children.push_back(child);
-    child->parseBone(node, child);
+    return child->parseBone(node, child);
 };
 
-void Bone::parseBone(pugi::xml_node &node, Bone *_parent)
+size_t Bone::parseBone(pugi::xml_node &node, Bone *_parent)
 {
+    size_t size = 0;
     for (pugi::xml_node boneNode = node.child(Bone::BONE); boneNode; boneNode = boneNode.next_sibling(Bone::BONE)) {
         std::string boneName = boneNode.attribute(Bone::NAME).as_string();
-        _parent->addChildBone(boneNode, boneName, _parent);
+        size += _parent->addChildBone(boneNode, boneName, _parent);
+        size++;
     }
+    return size;
 }
 
-void Bone::createSkelet(const std::string &_path, const std::string &_name)
+size_t Bone::createSkelet(const std::string &_path, const std::string &_name)
 {
     std::string full_path = "assets/entities/" + _path + "/models/skelet/" + _name + ".xml";
     pugi::xml_document doc;
@@ -35,11 +38,11 @@ void Bone::createSkelet(const std::string &_path, const std::string &_name)
 
     if (!parse_result) {
         std::cout << "Error: file not found (" << full_path << ")" << std::endl;
-        return;
+        return 0;
     }
 
     node = doc.child("skelet");
     name = node.attribute(Bone::NAME).as_string();
 
-    parseBone(node, this);
+    return parseBone(node, this) + 1;
 }

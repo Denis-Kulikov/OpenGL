@@ -9,6 +9,7 @@ public:
     
     static void Initialize();
 
-    static std::map<std::string, Sprite> Sprites;
+    static size_t skeletSize;
     static Bone skelet;
+    static std::map<std::string, Sprite> Sprites;
 };

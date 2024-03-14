@@ -2,12 +2,12 @@
 #include "objectTransform.hpp"
 
 struct GeometryInfo {
-    GLuint VAO;
-    GLuint VBO;
-    GLuint EBO;
+    GLuint VAO = 0;
+    GLuint VBO = 0;
+    GLuint EBO = 0;
 
-    GLint numVertices;
-    GLint numIndices;
+    GLint numVertices = 0;
+    GLint numIndices = 0;
 };
 
 class Sprite
@@ -18,7 +18,7 @@ public:
     Sprite();
     static void initializeGeometry();
 
-    std::string     name;
+    std::string name;
     objectTransform trans;
     Vector3<GLfloat> Scale;
     Vector3<GLfloat> color = Vector3<GLfloat>(1.0, 1.0, 1.0);

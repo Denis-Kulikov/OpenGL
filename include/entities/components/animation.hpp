@@ -10,8 +10,8 @@ public:
     void SetChildAnimation(const objectTransform &_transform);
 
     std::string name;
-    objectTransform trans;
-    Component component;
+    objectTransform transform;
+    // Component component;
     Vector3<GLfloat> spriteScale;
     Sprite *sprite = nullptr;
     // objectTransform anchorPoint;

@@ -15,9 +15,9 @@ public:
     static const char NAME[];
 
     void printBones(int lvl);
-    void addChildBone(pugi::xml_node &node, std::string _name, Bone *_parent);
-    void parseBone(pugi::xml_node &node, Bone *_parent);
-    void createSkelet(const std::string &_path, const std::string &_name);
+    size_t addChildBone(pugi::xml_node &node, std::string _name, Bone *_parent);
+    size_t parseBone(pugi::xml_node &node, Bone *_parent);
+    size_t createSkelet(const std::string &_path, const std::string &_name);
 
 
     std::string name;

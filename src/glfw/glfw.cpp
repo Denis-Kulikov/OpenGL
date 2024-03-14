@@ -4,7 +4,6 @@
 #include <object/sphere.hpp>
 #include <object/line.hpp>
 #include <object/cube_bone.hpp>
-#include <lib-project/try.hpp>
 #include <game/gameManager.hpp>
 #include <entities/actor.hpp>
 #include <entities/pawn.hpp>
@@ -14,12 +13,12 @@
 
 #include <chrono>
 #include <ctime>
-
 #include <random>
 
 // Растеризация. Проекция перспективы. Скелетная анимация 2D моделей.
 
 std::map<std::string, Sprite> Spider::Sprites;
+size_t Spider::skeletSize = 0;
 Bone Spider::skelet;
 
 #define SPIDER_NUM 4
@@ -55,7 +54,8 @@ bool RenderSceneCB(Render *render, Scene *scene)
     for (std::vector<Component>::iterator it = scene->getIterator(); it != scene->component.end(); it++)
         GameManager::render->drawObject(it->transform, *it->sprite);
 
-    std::vector<Component*> ActorComponents = character->getActorComponents(&character->skelet);
+    std::vector<Component*> ActorComponents = character->getActorComponents();
+    // std::vector<Component*> ActorComponents = character->getActorComponents(&character->skelet);
 
     character->UpdateCameraPos();
 
@@ -64,14 +64,15 @@ bool RenderSceneCB(Render *render, Scene *scene)
         GameManager::render->drawObject(it->transform, *it->sprite);
     }
 
-    for (int i = 0; i < SPIDER_NUM; i++) {
-        spider[i].MoveTowards(character, 0.006);
-        ActorComponents = spider[i].getActorComponents(&spider[i].skelet);
-        for (auto it : ActorComponents) {
-            if (it->sprite == nullptr) continue;
-            GameManager::render->drawObject(it->transform, *it->sprite);
-        }
-    }
+    // for (int i = 0; i < SPIDER_NUM; i++) {
+    //     spider[i].MoveTowards(character, 0.006);
+    //     ActorComponents = spider[i].getActorComponents();
+    //     // ActorComponents = spider[i].getActorComponents(&spider[i].skelet);
+    //     for (auto it : ActorComponents) {
+    //         if (it->sprite == nullptr) continue;
+    //         GameManager::render->drawObject(it->transform, *it->sprite);
+    //     }
+    // }
 
     
     frame++;

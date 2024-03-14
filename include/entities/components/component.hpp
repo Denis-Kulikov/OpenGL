@@ -5,7 +5,11 @@ class Component
 {
 public:
     Component(objectTransform &_transform, Sprite *_sprite) : transform(_transform), sprite(_sprite) {};
-    Component() {};
+    Component()
+    {
+        transform = objectTransform();
+        sprite = nullptr;
+    }
 
     objectTransform transform;
     Sprite *sprite = nullptr;

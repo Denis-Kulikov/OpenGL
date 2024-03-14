@@ -17,31 +17,52 @@ public:
         trans.Rotate = Vector3<GLfloat>(0.0, 0.0, 180);
     }
 
-    void addComponent() {}
-
-    std::vector<Component*> getActorComponents(Bone *_parent)
+    std::vector<Component*> getActorComponents(Bone *_parent, size_t &n)
     {
         std::vector<Component*> ActorComponents;
-        Derived::skelet.animation.component.transform = trans;
+        components[0].transform = trans; // Updating the skeleton position
+        size_t parentNumber = n;
+
+        if (_parent->children.size() != 0) n++;
 
         for (auto it : _parent->children) {
-            objectTransform *transChild = &(it->animation.trans);
-            objectTransform *transParentComponent = &_parent->animation.trans;
-            objectTransform *transParentSprite = &_parent->animation.component.transform;
+            objectTransform *component       = &it->animation.transform;
+            objectTransform *ParentComponent = &_parent->animation.transform;
+            objectTransform *ParentSprite    = &components[parentNumber].transform;
 
-            it->animation.component.transform.WorldPos = transChild->WorldPos + transParentSprite->WorldPos;
-            it->animation.component.transform.Rotate = transChild->Rotate + transParentSprite->Rotate;
-            it->animation.component.transform.Scale = transChild->Scale * it->animation.spriteScale * transParentComponent->Scale;
+            components[n].transform.WorldPos = component->WorldPos + ParentSprite->WorldPos;
+            components[n].transform.Rotate   = component->Rotate   + ParentSprite->Rotate;
+            components[n].transform.Scale    = component->Scale    * ParentComponent->Scale * it->animation.spriteScale;
 
-            it->animation.component.sprite = it->animation.sprite;
-            ActorComponents.push_back(&it->animation.component);
+            components[n].sprite = it->animation.sprite;
+            std::cout << "N=" << n << '\t' << "Sprite=" << components[n].sprite->name << std::endl;
+            ActorComponents.push_back(components + n);
+            // ActorComponents.push_back(&component[n]);
             
-            std::vector<Component*> componentsToAdd = getActorComponents(it);
+            std::vector<Component*> componentsToAdd = getActorComponents(it, n);
             ActorComponents.insert(ActorComponents.end(), componentsToAdd.begin(), componentsToAdd.end());
+            n++;
         }
 
         return ActorComponents;
     }
+
+    std::vector<Component*> getActorComponents()
+    {
+        size_t n = 0;
+        if (components == nullptr) {
+            std::vector<Component*> ActorComponents;
+            return ActorComponents;
+        }
+        return getActorComponents(&Derived::skelet, n);
+    }
+
+    void updateAnimation()
+    {
+        // for (auto it : components) {
+        // }
+    }
+
 
     static void parseAnimation(pugi::xml_node &_node, Bone *_bone) {
         for (int i = 0; i < _bone->children.size(); i++) {
@@ -75,7 +96,7 @@ public:
                 _transform.SetRotate(0.0, 180.0, v.z);
             } 
 
-            _bone->children[i]->animation.trans.SetTransform(_transform);
+            _bone->children[i]->animation.transform.SetTransform(_transform);
 
             parseAnimation(node, _bone->children[i]);
         }
@@ -110,8 +131,8 @@ public:
         v.z = std::stof(node.attribute("flip").value());
         _transform.SetRotate(0.0, 0.0, v.z);
 
-        Derived::skelet.animation.trans.SetTransform(_transform);
-        Derived::skelet.animation.component.transform = Derived::skelet.animation.trans;
+        // Derived::skelet.animation.transform.SetTransform(_transform);
+        // Derived::skelet.animation.component.transform = Derived::skelet.animation.transform;
 
         parseAnimation(node, &Derived::skelet);
 
@@ -132,6 +153,13 @@ public:
                 }
             }
         }
+
+        return true;
+    }
+
+    static bool loadSkelet(const std::string &path)
+    {
+        Derived::skeletSize = Derived::skelet.createSkelet(path, "skelet");
 
         return true;
     }
@@ -176,6 +204,8 @@ public:
 protected:
     std::string name;
     objectTransform trans;
+    Component *components = nullptr;
+    static size_t skeletSize;
     static Bone skelet;
     static std::map<std::string, Sprite> Sprites;
 };
@@ -185,3 +215,6 @@ std::map<std::string, Sprite> Actor<Derived>::Sprites;
 
 template <typename Derived>
 Bone Actor<Derived>::skelet;
+
+template <typename Derived>
+size_t Actor<Derived>::skeletSize;

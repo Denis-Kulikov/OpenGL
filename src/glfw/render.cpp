@@ -27,8 +27,9 @@ void Render::clearRender() {
 }
 
 
-void Render::drawObject(objectTransform &_transform, Sprite&_sprite)
+void Render::drawObject(objectTransform &_transform, Sprite& _sprite)
 {
+    std::cout << __FUNCTION__ << std::endl;
     pipeline.object = &_transform;
     // pipeline.object->print();
     if ((pipeline.camera == nullptr) || (pipeline.object == nullptr)) {
@@ -39,6 +40,7 @@ void Render::drawObject(objectTransform &_transform, Sprite&_sprite)
         return;
     }
 
+
     glUseProgram(_sprite.shader);
     if (_sprite.gColorLocation != 0xFFFFFFFF) glUniform3f(_sprite.gColorLocation, _sprite.color.x, _sprite.color.y, _sprite.color.z);
 
@@ -46,17 +48,21 @@ void Render::drawObject(objectTransform &_transform, Sprite&_sprite)
 
     glBindVertexArray(_sprite.geometry->VAO);
     glBindBuffer(GL_ARRAY_BUFFER, _sprite.geometry->VBO);
+    std::cout << "3" << std::endl;
 
     if (_sprite.geometry->EBO != 0) {
+        std::cout << "5" << std::endl;
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _sprite.geometry->EBO);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, _sprite.texture);
         glUniform1i(_sprite.gTextureSamplerLocation, 0);
 
+        std::cout << "6 " << _sprite.geometry->numIndices << " |" << std::endl;
         glDrawElements(GL_TRIANGLES, _sprite.geometry->numIndices, GL_UNSIGNED_INT, 0);
     } else {
         glDrawArrays(GL_LINE_STRIP, 0, _sprite.geometry->numVertices);
     }
+    std::cout << "4" << std::endl;
 
 
     clearRender();
