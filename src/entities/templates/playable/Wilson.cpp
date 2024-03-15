@@ -14,6 +14,11 @@ Wilson::Wilson()
 
 }
 
+Wilson::~Wilson()
+{
+    std::cout << "Wilson::~Wilson()" << std::endl;
+}
+
 void Wilson::Initialize()
 {
     std::string path("player/Wilson");

@@ -52,7 +52,7 @@ Vector3<GLfloat> generateRandomPoint() {
 bool RenderSceneCB(Render *render, Scene *scene)
 {
     for (std::vector<Component>::iterator it = scene->getIterator(); it != scene->component.end(); it++)
-        GameManager::render->drawObject(it->transform, *it->sprite);
+        GameManager::render->drawObject(it->transform, it->sprite);
 
     std::vector<Component*> ActorComponents = character->getActorComponents();
     // std::vector<Component*> ActorComponents = character->getActorComponents(&character->skelet);
@@ -61,7 +61,7 @@ bool RenderSceneCB(Render *render, Scene *scene)
 
     for (auto it : ActorComponents) {
         if (it->sprite == nullptr) continue;
-        GameManager::render->drawObject(it->transform, *it->sprite);
+        GameManager::render->drawObject(it->transform, it->sprite);
     }
 
     // for (int i = 0; i < SPIDER_NUM; i++) {
@@ -102,12 +102,14 @@ Scene *createScene()
     Component component(transformGrass, mySprite);
     scene->pushObject(component);
 
+    Wilson::Initialize();
+    Spider::Initialize();
+
     character = new Wilson();
+
     GameManager::PushPlayerTransform(character->GetTransform());
     character->createCamera(GameManager::width, GameManager::height);
 
-    Wilson::Initialize();
-    Spider::Initialize();
 
     for (int i = 0; i < SPIDER_NUM; i ++) spider[i].Teleport(generateRandomPoint());
 

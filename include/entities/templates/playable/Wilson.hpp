@@ -6,6 +6,7 @@ class Wilson : public Character<Wilson>
 {
 public:
     Wilson();
+    ~Wilson();
     
     static void Initialize();
 

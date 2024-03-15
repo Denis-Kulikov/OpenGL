@@ -16,14 +16,16 @@ public:
         loadActor(path);
         trans.Rotate = Vector3<GLfloat>(0.0, 0.0, 180);
     }
+    ~Actor()
+    {
+        delete[] components;
+    }
+
 
     std::vector<Component*> getActorComponents(Bone *_parent, size_t &n)
     {
         std::vector<Component*> ActorComponents;
-        components[0].transform = trans; // Updating the skeleton position
-        size_t parentNumber = n;
-
-        if (_parent->children.size() != 0) n++;
+        size_t parentNumber = n++;
 
         for (auto it : _parent->children) {
             objectTransform *component       = &it->animation.transform;
@@ -35,13 +37,11 @@ public:
             components[n].transform.Scale    = component->Scale    * ParentComponent->Scale * it->animation.spriteScale;
 
             components[n].sprite = it->animation.sprite;
-            std::cout << "N=" << n << '\t' << "Sprite=" << components[n].sprite->name << std::endl;
-            ActorComponents.push_back(components + n);
-            // ActorComponents.push_back(&component[n]);
+            ActorComponents.push_back(&components[n]);
+            // std::cout << "N=" << n << '\t' << "Sprite=" << components[n].sprite->name << std::endl;
             
             std::vector<Component*> componentsToAdd = getActorComponents(it, n);
             ActorComponents.insert(ActorComponents.end(), componentsToAdd.begin(), componentsToAdd.end());
-            n++;
         }
 
         return ActorComponents;
@@ -49,6 +49,7 @@ public:
 
     std::vector<Component*> getActorComponents()
     {
+        components[0].transform = trans; // Updating the skeleton position
         size_t n = 0;
         if (components == nullptr) {
             std::vector<Component*> ActorComponents;
