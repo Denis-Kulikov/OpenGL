@@ -24,12 +24,10 @@ Bone Spider::skelet;
 #define SPIDER_NUM 4
 
 Wilson *character = nullptr;
-Spider spider[SPIDER_NUM];
-
+Spider *spider[SPIDER_NUM] = {nullptr};
 
 time_t prev = time(0);
 int frame = 0;
-
 
 float randomFloat(float min, float max) {
     static std::random_device rd;
@@ -41,7 +39,7 @@ float randomFloat(float min, float max) {
 Vector3<GLfloat> generateRandomPoint() {
     float MIN_X = -4.0, MAX_X = 4.0;
     float MIN_Y = -4.0, MAX_Y = 4.0;
-    float MIN_Z = -0.0, MAX_Z = 1.0;
+    float MIN_Z = 0.0, MAX_Z = 1.0;
     float x = randomFloat(MIN_X, MAX_X);
     float y = randomFloat(MIN_Y, MAX_Y);
     float z = randomFloat(MIN_Z, MAX_Z);
@@ -52,27 +50,25 @@ Vector3<GLfloat> generateRandomPoint() {
 bool RenderSceneCB(Render *render, Scene *scene)
 {
     for (std::vector<Component>::iterator it = scene->getIterator(); it != scene->component.end(); it++)
-        GameManager::render->drawObject(it->transform, it->sprite);
+        GameManager::render->drawObject(&it->transform, it->sprite);
 
     std::vector<Component*> ActorComponents = character->getActorComponents();
-    // std::vector<Component*> ActorComponents = character->getActorComponents(&character->skelet);
 
     character->UpdateCameraPos();
 
     for (auto it : ActorComponents) {
         if (it->sprite == nullptr) continue;
-        GameManager::render->drawObject(it->transform, it->sprite);
+        GameManager::render->drawObject(&it->transform, it->sprite);
     }
 
-    // for (int i = 0; i < SPIDER_NUM; i++) {
-    //     spider[i].MoveTowards(character, 0.006);
-    //     ActorComponents = spider[i].getActorComponents();
-    //     // ActorComponents = spider[i].getActorComponents(&spider[i].skelet);
-    //     for (auto it : ActorComponents) {
-    //         if (it->sprite == nullptr) continue;
-    //         GameManager::render->drawObject(it->transform, *it->sprite);
-    //     }
-    // }
+    for (int i = 0; i < SPIDER_NUM; i++) {
+        spider[i]->MoveTowards(character, 0.006);
+        ActorComponents = spider[i]->getActorComponents();
+        for (auto it : ActorComponents) {
+            if (it->sprite == nullptr) continue;
+            GameManager::render->drawObject(&it->transform, it->sprite);
+        }
+    }
 
     
     frame++;
@@ -89,16 +85,11 @@ Scene *createScene()
 {
     auto *scene = new Scene(std::string("Main scene"));
 
-    Vector3<GLfloat> whiteColor(1, 1, 1);
-    Vector3<GLfloat> redColor(1, 0, 0);
-    Sprite *mySprite;
-    objectTransform _trans;
-
-    mySprite = new Sprite(std::string("Grass"), _trans, "shaders/Sprite_fs.glsl", "shaders/Sprite_vs.glsl", "img/grass.png");
+    Sprite *mySprite = new Sprite(std::string("Grass"), "shaders/Sprite_fs.glsl", "shaders/Sprite_vs.glsl", "img/grass.png");
     objectTransform transformGrass;
-    transformGrass.Move(0, -3, 2);
+    transformGrass.Move(0, -3, -2);
     transformGrass.SetRotate(90, 0, 0);
-    transformGrass.SetScale(5, 5, 0);
+    transformGrass.SetScale(10, 10, 0);
     Component component(transformGrass, mySprite);
     scene->pushObject(component);
 
@@ -106,16 +97,16 @@ Scene *createScene()
     Spider::Initialize();
 
     character = new Wilson();
-
-    GameManager::PushPlayerTransform(character->GetTransform());
     character->createCamera(GameManager::width, GameManager::height);
 
+    for (int i = 0; i < SPIDER_NUM; i ++) {
+        spider[i] = new Spider();
+        spider[i]->Teleport(generateRandomPoint());
+    }
 
-    for (int i = 0; i < SPIDER_NUM; i ++) spider[i].Teleport(generateRandomPoint());
-
-
-    GameManager::render->SetCamera(character->GetCamera());
+    GameManager::PushPlayerTransform(character->GetTransform());
     GameManager::PushCamera(character->GetCamera());
+    GameManager::render->SetCamera(character->GetCamera());
 
     return scene;
 }

@@ -18,7 +18,6 @@ public:
     }
     ~Actor()
     {
-        delete[] components;
     }
 
 
@@ -38,7 +37,6 @@ public:
 
             components[n].sprite = it->animation.sprite;
             ActorComponents.push_back(&components[n]);
-            // std::cout << "N=" << n << '\t' << "Sprite=" << components[n].sprite->name << std::endl;
             
             std::vector<Component*> componentsToAdd = getActorComponents(it, n);
             ActorComponents.insert(ActorComponents.end(), componentsToAdd.begin(), componentsToAdd.end());
@@ -131,9 +129,6 @@ public:
 
         v.z = std::stof(node.attribute("flip").value());
         _transform.SetRotate(0.0, 0.0, v.z);
-
-        // Derived::skelet.animation.transform.SetTransform(_transform);
-        // Derived::skelet.animation.component.transform = Derived::skelet.animation.transform;
 
         parseAnimation(node, &Derived::skelet);
 

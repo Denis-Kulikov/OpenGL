@@ -16,6 +16,7 @@ Wilson::Wilson()
 
 Wilson::~Wilson()
 {
+    delete[] components;
     std::cout << "Wilson::~Wilson()" << std::endl;
 }
 
@@ -28,4 +29,5 @@ void Wilson::Initialize()
 
     std::cout << "Wilson skelet size: " << skeletSize << std::endl;
     skelet.printBones(0);
+    std::cout << std::endl;
 }

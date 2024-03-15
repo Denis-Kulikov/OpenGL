@@ -27,10 +27,10 @@ void Render::clearRender() {
 }
 
 
-void Render::drawObject(objectTransform &_transform, Sprite *_sprite)
+void Render::drawObject(objectTransform *_transform, Sprite *_sprite)
 {
     // std::cout << __FUNCTION__ << std::endl;
-    pipeline.object = &_transform;
+    pipeline.object = _transform;
     // pipeline.object->print();
     if ((pipeline.camera == nullptr) || (pipeline.object == nullptr)) {
         std::cout << "Error Render.drawObject(): " << std::endl;

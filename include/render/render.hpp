@@ -10,8 +10,7 @@ public:
     
     void SetCamera(Camera *_camera);
     void clearRender();
-    void drawObject(objectTransform &_transform, Sprite *_sprite);
-
+    void drawObject(objectTransform *_transform, Sprite *_sprite);
 
     Pipeline pipeline;
 };
