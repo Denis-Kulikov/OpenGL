@@ -23,8 +23,7 @@ public:
     std::string name;
     Bone *parent = nullptr;
     std::vector<Bone*> children;
-    Animation animation;
-    // std::vector<Components> animation;
+    std::map<std::string, Animation> Animations;
 };
     // objectTransform _anchorPoint
 

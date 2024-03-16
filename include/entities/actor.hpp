@@ -27,15 +27,19 @@ public:
         size_t parentNumber = n++;
 
         for (auto it : _parent->children) {
-            objectTransform *component       = &it->animation.transform;
-            objectTransform *ParentComponent = &_parent->animation.transform;
+            objectTransform *component       = &animations[n]->transform;
+            objectTransform *ParentComponent = &animations[parentNumber]->transform;
             objectTransform *ParentSprite    = &components[parentNumber].transform;
+
+            if (ParentComponent == nullptr) {
+                std::cout << "parentNumber: " << parentNumber << std::endl;
+                return ActorComponents;
+            }
 
             components[n].transform.WorldPos = component->WorldPos + ParentSprite->WorldPos;
             components[n].transform.Rotate   = component->Rotate   + ParentSprite->Rotate;
-            components[n].transform.Scale    = component->Scale    * ParentComponent->Scale * it->animation.spriteScale;
+            components[n].transform.Scale    = component->Scale    * ParentComponent->Scale * animations[n]->spriteScale; // изменить зависимость от родительских костей 
 
-            components[n].sprite = it->animation.sprite;
             ActorComponents.push_back(&components[n]);
             
             std::vector<Component*> componentsToAdd = getActorComponents(it, n);
@@ -47,7 +51,8 @@ public:
 
     std::vector<Component*> getActorComponents()
     {
-        components[0].transform = trans; // Updating the skeleton position
+        if (*animations == nullptr) std::cout << "animations == nullptr" << std::endl;
+        animations[0]->transform = components[0].transform = trans; // Updating the skelet position
         size_t n = 0;
         if (components == nullptr) {
             std::vector<Component*> ActorComponents;
@@ -56,22 +61,40 @@ public:
         return getActorComponents(&Derived::skelet, n);
     }
 
-    void updateAnimation()
+
+    void updateAnimationRecursive(Bone *_parent, const std::string &animationName, size_t &n)
     {
-        // for (auto it : components) {
-        // }
+        n++;
+        for (auto it : _parent->children) {
+            if (it->Animations.find(animationName) != it->Animations.end()) {
+                animations[n] = &it->Animations[animationName];
+                std::cout << animations[n]->sprite->name << std::endl;
+                animations[n]->transform.print();
+                components[n].sprite = animations[n]->sprite; 
+            }
+
+            updateAnimationRecursive(it, animationName, n);
+        }
+    }
+
+    void updateAnimation(const std::string &animationName)
+    {
+        std::cout << __FUNCTION__ << std::endl;
+        size_t n = 0;
+        updateAnimationRecursive(&Derived::skelet, animationName, n);
     }
 
 
-    static void parseAnimation(pugi::xml_node &_node, Bone *_bone) {
+    static void parseAnimation(pugi::xml_node &_node, Bone *_bone, const std::string &animationName) {
         for (int i = 0; i < _bone->children.size(); i++) {
+            Animation newAnimation;
             pugi::xml_node node = _node.child(_bone->children[i]->name.c_str());
 
             std::string spriteName = node.attribute("sprite").as_string();
-            auto it = Derived::Sprites.find(spriteName); 
-            if (it != Sprites.end()) {
-                _bone->children[i]->animation.sprite = &(it->second); 
-                _bone->children[i]->animation.spriteScale = it->second.Scale; 
+            auto sprite = Derived::Sprites.find(spriteName); 
+            if (sprite != Sprites.end()) {
+                newAnimation.sprite = &(sprite->second); 
+                newAnimation.spriteScale = sprite->second.Scale; 
             } else {
                 std::cout << "Error Actor.parseAnimation: not found " << spriteName << std::endl;
             }
@@ -95,9 +118,10 @@ public:
                 _transform.SetRotate(0.0, 180.0, v.z);
             } 
 
-            _bone->children[i]->animation.transform.SetTransform(_transform);
+            newAnimation.transform = _transform;
+            _bone->children[i]->Animations.insert({animationName, newAnimation});
 
-            parseAnimation(node, _bone->children[i]);
+            parseAnimation(node, _bone->children[i], animationName);
         }
     }
 
@@ -114,7 +138,8 @@ public:
         }
 
         node = doc.child("animation");
-
+        std::string animationName = node.attribute("name").as_string();
+        
         objectTransform _transform;
         Vector3<GLfloat> v;
 
@@ -126,11 +151,21 @@ public:
         v.x = std::stof(node.attribute("width").value());
         v.y = std::stof(node.attribute("height").value());
         _transform.SetScale(v.x, v.y, 0.0);
-
+        
         v.z = std::stof(node.attribute("flip").value());
         _transform.SetRotate(0.0, 0.0, v.z);
 
-        parseAnimation(node, &Derived::skelet);
+        if (node.attribute("mirrorX")) {
+            _transform.SetRotate(0.0, 180.0, v.z);
+        } 
+
+        Animation newAnimation;
+        newAnimation.sprite = nullptr;
+        newAnimation.spriteScale = Vector3<GLfloat>(1.0, 1.0, 1.0);
+        newAnimation.transform = objectTransform();
+        Derived::skelet.Animations.insert({animationName, newAnimation});
+
+        parseAnimation(node, &Derived::skelet, animationName);
 
         return true;
     }
@@ -201,6 +236,7 @@ protected:
     std::string name;
     objectTransform trans;
     Component *components = nullptr;
+    Animation **animations = nullptr;
     static size_t skeletSize;
     static Bone skelet;
     static std::map<std::string, Sprite> Sprites;

@@ -9,9 +9,12 @@ Wilson::Wilson()
     : Character<Wilson>(std::string("player/Wilson"))
 {
     components = new Component[skeletSize];
-    for (int i = 0; i < skeletSize; i++)
+    animations = new Animation*[skeletSize];
+    for (int i = 0; i < skeletSize; i++) {
         components[i] = Component();
-
+        animations[i] = nullptr;
+    }
+    animations[0] = new Animation();
 }
 
 Wilson::~Wilson()
@@ -26,6 +29,7 @@ void Wilson::Initialize()
     loadSkelet(path);
     loadSprites(path);
     loadAnimation(path, "stand");
+    loadAnimation(path, "stand_2");
 
     std::cout << "Wilson skelet size: " << skeletSize << std::endl;
     skelet.printBones(0);

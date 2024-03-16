@@ -99,9 +99,12 @@ Scene *createScene()
     character = new Wilson();
     character->createCamera(GameManager::width, GameManager::height);
 
+    character->updateAnimation("stand_2");
+
     for (int i = 0; i < SPIDER_NUM; i ++) {
         spider[i] = new Spider();
         spider[i]->Teleport(generateRandomPoint());
+        spider[i]->updateAnimation("stand");
     }
 
     GameManager::PushPlayerTransform(character->GetTransform());
