@@ -5,12 +5,6 @@
 
 #define PI = 3.14159265359f;
 
-struct CallbackData {
-    Camera* camera;
-    objectTransform* transform;
-};
-
-
 bool RenderSceneCB(Render *render, Scene *scene);
 Scene *createScene();
 Render *InitializeGLFW(GLFWwindow* &window, int width, int height);

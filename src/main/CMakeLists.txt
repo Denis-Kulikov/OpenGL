@@ -14,8 +14,6 @@ target_link_libraries(
   ${target}
   PRIVATE
 	lib-glfw
-	#lib-math
 	lib-object
-	#lib-entities
 	lib-game
 )

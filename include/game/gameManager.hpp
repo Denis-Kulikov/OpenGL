@@ -4,6 +4,7 @@
 #include "../render/render.hpp"
 #include "../object/sprite.hpp"
 
+
 class GameManager  
 {
 public:
@@ -24,6 +25,11 @@ public:
     static int width;
     static int height;
     static Render *render;
+    
+    struct CallbackData {
+        Camera* camera;
+        objectTransform* transform;
+    };
 protected:
     static CallbackData callbackData;
 };

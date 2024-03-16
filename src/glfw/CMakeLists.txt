@@ -10,9 +10,7 @@ target_link_libraries(
   ${target}
   PRIVATE
 	glfw GL GLEW
-	#lib-math
 	lib-object
-	lib-entities
 	lib-components
 	lib-playable
 )

@@ -9,5 +9,4 @@ target_link_libraries(
   PRIVATE
 	lib-object	
 	lib-components
-	lib-entities
 )

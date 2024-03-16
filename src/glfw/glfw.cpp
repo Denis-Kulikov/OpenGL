@@ -99,7 +99,7 @@ Scene *createScene()
     character = new Wilson();
     character->createCamera(GameManager::width, GameManager::height);
 
-    character->updateAnimation("stand_2");
+    character->updateAnimation("stand");
 
     for (int i = 0; i < SPIDER_NUM; i ++) {
         spider[i] = new Spider();

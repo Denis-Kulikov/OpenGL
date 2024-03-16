@@ -3,7 +3,7 @@
 bool GameManager::IsEnd = false;
 int GameManager::width = 0;
 int GameManager::height = 0;
-CallbackData GameManager::callbackData{nullptr, nullptr};
+GameManager::CallbackData GameManager::callbackData{nullptr, nullptr};
 Render *GameManager::render = nullptr;
 
 void GameManager::InitializeObjects()

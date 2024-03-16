@@ -19,7 +19,6 @@ public:
 
     ~Spider()
     {
-        delete[] components;
     }
 
 

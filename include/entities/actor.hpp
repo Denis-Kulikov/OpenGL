@@ -18,6 +18,8 @@ public:
     }
     ~Actor()
     {
+        delete[] components;
+        delete[] animations;
     }
 
 
@@ -51,7 +53,6 @@ public:
 
     std::vector<Component*> getActorComponents()
     {
-        if (*animations == nullptr) std::cout << "animations == nullptr" << std::endl;
         animations[0]->transform = components[0].transform = trans; // Updating the skelet position
         size_t n = 0;
         if (components == nullptr) {
@@ -68,8 +69,6 @@ public:
         for (auto it : _parent->children) {
             if (it->Animations.find(animationName) != it->Animations.end()) {
                 animations[n] = &it->Animations[animationName];
-                std::cout << animations[n]->sprite->name << std::endl;
-                animations[n]->transform.print();
                 components[n].sprite = animations[n]->sprite; 
             }
 
@@ -79,7 +78,6 @@ public:
 
     void updateAnimation(const std::string &animationName)
     {
-        std::cout << __FUNCTION__ << std::endl;
         size_t n = 0;
         updateAnimationRecursive(&Derived::skelet, animationName, n);
     }

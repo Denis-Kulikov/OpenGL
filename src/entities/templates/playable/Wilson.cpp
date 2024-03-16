@@ -19,7 +19,6 @@ Wilson::Wilson()
 
 Wilson::~Wilson()
 {
-    delete[] components;
     std::cout << "Wilson::~Wilson()" << std::endl;
 }
 
