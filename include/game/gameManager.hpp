@@ -3,6 +3,8 @@
 #include "../render/glfw.hpp"
 #include "../render/render.hpp"
 #include "../object/sprite.hpp"
+#include "../entities/character.hpp"
+#include "../entities/templates/playable/player.hpp"
 
 
 class GameManager  
@@ -14,7 +16,7 @@ public:
     objectTransform trans;
 
     static void PushCamera(Camera *_camera);
-    static void PushPlayerTransform(objectTransform *_transform);
+    static void PushPlayer(Player *_player);
 
     static void InitializeObjects();
     static Camera *createCamera();
@@ -28,7 +30,7 @@ public:
     
     struct CallbackData {
         Camera* camera;
-        objectTransform* transform;
+        Player* player;
     };
 protected:
     static CallbackData callbackData;

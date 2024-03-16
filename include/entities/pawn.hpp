@@ -93,8 +93,14 @@ public:
         return &cameraPos;
     }
 
+    GLfloat GetSpeed()
+    {
+        return speed;
+    }
+
 protected:
     Camera *camera;
     Vector3<GLfloat> cameraPos;
+    GLfloat speed = 0.3;
 };
 

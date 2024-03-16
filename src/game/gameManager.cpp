@@ -18,9 +18,9 @@ void GameManager::PushCamera(Camera *_camera)
     callbackData.camera = _camera;
 }
 
-void GameManager::PushPlayerTransform(objectTransform *_transform)
+void GameManager::PushPlayer(Player *_player)
 {
-    callbackData.transform = _transform;
+    callbackData.player = _player;
 }
 
 Camera *GameManager::createCamera()
@@ -39,44 +39,57 @@ Camera *GameManager::createCamera()
 
 void GameManager::KeyboardCB(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-    double speed_movement = -0.25;
-    double speed_rotation = -0.125;
+    static bool keys[GLFW_KEY_LAST] = {false};
 
-    // CallbackData* callbackData = static_cast<CallbackData*>(glfwGetWindowUserPointer(window));
-    objectTransform* transform = callbackData.transform;
+    GLfloat speed_rotation = -0.125;
+
+    Player* player = callbackData.player;
     Camera* camera = callbackData.camera;
 
-    switch (key) {
-        case GLFW_KEY_F:
-            glfwSetWindowShouldClose(window, GLFW_TRUE);
-            GameManager::IsEnd = true;
-            break;
-        case GLFW_KEY_W:
-            transform->WorldPos.z += speed_movement;
-            break;
-        case GLFW_KEY_S:
-            transform->WorldPos.z -= speed_movement;
-            break;
-        case GLFW_KEY_D:
-            transform->WorldPos.x += speed_movement;
-            break;
-        case GLFW_KEY_A:
-            transform->WorldPos.x -= speed_movement;
-            break;
-        case GLFW_KEY_SPACE:
-            transform->WorldPos.y -= speed_movement;
-            break;
-        case GLFW_KEY_C:
-            transform->WorldPos.y += speed_movement;
-            break;
-        case GLFW_KEY_E:
-            camera->Params.Target.x += speed_rotation;
-            break;
-        case GLFW_KEY_Q:
-            camera->Params.Target.x -= speed_rotation;
-            break;
+    if (action == GLFW_PRESS) {
+        keys[key] = true;
+    } else if (action == GLFW_RELEASE) {
+        keys[key] = false;
+    }
+
+    if (keys[GLFW_KEY_F]) {
+        glfwSetWindowShouldClose(window, GLFW_TRUE);
+        GameManager::IsEnd = true;
+    }
+
+    if (keys[GLFW_KEY_W]) {
+        player->Move(Vector3<GLfloat>(0.0, 0.0, -player->GetSpeed()));
+    }
+
+    if (keys[GLFW_KEY_S]) {
+        player->Move(Vector3<GLfloat>(0.0, 0.0,  player->GetSpeed()));
+    }
+
+    if (keys[GLFW_KEY_D]) {
+        player->Move(Vector3<GLfloat>(-player->GetSpeed(), 0.0, 0.0));
+    }
+
+    if (keys[GLFW_KEY_A]) {
+        player->Move(Vector3<GLfloat>( player->GetSpeed(), 0.0, 0.0));
+    }
+
+    if (keys[GLFW_KEY_SPACE]) {
+        // transform->WorldPos.y -= speed_movement;
+    }
+
+    if (keys[GLFW_KEY_C]) {
+        // transform->WorldPos.y += speed_movement;
+    }
+
+    if (keys[GLFW_KEY_E]) {
+        camera->Params.Target.x += speed_rotation;
+    }
+
+    if (keys[GLFW_KEY_Q]) {
+        camera->Params.Target.x -= speed_rotation;
     }
 }
+
 
 Render *GameManager::InitializeGLFW(GLFWwindow* &window, int _width, int _height)
 {

@@ -107,7 +107,7 @@ Scene *createScene()
         spider[i]->updateAnimation("stand");
     }
 
-    GameManager::PushPlayerTransform(character->GetTransform());
+    GameManager::PushPlayer(reinterpret_cast<Player*>(character));
     GameManager::PushCamera(character->GetCamera());
     GameManager::render->SetCamera(character->GetCamera());
 
