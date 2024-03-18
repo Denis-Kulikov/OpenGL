@@ -107,9 +107,11 @@ void objectTransform::MultiplyScale(const Vector3<GLfloat> _scale) {
 }
 
 
-void objectTransform::print() const
+std::ostream& operator<<(std::ostream& os, const objectTransform& transform)
 {
-    std::cout << "World Position: (" << WorldPos.x << ", " << WorldPos.y << ", " << WorldPos.z << ")" << std::endl;
-    std::cout << "Rotation: (" << Rotate.x << ", " << Rotate.y << ", " << Rotate.z << ")" << std::endl;
-    std::cout << "Scale: (" << Scale.x << ", " << Scale.y << ", " << Scale.z << ")" << std::endl;
+    os << "World Position: (" << transform.WorldPos.x << ", " << transform.WorldPos.y << ", " << transform.WorldPos.z << ")\n"
+       << "Rotation: (" << transform.Rotate.x << ", " << transform.Rotate.y << ", " << transform.Rotate.z << ")\n"
+       << "Scale: (" << transform.Scale.x << ", " << transform.Scale.y << ", " << transform.Scale.z << ")\n";
+
+    return os;
 }

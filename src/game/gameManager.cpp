@@ -69,35 +69,11 @@ void GameManager::KeyboardCB(GLFWwindow* window, int key, int scancode, int acti
         0, 
         keys[GLFW_KEY_S] * 1.0 - keys[GLFW_KEY_W] * 1.0
     );
-    
-    // player->direction[0] = -keys[GLFW_KEY_W] * 1.0;
-    // player->direction[0] += keys[GLFW_KEY_S] * 1.0;
-    // player->direction[1] = -keys[GLFW_KEY_D] * 1.0;
-    // player->direction[1] += keys[GLFW_KEY_A] * 1.0;
-
-
-    if (keys[GLFW_KEY_W]) {
-        // player->Move(Vector3<GLfloat>(0.0, 0.0, -player->GetSpeed()));
-    }
-
-    if (keys[GLFW_KEY_S]) {
-        // player->Move(Vector3<GLfloat>(0.0, 0.0,  player->GetSpeed()));
-    }
-
-    if (keys[GLFW_KEY_D]) {
-        // player->Move(Vector3<GLfloat>(-player->GetSpeed(), 0.0, 0.0));
-    }
-
-    if (keys[GLFW_KEY_A]) {
-        // player->Move(Vector3<GLfloat>( player->GetSpeed(), 0.0, 0.0));
-    }
 
     if (keys[GLFW_KEY_SPACE]) {
-        // transform->WorldPos.y -= speed_movement;
     }
 
     if (keys[GLFW_KEY_C]) {
-        // transform->WorldPos.y += speed_movement;
     }
 
     if (keys[GLFW_KEY_E]) {

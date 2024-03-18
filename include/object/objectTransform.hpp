@@ -26,8 +26,6 @@ public:
 
     void SetTransform(const objectTransform &trans);
 
-    // void MoveForward(const GLfloat distance);
-
     void Move(const GLfloat &X, const GLfloat &Y, const GLfloat &Z);
     void Move(const Vector3<GLfloat> offset);
     void Move(const GLfloat distance, const Vector3<GLfloat> direction);
@@ -39,9 +37,10 @@ public:
 
     Vector3<GLfloat> GetForwardVector() const;
 
-    void print() const;
+    friend std::ostream& operator<<(std::ostream& os, const objectTransform& transform);
 
     Vector3<GLfloat> WorldPos;
     Vector3<GLfloat> Rotate;
     Vector3<GLfloat> Scale;
 };
+
