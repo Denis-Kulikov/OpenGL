@@ -85,7 +85,9 @@ void objectTransform::Move(const Vector3<GLfloat> offset) {
 
 void objectTransform::Move(const GLfloat distance, const Vector3<GLfloat> direction) {
     Vector3<GLfloat> offset = direction;
-    offset.Normalize();
+    if (offset.Length() != 0) {
+        offset.Normalize();
+    }
     offset *= distance;
     Move(offset);
 }

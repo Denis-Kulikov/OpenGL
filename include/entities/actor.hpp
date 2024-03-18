@@ -15,6 +15,7 @@ public:
     {
         loadActor(path);
         trans.Rotate = Vector3<GLfloat>(0.0, 0.0, 180);
+        direction = Vector3<GLfloat>();
     }
     ~Actor()
     {
@@ -229,6 +230,13 @@ public:
     {
         return &trans;
     }
+
+    Vector3<GLfloat> GetDirection()
+    {
+        return direction;
+    }
+
+    Vector3<GLfloat> direction;
 
 protected:
     std::string name;

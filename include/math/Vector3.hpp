@@ -39,12 +39,12 @@ public:
         return x * v.x + y * v.y + z * v.z;
     }
 
-    T VLenSq() {
+    T LengthSq() {
         return VDot(*this);
     }
 
-    T VLen() {
-        return sqrt(VLenSq());
+    T Length() {
+        return sqrt(LengthSq());
     }
 
     T VCSum() {
