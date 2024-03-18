@@ -65,22 +65,17 @@ bool RenderSceneCB(Render *render, Scene *scene)
         GameManager::render->drawObject(&it->transform, it->sprite);
 
     character->MoveForward();
+    character->UpdateCameraPos();
     std::vector<Component*> ActorComponents = character->getActorComponents();
 
-    character->UpdateCameraPos();
-
-    for (auto it : ActorComponents) {
-        if (it->sprite == nullptr) continue;
+    for (auto it : ActorComponents) 
         GameManager::render->drawObject(&it->transform, it->sprite);
-    }
 
     for (int i = 0; i < SPIDER_NUM; i++) {
         spider[i]->MoveTowards(character, 0.006);
         ActorComponents = spider[i]->getActorComponents();
-        for (auto it : ActorComponents) {
-            if (it->sprite == nullptr) continue;
+        for (auto it : ActorComponents) 
             GameManager::render->drawObject(&it->transform, it->sprite);
-        }
     }
 
     
@@ -92,12 +87,6 @@ bool RenderSceneCB(Render *render, Scene *scene)
         prev = time(0);
         frame = 0;
     }
-
-    // std::cout << character->direction.x << '\t' << character->direction.y << '\t' << character->direction.z << '\t' << std::endl;
-
-    // for (int i = 0; i < 2; i++) {
-        // if (character->direction[i]) std::cout << i << "\t" << character->direction[i] << std::endl;
-    // }
 
     return GameManager::IsEnd;
 }

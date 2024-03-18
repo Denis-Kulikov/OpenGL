@@ -33,6 +33,12 @@ public:
     void MoveForward(const GLfloat distance) {
         this->trans.Move(distance, this->direction);
     }
+    
+    template<typename T> // ***
+    void MoveTowards(T* targetPawn, GLfloat speed) {
+        Vector3<GLfloat> direction = targetPawn->GetTransform()->WorldPos - this->trans.WorldPos;
+        Move(speed, direction);
+    }
 
     void Rotate(const Vector3<GLfloat> _rotate) {
         this->trans.Rotate = _rotate;
@@ -71,17 +77,6 @@ public:
         return true;
     }
 
-    template<typename T> // ***
-    void MoveTowards(T* targetPawn, GLfloat speed) {
-        Vector3<GLfloat> currentPosition = this->trans.WorldPos;
-        Vector3<GLfloat> targetPosition = targetPawn->GetTransform()->WorldPos;
-        Vector3<GLfloat> direction = targetPosition - currentPosition;
-        if (direction.Length() != 0) {
-            direction.Normalize();
-        }
-        Vector3<GLfloat> offset = direction * speed;
-        Move(offset);
-    }
 
     void UpdateCameraPos()
     {
