@@ -1,5 +1,8 @@
 #include <render/render.hpp>
 
+#include <chrono>
+extern std::chrono::milliseconds totalTime;
+
 Render::Render(Pipeline &_pipeline)
 {
     pipeline.camera = _pipeline.camera;
@@ -27,6 +30,7 @@ void Render::clearRender() {
 
 void Render::drawObject(objectTransform *_transform, Sprite *_sprite)
 {
+    // auto start = std::chrono::steady_clock::now();
     pipeline.object = _transform;
     if ((pipeline.camera == nullptr) || (pipeline.object == nullptr) || (_sprite == nullptr)) {
         std::cout << "Error Render.drawObject(): " << std::endl;
@@ -41,6 +45,7 @@ void Render::drawObject(objectTransform *_transform, Sprite *_sprite)
     if (_sprite->gColorLocation != 0xFFFFFFFF) glUniform3f(_sprite->gColorLocation, _sprite->color.x, _sprite->color.y, _sprite->color.z);
 
     glUniformMatrix4fv(_sprite->gWorldLocation, 1, GL_TRUE, pipeline.GetGLMatrix());
+
 
     glBindVertexArray(_sprite->geometry->VAO);
     glBindBuffer(GL_ARRAY_BUFFER, _sprite->geometry->VBO);
@@ -57,4 +62,6 @@ void Render::drawObject(objectTransform *_transform, Sprite *_sprite)
 
 
     clearRender();
+    // auto end = std::chrono::steady_clock::now();
+    // totalTime += std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
 }

@@ -26,8 +26,12 @@ public:
         this->trans.Move(distance, direction);
     }
 
+    void MoveForward() {
+        this->trans.Move(this->speed, this->direction);
+    }
+
     void MoveForward(const GLfloat distance) {
-        this->trans.MoveForward(distance);
+        this->trans.Move(distance, this->direction);
     }
 
     void Rotate(const Vector3<GLfloat> _rotate) {
@@ -67,12 +71,14 @@ public:
         return true;
     }
 
-    template<typename T>
+    template<typename T> // ***
     void MoveTowards(T* targetPawn, GLfloat speed) {
         Vector3<GLfloat> currentPosition = this->trans.WorldPos;
         Vector3<GLfloat> targetPosition = targetPawn->GetTransform()->WorldPos;
         Vector3<GLfloat> direction = targetPosition - currentPosition;
-        direction.Normalize();
+        if (direction.Length() != 0) {
+            direction.Normalize();
+        }
         Vector3<GLfloat> offset = direction * speed;
         Move(offset);
     }

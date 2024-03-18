@@ -6,6 +6,13 @@ int GameManager::height = 0;
 GameManager::CallbackData GameManager::callbackData{nullptr, nullptr};
 Render *GameManager::render = nullptr;
 
+enum {
+    FORWARD,
+    BACK,
+    RIGHT,
+    LEFT
+};
+
 void GameManager::InitializeObjects()
 {
     Sprite::initializeGeometry();
@@ -57,20 +64,32 @@ void GameManager::KeyboardCB(GLFWwindow* window, int key, int scancode, int acti
         GameManager::IsEnd = true;
     }
 
+    player->direction = Vector3<GLfloat>(
+        keys[GLFW_KEY_A] * 1.0 - keys[GLFW_KEY_D] * 1.0, 
+        0, 
+        keys[GLFW_KEY_S] * 1.0 - keys[GLFW_KEY_W] * 1.0
+    );
+    
+    // player->direction[0] = -keys[GLFW_KEY_W] * 1.0;
+    // player->direction[0] += keys[GLFW_KEY_S] * 1.0;
+    // player->direction[1] = -keys[GLFW_KEY_D] * 1.0;
+    // player->direction[1] += keys[GLFW_KEY_A] * 1.0;
+
+
     if (keys[GLFW_KEY_W]) {
-        player->Move(Vector3<GLfloat>(0.0, 0.0, -player->GetSpeed()));
+        // player->Move(Vector3<GLfloat>(0.0, 0.0, -player->GetSpeed()));
     }
 
     if (keys[GLFW_KEY_S]) {
-        player->Move(Vector3<GLfloat>(0.0, 0.0,  player->GetSpeed()));
+        // player->Move(Vector3<GLfloat>(0.0, 0.0,  player->GetSpeed()));
     }
 
     if (keys[GLFW_KEY_D]) {
-        player->Move(Vector3<GLfloat>(-player->GetSpeed(), 0.0, 0.0));
+        // player->Move(Vector3<GLfloat>(-player->GetSpeed(), 0.0, 0.0));
     }
 
     if (keys[GLFW_KEY_A]) {
-        player->Move(Vector3<GLfloat>( player->GetSpeed(), 0.0, 0.0));
+        // player->Move(Vector3<GLfloat>( player->GetSpeed(), 0.0, 0.0));
     }
 
     if (keys[GLFW_KEY_SPACE]) {
