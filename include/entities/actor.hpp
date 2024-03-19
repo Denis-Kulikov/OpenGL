@@ -7,6 +7,19 @@
 
 namespace fs = std::filesystem;
 
+namespace STATE
+{
+    enum
+    {
+        DEFAULT,
+        STAND,
+        GO,
+        ACTION,
+        GET_HIT
+    };
+}
+
+
 template <typename Derived>
 class Actor 
 {
@@ -33,18 +46,25 @@ public:
             objectTransform *component       = &animations[n]->transform;
             objectTransform *ParentComponent = &animations[parentNumber]->transform;
             objectTransform *ParentSprite    = &components[parentNumber].transform;
+            Vector3<GLfloat> *anchorPoint = &animations[n]->anchorPoint;
+            GLfloat flipAngle = component->Rotate.x;
 
-            if (ParentComponent == nullptr) {
-                std::cout << "parentNumber: " << parentNumber << std::endl;
-                return ActorComponents;
-            }
+            components[n].transform.WorldPos.x = ParentSprite->WorldPos.x + component->WorldPos.x * animations[parentNumber]->spriteScale.x;
+            components[n].transform.WorldPos.y = ParentSprite->WorldPos.y + component->WorldPos.y * animations[parentNumber]->spriteScale.y;
+            components[n].transform.WorldPos.z = ParentSprite->WorldPos.z + component->WorldPos.z;
 
-            components[n].transform.WorldPos = component->WorldPos + ParentSprite->WorldPos;
-            components[n].transform.Rotate   = component->Rotate   + ParentSprite->Rotate;
-            components[n].transform.Scale    = component->Scale    * ParentComponent->Scale * animations[n]->spriteScale; // изменить зависимость от родительских костей 
+            components[n].transform.Rotate.y = component->Rotate.y + ParentSprite->Rotate.y;
+            components[n].transform.Rotate.z = component->Rotate.z + ParentSprite->Rotate.z + flipAngle;
+
+            components[n].transform.Scale = component->Scale * ParentComponent->Scale * animations[n]->spriteScale;
+
+            Vector3<GLfloat> direction = Vector3<GLfloat>(cos(ToRadian(flipAngle)), sin(ToRadian(flipAngle)), 0.0f);
+            components[n].transform.Move(-anchorPoint->x, direction);
+            flipAngle += 90;
+            direction = Vector3<GLfloat>(cos(ToRadian(flipAngle)), sin(ToRadian(flipAngle)), 0.0f);
+            components[n].transform.Move(-anchorPoint->y + anchorPoint->z, direction);
 
             ActorComponents.push_back(&components[n]);
-            
             std::vector<Component*> componentsToAdd = getActorComponents(it, n);
             ActorComponents.insert(ActorComponents.end(), componentsToAdd.begin(), componentsToAdd.end());
         }
@@ -79,6 +99,10 @@ public:
 
     void updateAnimation(const std::string &animationName)
     {
+        if (animation == animationName) return;
+        if (Derived::skelet.Animations.find(animationName) != Derived::skelet.Animations.end())
+            animation = animationName;
+
         size_t n = 0;
         updateAnimationRecursive(&Derived::skelet, animationName, n);
     }
@@ -110,12 +134,14 @@ public:
             v.y = std::stof(node.attribute("height").value());
             _transform.SetScale(v.x, v.y, 0.0);
 
-            v.z = std::stof(node.attribute("flip").value());
-            _transform.SetRotate(0.0, 0.0, v.z);
+            v.x = std::stof(node.attribute("flip").value());
+            v.z = std::stof(node.attribute("rotate").value());
+            _transform.SetRotate(v.x, 180.0 * (node.attribute("mirrorX") != 0), v.z);
 
-            if (node.attribute("mirrorX")) {
-                _transform.SetRotate(0.0, 180.0, v.z);
-            } 
+            v.x = std::stof(node.attribute("apx").value());
+            v.y = std::stof(node.attribute("apy").value());
+            v.z = std::stof(node.attribute("radius").value());
+            newAnimation.anchorPoint = v;
 
             newAnimation.transform = _transform;
             _bone->children[i]->Animations.insert({animationName, newAnimation});
@@ -236,6 +262,47 @@ public:
         return direction;
     }
 
+    std::string GetAnimationByAction()
+    {
+        switch (state) {
+        case 0:
+            return std::string("stand");
+        default:
+            return std::string("stand");
+        }
+    }
+
+    std::string GetAnimation()
+    {
+        switch (state) {
+        case STATE::STAND:
+            if (direction.Length() != 0) {
+                SetState(STATE::GO);
+            }
+            return std::string("stand");
+
+        case STATE::GO: 
+            if (direction.Length() == 0) {
+                SetState(STATE::STAND);
+            }
+            return std::string("stand_2");
+
+        case STATE::ACTION:
+            return GetAnimationByAction();
+
+        case STATE::GET_HIT:
+            return std::string("stand");
+
+        default:
+            return std::string("stand");
+        }
+    }
+
+    void SetState(int _state)
+    {
+        state = _state;
+    }
+
     Vector3<GLfloat> direction;
 
 protected:
@@ -243,6 +310,8 @@ protected:
     objectTransform trans;
     Component *components = nullptr;
     Animation **animations = nullptr;
+    std::string animation;
+    int state = STATE::STAND;
     static size_t skeletSize;
     static Bone skelet;
     static std::map<std::string, Sprite> Sprites;
