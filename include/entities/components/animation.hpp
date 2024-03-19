@@ -11,7 +11,6 @@ public:
 
     void SetChildAnimation(const objectTransform &_transform);
 
-    // std::string name;
     Sprite *sprite = nullptr;
     Vector3<GLfloat> spriteScale;
     Vector3<GLfloat> anchorPoint;

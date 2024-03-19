@@ -5,6 +5,15 @@
 #include <filesystem>
 #include <pugixml.hpp>
 
+#define MY_ACTOR_TEST true
+
+#if MY_ACTOR_TEST
+// для отладки
+#include "../render/render.hpp"
+#include "../object/sphere.hpp"
+#include "../object/line.hpp"
+#endif
+
 namespace fs = std::filesystem;
 
 namespace STATE
@@ -29,6 +38,19 @@ public:
         loadActor(path);
         trans.Rotate = Vector3<GLfloat>(0.0, 0.0, 180);
         direction = Vector3<GLfloat>();
+
+        #if MY_ACTOR_TEST
+        mySphere = sphere(std::string("mySphere"), "shaders/sphere_fs.glsl", "shaders/sphere_vs.glsl", nullptr, 10);
+        // sphereTransform.WorldPos = spherePos[1];
+        sphereTransform.Rotate = Vector3<GLfloat>(0.0, 0.0, 0.0);
+        sphereTransform.Scale = Vector3<GLfloat>(0.1, 0.2, 0.1);
+        // render->drawObject(&sphereTransform, &mySphere);
+
+        // objectTransform _trans;
+        myLine = line(std::string("myLine"), Vector3<GLfloat>(1.0, 0.0, 0.0));
+        // myLine.setPoints(spherePos[0], spherePos[1]);
+        // render->drawObject(&sphereTransform, &myLine);
+        #endif
     }
     ~Actor()
     {
@@ -44,9 +66,9 @@ public:
 
         for (auto it : _parent->children) {
             objectTransform *component       = &animations[n]->transform;
+            Vector3<GLfloat> *anchorPoint    = &animations[n]->anchorPoint;
             objectTransform *ParentComponent = &animations[parentNumber]->transform;
             objectTransform *ParentSprite    = &components[parentNumber].transform;
-            Vector3<GLfloat> *anchorPoint = &animations[n]->anchorPoint;
             GLfloat flipAngle = component->Rotate.x;
 
             components[n].transform.WorldPos.x = ParentSprite->WorldPos.x + component->WorldPos.x * animations[parentNumber]->spriteScale.x;
@@ -56,7 +78,19 @@ public:
             components[n].transform.Rotate.y = component->Rotate.y + ParentSprite->Rotate.y;
             components[n].transform.Rotate.z = component->Rotate.z + ParentSprite->Rotate.z + flipAngle;
 
-            components[n].transform.Scale = component->Scale * ParentComponent->Scale * animations[n]->spriteScale;
+            components[n].transform.Scale.x = component->Scale.x* animations[n]->spriteScale.x * ParentComponent->Scale.x * animations[parentNumber]->spriteScale.x;
+            components[n].transform.Scale.y = component->Scale.y* animations[n]->spriteScale.y * ParentComponent->Scale.y * animations[parentNumber]->spriteScale.y;
+
+            #if MY_ACTOR_TEST
+            spherePos[0] = components[parentNumber].transform.WorldPos;
+            spherePos[0].z += 0.3;
+            sphereTransform.WorldPos = components[n].transform.WorldPos;
+            if (render != nullptr) render->drawObject(&sphereTransform, &mySphere);
+            spherePos[1] = sphereTransform.WorldPos;
+            myLine.setPoints(spherePos[0], spherePos[1]);
+            if (render != nullptr) render->drawObject(&myLine.trans, &myLine);
+            spherePos[0] = spherePos[1];
+            #endif
 
             Vector3<GLfloat> direction = Vector3<GLfloat>(cos(ToRadian(flipAngle)), sin(ToRadian(flipAngle)), 0.0f);
             components[n].transform.Move(-anchorPoint->x, direction);
@@ -80,6 +114,7 @@ public:
             std::vector<Component*> ActorComponents;
             return ActorComponents;
         }
+
         return getActorComponents(&Derived::skelet, n);
     }
 
@@ -100,8 +135,10 @@ public:
     void updateAnimation(const std::string &animationName)
     {
         if (animation == animationName) return;
-        if (Derived::skelet.Animations.find(animationName) != Derived::skelet.Animations.end())
+        if (Derived::skelet.Animations.find(animationName) != Derived::skelet.Animations.end()) {
             animation = animationName;
+            animations[0] = &Derived::skelet.Animations[animationName];
+        }
 
         size_t n = 0;
         updateAnimationRecursive(&Derived::skelet, animationName, n);
@@ -303,7 +340,24 @@ public:
         state = _state;
     }
 
+    
+
+    #if MY_ACTOR_TEST
+    void PushRender(Render *_render)
+    {
+        render = _render;
+    }
+
+
+    // для отладки
+    Render *render = nullptr;
+    sphere mySphere;
+    objectTransform sphereTransform;
+    line myLine;
+    Vector3<GLfloat> spherePos[2];
+    #endif
     Vector3<GLfloat> direction;
+
 
 protected:
     std::string name;

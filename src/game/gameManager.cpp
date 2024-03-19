@@ -13,6 +13,7 @@ enum {
     LEFT
 };
 
+
 void GameManager::InitializeObjects()
 {
     Sprite::initializeGeometry();

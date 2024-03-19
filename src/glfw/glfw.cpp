@@ -1,16 +1,6 @@
-#include <render/glfw.hpp>
-#include <render/render.hpp>
-#include <object/scene.hpp>
-#include <object/sphere.hpp>
-#include <object/line.hpp>
-#include <object/cube_bone.hpp>
 #include <game/gameManager.hpp>
-#include <entities/actor.hpp>
-#include <entities/pawn.hpp>
-#include <entities/character.hpp>
 #include <entities/templates/playable/Wilson.hpp>
 #include <entities/templates/mobs/spider.hpp>
-#include <omp.h>
 
 #include <chrono>
 #include <ctime>
@@ -106,6 +96,9 @@ Scene *createScene()
     character = new Wilson();
     character->createCamera(GameManager::width, GameManager::height);
     character->updateAnimation("stand");
+    #if MY_ACTOR_TEST
+    character->PushRender(GameManager::render);
+    #endif
 
     for (int i = 0; i < SPIDER_NUM; i ++) {
         spider[i] = new Spider();

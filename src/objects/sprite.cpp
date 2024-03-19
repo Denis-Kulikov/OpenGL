@@ -35,8 +35,8 @@ void Sprite::loadTexures(const char *texturePath)
     glBindTexture(GL_TEXTURE_2D, 0);
 
     Scale.VSet(1.0, static_cast<GLfloat>(y) / static_cast<GLfloat>(x), 0.0);
-    trans.SetScale(1.0f, static_cast<GLfloat>(y) / static_cast<GLfloat>(x), 0.0f);
-    trans.SetRotate(0.0f, 180.0f, 180.0f);
+    // trans.SetScale(1.0f, static_cast<GLfloat>(y) / static_cast<GLfloat>(x), 0.0f);
+    // trans.SetRotate(0.0f, 180.0f, 180.0f);
 
     GLenum error = glGetError();
     if (error != GL_NO_ERROR) {
@@ -164,20 +164,21 @@ void Sprite::initializeGeometry()
     glBindVertexArray(0);
 }
 
+// Sprite::Sprite(const std::string &_name, const char *FS, const char *VS, const char *texturePath)
+//     : name(_name)
+// {
+//     geometry = &geometryInfo;
+//     if (geometry == nullptr) std::cout << "Error " << name << ": Creating an instance before initialization" << std::endl; 
+
+//     compileShaders(FS, VS);
+//     loadTexures(texturePath);
+// }
+
+// Sprite::Sprite(const std::string &_name, const objectTransform &_trans, const char *FS, const char *VS, const char *texturePath)
 Sprite::Sprite(const std::string &_name, const char *FS, const char *VS, const char *texturePath)
     : name(_name)
 {
-    geometry = &geometryInfo;
-    if (geometry == nullptr) std::cout << "Error " << name << ": Creating an instance before initialization" << std::endl; 
-
-    compileShaders(FS, VS);
-    loadTexures(texturePath);
-}
-
-Sprite::Sprite(const std::string &_name, const objectTransform &_trans, const char *FS, const char *VS, const char *texturePath)
-    : name(_name)
-{
-    trans.SetTransform(_trans);
+    // trans.SetTransform(_trans);
     geometry = &geometryInfo;
     if (geometry == nullptr) std::cout << "Error " << name << ": Creating an instance before initialization" << std::endl; 
 

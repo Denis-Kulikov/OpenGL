@@ -18,6 +18,8 @@ public:
     static void PushCamera(Camera *_camera);
     static void PushPlayer(Player *_player);
 
+    static void DrawSphere();
+
     static void InitializeObjects();
     static Camera *createCamera();
     static void KeyboardCB(GLFWwindow* window, int key, int scancode, int action, int mods);

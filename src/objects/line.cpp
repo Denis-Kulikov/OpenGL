@@ -57,11 +57,18 @@ void line::initializeGeometry() {
 //     : line(_name, _trans, _color, 1.0) {}
 
 line::line(const std::string &_name, const objectTransform &_trans, const Vector3<GLfloat> _color)
-    : Sprite(_name, _trans, "shaders/bone_fs.glsl", "shaders/base_vs.glsl", nullptr)
+    : Sprite(_name, "shaders/bone_fs.glsl", "shaders/base_vs.glsl", nullptr)
 {
     color.x = _color.x;
     color.y = _color.y;
     color.z = _color.z;
 
+    trans = _trans;
+
     geometry = &geometryInfo;
+}
+
+line::line(const std::string &_name, const Vector3<GLfloat> _color)
+    : line(_name, objectTransform(), _color)
+{
 }
