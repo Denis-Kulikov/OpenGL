@@ -9,7 +9,7 @@ class Pawn : public Actor<Derived>
 public:
     Pawn(const std::string &path)
         : Actor<Derived>(path),
-          cameraPos(Vector3<GLfloat>(0.0f, 6.0f, 15)),
+          cameraPos(Vector3<GLfloat>(0.0f, 5.0f, 12)),
           camera(nullptr)
     {
     }

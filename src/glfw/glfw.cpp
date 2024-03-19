@@ -58,12 +58,12 @@ bool RenderSceneCB(Render *render, Scene *scene)
     for (auto it : ActorComponents) 
         GameManager::render->drawObject(&it->transform, it->sprite);
 
-    for (int i = 0; i < SPIDER_NUM; i++) {
-        spider[i]->MoveTowards(character, 0.006);
-        ActorComponents = spider[i]->getActorComponents();
-        for (auto it : ActorComponents) 
-            GameManager::render->drawObject(&it->transform, it->sprite);
-    }
+    // for (int i = 0; i < SPIDER_NUM; i++) {
+    //     spider[i]->MoveTowards(character, 0.006);
+    //     ActorComponents = spider[i]->getActorComponents();
+    //     for (auto it : ActorComponents) 
+    //         GameManager::render->drawObject(&it->transform, it->sprite);
+    // }
 
     
     frame++;
@@ -84,7 +84,7 @@ Scene *createScene()
 
     Sprite *mySprite = new Sprite(std::string("Grass"), "shaders/Sprite_fs.glsl", "shaders/Sprite_vs.glsl", "img/grass.png");
     objectTransform transformGrass;
-    transformGrass.Move(0, -3, -2);
+    transformGrass.Move(0, -5, -2);
     transformGrass.SetRotate(90, 0, 0);
     transformGrass.SetScale(10, 10, 0);
     Component component(transformGrass, mySprite);

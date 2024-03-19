@@ -71,6 +71,18 @@ public:
             objectTransform *ParentSprite    = &components[parentNumber].transform;
             GLfloat flipAngle = component->Rotate.x;
 
+            #if MY_ACTOR_TEST
+            using Clock = std::chrono::steady_clock;
+            using TimePoint = std::chrono::time_point<Clock>;
+
+            TimePoint current = Clock::now();
+
+            auto currentTimeMilliseconds = std::chrono::time_point_cast<std::chrono::milliseconds>(current).time_since_epoch().count();
+
+            // if (it->name == "shoulder_left") components[n].transform.Rotate.z += sin(currentTimeMilliseconds / 1000.0) * 30.0;
+            if (it->name == "shoulder_left") flipAngle += sin(currentTimeMilliseconds / 1000.0) * 30.0 * 2 + 60;
+            #endif
+
             components[n].transform.WorldPos.x = ParentSprite->WorldPos.x + component->WorldPos.x * animations[parentNumber]->spriteScale.x;
             components[n].transform.WorldPos.y = ParentSprite->WorldPos.y + component->WorldPos.y * animations[parentNumber]->spriteScale.y;
             components[n].transform.WorldPos.z = ParentSprite->WorldPos.z + component->WorldPos.z;
@@ -80,6 +92,7 @@ public:
 
             components[n].transform.Scale.x = component->Scale.x* animations[n]->spriteScale.x * ParentComponent->Scale.x * animations[parentNumber]->spriteScale.x;
             components[n].transform.Scale.y = component->Scale.y* animations[n]->spriteScale.y * ParentComponent->Scale.y * animations[parentNumber]->spriteScale.y;
+
 
             #if MY_ACTOR_TEST
             spherePos[0] = components[parentNumber].transform.WorldPos;
