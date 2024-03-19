@@ -268,15 +268,20 @@ public:
     std::string GetAnimation()
     {
         switch (state) {
-        case STATE::STAND: 
+        case STATE::STAND:
+            if (direction.Length() != 0) {
+                SetState(STATE::GO);
+            }
             return std::string("stand");
 
         case STATE::GO: 
-            state = STATE::STAND;
+            if (direction.Length() == 0) {
+                SetState(STATE::STAND);
+            }
             return std::string("stand_2");
 
         case STATE::ACTION:
-            return GetAnimationByAction(state);
+            return GetAnimationByAction();
 
         case STATE::GET_HIT:
             return std::string("stand");
@@ -284,6 +289,11 @@ public:
         default:
             return std::string("stand");
         }
+    }
+
+    void SetState(int _state)
+    {
+        state = _state;
     }
 
     Vector3<GLfloat> direction;

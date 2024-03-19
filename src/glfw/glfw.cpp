@@ -62,6 +62,7 @@ bool RenderSceneCB(Render *render, Scene *scene)
 
     character->MoveForward();
     character->UpdateCameraPos();
+    character->updateAnimation(character->GetAnimation());
     std::vector<Component*> ActorComponents = character->getActorComponents();
 
     for (auto it : ActorComponents) 

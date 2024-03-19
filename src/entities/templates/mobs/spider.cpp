@@ -16,11 +16,8 @@ Spider::Spider() : Character(std::string("mobs/spider"))
     animations[0] = new Animation();
 }
 
-
 Spider::~Spider()
-{
-}
-
+{}
 
 void Spider::Initialize()
 {
