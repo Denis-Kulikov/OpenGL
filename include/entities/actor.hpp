@@ -7,6 +7,19 @@
 
 namespace fs = std::filesystem;
 
+namespace STATE
+{
+    enum
+    {
+        DEFAULT,
+        STAND,
+        GO,
+        ACTION,
+        GET_HIT
+    };
+}
+
+
 template <typename Derived>
 class Actor 
 {
@@ -79,6 +92,12 @@ public:
 
     void updateAnimation(const std::string &animationName)
     {
+        if (animation == animationName) return;
+        if (Derived::skelet.Animations.find(animationName) != Derived::skelet.Animations.end()) {
+            animation = animationName;
+            // animations[0] = &Derived::skelet.Animations[animationName];
+        }
+
         size_t n = 0;
         updateAnimationRecursive(&Derived::skelet, animationName, n);
     }
@@ -236,6 +255,37 @@ public:
         return direction;
     }
 
+    std::string GetAnimationByAction()
+    {
+        switch (state) {
+        case 0:
+            return std::string("stand");
+        default:
+            return std::string("stand");
+        }
+    }
+
+    std::string GetAnimation()
+    {
+        switch (state) {
+        case STATE::STAND: 
+            return std::string("stand");
+
+        case STATE::GO: 
+            state = STATE::STAND;
+            return std::string("stand_2");
+
+        case STATE::ACTION:
+            return GetAnimationByAction(state);
+
+        case STATE::GET_HIT:
+            return std::string("stand");
+
+        default:
+            return std::string("stand");
+        }
+    }
+
     Vector3<GLfloat> direction;
 
 protected:
@@ -243,6 +293,8 @@ protected:
     objectTransform trans;
     Component *components = nullptr;
     Animation **animations = nullptr;
+    std::string animation;
+    int state = STATE::STAND;
     static size_t skeletSize;
     static Bone skelet;
     static std::map<std::string, Sprite> Sprites;

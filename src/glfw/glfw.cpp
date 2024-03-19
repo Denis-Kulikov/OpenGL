@@ -9,7 +9,7 @@
 #include <entities/pawn.hpp>
 #include <entities/character.hpp>
 #include <entities/templates/playable/Wilson.hpp>
-#include <entities/templates/playable/spider.hpp>
+#include <entities/templates/mobs/spider.hpp>
 #include <omp.h>
 
 #include <chrono>
@@ -19,17 +19,10 @@
 
 // Растеризация. Проекция перспективы. Скелетная анимация 2D моделей.
 
-std::map<std::string, Sprite> Spider::Sprites;
-size_t Spider::skeletSize = 0;
-Bone Spider::skelet;
-
 #define SPIDER_NUM 4
 
 Wilson *character = nullptr;
 Spider *spider[SPIDER_NUM] = {nullptr};
-
-time_t prev = time(0);
-int frame = 0;
 
 std::chrono::milliseconds totalTime(0);
 
@@ -60,6 +53,9 @@ bool RenderSceneCB(Render *render, Scene *scene)
     std::this_thread::sleep_until(frameStart + frameDuration);
     frameStart = std::chrono::steady_clock::now();
 
+
+    static time_t prev = time(0);
+    static int frame = 0;
 
     for (std::vector<Component>::iterator it = scene->getIterator(); it != scene->component.end(); it++)
         GameManager::render->drawObject(&it->transform, it->sprite);
@@ -108,7 +104,6 @@ Scene *createScene()
 
     character = new Wilson();
     character->createCamera(GameManager::width, GameManager::height);
-
     character->updateAnimation("stand");
 
     for (int i = 0; i < SPIDER_NUM; i ++) {

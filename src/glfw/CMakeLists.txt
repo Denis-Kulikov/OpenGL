@@ -13,4 +13,5 @@ target_link_libraries(
 	lib-object
 	lib-components
 	lib-playable
+	lib-mobs
 )
