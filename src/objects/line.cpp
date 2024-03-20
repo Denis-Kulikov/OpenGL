@@ -41,21 +41,6 @@ void line::initializeGeometry() {
     glBindVertexArray(0);
 }
 
-// line::line(const std::string &_name, const objectTransform &_trans, const Vector3<GLfloat> _color, GLfloat _lineWidth)
-//     : Sprite(_name, _trans, "shaders/bone_fs.glsl", "shaders/base_vs.glsl", nullptr)
-// {
-//     trans.SetScale(trans.GetScale().x, _lineWidth, 0.0);
-
-//     color.x = _color.x;
-//     color.y = _color.y;
-//     color.z = _color.z;
-
-//     geometry = &geometryInfo;
-// }
-
-// line::line(const std::string &_name, const objectTransform &_trans, const Vector3<GLfloat> _color)
-//     : line(_name, _trans, _color, 1.0) {}
-
 line::line(const std::string &_name, const objectTransform &_trans, const Vector3<GLfloat> _color)
     : Sprite(_name, "shaders/bone_fs.glsl", "shaders/base_vs.glsl", nullptr)
 {
@@ -64,8 +49,11 @@ line::line(const std::string &_name, const objectTransform &_trans, const Vector
     color.z = _color.z;
 
     trans = _trans;
+}
 
-    geometry = &geometryInfo;
+struct GeometryInfo *line::GetGeometry()
+{
+    return &geometryInfo;
 }
 
 line::line(const std::string &_name, const Vector3<GLfloat> _color)

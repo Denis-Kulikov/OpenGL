@@ -1,6 +1,6 @@
 <animation name="stand_2" x="0.0" y="-1.5" z="-6.0" apx="0.0" apy="0.0" radius="0.0" flip="0.0" rotate="180.0" width="1.0" height="1.0">
-    <body sprite="body" x="0.0" y="0.0" z="0.0" apx="0.0" apy="0.0" radius="0.0" flip="0.0" rotate="0.0" width="2.0" height="1.0">
-        <head sprite="head" x="0.0" y="2.1" z="0.05" apx="0.0" apy="-1.0" radius="0.0" flip="0.0" rotate="0.0" width="1.5" height="1.5">
+    <body sprite="body" x="0.0" y="0.0" z="0.0" apx="0.0" apy="0.0" radius="0.0" flip="0.0" rotate="0.0" width="1.2" height="1.2">
+        <head sprite="head" x="0.0" y="2.1" z="0.05" apx="0.0" apy="-0.5" radius="0.0" flip="0.0" rotate="0.0" width="1.5" height="1.5">
             <face sprite="face" x="-0.03" y="-0.1" z="0.01" apx="0.0" apy="0.0" radius="0.0" flip="0.0" rotate="0.0" width="0.7" height="0.7"/>
             <hair_front sprite="hair_front" x="0.0" y="0.9" z="-0.01" apx="0.0" apy="0.0" radius="0.0" flip="0.0" rotate="0.0" width="1.45" height="1.45"/>
         </head>

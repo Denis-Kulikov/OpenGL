@@ -30,7 +30,6 @@ void Render::clearRender() {
 
 void Render::drawObject(objectTransform *_transform, Sprite *_sprite)
 {
-    // auto start = std::chrono::steady_clock::now();
     pipeline.object = _transform;
     if ((pipeline.camera == nullptr) || (pipeline.object == nullptr) || (_sprite == nullptr)) {
         std::cout << "Error Render.drawObject(): " << std::endl;
@@ -46,22 +45,20 @@ void Render::drawObject(objectTransform *_transform, Sprite *_sprite)
 
     glUniformMatrix4fv(_sprite->gWorldLocation, 1, GL_TRUE, pipeline.GetGLMatrix());
 
+    struct GeometryInfo *geometry = _sprite->GetGeometry();
 
-    glBindVertexArray(_sprite->geometry->VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, _sprite->geometry->VBO);
+    glBindVertexArray(geometry->VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, geometry->VBO);
 
-    if (_sprite->geometry->EBO != 0) {
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _sprite->geometry->EBO);
+    if (geometry->EBO != 0) {
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, geometry->EBO);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, _sprite->texture);
         glUniform1i(_sprite->gTextureSamplerLocation, 0);
-        glDrawElements(GL_TRIANGLES, _sprite->geometry->numIndices, GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_TRIANGLES, geometry->numIndices, GL_UNSIGNED_INT, 0);
     } else {
-        glDrawArrays(GL_LINE_STRIP, 0, _sprite->geometry->numVertices);
+        glDrawArrays(GL_LINE_STRIP, 0, geometry->numVertices);
     }
 
-
     clearRender();
-    // auto end = std::chrono::steady_clock::now();
-    // totalTime += std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
 }

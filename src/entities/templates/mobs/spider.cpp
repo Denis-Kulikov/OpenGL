@@ -7,13 +7,7 @@ Bone Spider::skelet;
 
 Spider::Spider() : Character(std::string("mobs/spider"))
 {
-    components = new Component[skeletSize];
-    animations = new Animation*[skeletSize];
-    for (int i = 0; i < skeletSize; i++) {
-        components[i] = Component();
-        animations[i] = nullptr;
-    }
-    animations[0] = new Animation();
+    name = "Spider";
 }
 
 Spider::~Spider()

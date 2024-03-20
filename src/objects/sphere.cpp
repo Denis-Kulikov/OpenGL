@@ -3,9 +3,6 @@
 
 void sphere::initializeGeometry(const GLint _numVertices)
 {
-    // if (geometry != nullptr) free(geometry);
-    // geometry = static_cast<struct GeometryInfo>(calloc(1, sizeof(struct GeometryInfo)));
-    // geometry = static_cast<struct GeometryInfo*>(calloc(1, sizeof(struct GeometryInfo)));
     geometry = new struct GeometryInfo;
     geometry->VAO = 0;
     geometry->VBO = 0;
@@ -77,7 +74,12 @@ void sphere::initializeGeometry(const GLint _numVertices)
     glBindVertexArray(0);
 }
 
-// sphere::sphere(const std::string &_name, const objectTransform &_trans, const char *FS, const char *VS, const char *texturePath, const GLint _numVertices)
+struct GeometryInfo *sphere::GetGeometry()
+{
+    return geometry;
+}
+
+
 sphere::sphere(const std::string &_name, const char *FS, const char *VS, const char *texturePath, const GLint _numVertices)
     : Sprite(_name, FS, VS, texturePath)
 {

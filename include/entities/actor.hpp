@@ -39,17 +39,22 @@ public:
         trans.Rotate = Vector3<GLfloat>(0.0, 0.0, 180);
         direction = Vector3<GLfloat>();
 
+        components = new Component[Derived::skeletSize];
+        animations = new Animation*[Derived::skeletSize];
+        for (int i = 0; i < Derived::skeletSize; i++) {
+            components[i] = Component();
+            animations[i] = nullptr;
+        }
+        animations[0] = new Animation();
+
         #if MY_ACTOR_TEST
+        spherePos = new Vector3<GLfloat>[Derived::skeletSize]();
+
         mySphere = sphere(std::string("mySphere"), "shaders/sphere_fs.glsl", "shaders/sphere_vs.glsl", nullptr, 10);
-        // sphereTransform.WorldPos = spherePos[1];
         sphereTransform.Rotate = Vector3<GLfloat>(0.0, 0.0, 0.0);
         sphereTransform.Scale = Vector3<GLfloat>(0.1, 0.2, 0.1);
-        // render->drawObject(&sphereTransform, &mySphere);
-
-        // objectTransform _trans;
+        
         myLine = line(std::string("myLine"), Vector3<GLfloat>(1.0, 0.0, 0.0));
-        // myLine.setPoints(spherePos[0], spherePos[1]);
-        // render->drawObject(&sphereTransform, &myLine);
         #endif
     }
     ~Actor()
@@ -59,60 +64,54 @@ public:
     }
 
 
-    std::vector<Component*> getActorComponents(Bone *_parent, size_t &n)
+    std::vector<Component*> getActorComponents(Bone *_parent, size_t &n, GLfloat _flip)
     {
         std::vector<Component*> ActorComponents;
         size_t parentNumber = n++;
 
-        for (auto it : _parent->children) {
-            objectTransform *component       = &animations[n]->transform;
+        for (const auto &it : _parent->children) { // заменить копии на ссылки const &it
+            objectTransform *component       = &animations[n]->transform; // заменить на ссылки
             Vector3<GLfloat> *anchorPoint    = &animations[n]->anchorPoint;
             objectTransform *ParentComponent = &animations[parentNumber]->transform;
             objectTransform *ParentSprite    = &components[parentNumber].transform;
-            GLfloat flipAngle = component->Rotate.x;
+            GLfloat flipAngle = component->Rotate.x + _flip;
+            GLfloat parentFlipAngle = _flip;
 
-            #if MY_ACTOR_TEST
-            using Clock = std::chrono::steady_clock;
-            using TimePoint = std::chrono::time_point<Clock>;
-
-            TimePoint current = Clock::now();
-
-            auto currentTimeMilliseconds = std::chrono::time_point_cast<std::chrono::milliseconds>(current).time_since_epoch().count();
-
-            // if (it->name == "shoulder_left") components[n].transform.Rotate.z += sin(currentTimeMilliseconds / 1000.0) * 30.0;
-            if (it->name == "shoulder_left") flipAngle += sin(currentTimeMilliseconds / 1000.0) * 30.0 * 2 + 60;
-            #endif
-
-            components[n].transform.WorldPos.x = ParentSprite->WorldPos.x + component->WorldPos.x * animations[parentNumber]->spriteScale.x;
-            components[n].transform.WorldPos.y = ParentSprite->WorldPos.y + component->WorldPos.y * animations[parentNumber]->spriteScale.y;
+            components[n].transform.WorldPos.x = ParentSprite->WorldPos.x;  // + component->WorldPos.x * animations[parentNumber]->spriteScale.x
+            components[n].transform.WorldPos.y = ParentSprite->WorldPos.y;  // + component->WorldPos.y * animations[parentNumber]->spriteScale.y
             components[n].transform.WorldPos.z = ParentSprite->WorldPos.z + component->WorldPos.z;
 
-            components[n].transform.Rotate.y = component->Rotate.y + ParentSprite->Rotate.y;
-            components[n].transform.Rotate.z = component->Rotate.z + ParentSprite->Rotate.z + flipAngle;
+            Vector3<GLfloat> direction = Vector3<GLfloat>(cos(ToRadian(parentFlipAngle)), sin(ToRadian(parentFlipAngle)), 0.0f);
+            components[n].transform.Move(component->WorldPos.x * animations[parentNumber]->spriteScale.x, direction);
+            parentFlipAngle += 90;
+            direction = Vector3<GLfloat>(cos(ToRadian(parentFlipAngle)), sin(ToRadian(parentFlipAngle)), 0.0f);
+            components[n].transform.Move(component->WorldPos.y * animations[parentNumber]->spriteScale.y, direction);
 
-            components[n].transform.Scale.x = component->Scale.x* animations[n]->spriteScale.x * ParentComponent->Scale.x * animations[parentNumber]->spriteScale.x;
-            components[n].transform.Scale.y = component->Scale.y* animations[n]->spriteScale.y * ParentComponent->Scale.y * animations[parentNumber]->spriteScale.y;
+
+            components[n].transform.Rotate.y = component->Rotate.y + ParentSprite->Rotate.y;
+            components[n].transform.Rotate.z = component->Rotate.z + ParentSprite->Rotate.z + flipAngle - _flip;
+
+            components[n].transform.Scale.x = component->Scale.x * animations[n]->spriteScale.x * ParentComponent->Scale.x * animations[parentNumber]->spriteScale.x; // # ERROR: ParentComponent->Scale.x / animations[parentNumber]->spriteScale.x
+            components[n].transform.Scale.y = component->Scale.y * animations[n]->spriteScale.y * ParentComponent->Scale.y * animations[parentNumber]->spriteScale.y;
 
 
             #if MY_ACTOR_TEST
-            spherePos[0] = components[parentNumber].transform.WorldPos;
-            spherePos[0].z += 0.3;
             sphereTransform.WorldPos = components[n].transform.WorldPos;
+            spherePos[n] = sphereTransform.WorldPos;
             if (render != nullptr) render->drawObject(&sphereTransform, &mySphere);
-            spherePos[1] = sphereTransform.WorldPos;
-            myLine.setPoints(spherePos[0], spherePos[1]);
+            myLine.setPoints(spherePos[n], spherePos[parentNumber]);
             if (render != nullptr) render->drawObject(&myLine.trans, &myLine);
             spherePos[0] = spherePos[1];
             #endif
 
-            Vector3<GLfloat> direction = Vector3<GLfloat>(cos(ToRadian(flipAngle)), sin(ToRadian(flipAngle)), 0.0f);
+            direction = Vector3<GLfloat>(cos(ToRadian(flipAngle)), sin(ToRadian(flipAngle)), 0.0f);
             components[n].transform.Move(-anchorPoint->x, direction);
             flipAngle += 90;
             direction = Vector3<GLfloat>(cos(ToRadian(flipAngle)), sin(ToRadian(flipAngle)), 0.0f);
             components[n].transform.Move(-anchorPoint->y + anchorPoint->z, direction);
 
             ActorComponents.push_back(&components[n]);
-            std::vector<Component*> componentsToAdd = getActorComponents(it, n);
+            std::vector<Component*> componentsToAdd = getActorComponents(it, n, _flip + component->Rotate.x);
             ActorComponents.insert(ActorComponents.end(), componentsToAdd.begin(), componentsToAdd.end());
         }
 
@@ -122,13 +121,28 @@ public:
     std::vector<Component*> getActorComponents()
     {
         animations[0]->transform = components[0].transform = trans; // Updating the skelet position
+        
+        #if MY_ACTOR_TEST
+        using Clock = std::chrono::steady_clock;
+        using TimePoint = std::chrono::time_point<Clock>;
+        TimePoint current = Clock::now();
+        auto currentTimeMilliseconds = std::chrono::time_point_cast<std::chrono::milliseconds>(current).time_since_epoch().count();
+
+        if (name == "Wilson") {
+            animations[5]->transform.Rotate.x = 100 + sin(currentTimeMilliseconds / 1000.0) * 30.0; 
+            animations[6]->transform.Rotate.x = -20 + sin(currentTimeMilliseconds / 1000.0) * 10.0; 
+            animations[7]->transform.Rotate.x = -10 + sin(currentTimeMilliseconds / 1000.0) * 20.0; 
+            animations[2]->transform.Rotate.x = sin(currentTimeMilliseconds / 1000.0) * 10; 
+        }
+        #endif
+        
         size_t n = 0;
         if (components == nullptr) {
             std::vector<Component*> ActorComponents;
             return ActorComponents;
         }
 
-        return getActorComponents(&Derived::skelet, n);
+        return getActorComponents(&Derived::skelet, n, 0.0);
     }
 
 
@@ -355,31 +369,30 @@ public:
 
     
 
+    // для отладки
     #if MY_ACTOR_TEST
     void PushRender(Render *_render)
     {
         render = _render;
     }
 
-
-    // для отладки
     Render *render = nullptr;
-    sphere mySphere;
+    Vector3<GLfloat> *spherePos = nullptr;
     objectTransform sphereTransform;
+    sphere mySphere;
     line myLine;
-    Vector3<GLfloat> spherePos[2];
     #endif
-    Vector3<GLfloat> direction;
 
+    Vector3<GLfloat> direction;
+    std::string name = "NoName";
 
 protected:
-    std::string name;
     objectTransform trans;
     Component *components = nullptr;
     Animation **animations = nullptr;
     std::string animation;
     int state = STATE::STAND;
-    static size_t skeletSize;
+    static size_t skeletSize; // add inline
     static Bone skelet;
     static std::map<std::string, Sprite> Sprites;
 };

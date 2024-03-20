@@ -58,12 +58,12 @@ bool RenderSceneCB(Render *render, Scene *scene)
     for (auto it : ActorComponents) 
         GameManager::render->drawObject(&it->transform, it->sprite);
 
-    // for (int i = 0; i < SPIDER_NUM; i++) {
-    //     spider[i]->MoveTowards(character, 0.006);
-    //     ActorComponents = spider[i]->getActorComponents();
-    //     for (auto it : ActorComponents) 
-    //         GameManager::render->drawObject(&it->transform, it->sprite);
-    // }
+    for (int i = 0; i < SPIDER_NUM; i++) {
+        spider[i]->MoveTowards(character, 0.006);
+        ActorComponents = spider[i]->getActorComponents();
+        for (auto it : ActorComponents) 
+            GameManager::render->drawObject(&it->transform, it->sprite);
+    }
 
     
     frame++;

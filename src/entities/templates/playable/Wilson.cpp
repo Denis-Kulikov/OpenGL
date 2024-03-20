@@ -8,13 +8,7 @@ size_t Wilson::skeletSize;
 Wilson::Wilson()
     : Character<Wilson>(std::string("player/Wilson"))
 {
-    components = new Component[skeletSize];
-    animations = new Animation*[skeletSize];
-    for (int i = 0; i < skeletSize; i++) {
-        components[i] = Component();
-        animations[i] = nullptr;
-    }
-    animations[0] = new Animation();
+    name = "Wilson";
 }
 
 Wilson::~Wilson()

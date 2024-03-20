@@ -32,7 +32,9 @@ public:
 
     GLuint gTextureSamplerLocation;
 
-    struct GeometryInfo *geometry = nullptr;
+    virtual struct GeometryInfo *GetGeometry();
+
+    // struct GeometryInfo *geometry = nullptr; // можно избавится добавив виртуальную функцию GetGeometry() { return &geometryInfo; }
 
 protected:
     GLuint loadShader(const char *shaderPath, GLuint type);
