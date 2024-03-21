@@ -40,7 +40,7 @@ bool RenderSceneCB(Render *render, Scene *scene)
     static std::chrono::steady_clock::time_point frameStart;
     std::chrono::steady_clock::time_point frameEnd = std::chrono::steady_clock::now();
 
-    std::this_thread::sleep_until(frameStart + frameDuration);
+    // std::this_thread::sleep_until(frameStart + frameDuration);
     frameStart = std::chrono::steady_clock::now();
 
 
@@ -61,8 +61,8 @@ bool RenderSceneCB(Render *render, Scene *scene)
     for (int i = 0; i < SPIDER_NUM; i++) {
         spider[i]->MoveTowards(character, 0.006);
         ActorComponents = spider[i]->getActorComponents();
-        for (auto it : ActorComponents) 
-            GameManager::render->drawObject(&it->transform, it->sprite);
+        // for (auto it : ActorComponents) 
+            // GameManager::render->drawObject(&it->transform, it->sprite);
     }
 
     

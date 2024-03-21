@@ -1,6 +1,0 @@
-<animation name="stand" x="0.0" y="0.0" z="0.0" flip="0.0" width="1.0" height="1.0">
-    <head x="0.0" y="0.0" z="0.0" flip="0.0" width="1.0" height="1.0">
-        <face x="0.0" y="0.0" z="-0.1" flip="0.0" width="1.0" height="1.0"/>
-        <hair_front x="0.0" y="0.1" z="0.0" flip="0.0" width="1.0" height="1.0"/>
-    </head>
-</animation>
