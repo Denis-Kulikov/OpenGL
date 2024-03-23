@@ -99,19 +99,22 @@ public:
 
 
             #if MY_ACTOR_TEST
+            render->PushGeometry(mySphere.GetGeometry());
             sphereTransform.WorldPos = components[n].transform.WorldPos;
             spherePos[n] = sphereTransform.WorldPos;
             if (render != nullptr) render->drawObject(&sphereTransform, &mySphere);
+            render->PushGeometry(myLine.GetGeometry());
             myLine.setPoints(spherePos[n], spherePos[parentNumber]);
             if (render != nullptr) render->drawObject(&myLine.trans, &myLine);
             spherePos[0] = spherePos[1];
+            render->PushGeometry(&Sprite::geometryInfo);
             #endif
 
             direction = Vector3<GLfloat>(cos(ToRadian(flipAngle)), sin(ToRadian(flipAngle)), 0.0f);
             components[n].transform.Move(-anchorPoint.x, direction);
             flipAngle += 90;
             direction = Vector3<GLfloat>(cos(ToRadian(flipAngle)), sin(ToRadian(flipAngle)), 0.0f);
-            components[n].transform.Move(-anchorPoint.y + anchorPoint.z, direction);
+            components[n].transform.Move(-anchorPoint.y, direction);
 
             ActorComponents.push_back(&components[n]);
             std::vector<Component*> componentsToAdd = getActorComponents(it, n);
@@ -194,25 +197,27 @@ public:
 
             v.x = std::stof(node.attribute("x").value());
             v.y = std::stof(node.attribute("y").value());
-            v.z = std::stof(node.attribute("z").value());
-            _transform.SetWorldPos(v.x, v.y, v.z / 10);
+            v.z = std::stof(node.attribute("z").value()) / 10;
+            _transform.WorldPos = v;
 
             v.x = std::stof(node.attribute("width").value());
             v.y = std::stof(node.attribute("height").value());
-            _transform.SetScale(v.x, v.y, 0.0);
+            v.z = 0.0;
+            _transform.Scale = v; 
 
             v.x = std::stof(node.attribute("flip").value());
+            v.y = 180.0 * (node.attribute("mirrorX") != 0);
             v.z = std::stof(node.attribute("rotate").value());
-            _transform.SetRotate(v.x, 180.0 * (node.attribute("mirrorX") != 0), v.z);
-
-            v.x = std::stof(node.attribute("apx").value());
-            v.y = std::stof(node.attribute("apy").value());
-            v.z = std::stof(node.attribute("radius").value());
-            newAnimation.anchorPoint = v;
+            _transform.Rotate = v;
 
             newAnimation.transform = _transform;
-            _bone->children[i]->Animations.insert({animationName, newAnimation});
 
+            v.x = std::stof(node.attribute("tangent").value());
+            v.y = std::stof(node.attribute("radius").value());
+            v.z = 0.0;
+            newAnimation.anchorPoint = v;
+
+            _bone->children[i]->Animations.insert({animationName, newAnimation});
             parseAnimation(node, _bone->children[i], animationName);
         }
     }

@@ -1,3 +1,3 @@
-<animation name="stand" x="0.0" y="-1.5" z="-6.0" apx="0.0" apy="0.0" radius="0.0" flip="0.0" rotate="180.0" width="1.5" height="1.5">
-    <spider sprite="spider" x="0.0" y="0.0" z="0.0" apx="0.0" apy="0.0" radius="0.0" flip="0.0" rotate="0.0" width="1.0" height="1.0" />
+<animation name="stand" x="0.0" y="-1.5" z="-6.0" tangent="0.0" radius="0.0" flip="0.0" rotate="180.0" width="1.5" height="1.5">
+    <spider sprite="spider" x="0.0" y="0.0" z="0.0" tangent="0.0" radius="0.0" flip="0.0" rotate="0.0" width="1.0" height="1.0" />
 </animation>

@@ -10,6 +10,7 @@ public:
     
     void SetCamera(Camera *_camera);
     void clearRender();
+    void PushGeometry(struct GeometryInfo *geometry);
     void drawObject(objectTransform *_transform, Sprite *_sprite);
 
     Pipeline pipeline;

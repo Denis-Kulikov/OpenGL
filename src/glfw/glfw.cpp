@@ -9,7 +9,7 @@
 
 // Растеризация. Проекция перспективы. Скелетная анимация 2D моделей.
 
-#define SPIDER_NUM 4
+#define SPIDER_NUM 1
 
 Wilson *character = nullptr;
 Spider *spider[SPIDER_NUM] = {nullptr};
@@ -24,9 +24,9 @@ float randomFloat(float min, float max) {
 }
 
 Vector3<GLfloat> generateRandomPoint() {
-    float MIN_X = -4.0, MAX_X = 4.0;
-    float MIN_Y = -4.0, MAX_Y = 4.0;
-    float MIN_Z = 0.0, MAX_Z = 1.0;
+    float MIN_X = -16.0, MAX_X = 16.0;
+    float MIN_Y = -2.0, MAX_Y = 2.0;
+    float MIN_Z = -16.0, MAX_Z = 2.0;
     float x = randomFloat(MIN_X, MAX_X);
     float y = randomFloat(MIN_Y, MAX_Y);
     float z = randomFloat(MIN_Z, MAX_Z);
@@ -61,8 +61,8 @@ bool RenderSceneCB(Render *render, Scene *scene)
     for (int i = 0; i < SPIDER_NUM; i++) {
         spider[i]->MoveTowards(character, 0.006);
         ActorComponents = spider[i]->getActorComponents();
-        // for (auto it : ActorComponents) 
-            // GameManager::render->drawObject(&it->transform, it->sprite);
+        for (auto it : ActorComponents) 
+            GameManager::render->drawObject(&it->transform, it->sprite);
     }
 
     
@@ -109,6 +109,7 @@ Scene *createScene()
     GameManager::PushPlayer(reinterpret_cast<Player*>(character)); // ***
     GameManager::PushCamera(character->GetCamera());
     GameManager::render->SetCamera(character->GetCamera());
+    GameManager::render->PushGeometry(mySprite->GetGeometry());
 
     return scene;
 }

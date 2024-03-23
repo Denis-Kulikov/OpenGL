@@ -148,10 +148,6 @@ public:
         VSet(0);
     }
 
-    Vector3<T> VVV() {
-        return Vector3(0, 0, 0);
-    }
-
     Vector3 Cross(const Vector3& v) const {
         const T _x = y * v.z - z * v.y;
         const T _y = z * v.x - x * v.z;
