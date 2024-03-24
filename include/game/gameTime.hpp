@@ -1,6 +1,5 @@
 #pragma once
 #include "../lib-project/lib.hpp"
-#include "../entities/components/motion.hpp"
 
 class GameTime {
 private:
@@ -11,12 +10,13 @@ public:
     GameTime() {
         m_prevTime = std::chrono::steady_clock::now();
         m_currentTime = m_prevTime;
+        Start = static_cast<float>(m_currentTime.time_since_epoch().count());
     }
 
     void Update() {
         m_prevTime = m_currentTime;
         m_currentTime = std::chrono::steady_clock::now();
-        Motion::PushTime(static_cast<float>(m_currentTime.time_since_epoch().count()));
+        Motion::PushTime(static_cast<float>(m_currentTime.time_since_epoch().count()) - Start);
     }
 
     float GetDeltaTime() const {
@@ -25,7 +25,8 @@ public:
     }
 
     float GetCurrentTime() const {
-        std::chrono::duration<float> currentTime = m_currentTime.time_since_epoch();
-        return currentTime.count();
+        return static_cast<float>(m_currentTime.time_since_epoch().count()) - Start;
     }
+
+    float Start = 0.0;
 };

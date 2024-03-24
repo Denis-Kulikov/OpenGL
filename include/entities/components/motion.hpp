@@ -25,50 +25,68 @@ public:
         const enum FUNTIONS fun;
     };
 
-    float GetFlipRecursive(size_t &i) {
-        float res = 0;
 
-        functions[ruleFlip[i].fun](res, ruleFlip[i].arg);
+
+    float GetFlipRecursive(size_t &i)
+    {
+        float res = 0;
+        const std::vector<rule> &RuleFlip = *curRuleFlip;
+
+        functions[RuleFlip[i].fun](res, RuleFlip[i].arg);
         i++;
-        while (i < ruleFlip.size()) {
-            if (ruleFlip[i].fun == ADD) {
+        while (i < curRuleFlip->size()) {
+            if (RuleFlip[i].fun == ADD || RuleFlip[i].fun == TIME) {
                 res += GetFlipRecursive(i);
             } else {
-                functions[ruleFlip[i].fun](res, ruleFlip[i].arg);
+                functions[RuleFlip[i].fun](res, RuleFlip[i].arg);
                 i++;
             }
         }
+
         return res;
     }
 
-    float GetFlip() {
+    float GetFlip(const float timeStart)
+    {
         if (ruleFlip.empty()) return 0.0;
         
+        timeSpan = std::fmod((currentTime - timeStart) / 1e9, duration);
+        size_t j = 0;
+        curRuleFlip = &ruleFlip[j].second;
+        while (ruleFlip[j].first <= timeSpan) {
+            j++;
+            if (j >= ruleFlip.size()) return 0.0;
+            curRuleFlip = &ruleFlip[j].second;
+        }
+
         size_t i = 0;
         return GetFlipRecursive(i);
     }
 
-    static void PushTime(const float __time)
+    static void PushTime(const float _time)
     {
-        _time = __time;
+        currentTime = _time;
     }
 
 
 // protected:
+    float duration = 0.0;
+    std::vector<std::pair<float, std::vector<rule>>> ruleFlip;
 
-    static inline float _time = 0;
-    static inline float _flip = 0;
+    static inline float currentTime = 0.0;
+    static inline float timeSpan = 0.0;
+    static inline float flip = 0.0;
     static inline const Vector3<float> *_direction = nullptr;
-    struct std::vector<rule> ruleFlip;
+    static inline const std::vector<rule> *curRuleFlip = nullptr;
 
     static inline std::vector<FunType> functions = [](){
         std::vector<FunType> initFunctions;
         initFunctions.push_back([](float &L_value, const float &R_value) { L_value += R_value; }); // ADD,
         initFunctions.push_back([](float &L_value, const float &R_value) { L_value *= R_value; }); // MULTIPLY,
-        initFunctions.push_back([](float &L_value, const float &R_value) { L_value += sin(R_value); }); // SIN,
-        initFunctions.push_back([](float &L_value, const float &R_value) { L_value += cos(R_value); }); // COS;
+        initFunctions.push_back([](float &L_value, const float &R_value) { L_value += sin(L_value) * R_value; }); // SIN,
+        initFunctions.push_back([](float &L_value, const float &R_value) { L_value += cos(L_value) * R_value; }); // COS;
 
-        initFunctions.push_back([](float &L_value, const float &R_value) { L_value = Motion::_time; }); // TIME;
+        initFunctions.push_back([](float &L_value, const float &R_value) { L_value = Motion::timeSpan * R_value; }); // TIME;
         // initFunctions.push_back([](float &L_value, const float &R_value) { L_value = Motion::_flip; }); // FLIP;
         // initFunctions.push_back([](float &L_value, const float &R_value) { L_value = Motion::_direction; }); // DIRECTION;
         return initFunctions;

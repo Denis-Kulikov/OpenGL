@@ -1,27 +1,15 @@
 <animation name="stand" time="1.0">
     <!-- <body>
     </body> -->
-
-    <head>
-        <frame start="0.0">
             <!-- <Move>
                 <add arg="time" multiply="2.0" direction="forward"/>
             </Move> -->
+
+    <head>
+        <frame end="0.33">
             <Flip>
                 <sin arg="time" multiply="10.0" />
-                <cos arg="0.5" multiply="5.0" />
-                <add arg="time"/>
             </Flip>
-        </frame>
-        <frame start="0.33">
-            <!-- <Move>
-                </still>
-            </Move> -->
-        </frame>
-        <frame start="0.66">
-            <!-- <Move>
-                <moveForvard arg="time" multiply="2.0" />
-            </Move> -->
         </frame>
     </head>
     <!-- <face>

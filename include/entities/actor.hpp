@@ -2,6 +2,7 @@
 
 #include "../object/sprite.hpp"
 #include "../entities/components/bone.hpp"
+// #include "../game/gameTime.hpp"
 #include <filesystem>
 #include <pugixml.hpp>
 
@@ -13,6 +14,9 @@
 #include "../object/sphere.hpp"
 #include "../object/line.hpp"
 #endif
+
+
+// extern GameTime Time;
 
 namespace fs = std::filesystem;
 
@@ -76,7 +80,8 @@ public:
             const objectTransform &component       = animations[n]->transform;
             const objectTransform &ParentComponent = animations[parentNumber]->transform;
             const objectTransform &ParentSprite    = components[parentNumber].transform;
-            GLfloat flipMotion = component.Rotate.x + animations[n]->motion.GetFlip();
+            // GLfloat flipMotion = component.Rotate.x;
+            GLfloat flipMotion = component.Rotate.x + animations[n]->motion.GetFlip(AnimationTimeStart);
             globalFlip[n] = globalFlip[parentNumber] + flipMotion;
             GLfloat parentFlipAngle = globalFlip[parentNumber];
             GLfloat flipAngle = globalFlip[n];
@@ -345,18 +350,18 @@ public:
         }
     }
 
-    std::string GetAnimation()
+    std::string GetAnimation(const float CurrentTime)
     {
         switch (state) {
         case STATE::STAND:
             if (direction.Length() != 0) {
-                SetState(STATE::GO);
+                SetState(STATE::GO, CurrentTime);
             }
             return std::string("stand");
 
         case STATE::GO: 
             if (direction.Length() == 0) {
-                SetState(STATE::STAND);
+                SetState(STATE::STAND, CurrentTime);
             }
             return std::string("stand_2");
 
@@ -371,9 +376,10 @@ public:
         }
     }
 
-    void SetState(int _state)
+    void SetState(int _state, const float CurrentTime)
     {
         state = _state;
+        AnimationTimeStart = CurrentTime;
     }
 
     static void PushTime(const float _time)
@@ -401,6 +407,7 @@ public:
     std::string name = "NoName";
 
 protected:
+    float AnimationTimeStart = 0.0;
     GLfloat *globalFlip = nullptr;
     Component *components = nullptr;
     Animation **animations = nullptr;
