@@ -1,36 +1,55 @@
-<!-- <body>
-</body> -->
+<animation name="stand" time="1.0">
+    <!-- <body>
+    </body> -->
 
-<head>
-    <Move />
-    <Flip />
-    <Scele />
-</head>
-<face>
-</face>
-<hair_front>
-</hair_front>
+    <head>
+        <frame start="0.0">
+            <!-- <Move>
+                <add arg="time" multiply="2.0" direction="forward"/>
+            </Move> -->
+            <Flip>
+                <sin arg="time" multiply="10.0" />
+                <cos arg="0.5" multiply="5.0" />
+                <add arg="time"/>
+            </Flip>
+        </frame>
+        <frame start="0.33">
+            <!-- <Move>
+                </still>
+            </Move> -->
+        </frame>
+        <frame start="0.66">
+            <!-- <Move>
+                <moveForvard arg="time" multiply="2.0" />
+            </Move> -->
+        </frame>
+    </head>
+    <!-- <face>
+    </face>
+    <hair_front>
+    </hair_front>
 
-<shoulder_left>
-</shoulder_left>
-<arm_left>
-</arm_left>
-<hand_left>
-</hand_left>
+    <shoulder_left>
+    </shoulder_left>
+    <arm_left>
+    </arm_left>
+    <hand_left>
+    </hand_left>
 
-<shoulder_right>
-</shoulder_right>
-<arm_right>
-</arm_right>
-<hand_right>
-</hand_right>
+    <shoulder_right>
+    </shoulder_right>
+    <arm_right>
+    </arm_right>
+    <hand_right>
+    </hand_right>
 
-<leg_left>
-</leg_left>
-<foot_left>
-</foot_left>
+    <leg_left>
+    </leg_left>
+    <foot_left>
+    </foot_left>
 
-<leg_right>
-</leg_right>
-<foot_right>
-</foot_right>
+    <leg_right>
+    </leg_right>
+    <foot_right>
+    </foot_right> -->
+</animation>

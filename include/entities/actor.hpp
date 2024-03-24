@@ -76,27 +76,28 @@ public:
             const objectTransform &component       = animations[n]->transform;
             const objectTransform &ParentComponent = animations[parentNumber]->transform;
             const objectTransform &ParentSprite    = components[parentNumber].transform;
-            globalFlip[n] = component.Rotate.x + globalFlip[parentNumber];
+            GLfloat flipMotion = component.Rotate.x + animations[n]->motion.GetFlip();
+            globalFlip[n] = globalFlip[parentNumber] + flipMotion;
             GLfloat parentFlipAngle = globalFlip[parentNumber];
             GLfloat flipAngle = globalFlip[n];
+
 
             components[n].transform.WorldPos.x = ParentSprite.WorldPos.x; // не адаптируется положение от размера старших костей 
             components[n].transform.WorldPos.y = ParentSprite.WorldPos.y;
             components[n].transform.WorldPos.z = ParentSprite.WorldPos.z + component.WorldPos.z;
+
+            components[n].transform.Rotate.y = component.Rotate.y + ParentSprite.Rotate.y;
+            components[n].transform.Rotate.z = component.Rotate.z + ParentSprite.Rotate.z + flipMotion;
+
+            components[n].transform.Scale.x = component.Scale.x * animations[n]->spriteScale.x * ParentSprite.Scale.x / animations[parentNumber]->spriteScale.x;
+            components[n].transform.Scale.y = component.Scale.y * animations[n]->spriteScale.y * ParentSprite.Scale.y / animations[parentNumber]->spriteScale.y;
+
 
             Vector3<GLfloat> direction = Vector3<GLfloat>(cos(ToRadian(parentFlipAngle)), sin(ToRadian(parentFlipAngle)), 0.0f);
             components[n].transform.Move(component.WorldPos.x * animations[parentNumber]->spriteScale.x, direction);
             parentFlipAngle += 90;
             direction = Vector3<GLfloat>(cos(ToRadian(parentFlipAngle)), sin(ToRadian(parentFlipAngle)), 0.0f);
             components[n].transform.Move(component.WorldPos.y * animations[parentNumber]->spriteScale.y, direction);
-
-
-            components[n].transform.Rotate.y = component.Rotate.y + ParentSprite.Rotate.y;
-            components[n].transform.Rotate.z = component.Rotate.z + ParentSprite.Rotate.z + component.Rotate.x;
-
-            components[n].transform.Scale.x = component.Scale.x * animations[n]->spriteScale.x * ParentSprite.Scale.x / animations[parentNumber]->spriteScale.x;
-            components[n].transform.Scale.y = component.Scale.y * animations[n]->spriteScale.y * ParentSprite.Scale.y / animations[parentNumber]->spriteScale.y;
-
 
             #if MY_ACTOR_TEST
             render->PushGeometry(mySphere.GetGeometry());
@@ -141,7 +142,7 @@ public:
             animations[5]->transform.Rotate.x = 100 + sin(currentTimeMilliseconds / 1000.0) * 30.0; 
             animations[6]->transform.Rotate.x = -20 + sin(currentTimeMilliseconds / 1000.0) * 10.0; 
             animations[7]->transform.Rotate.x = -10 + sin(currentTimeMilliseconds / 1000.0) * 20.0; 
-            animations[2]->transform.Rotate.x = sin(currentTimeMilliseconds / 1000.0) * 10; 
+            // animations[2]->transform.Rotate.x = sin(currentTimeMilliseconds / 1000.0) * 10; 
         }
         #endif
         
@@ -373,6 +374,11 @@ public:
     void SetState(int _state)
     {
         state = _state;
+    }
+
+    static void PushTime(const float _time)
+    {
+        Motion::PushTime(_time);
     }
 
     

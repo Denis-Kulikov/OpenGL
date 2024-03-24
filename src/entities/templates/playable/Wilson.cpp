@@ -9,6 +9,8 @@ Wilson::Wilson()
     : Character<Wilson>(std::string("player/Wilson"))
 {
     name = "Wilson";
+    std::cout << skelet.children[0]->children[0]->name << std::endl;
+    
 }
 
 Wilson::~Wilson()
@@ -22,6 +24,17 @@ void Wilson::Initialize()
     loadSkelet(path);
     loadSprites(path);
     loadAnimation(path, "stand");
+    
+    auto it = skelet.children[0]->children[0]->Animations.find("stand");
+
+    if (it != skelet.children[0]->children[0]->Animations.end()) {
+        Animation& animation = it->second;
+        Motion::rule myRuleAdd = {20.0, Motion::FUNTIONS::ADD};
+        Motion::rule myRuleMultiply = {2.0, Motion::FUNTIONS::MULTIPLY};
+        animation.motion.ruleFlip.push_back(myRuleAdd);
+        animation.motion.ruleFlip.push_back(myRuleMultiply);
+    }
+
     loadAnimation(path, "stand_2");
 
     std::cout << "Wilson skelet size: " << skeletSize << std::endl;

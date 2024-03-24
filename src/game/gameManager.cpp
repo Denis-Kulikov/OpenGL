@@ -1,5 +1,6 @@
 #include <game/gameManager.hpp> 
 
+
 bool GameManager::IsEnd = false;
 int GameManager::width = 0;
 int GameManager::height = 0;

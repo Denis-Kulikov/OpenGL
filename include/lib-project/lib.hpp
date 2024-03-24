@@ -1,8 +1,9 @@
 #pragma once
 #include <fstream>
 #include <iostream>
-#include <cmath>
 #include <cassert>
+#include <cmath>
+#include <functional>
 #include <sstream>
 #include <string.h>
 #include <stdio.h>

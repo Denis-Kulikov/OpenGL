@@ -1,6 +1,6 @@
 #pragma once
-#include "../../object/sprite.hpp"
 #include "component.hpp"
+#include "motion.hpp"
 
 class Animation
 {
@@ -12,7 +12,9 @@ public:
     void SetChildAnimation(const objectTransform &_transform);
 
     Sprite *sprite = nullptr;
+    // TimeType end;
     Vector3<GLfloat> spriteScale;
     Vector3<GLfloat> anchorPoint;
     objectTransform transform;
+    Motion motion;
 };

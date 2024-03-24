@@ -1,4 +1,5 @@
 #include <game/gameManager.hpp>
+#include <game/gameTime.hpp>
 #include <entities/templates/playable/Wilson.hpp>
 #include <entities/templates/mobs/spider.hpp>
 
@@ -15,6 +16,8 @@ Wilson *character = nullptr;
 Spider *spider[SPIDER_NUM] = {nullptr};
 
 std::chrono::milliseconds totalTime(0);
+
+GameTime Time;
 
 float randomFloat(float min, float max) {
     static std::random_device rd;
@@ -42,7 +45,7 @@ bool RenderSceneCB(Render *render, Scene *scene)
 
     // std::this_thread::sleep_until(frameStart + frameDuration);
     frameStart = std::chrono::steady_clock::now();
-
+    Time.Update();
 
     static time_t prev = time(0);
     static int frame = 0;
