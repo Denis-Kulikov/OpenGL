@@ -16,6 +16,7 @@ Spider::~Spider()
 void Spider::Initialize()
 {
     std::string path("mobs/spider");
+    name = "spider";
     loadSkelet(path);
     loadSprites(path);
     loadAnimation(path, "stand");

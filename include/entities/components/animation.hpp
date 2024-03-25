@@ -11,10 +11,28 @@ public:
 
     void SetChildAnimation(const objectTransform &_transform);
 
+    static void PushDuration(const std::string &actorName, const std::string &animationName, const float _duration)
+    {
+        duration[actorName][animationName] = _duration;
+    }
+
+    static float GetDuration(const std::string &actorName, const std::string &animationName)
+    {
+        auto actor = duration.find(actorName);
+        if (actor != duration.end()) {
+            auto it = actor->second.find(animationName);
+            if (it != actor->second.end()) {
+                return it->second;
+            }
+        } 
+        
+        return 0.0;
+    }
+
     Sprite *sprite = nullptr;
-    // TimeType end;
     Vector3<GLfloat> spriteScale;
     Vector3<GLfloat> anchorPoint;
     objectTransform transform;
     Motion motion;
+    static inline std::map<std::string, std::map<std::string, float>> duration;
 };

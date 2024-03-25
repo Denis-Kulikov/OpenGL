@@ -32,6 +32,16 @@ namespace STATE
     };
 }
 
+constexpr size_t myHash(const char* s)
+{
+    size_t hash = 0;
+    while (*s)
+    {
+        hash = (hash * 31) + *s;
+        ++s;
+    }
+    return hash;
+}
 
 template <typename Derived>
 class Actor 
@@ -81,7 +91,7 @@ public:
             const objectTransform &ParentComponent = animations[parentNumber]->transform;
             const objectTransform &ParentSprite    = components[parentNumber].transform;
             // GLfloat flipMotion = component.Rotate.x;
-            GLfloat flipMotion = component.Rotate.x + animations[n]->motion.GetFlip(AnimationTimeStart);
+            GLfloat flipMotion = component.Rotate.x + animations[n]->motion.GetFlip(AnimationTimeStart, Animation::GetDuration(name, animation));
             globalFlip[n] = globalFlip[parentNumber] + flipMotion;
             GLfloat parentFlipAngle = globalFlip[parentNumber];
             GLfloat flipAngle = globalFlip[n];
@@ -137,19 +147,19 @@ public:
             return ActorComponents;
         }
         
-        #if MY_ACTOR_TEST
-        using Clock = std::chrono::steady_clock;
-        using TimePoint = std::chrono::time_point<Clock>;
-        TimePoint current = Clock::now();
-        auto currentTimeMilliseconds = std::chrono::time_point_cast<std::chrono::milliseconds>(current).time_since_epoch().count();
+        // #if MY_ACTOR_TEST
+        // using Clock = std::chrono::steady_clock;
+        // using TimePoint = std::chrono::time_point<Clock>;
+        // TimePoint current = Clock::now();
+        // auto currentTimeMilliseconds = std::chrono::time_point_cast<std::chrono::milliseconds>(current).time_since_epoch().count();
 
-        if (name == "Wilson") {
-            animations[5]->transform.Rotate.x = 100 + sin(currentTimeMilliseconds / 1000.0) * 30.0; 
-            animations[6]->transform.Rotate.x = -20 + sin(currentTimeMilliseconds / 1000.0) * 10.0; 
-            animations[7]->transform.Rotate.x = -10 + sin(currentTimeMilliseconds / 1000.0) * 20.0; 
-            // animations[2]->transform.Rotate.x = sin(currentTimeMilliseconds / 1000.0) * 10; 
-        }
-        #endif
+        // if (name == "Wilson") {
+        //     animations[5]->transform.Rotate.x = 100 + sin(currentTimeMilliseconds / 1000.0) * 30.0; 
+        //     animations[6]->transform.Rotate.x = -20 + sin(currentTimeMilliseconds / 1000.0) * 10.0; 
+        //     animations[7]->transform.Rotate.x = -10 + sin(currentTimeMilliseconds / 1000.0) * 20.0; 
+        //     // animations[2]->transform.Rotate.x = sin(currentTimeMilliseconds / 1000.0) * 10; 
+        // }
+        // #endif
         
         size_t n = 0;
         animations[0]->transform = components[0].transform = trans; // Updating the skelet position
@@ -184,81 +194,159 @@ public:
     }
 
 
-    static void parseAnimation(pugi::xml_node &_node, Bone *_bone, const std::string &animationName) {
-        for (int i = 0; i < _bone->children.size(); i++) {
-            Animation newAnimation;
-            pugi::xml_node node = _node.child(_bone->children[i]->name.c_str());
 
-            std::string spriteName = node.attribute("sprite").as_string();
-            auto sprite = Derived::Sprites.find(spriteName); 
-            if (sprite != Sprites.end()) {
-                newAnimation.sprite = &(sprite->second); 
-                newAnimation.spriteScale = sprite->second.Scale; 
-            } else {
-                std::cout << "Error Actor.parseAnimation: not found " << spriteName << std::endl;
+    static void parseNodeAnimation(pugi::xml_node &nodeAnimation, const std::string &animationName, Animation &newAnimation) {
+        std::string spriteName = nodeAnimation.attribute("sprite").as_string();
+        auto sprite = Derived::Sprites.find(spriteName); 
+        if (sprite != Sprites.end()) {
+            newAnimation.sprite = &(sprite->second); 
+            newAnimation.spriteScale = sprite->second.Scale; 
+        } else {
+            std::cout << "Error Actor.parseAnimation: not found " << spriteName << std::endl;
+        }
+
+        objectTransform _transform;
+        Vector3<GLfloat> v;
+
+        v.x = std::stof(nodeAnimation.attribute("x").value());
+        v.y = std::stof(nodeAnimation.attribute("y").value());
+        v.z = std::stof(nodeAnimation.attribute("z").value()) / 10;
+        _transform.WorldPos = v;
+
+        v.x = std::stof(nodeAnimation.attribute("width").value());
+        v.y = std::stof(nodeAnimation.attribute("height").value());
+        v.z = 0.0;
+        _transform.Scale = v; 
+
+        v.x = std::stof(nodeAnimation.attribute("flip").value());
+        v.y = 180.0 * (nodeAnimation.attribute("mirrorX") != 0);
+        v.z = std::stof(nodeAnimation.attribute("rotate").value());
+        _transform.Rotate = v;
+
+        newAnimation.transform = _transform;
+
+        v.x = std::stof(nodeAnimation.attribute("tangent").value());
+        v.y = std::stof(nodeAnimation.attribute("radius").value());
+        v.z = 0.0;
+        newAnimation.anchorPoint = v;
+    }
+
+    static void parseNodeMotion(pugi::xml_node &nodeMotion, const std::string &animationName, Animation &newAnimation) {
+        for (pugi::xml_node childMotion : nodeMotion.children()) {
+            float end = childMotion.attribute("end") ? std::stof(childMotion.attribute("end").value()) : Animation::GetDuration(Derived::name, animationName);
+            std::vector<enum Motion::FUNTIONS> rules;
+
+            for (pugi::xml_node childFrame : childMotion.children()) {
+                if (std::string(childFrame.name()) == "Flip") {
+                    for (pugi::xml_node childRules : childFrame.children()) {
+                        std::string arg = childRules.attribute("arg") ? childRules.attribute("arg").as_string() : "";
+
+                        if (!arg.empty()) {
+                            if (arg == "time") {
+                                rules.push_back(Motion::FUNTIONS::TIME);
+                            } else {
+                                float add = std::stof(childRules.attribute("arg").value());
+                                rules.push_back(Motion::FUNTIONS::ADD);
+                                rules.push_back(Motion::FUNTIONS::MULTIPLY);
+                                newAnimation.motion.multipliers.push_back(add);
+                            }
+                        }
+
+                        constexpr std::size_t addHash      = myHash("add");
+                        constexpr std::size_t multiplyHash = myHash("multiply");
+                        constexpr std::size_t sinHash      = myHash("sin");
+                        constexpr std::size_t cosHash      = myHash("cos");
+                        constexpr std::size_t timeHash     = myHash("time");
+
+                        switch (myHash(childRules.name()))
+                        {
+                        case addHash:
+                            break;
+
+                        case multiplyHash:
+                            {
+                            float factor = childRules.attribute("factor") ? std::stof(childRules.attribute("factor").value()) : 1.0;
+                            newAnimation.motion.multipliers.push_back(factor);
+                            rules.push_back(Motion::FUNTIONS::MULTIPLY);
+                            }
+                            break;
+
+                        case sinHash:
+                            rules.push_back(Motion::FUNTIONS::SIN);
+                            break;
+
+                        case cosHash:
+                            rules.push_back(Motion::FUNTIONS::COS);
+                            break;
+
+                        case timeHash:
+                            rules.push_back(Motion::FUNTIONS::TIME);
+                            break;
+                        
+                        default:
+                            break;
+                        }
+                    }
+                }
             }
 
-            objectTransform _transform;
-            Vector3<GLfloat> v;
+            std::pair<float, std::vector<enum Motion::FUNTIONS>> rule(end, rules);
+            newAnimation.motion.ruleFlip.push_back(rule);
+        }
+        nodeMotion = nodeMotion.next_sibling();
+    }
 
-            v.x = std::stof(node.attribute("x").value());
-            v.y = std::stof(node.attribute("y").value());
-            v.z = std::stof(node.attribute("z").value()) / 10;
-            _transform.WorldPos = v;
+    static void parseAnimation(pugi::xml_node &nodeAnimation, pugi::xml_node &nodeMotion, Bone *_bone, const std::string &animationName) {
+        for (int i = 0; i < _bone->children.size(); i++) {
+            Animation newAnimation;
+            std::string boneName = _bone->children[i]->name;
+            pugi::xml_node node = nodeAnimation.child(boneName.c_str());
+                
+            if (nodeMotion && (nodeMotion.name() == boneName))
+                parseNodeMotion(nodeMotion, animationName, newAnimation);
 
-            v.x = std::stof(node.attribute("width").value());
-            v.y = std::stof(node.attribute("height").value());
-            v.z = 0.0;
-            _transform.Scale = v; 
-
-            v.x = std::stof(node.attribute("flip").value());
-            v.y = 180.0 * (node.attribute("mirrorX") != 0);
-            v.z = std::stof(node.attribute("rotate").value());
-            _transform.Rotate = v;
-
-            newAnimation.transform = _transform;
-
-            v.x = std::stof(node.attribute("tangent").value());
-            v.y = std::stof(node.attribute("radius").value());
-            v.z = 0.0;
-            newAnimation.anchorPoint = v;
-
+            parseNodeAnimation(node, animationName, newAnimation);
             _bone->children[i]->Animations.insert({animationName, newAnimation});
-            parseAnimation(node, _bone->children[i], animationName);
+
+            parseAnimation(node, nodeMotion, _bone->children[i], animationName);
         }
     }
 
     static bool loadAnimation(const std::string &_path, const std::string &_name)
     {
-        std::string full_path = std::string("assets/entities/") + _path + std::string("/models/animations/") + _name + std::string(".xml");
-        pugi::xml_document doc;
-        pugi::xml_node node;
-        pugi::xml_parse_result parse_result = doc.load_file(full_path.c_str());
+        std::string animationPath = std::string("assets/entities/") + _path + std::string("/models/animations/") + _name + std::string(".xml");
+        std::string motionPath = std::string("assets/entities/") + _path + std::string("/models/motions/") + _name + std::string(".xml");
+        pugi::xml_document docAnimation;
+        pugi::xml_document docMotion;
+        pugi::xml_node nodeAnimation;
+        pugi::xml_node nodeMotion;
+        pugi::xml_parse_result parseAnimationResult = docAnimation.load_file(animationPath.c_str());
+        pugi::xml_parse_result parseMotionResult = docMotion.load_file(motionPath.c_str());
 
-        if (!parse_result) {
-            std::cout << "Error Actor.loadAnimation: file not found (" << full_path << ")" << std::endl;
+        if (!parseAnimationResult) {
+            std::cout << "Error Actor.loadAnimation: file not found (" << animationPath << ")" << std::endl;
             return false;
         }
 
-        node = doc.child("animation");
-        std::string animationName = node.attribute("name").as_string();
+        nodeAnimation = docAnimation.child("animation");
+        std::string animationName = nodeAnimation.attribute("name").as_string();
         
         objectTransform _transform;
         Vector3<GLfloat> v;
 
-        v.x = std::stof(node.attribute("x").value());
-        v.y = std::stof(node.attribute("y").value());
-        v.z = std::stof(node.attribute("z").value());
+        v.x = std::stof(nodeAnimation.attribute("x").value());
+        v.y = std::stof(nodeAnimation.attribute("y").value());
+        v.z = std::stof(nodeAnimation.attribute("z").value());
         _transform.SetWorldPos(v.x, v.y, v.z);
 
-        v.x = std::stof(node.attribute("width").value());
-        v.y = std::stof(node.attribute("height").value());
+        v.x = std::stof(nodeAnimation.attribute("width").value());
+        v.y = std::stof(nodeAnimation.attribute("height").value());
         _transform.SetScale(v.x, v.y, 0.0);
         
-        v.z = std::stof(node.attribute("flip").value());
+        v.z = std::stof(nodeAnimation.attribute("flip").value());
         _transform.SetRotate(0.0, 0.0, v.z);
 
-        if (node.attribute("mirrorX")) {
+        if (nodeAnimation.attribute("mirrorX")) {
             _transform.SetRotate(0.0, 180.0, v.z);
         } 
 
@@ -268,7 +356,17 @@ public:
         newAnimation.transform = objectTransform();
         Derived::skelet.Animations.insert({animationName, newAnimation});
 
-        parseAnimation(node, &Derived::skelet, animationName);
+
+        nodeMotion = docMotion.child("motion");
+        if (parseMotionResult) {
+            float duration = std::stof(nodeMotion.attribute("duration").value());
+            Animation::PushDuration(Derived::name, animationName, duration);
+            nodeMotion = nodeMotion.first_child();
+        } else {
+            Animation::PushDuration(Derived::name, animationName, 0.0);
+        }
+
+        parseAnimation(nodeAnimation, nodeMotion, &Derived::skelet, animationName);
 
         return true;
     }
@@ -404,7 +502,7 @@ public:
     #endif
 
     Vector3<GLfloat> direction;
-    std::string name = "NoName";
+    static inline std::string name = "NoName";
 
 protected:
     float AnimationTimeStart = 0.0;

@@ -1,37 +1,60 @@
-<animation name="stand" time="1.0">
-    <!-- <body>
-    </body> -->
-            <!-- <Move>
-                <add arg="time" multiply="2.0" direction="forward"/>
-            </Move> -->
-
+<motion duration="3.35">
     <head>
-        <frame end="0.33">
+        <frame>
             <Flip>
-                <sin arg="time" multiply="10.0" />
+                <sin arg="time" />
+                <multiply factor="20.0" />
             </Flip>
         </frame>
     </head>
-    <!-- <face>
-    </face>
-    <hair_front>
-    </hair_front>
 
     <shoulder_left>
+        <frame>
+            <Flip>
+                <add arg="60" />
+                <multiply factor="1.2" />
+                <sin arg="time" />
+                <multiply factor="30.0" />
+            </Flip>
+        </frame>
     </shoulder_left>
     <arm_left>
+        <frame>
+            <Flip>
+                <sin arg="time" />
+                <multiply factor="10.0" />
+            </Flip>
+        </frame>
     </arm_left>
     <hand_left>
+        <frame>
+            <Flip>
+                <sin arg="time" />
+                <multiply factor="20.0" />
+            </Flip>
+        </frame>
     </hand_left>
 
     <shoulder_right>
+        <frame>
+            <Flip>
+                <sin arg="time" />
+                <multiply factor="3.0" />
+            </Flip>
+        </frame>
     </shoulder_right>
     <arm_right>
+        <frame>
+            <Flip>
+                <sin arg="time" />
+                <multiply factor="5.0" />
+            </Flip>
+        </frame>
     </arm_right>
     <hand_right>
     </hand_right>
 
-    <leg_left>
+    <!-- <leg_left>
     </leg_left>
     <foot_left>
     </foot_left>
@@ -40,4 +63,4 @@
     </leg_right>
     <foot_right>
     </foot_right> -->
-</animation>
+</motion>

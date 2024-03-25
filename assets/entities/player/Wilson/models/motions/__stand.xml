@@ -1,0 +1,43 @@
+<animation name="stand" time="1.0">
+    <!-- <body>
+    </body> -->
+            <!-- <Move>
+                <add arg="time" multiply="2.0" direction="forward"/>
+            </Move> -->
+
+    <head>
+        <frame end="0.33">
+            <Flip>
+                <sin arg="time" multiply="10.0" />
+            </Flip>
+        </frame>
+    </head>
+    <!-- <face>
+    </face>
+    <hair_front>
+    </hair_front>
+
+    <shoulder_left>
+    </shoulder_left>
+    <arm_left>
+    </arm_left>
+    <hand_left>
+    </hand_left>
+
+    <shoulder_right>
+    </shoulder_right>
+    <arm_right>
+    </arm_right>
+    <hand_right>
+    </hand_right>
+
+    <leg_left>
+    </leg_left>
+    <foot_left>
+    </foot_left>
+
+    <leg_right>
+    </leg_right>
+    <foot_right>
+    </foot_right> -->
+</animation>
