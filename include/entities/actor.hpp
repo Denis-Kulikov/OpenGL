@@ -58,9 +58,10 @@ public:
         animations = new Animation*[Derived::skeletSize];
         for (int i = 0; i < Derived::skeletSize; i++) {
             animations[i] = nullptr;
-            globalFlip[i] = 0;
         }
         animations[0] = new Animation();
+        globalFlip[0] = 0;
+
 
         #if MY_ACTOR_TEST
         spherePos = new Vector3<GLfloat>[Derived::skeletSize]();
@@ -80,39 +81,52 @@ public:
     }
 
 
-    std::vector<Component*> getActorComponents(Bone *_parent, size_t &n)
+    std::vector<Component*> getActorComponents(Bone *_parent, size_t &n, GLfloat duration)
     {
         std::vector<Component*> ActorComponents;
         size_t parentNumber = n++;
 
+        const Animation &animation_ParNum = *animations[parentNumber];
+        const objectTransform &ParentSprite    = components[parentNumber].transform;
+
         for (const auto &it : _parent->children) {
-            const Vector3<GLfloat> &anchorPoint    = animations[n]->anchorPoint;
-            const objectTransform &component       = animations[n]->transform;
-            const objectTransform &ParentComponent = animations[parentNumber]->transform;
-            const objectTransform &ParentSprite    = components[parentNumber].transform;
-            // GLfloat flipMotion = component.Rotate.x;
-            GLfloat flipMotion = component.Rotate.x + animations[n]->motion.GetFlip(AnimationTimeStart, Animation::GetDuration(name, animation));
+            const Animation &animation_Num = *animations[n];
+
+            const Vector3<GLfloat>&anchorPoint     = animation_Num.anchorPoint; // ссылки
+            const objectTransform &component       = animation_Num.transform;
+            const objectTransform &ParentComponent = animation_ParNum.transform;
+
+            const GLfloat globalScaleX = ParentSprite.Scale.x / animation_ParNum.spriteScale.x;
+            const GLfloat globalScaleY = ParentSprite.Scale.y / animation_ParNum.spriteScale.y;
+
+            Motion::anchorDirection = globalFlip[n];
+
+            GLfloat flipMotion = component.Rotate.x + animation_Num.motion.GetFlip(AnimationTimeStart, duration);
+            Vector3<GLfloat> offetMotion = animation_Num.motion.GetOffset(AnimationTimeStart, duration);
+            Vector3<GLfloat> scaleMotion = animation_Num.motion.GetScale(AnimationTimeStart, duration);
+
             globalFlip[n] = globalFlip[parentNumber] + flipMotion;
             GLfloat parentFlipAngle = globalFlip[parentNumber];
             GLfloat flipAngle = globalFlip[n];
 
+            Component &component_Num = components[n];
 
-            components[n].transform.WorldPos.x = ParentSprite.WorldPos.x; // не адаптируется положение от размера старших костей 
-            components[n].transform.WorldPos.y = ParentSprite.WorldPos.y;
-            components[n].transform.WorldPos.z = ParentSprite.WorldPos.z + component.WorldPos.z;
+            component_Num.transform.WorldPos.x = ParentSprite.WorldPos.x + offetMotion.x; // не адаптируется положение от размера старших костей 
+            component_Num.transform.WorldPos.y = ParentSprite.WorldPos.y + offetMotion.y;
+            component_Num.transform.WorldPos.z = ParentSprite.WorldPos.z + component.WorldPos.z;
 
-            components[n].transform.Rotate.y = component.Rotate.y + ParentSprite.Rotate.y;
-            components[n].transform.Rotate.z = component.Rotate.z + ParentSprite.Rotate.z + flipMotion;
+            component_Num.transform.Rotate.y = component.Rotate.y + ParentSprite.Rotate.y;
+            component_Num.transform.Rotate.z = component.Rotate.z + ParentSprite.Rotate.z + flipMotion;
 
-            components[n].transform.Scale.x = component.Scale.x * animations[n]->spriteScale.x * ParentSprite.Scale.x / animations[parentNumber]->spriteScale.x;
-            components[n].transform.Scale.y = component.Scale.y * animations[n]->spriteScale.y * ParentSprite.Scale.y / animations[parentNumber]->spriteScale.y;
+            component_Num.transform.Scale.x = component.Scale.x * animation_Num.spriteScale.x * globalScaleX;
+            component_Num.transform.Scale.y = component.Scale.y * animation_Num.spriteScale.y * globalScaleY;
 
 
-            Vector3<GLfloat> direction = Vector3<GLfloat>(cos(ToRadian(parentFlipAngle)), sin(ToRadian(parentFlipAngle)), 0.0f);
-            components[n].transform.Move(component.WorldPos.x * animations[parentNumber]->spriteScale.x, direction);
+            Vector3<GLfloat> direction = Vector3<GLfloat>(cos(ToRadian(parentFlipAngle)), sin(ToRadian(parentFlipAngle)), 0.0f); // размещение в координатах родительского спрайта
+            components[n].transform.Move(component.WorldPos.x * ParentSprite.Scale.x, direction);
             parentFlipAngle += 90;
             direction = Vector3<GLfloat>(cos(ToRadian(parentFlipAngle)), sin(ToRadian(parentFlipAngle)), 0.0f);
-            components[n].transform.Move(component.WorldPos.y * animations[parentNumber]->spriteScale.y, direction);
+            components[n].transform.Move(component.WorldPos.y * ParentSprite.Scale.y, direction);
 
             #if MY_ACTOR_TEST
             render->PushGeometry(mySphere.GetGeometry());
@@ -126,14 +140,14 @@ public:
             render->PushGeometry(&Sprite::geometryInfo);
             #endif
 
-            direction = Vector3<GLfloat>(cos(ToRadian(flipAngle)), sin(ToRadian(flipAngle)), 0.0f);
-            components[n].transform.Move(-anchorPoint.x, direction);
+            direction = Vector3<GLfloat>(cos(ToRadian(flipAngle)), sin(ToRadian(flipAngle)), 0.0f); // трансформация относительно anchor
+            components[n].transform.Move(-anchorPoint.x * globalScaleX, direction);
             flipAngle += 90;
             direction = Vector3<GLfloat>(cos(ToRadian(flipAngle)), sin(ToRadian(flipAngle)), 0.0f);
-            components[n].transform.Move(-anchorPoint.y, direction);
+            components[n].transform.Move(-anchorPoint.y * globalScaleY, direction);
 
             ActorComponents.push_back(&components[n]);
-            std::vector<Component*> componentsToAdd = getActorComponents(it, n);
+            std::vector<Component*> componentsToAdd = getActorComponents(it, n, duration);
             ActorComponents.insert(ActorComponents.end(), componentsToAdd.begin(), componentsToAdd.end());
         }
 
@@ -147,24 +161,11 @@ public:
             return ActorComponents;
         }
         
-        // #if MY_ACTOR_TEST
-        // using Clock = std::chrono::steady_clock;
-        // using TimePoint = std::chrono::time_point<Clock>;
-        // TimePoint current = Clock::now();
-        // auto currentTimeMilliseconds = std::chrono::time_point_cast<std::chrono::milliseconds>(current).time_since_epoch().count();
-
-        // if (name == "Wilson") {
-        //     animations[5]->transform.Rotate.x = 100 + sin(currentTimeMilliseconds / 1000.0) * 30.0; 
-        //     animations[6]->transform.Rotate.x = -20 + sin(currentTimeMilliseconds / 1000.0) * 10.0; 
-        //     animations[7]->transform.Rotate.x = -10 + sin(currentTimeMilliseconds / 1000.0) * 20.0; 
-        //     // animations[2]->transform.Rotate.x = sin(currentTimeMilliseconds / 1000.0) * 10; 
-        // }
-        // #endif
-        
         size_t n = 0;
         animations[0]->transform = components[0].transform = trans; // Updating the skelet position
+        GLfloat duration = Animation::GetDuration(name, animation);
 
-        return getActorComponents(&Derived::skelet, n);
+        return getActorComponents(&Derived::skelet, n, duration);
     }
 
 
@@ -234,21 +235,21 @@ public:
     static void parseNodeMotion(pugi::xml_node &nodeMotion, const std::string &animationName, Animation &newAnimation) {
         for (pugi::xml_node childMotion : nodeMotion.children()) {
             float end = childMotion.attribute("end") ? std::stof(childMotion.attribute("end").value()) : Animation::GetDuration(Derived::name, animationName);
-            std::vector<enum Motion::FUNTIONS> rules;
+            
+            std::vector<Motion::rule> rules;
 
             for (pugi::xml_node childFrame : childMotion.children()) {
                 if (std::string(childFrame.name()) == "Flip") {
                     for (pugi::xml_node childRules : childFrame.children()) {
                         std::string arg = childRules.attribute("arg") ? childRules.attribute("arg").as_string() : "";
+                        float factor = childRules.attribute("factor") ? std::stof(childRules.attribute("factor").value()) : 1.0;
 
                         if (!arg.empty()) {
                             if (arg == "time") {
-                                rules.push_back(Motion::FUNTIONS::TIME);
+                                rules.push_back({ 1.0, Motion::FUNTIONS::TIME });
                             } else {
                                 float add = std::stof(childRules.attribute("arg").value());
-                                rules.push_back(Motion::FUNTIONS::ADD);
-                                rules.push_back(Motion::FUNTIONS::MULTIPLY);
-                                newAnimation.motion.multipliers.push_back(add);
+                                rules.push_back({ add, Motion::FUNTIONS::ADD });
                             }
                         }
 
@@ -264,23 +265,19 @@ public:
                             break;
 
                         case multiplyHash:
-                            {
-                            float factor = childRules.attribute("factor") ? std::stof(childRules.attribute("factor").value()) : 1.0;
-                            newAnimation.motion.multipliers.push_back(factor);
-                            rules.push_back(Motion::FUNTIONS::MULTIPLY);
-                            }
+                            rules.push_back({ factor, Motion::FUNTIONS::MULTIPLY });
                             break;
 
                         case sinHash:
-                            rules.push_back(Motion::FUNTIONS::SIN);
+                            rules.push_back({ factor, Motion::FUNTIONS::SIN });
                             break;
 
                         case cosHash:
-                            rules.push_back(Motion::FUNTIONS::COS);
+                            rules.push_back({ factor, Motion::FUNTIONS::COS });
                             break;
 
                         case timeHash:
-                            rules.push_back(Motion::FUNTIONS::TIME);
+                            rules.push_back({ factor, Motion::FUNTIONS::TIME });
                             break;
                         
                         default:
@@ -290,7 +287,7 @@ public:
                 }
             }
 
-            std::pair<float, std::vector<enum Motion::FUNTIONS>> rule(end, rules);
+            std::pair<float, std::vector<Motion::rule>> rule(end, rules);
             newAnimation.motion.ruleFlip.push_back(rule);
         }
         nodeMotion = nodeMotion.next_sibling();

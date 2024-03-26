@@ -25,6 +25,8 @@ public:
         z = _z;
     }
 
+    Vector3(T value) : Vector3(value, value, value) {}
+
     Vector3<T>& Normalize() {
         const T Length = sqrtf(x * x + y * y + z * z);
 
@@ -51,9 +53,29 @@ public:
         return x + y + z;
     }
 
-
     T Distance(const Vector3<T> &v) const {
         return sqrt(pow(v.x - x, 2) + pow(v.y - y, 2) + pow(v.z - z, 2));
+    }
+
+
+    T operator[](const size_t index) const {
+        return *(&x + index);
+    }
+
+    Vector3<T> operator=(const Vector3<T> &v) {
+        x = v.x;
+        y = v.y;
+        z = v.z;
+
+        return *this;
+    }
+
+    Vector3<T> operator=(T s) {
+        x = s;
+        y = s;
+        z = s;
+    
+        return *this;
     }
 
     Vector3<T> operator+(const Vector3<T> &v) {
@@ -126,22 +148,16 @@ public:
 
 
 
-    void VSet(const Vector3<T> &v) {
-        x = v.x;
-        y = v.y;
-        z = v.z;
+    Vector3<T> VSet(const Vector3<T> &v) {
+        return *this = v;
     }
 
-    void VSet(T s) {
-        x = s;
-        y = s;
-        z = s;
+    Vector3<T> VSet(T s) {
+        return *this = s;
     }
 
-    void VSet(T sx, T sy, T sz) {
-        x = sx;
-        y = sy;
-        z = sz;
+    Vector3<T> VSet(T sx, T sy, T sz) {
+        return *this = Vector3<T>(sx, sy, sz);
     }
 
     void VZero() {

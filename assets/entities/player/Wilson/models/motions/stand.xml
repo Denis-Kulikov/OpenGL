@@ -2,8 +2,8 @@
     <head>
         <frame>
             <Flip>
-                <sin arg="time" />
-                <multiply factor="20.0" />
+                <time />
+                <sin factor="20.0" />
             </Flip>
         </frame>
     </head>
@@ -11,26 +11,22 @@
     <shoulder_left>
         <frame>
             <Flip>
-                <add arg="60" />
-                <multiply factor="1.2" />
-                <sin arg="time" />
-                <multiply factor="30.0" />
+                <add arg="30" />
+                <sin arg="time" factor="30.0" />
             </Flip>
         </frame>
     </shoulder_left>
     <arm_left>
         <frame>
             <Flip>
-                <sin arg="time" />
-                <multiply factor="10.0" />
+                <sin arg="time" factor="10.0" />
             </Flip>
         </frame>
     </arm_left>
     <hand_left>
         <frame>
             <Flip>
-                <sin arg="time" />
-                <multiply factor="20.0" />
+                <sin arg="time" factor="20.0" />
             </Flip>
         </frame>
     </hand_left>
@@ -38,16 +34,14 @@
     <shoulder_right>
         <frame>
             <Flip>
-                <sin arg="time" />
-                <multiply factor="3.0" />
+                <sin arg="time" factor="3.0" />
             </Flip>
         </frame>
     </shoulder_right>
     <arm_right>
         <frame>
             <Flip>
-                <sin arg="time" />
-                <multiply factor="5.0" />
+                <sin arg="time" factor="5.0" />
             </Flip>
         </frame>
     </arm_right>

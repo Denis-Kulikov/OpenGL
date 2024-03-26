@@ -73,12 +73,6 @@ void objectTransform::Move(const GLfloat &X, const GLfloat &Y, const GLfloat &Z)
     SetWorldPos(WorldPos.x + X, WorldPos.y + Y, WorldPos.z + Z);
 }
 
-Vector3<GLfloat> objectTransform::GetForwardVector() const
-{
-    GLfloat radianAngle = ToRadian(Rotate.y);
-    return Vector3<GLfloat>(cos(radianAngle), 0.0f, sin(radianAngle));
-}
-
 void objectTransform::Move(const Vector3<GLfloat> offset) {
     WorldPos += Vector3<GLfloat>(offset.x, offset.y, offset.z);
 }
@@ -92,9 +86,25 @@ void objectTransform::Move(const GLfloat distance, const Vector3<GLfloat> direct
     Move(offset);
 }
 
-void objectTransform::MoveForward(const GLfloat distance) {
-    Vector3<GLfloat> forward = GetForwardVector();
+void objectTransform::MoveForward(const GLfloat distance, const enum AXES axis) {
+    Vector3<GLfloat> forward = GetForwardVector(axis);
     Move(distance, forward);
+}
+
+Vector3<GLfloat> objectTransform::GetForwardVector(const enum AXES axis) const
+{
+    GLfloat radianAngle = ToRadian(Rotate[axis]);
+
+    switch (axis) {
+    case X:
+        return Vector3<GLfloat>(0.0, cos(radianAngle), sin(radianAngle));
+    case Y:
+        return Vector3<GLfloat>(cos(radianAngle), 0.0f, sin(radianAngle));
+    case Z:
+        return Vector3<GLfloat>(cos(radianAngle), sin(radianAngle), 0.0);
+    default:
+        return Vector3<GLfloat>(0.0, 0.0, 0.0);
+    }
 }
 
 void objectTransform::AddRotate(const Vector3<GLfloat> _rotate) {

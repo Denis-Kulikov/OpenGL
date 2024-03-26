@@ -2,6 +2,12 @@
 #include "../lib-project/lib.hpp"
 #include "../lib-project/math_3d.hpp"
 
+enum AXES {
+    X,
+    Y,
+    Z
+};
+
 class objectTransform 
 {
 public:
@@ -29,13 +35,13 @@ public:
     void Move(const GLfloat &X, const GLfloat &Y, const GLfloat &Z);
     void Move(const Vector3<GLfloat> offset);
     void Move(const GLfloat distance, const Vector3<GLfloat> direction);
-    void MoveForward(const GLfloat distance);
+    void MoveForward(const GLfloat distance, const enum AXES axis);
 
     void AddRotate(const Vector3<GLfloat> _rotate);
 
     void MultiplyScale(const Vector3<GLfloat> _scale);
 
-    Vector3<GLfloat> GetForwardVector() const;
+    Vector3<GLfloat> GetForwardVector(const enum AXES axis) const;
 
     friend std::ostream& operator<<(std::ostream& os, const objectTransform& transform);
 
