@@ -1,4 +1,4 @@
-#include <entities/components/Bone.hpp>
+#include <entities/components/bone.hpp>
 
 const char Bone::BONE[] = "bone";
 const char Bone::NAME[] = "name";

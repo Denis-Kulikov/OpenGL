@@ -85,7 +85,7 @@ Scene *createScene()
 {
     auto *scene = new Scene(std::string("Main scene"));
 
-    Sprite *mySprite = new Sprite(std::string("Grass"), "shaders/Sprite_fs.glsl", "shaders/Sprite_vs.glsl", "img/grass.png");
+    Sprite *mySprite = new Sprite(std::string("Grass"), "shaders/sprite_fs.glsl", "shaders/sprite_vs.glsl", "img/grass.png");
     objectTransform transformGrass;
     transformGrass.Move(0, -5, -2);
     transformGrass.SetRotate(90, 0, 0);
