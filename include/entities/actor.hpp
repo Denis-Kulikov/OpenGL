@@ -102,8 +102,8 @@ public:
             Motion::anchorDirection = globalFlip[n];
 
             GLfloat flipMotion = component.Rotate.x + animation_Num.motion.GetFlip(AnimationTimeStart, duration);
-            Vector3<GLfloat> offetMotion = animation_Num.motion.GetOffset(AnimationTimeStart, duration);
             Vector3<GLfloat> scaleMotion = animation_Num.motion.GetScale(AnimationTimeStart, duration);
+            Vector3<GLfloat> offetMotion = animation_Num.motion.GetOffset(AnimationTimeStart, duration);
 
             globalFlip[n] = globalFlip[parentNumber] + flipMotion;
             GLfloat parentFlipAngle = globalFlip[parentNumber];
@@ -118,8 +118,8 @@ public:
             component_Num.transform.Rotate.y = component.Rotate.y + ParentSprite.Rotate.y;
             component_Num.transform.Rotate.z = component.Rotate.z + ParentSprite.Rotate.z + flipMotion;
 
-            component_Num.transform.Scale.x = component.Scale.x * animation_Num.spriteScale.x * globalScaleX;
-            component_Num.transform.Scale.y = component.Scale.y * animation_Num.spriteScale.y * globalScaleY;
+            component_Num.transform.Scale.x = component.Scale.x * animation_Num.spriteScale.x * globalScaleX * scaleMotion.x;
+            component_Num.transform.Scale.y = component.Scale.y * animation_Num.spriteScale.y * globalScaleY * scaleMotion.y;
 
 
             Vector3<GLfloat> direction = Vector3<GLfloat>(cos(ToRadian(parentFlipAngle)), sin(ToRadian(parentFlipAngle)), 0.0f); // размещение в координатах родительского спрайта
@@ -233,13 +233,18 @@ public:
     }
 
     static void parseNodeMotion(pugi::xml_node &nodeMotion, const std::string &animationName, Animation &newAnimation) {
+        constexpr std::size_t addHash      = myHash("add");
+        constexpr std::size_t multiplyHash = myHash("multiply");
+        constexpr std::size_t sinHash      = myHash("sin");
+        constexpr std::size_t cosHash      = myHash("cos");
+        constexpr std::size_t timeHash     = myHash("time");
+
         for (pugi::xml_node childMotion : nodeMotion.children()) {
             float end = childMotion.attribute("end") ? std::stof(childMotion.attribute("end").value()) : Animation::GetDuration(Derived::name, animationName);
-            
-            std::vector<Motion::rule> rules;
 
             for (pugi::xml_node childFrame : childMotion.children()) {
                 if (std::string(childFrame.name()) == "Flip") {
+                    std::vector<Motion::rule> rules;
                     for (pugi::xml_node childRules : childFrame.children()) {
                         std::string arg = childRules.attribute("arg") ? childRules.attribute("arg").as_string() : "";
                         float factor = childRules.attribute("factor") ? std::stof(childRules.attribute("factor").value()) : 1.0;
@@ -253,11 +258,112 @@ public:
                             }
                         }
 
-                        constexpr std::size_t addHash      = myHash("add");
-                        constexpr std::size_t multiplyHash = myHash("multiply");
-                        constexpr std::size_t sinHash      = myHash("sin");
-                        constexpr std::size_t cosHash      = myHash("cos");
-                        constexpr std::size_t timeHash     = myHash("time");
+                        switch (myHash(childRules.name()))
+                        {
+                        case addHash:
+                            break;
+
+                        case multiplyHash:
+                            rules.push_back({ factor, Motion::FUNTIONS::MULTIPLY });
+                            break;
+
+                        case sinHash:
+                            rules.push_back({ factor, Motion::FUNTIONS::SIN });
+                            break;
+
+                        case cosHash:
+                            rules.push_back({ factor, Motion::FUNTIONS::COS });
+                            break;
+
+                        case timeHash:
+                            rules.push_back({ factor, Motion::FUNTIONS::TIME });
+                            break;
+                        
+                        default:
+                            break;
+                        }
+                    }
+
+                    std::pair<float, std::vector<Motion::rule>> rule(end, rules);
+                    newAnimation.motion.ruleFlip.push_back(rule);
+                }
+            
+                if (std::string(childFrame.name()) == "Scale") {
+                    std::vector<Motion::rule> rules;
+                    std::string args[2];
+                    float factor[2];
+                    for (pugi::xml_node childRules : childFrame.children()) {
+                        args[X] = childRules.attribute("width") ? childRules.attribute("width").as_string() : "";
+                        args[Y] = childRules.attribute("height") ? childRules.attribute("height").as_string() : "";
+                        factor[X] = childRules.attribute("width_factor") ? std::stof(childRules.attribute("width_factor").value()) : 1.0;
+                        factor[Y] = childRules.attribute("height_factor") ? std::stof(childRules.attribute("height_factor").value()) : 1.0;
+
+                        if (args[X].empty() ^ args[Y].empty()) continue;
+
+                        if ((!args[X].empty()) && (!args[Y].empty())) {
+                            if (args[X] == "time") {
+                                rules.push_back({ 1.0, Motion::FUNTIONS::TIME });
+                            } else {
+                                float add = std::stof(childRules.attribute("width").value());
+                                rules.push_back({ add, Motion::FUNTIONS::ADD });
+                            }
+
+                            if (args[Y] == "time") {
+                                rules.push_back({ 1.0, Motion::FUNTIONS::TIME });
+                            } else {
+                                float add = std::stof(childRules.attribute("height").value());
+                                rules.push_back({ add, Motion::FUNTIONS::ADD });
+                            }
+                        }
+
+
+                        for (size_t i = 0; i < 2; i++) {
+                            switch (myHash(childRules.name()))
+                            {
+                            case addHash:
+                                break;
+
+                            case multiplyHash:
+                                rules.push_back({ factor[i], Motion::FUNTIONS::MULTIPLY });
+                                break;
+
+                            case sinHash:
+                                rules.push_back({ factor[i], Motion::FUNTIONS::SIN });
+                                break;
+
+                            case cosHash:
+                                rules.push_back({ factor[i], Motion::FUNTIONS::COS });
+                                break;
+
+                            case timeHash:
+                                rules.push_back({ factor[i], Motion::FUNTIONS::TIME });
+                                break;
+                            
+                            default:
+                                break;
+                            }
+                        }
+                    }
+
+                    std::cout << rules.size() << std::endl;
+                    std::pair<float, std::vector<Motion::rule>> rule(end, rules);
+                    newAnimation.motion.ruleScale.push_back(rule);
+                }
+            
+                if (std::string(childFrame.name()) == "_Move") {
+                    std::vector<Motion::rule> rules;
+                    for (pugi::xml_node childRules : childFrame.children()) {
+                        std::string arg = childRules.attribute("arg") ? childRules.attribute("arg").as_string() : "";
+                        float factor = childRules.attribute("factor") ? std::stof(childRules.attribute("factor").value()) : 1.0;
+
+                        if (!arg.empty()) {
+                            if (arg == "time") {
+                                rules.push_back({ 1.0, Motion::FUNTIONS::TIME });
+                            } else {
+                                float add = std::stof(childRules.attribute("arg").value());
+                                rules.push_back({ add, Motion::FUNTIONS::ADD });
+                            }
+                        }
 
                         switch (myHash(childRules.name()))
                         {
@@ -286,9 +392,6 @@ public:
                     }
                 }
             }
-
-            std::pair<float, std::vector<Motion::rule>> rule(end, rules);
-            newAnimation.motion.ruleFlip.push_back(rule);
         }
         nodeMotion = nodeMotion.next_sibling();
     }

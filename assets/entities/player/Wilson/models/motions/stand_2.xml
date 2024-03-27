@@ -1,0 +1,36 @@
+<motion duration="3.35">
+
+    <leg_left>
+        <frame>
+            <Flip>
+                <add arg="10" />
+                <sin arg="time" factor="10.0" />
+            </Flip>
+        </frame>
+    </leg_left>
+    <foot_left>
+        <frame>
+            <Flip>
+                <add arg="10" />
+                <sin arg="time" factor="10.0" />
+            </Flip>
+        </frame>
+    </foot_left>
+
+    <leg_right>
+        <frame>
+            <Flip>
+                <add arg="-10" />
+                <sin arg="time" factor="-10.0" />
+            </Flip>
+        </frame>
+    </leg_right>
+    <foot_right>
+        <frame>
+            <Flip>
+                <add arg="-10" />
+                <sin arg="time" factor="-10.0" />
+            </Flip>
+        </frame>
+    </foot_right>
+</motion>
