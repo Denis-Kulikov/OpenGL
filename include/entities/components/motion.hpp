@@ -28,7 +28,7 @@ public:
     };
 
 
-    Vector3<GLfloat> GetScaleRecursive(size_t &i) const
+    Vector3<GLfloat> GetScaleRecursive(size_t &i, const std::vector<rule> *curRuleScale) const
     {
         Vector3<GLfloat> res(1.0);
         const std::vector<rule> &Rule = *curRuleScale;
@@ -39,7 +39,7 @@ public:
         functions[Rule[i].fun](res.y, Rule[i++].arg);
         while (i < curRuleScale->size()) {
             if (Rule[i].fun == ADD || Rule[i].fun == TIME) {
-                res += GetScaleRecursive(i);
+                res += GetScaleRecursive(i, curRuleScale);
             } else {
                 functions[Rule[i].fun](res.x, Rule[i++].arg);
                 functions[Rule[i].fun](res.y, Rule[i++].arg);
@@ -55,7 +55,7 @@ public:
         
         timeSpan = std::fmod((currentTime - timeStart) / 1e9, duration);
         size_t j = 0;
-        curRuleScale = &ruleScale[j].second;
+        const std::vector<rule> *curRuleScale = &ruleScale[j].second;
         while (ruleScale[j].first <= timeSpan) {
             j++;
             if (j >= ruleScale.size()) return Vector3<GLfloat>(1.0);
@@ -63,21 +63,21 @@ public:
         }
 
         size_t i = 0;
-        return GetScaleRecursive(i);
+        return GetScaleRecursive(i, curRuleScale);
     }
 
 
-    Vector3<GLfloat> GetOffsetRecursive(size_t &i) const
+    Vector3<GLfloat> GetOffsetRecursive(size_t &i, const std::vector<rule> *curRuleOffset) const
     {
         Vector3<GLfloat> res(0.0);
-        const std::vector<rule> &Rule = *curRuleFlip;
+        const std::vector<rule> &Rule = *curRuleOffset;
         if (Rule.empty()) return res;
 
         functions[Rule[i].fun](res.x, Rule[i++].arg);
         functions[Rule[i].fun](res.y, Rule[i++].arg);
-        while (i < curRuleFlip->size()) {
+        while (i < curRuleOffset->size()) {
             if (Rule[i].fun == ADD || Rule[i].fun == TIME) {
-                res += GetOffsetRecursive(i);
+                res += GetOffsetRecursive(i, curRuleOffset);
             } else {
                 functions[Rule[i].fun](res.x, Rule[i++].arg);
                 functions[Rule[i].fun](res.y, Rule[i++].arg);
@@ -93,19 +93,19 @@ public:
         
         timeSpan = std::fmod((currentTime - timeStart) / 1e9, duration);
         size_t j = 0;
-        curRuleOffset = &ruleOffset[j].second;
+        const std::vector<rule> *curRuleOffset = &ruleOffset[j].second;
         while (ruleOffset[j].first <= timeSpan) {
             j++;
             if (j >= ruleOffset.size()) return 0.0;
-            curRuleFlip = &ruleOffset[j].second;
+            curRuleOffset = &ruleOffset[j].second;
         }
 
         size_t i = 0;
-        return GetOffsetRecursive(i);
+        return GetOffsetRecursive(i, curRuleOffset);
     }
 
 
-    float GetFlipRecursive(size_t &i) const
+    float GetFlipRecursive(size_t &i, const std::vector<rule> *curRuleFlip) const
     {
         float res = 0;
         const std::vector<rule> &Rule = *curRuleFlip;
@@ -114,7 +114,7 @@ public:
         functions[Rule[i].fun](res, Rule[i++].arg);
         while (i < curRuleFlip->size()) {
             if (Rule[i].fun == ADD || Rule[i].fun == TIME) {
-                res += GetFlipRecursive(i);
+                res += GetFlipRecursive(i, curRuleFlip);
             } else {
                 functions[Rule[i].fun](res, Rule[i++].arg);
             }
@@ -129,7 +129,7 @@ public:
         
         timeSpan = std::fmod((currentTime - timeStart) / 1e9, duration);
         size_t j = 0;
-        curRuleFlip = &ruleFlip[j].second;
+        const std::vector<rule> *curRuleFlip = &ruleFlip[j].second;
         while (ruleFlip[j].first <= timeSpan) {
             j++;
             if (j >= ruleFlip.size()) return 0.0;
@@ -137,7 +137,7 @@ public:
         }
 
         size_t i = 0;
-        return GetFlipRecursive(i);
+        return GetFlipRecursive(i, curRuleFlip);
     }
 
     static void PushTime(const float _time)
@@ -155,31 +155,16 @@ public:
     static inline float timeSpan = 0.0;
     static inline float flip = 0.0;
     static inline GLfloat anchorDirection = 0.0;
-    static inline const std::vector<rule> *curRuleFlip = nullptr;
-    static inline const std::vector<rule> *curRuleScale = nullptr;
+    // static inline const std::vector<rule> *curRuleFlip = nullptr;
+    // static inline const std::vector<rule> *curRuleScale = nullptr;
     static inline const std::vector<rule> *curRuleOffset = nullptr;
 
-    static inline std::vector<FunTypeFloat> functions = [](){
-        std::vector<FunTypeFloat> initFunctions;
-        initFunctions.push_back([](float &L_value, const float &R_value) { L_value += R_value; }); // ADD,
-        initFunctions.push_back([](float &L_value, const float &R_value) { L_value *= R_value; }); // MULTIPLY,
-        initFunctions.push_back([](float &L_value, const float &R_value) { L_value = sin(L_value) * R_value; }); // SIN,
-        initFunctions.push_back([](float &L_value, const float &R_value) { L_value = cos(L_value) * R_value; }); // COS;
+    static inline FunTypeFloat functions[] = {
+        [](float &L_value, const float &R_value) { L_value += R_value; }, // ADD,
+        [](float &L_value, const float &R_value) { L_value *= R_value; }, // MULTIPLY,
+        [](float &L_value, const float &R_value) { L_value = sin(L_value) * R_value; }, // SIN,
+        [](float &L_value, const float &R_value) { L_value = cos(L_value) * R_value; }, // COS;
 
-        initFunctions.push_back([](float &L_value, const float &R_value) { L_value = Motion::timeSpan * R_value; }); // TIME;
-        return initFunctions;
-    }(); 
-
-    // static inline std::vector<FunTypeVector> offsets = [](){
-    //     std::vector<FunTypeVector> initFunctions;
-    //     initFunctions.push_back([](Vector3<GLfloat> &L_value, const Vector3<GLfloat> &R_value) { L_value += R_value; }); // ADD,
-    //     initFunctions.push_back([](Vector3<GLfloat> &L_value, const Vector3<GLfloat> &R_value) { L_value *= R_value; }); // MULTIPLY,
-
-    //     initFunctions.push_back([](Vector3<GLfloat> &L_value, const Vector3<GLfloat> &R_value) { L_value = Motion::timeSpan; L_value *= R_value; }); // TIME;
-    //     initFunctions.push_back([](Vector3<GLfloat> &L_value, const Vector3<GLfloat> &R_value) { L_value = Vector3<GLfloat>(cos(ToRadian(Motion::anchorDirection)), sin(ToRadian(Motion::anchorDirection)), 0.0f); L_value *= R_value; }); // DIRECTION;
-    //     return initFunctions;
-    // }(); 
-
-        // initFunctions.push_back([](float &L_value, const float &R_value) { L_value = Motion::_flip; }); // FLIP;
-    // std::vector<std::pair<GLfloat, FunType*()>> motion;
+        [](float &L_value, const float &R_value) { L_value = Motion::timeSpan * R_value; } // TIME;
+    }; 
 };

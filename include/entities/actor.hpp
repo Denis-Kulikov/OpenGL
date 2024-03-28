@@ -43,7 +43,6 @@ constexpr size_t myHash(const char* s)
     return hash;
 }
 
-template <typename Derived>
 class Actor 
 {
 public:
@@ -52,75 +51,71 @@ public:
         loadActor(path);
         trans.Rotate = Vector3<GLfloat>(0.0, 0.0, 180);
         direction = Vector3<GLfloat>();
-
-        globalFlip = new GLfloat[Derived::skeletSize];
-        components = new Component[Derived::skeletSize];
-        animations = new Animation*[Derived::skeletSize];
-        for (int i = 0; i < Derived::skeletSize; i++) {
-            animations[i] = nullptr;
-        }
-        animations[0] = new Animation();
-        globalFlip[0] = 0;
-
-
-        #if MY_ACTOR_TEST
-        spherePos = new Vector3<GLfloat>[Derived::skeletSize]();
-
-        mySphere = sphere(std::string("mySphere"), "shaders/sphere_fs.glsl", "shaders/sphere_vs.glsl", nullptr, 10);
-        sphereTransform.Rotate = Vector3<GLfloat>(0.0, 0.0, 0.0);
-        sphereTransform.Scale = Vector3<GLfloat>(0.1, 0.2, 0.1);
-        
-        myLine = line(std::string("myLine"), Vector3<GLfloat>(1.0, 0.0, 0.0));
-        #endif
     }
     
     ~Actor()
     {
-        delete[] components;
-        delete[] animations;
+        // delete[] components;
+        // delete[] animations;
     }
 
+    virtual size_t GetSkeletSize() = 0;
+    virtual Bone *GetSkelet() = 0;
+    virtual std::map<std::string, Sprite> *GetSprites() = 0;
 
-    std::vector<Component*> getActorComponents(Bone *_parent, size_t &n, GLfloat duration)
+    // virtual size_t GetSkeletSize()
+    // {
+    //     return skeletSize;
+    // }
+
+    // virtual Bone *GetSkelet()
+    // {
+    //     return &skelet;
+    // }
+
+    // virtual std::map<std::string, Sprite> *GetSprites()
+    // {
+    //     return &Sprites;
+    // }
+
+
+    std::vector<Component*> getActorComponents(Bone *_parent, size_t &n, const GLfloat duration)
     {
         std::vector<Component*> ActorComponents;
-        size_t parentNumber = n++;
 
-        const Animation &animation_ParNum = *animations[parentNumber];
-        const objectTransform &ParentSprite    = components[parentNumber].transform;
+        auto it = _parent->Animations.find("stan");
+
+        const size_t parentNumber = n++;
+        const objectTransform ParentSprite = components[parentNumber].transform;
+        const GLfloat globalScaleX = ParentSprite.Scale.x / animations[parentNumber]->spriteScale.x;
+        const GLfloat globalScaleY = ParentSprite.Scale.y / animations[parentNumber]->spriteScale.y;
 
         for (const auto &it : _parent->children) {
-            const Animation &animation_Num = *animations[n];
+            const Animation &animation_Num = *animations[n]; // ссылка из-за векторов в Motion
+            const objectTransform component = animation_Num.transform;
 
-            const Vector3<GLfloat>&anchorPoint     = animation_Num.anchorPoint; // ссылки
-            const objectTransform &component       = animation_Num.transform;
-            const objectTransform &ParentComponent = animation_ParNum.transform;
-
-            const GLfloat globalScaleX = ParentSprite.Scale.x / animation_ParNum.spriteScale.x;
-            const GLfloat globalScaleY = ParentSprite.Scale.y / animation_ParNum.spriteScale.y;
-
-            Motion::anchorDirection = globalFlip[n];
-
-            GLfloat flipMotion = component.Rotate.x + animation_Num.motion.GetFlip(AnimationTimeStart, duration);
-            Vector3<GLfloat> scaleMotion = animation_Num.motion.GetScale(AnimationTimeStart, duration);
-            Vector3<GLfloat> offetMotion = animation_Num.motion.GetOffset(AnimationTimeStart, duration);
+            Motion::anchorDirection = globalFlip[n]; // нужно для GetFlip
+            const GLfloat flipMotion = component.Rotate.x + animation_Num.motion.GetFlip(AnimationTimeStart, duration);
+            const Vector3<GLfloat> scaleMotion = animation_Num.motion.GetScale(AnimationTimeStart, duration);
+            const Vector3<GLfloat> offetMotion = animation_Num.motion.GetOffset(AnimationTimeStart, duration);
 
             globalFlip[n] = globalFlip[parentNumber] + flipMotion;
             GLfloat parentFlipAngle = globalFlip[parentNumber];
             GLfloat flipAngle = globalFlip[n];
 
-            Component &component_Num = components[n];
+            objectTransform component_Num;
 
-            component_Num.transform.WorldPos.x = ParentSprite.WorldPos.x + offetMotion.x; // не адаптируется положение от размера старших костей 
-            component_Num.transform.WorldPos.y = ParentSprite.WorldPos.y + offetMotion.y;
-            component_Num.transform.WorldPos.z = ParentSprite.WorldPos.z + component.WorldPos.z;
+            component_Num.WorldPos.x = ParentSprite.WorldPos.x + offetMotion.x;
+            component_Num.WorldPos.y = ParentSprite.WorldPos.y + offetMotion.y;
+            component_Num.WorldPos.z = ParentSprite.WorldPos.z + component.WorldPos.z;
 
-            component_Num.transform.Rotate.y = component.Rotate.y + ParentSprite.Rotate.y;
-            component_Num.transform.Rotate.z = component.Rotate.z + ParentSprite.Rotate.z + flipMotion;
+            component_Num.Rotate.y = component.Rotate.y + ParentSprite.Rotate.y;
+            component_Num.Rotate.z = component.Rotate.z + ParentSprite.Rotate.z + flipMotion;
 
-            component_Num.transform.Scale.x = component.Scale.x * animation_Num.spriteScale.x * globalScaleX * scaleMotion.x;
-            component_Num.transform.Scale.y = component.Scale.y * animation_Num.spriteScale.y * globalScaleY * scaleMotion.y;
+            component_Num.Scale.x = component.Scale.x * animation_Num.spriteScale.x * globalScaleX * scaleMotion.x;
+            component_Num.Scale.y = component.Scale.y * animation_Num.spriteScale.y * globalScaleY * scaleMotion.y;
 
+            components[n].transform = component_Num;
 
             Vector3<GLfloat> direction = Vector3<GLfloat>(cos(ToRadian(parentFlipAngle)), sin(ToRadian(parentFlipAngle)), 0.0f); // размещение в координатах родительского спрайта
             components[n].transform.Move(component.WorldPos.x * ParentSprite.Scale.x, direction);
@@ -137,14 +132,14 @@ public:
             myLine.setPoints(spherePos[n], spherePos[parentNumber]);
             if (render != nullptr) render->drawObject(&myLine.trans, &myLine);
             spherePos[0] = spherePos[1];
-            render->PushGeometry(&Sprite::geometryInfo);
+            render->PushGeometry(Sprite().GetGeometry());
             #endif
 
             direction = Vector3<GLfloat>(cos(ToRadian(flipAngle)), sin(ToRadian(flipAngle)), 0.0f); // трансформация относительно anchor
-            components[n].transform.Move(-anchorPoint.x * globalScaleX, direction);
+            components[n].transform.Move(-animation_Num.anchorPoint.x * globalScaleX, direction);
             flipAngle += 90;
             direction = Vector3<GLfloat>(cos(ToRadian(flipAngle)), sin(ToRadian(flipAngle)), 0.0f);
-            components[n].transform.Move(-anchorPoint.y * globalScaleY, direction);
+            components[n].transform.Move(-animation_Num.anchorPoint.y * globalScaleY, direction);
 
             ActorComponents.push_back(&components[n]);
             std::vector<Component*> componentsToAdd = getActorComponents(it, n, duration);
@@ -165,7 +160,7 @@ public:
         animations[0]->transform = components[0].transform = trans; // Updating the skelet position
         GLfloat duration = Animation::GetDuration(name, animation);
 
-        return getActorComponents(&Derived::skelet, n, duration);
+        return getActorComponents(GetSkelet(), n, duration);
     }
 
 
@@ -176,6 +171,8 @@ public:
             if (it->Animations.find(animationName) != it->Animations.end()) {
                 animations[n] = &it->Animations[animationName];
                 components[n].sprite = animations[n]->sprite; 
+            } else {
+                std::cout << "Error: " << __FUNCTION__ << " " << animationName << " sprite not found" << std::endl;
             }
 
             updateAnimationRecursive(it, animationName, n);
@@ -185,17 +182,17 @@ public:
     void updateAnimation(const std::string &animationName)
     {
         if (animation == animationName) return;
-        if (Derived::skelet.Animations.find(animationName) != Derived::skelet.Animations.end()) {
+        if (GetSkelet()->Animations.find(animationName) != GetSkelet()->Animations.end()) {
             animation = animationName;
-            animations[0] = &Derived::skelet.Animations[animationName];
+            animations[0] = &GetSkelet()->Animations[animationName];
         }
 
         size_t n = 0;
-        updateAnimationRecursive(&Derived::skelet, animationName, n);
+        updateAnimationRecursive(GetSkelet(), animationName, n);
     }
 
 
-
+    template<typename Derived>
     static void parseNodeAnimation(pugi::xml_node &nodeAnimation, const std::string &animationName, Animation &newAnimation) {
         std::string spriteName = nodeAnimation.attribute("sprite").as_string();
         auto sprite = Derived::Sprites.find(spriteName); 
@@ -240,7 +237,7 @@ public:
         constexpr std::size_t timeHash     = myHash("time");
 
         for (pugi::xml_node childMotion : nodeMotion.children()) {
-            float end = childMotion.attribute("end") ? std::stof(childMotion.attribute("end").value()) : Animation::GetDuration(Derived::name, animationName);
+            float end = childMotion.attribute("end") ? std::stof(childMotion.attribute("end").value()) : Animation::GetDuration(name, animationName);
 
             for (pugi::xml_node childFrame : childMotion.children()) {
                 if (std::string(childFrame.name()) == "Flip") {
@@ -396,6 +393,7 @@ public:
         nodeMotion = nodeMotion.next_sibling();
     }
 
+    template<typename Derived>
     static void parseAnimation(pugi::xml_node &nodeAnimation, pugi::xml_node &nodeMotion, Bone *_bone, const std::string &animationName) {
         for (int i = 0; i < _bone->children.size(); i++) {
             Animation newAnimation;
@@ -405,13 +403,14 @@ public:
             if (nodeMotion && (nodeMotion.name() == boneName))
                 parseNodeMotion(nodeMotion, animationName, newAnimation);
 
-            parseNodeAnimation(node, animationName, newAnimation);
+            parseNodeAnimation<Derived>(node, animationName, newAnimation);
             _bone->children[i]->Animations.insert({animationName, newAnimation});
 
-            parseAnimation(node, nodeMotion, _bone->children[i], animationName);
+            parseAnimation<Derived>(node, nodeMotion, _bone->children[i], animationName);
         }
     }
 
+    template<typename Derived>
     static bool loadAnimation(const std::string &_path, const std::string &_name)
     {
         std::string animationPath = std::string("assets/entities/") + _path + std::string("/models/animations/") + _name + std::string(".xml");
@@ -466,11 +465,12 @@ public:
             Animation::PushDuration(Derived::name, animationName, 0.0);
         }
 
-        parseAnimation(nodeAnimation, nodeMotion, &Derived::skelet, animationName);
+        parseAnimation<Derived>(nodeAnimation, nodeMotion, &Derived::skelet, animationName);
 
         return true;
     }
 
+    template<typename Derived>
     static bool loadSprites(const std::string &path)
     {
         std::string full_path = "entities/" + path + "/models/sprites/";
@@ -489,11 +489,27 @@ public:
         return true;
     }
 
+    template<typename Derived>
     static bool loadSkelet(const std::string &path)
     {
         Derived::skeletSize = Derived::skelet.createSkelet(path, "skelet");
 
         return true;
+    }
+
+    template<typename Derived>
+    static void Initialize(std::string path, std::string _name, std::vector<std::string> _animations)
+    {
+        // std::string path("mobs/spider");
+        name = _name;
+        loadSkelet<Derived>(path);
+        loadSprites<Derived>(path);
+        for (const auto &it : _animations)
+            loadAnimation<Derived>(path, it);
+
+        // std::cout << name << " skelet size: " << skeletSize << std::endl;
+        // skelet.printBones(0);
+        // std::cout << std::endl;
     }
 
     bool loadActor(const std::string &path)
@@ -612,16 +628,8 @@ protected:
     objectTransform trans;
     std::string animation;
     int state = STATE::STAND;
-    static size_t skeletSize; // add inline
-    static Bone skelet;
-    static std::map<std::string, Sprite> Sprites;
+    
+    inline static size_t skeletSize = 0;
+    inline static Bone skelet;
+    inline static std::map<std::string, Sprite> Sprites;
 };
-
-template <typename Derived>
-std::map<std::string, Sprite> Actor<Derived>::Sprites;
-
-template <typename Derived>
-Bone Actor<Derived>::skelet;
-
-template <typename Derived>
-size_t Actor<Derived>::skeletSize;

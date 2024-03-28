@@ -3,9 +3,10 @@
 #include "pawn.hpp"
 #include "../render/camera.hpp"
 
-template<typename Derived>
-class Character : public Pawn<Derived>
+class Character : public Pawn
 {
 public:
-    Character(const std::string &path) : Pawn<Derived>(path) {};
+    Character(const std::string &path) : Pawn(path) {};
+
+    
 };

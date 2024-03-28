@@ -3,12 +3,11 @@
 #include "actor.hpp"
 #include "../render/camera.hpp"
 
-template <typename Derived>
-class Pawn : public Actor<Derived>
+class Pawn : public Actor
 {
 public:
     Pawn(const std::string &path)
-        : Actor<Derived>(path),
+        : Actor(path),
           cameraPos(Vector3<GLfloat>(0.0f, 5.0f, 12)),
           camera(nullptr)
     {
@@ -97,6 +96,9 @@ public:
     {
         return speed;
     }
+
+
+
 
 protected:
     Camera *camera;

@@ -6,9 +6,29 @@ Bone Wilson::skelet;
 size_t Wilson::skeletSize;
 
 Wilson::Wilson()
-    : Character<Wilson>(std::string("player/Wilson"))
+    : Character(std::string("player/Wilson"))
 {
     name = "Wilson";
+
+        globalFlip = new GLfloat[GetSkeletSize()];
+        components = new Component[GetSkeletSize()];
+        animations = new Animation*[GetSkeletSize()];
+        for (int i = 0; i < GetSkeletSize(); i++) {
+            animations[i] = nullptr;
+        }
+        animations[0] = new Animation();
+        globalFlip[0] = 0;
+
+
+        #if MY_ACTOR_TEST
+        spherePos = new Vector3<GLfloat>[GetSkeletSize()]();
+
+        mySphere = sphere(std::string("mySphere"), "shaders/sphere_fs.glsl", "shaders/sphere_vs.glsl", nullptr, 10);
+        sphereTransform.Rotate = Vector3<GLfloat>(0.0, 0.0, 0.0);
+        sphereTransform.Scale = Vector3<GLfloat>(0.1, 0.2, 0.1);
+        
+        myLine = line(std::string("myLine"), Vector3<GLfloat>(1.0, 0.0, 0.0));
+        #endif
 }
 
 Wilson::~Wilson()
@@ -20,32 +40,33 @@ void Wilson::Initialize()
 {
     std::string path("player/Wilson");
     name = "Wilson";
-    loadSkelet(path);
-    loadSprites(path);
-    loadAnimation(path, "stand");
+    std::vector<std::string> _animations = {"stand", "stand_2"};
+    Actor::Initialize<Wilson>(path, name, _animations);
+
+    // loadSkelet(path);
+    // loadSprites(path);
+    // loadAnimation(path, "stand");
+
     
-    // auto it = skelet.children[0]->children[0]->Animations.find("stand");
-
-    // if (it != skelet.children[0]->children[0]->Animations.end()) {
-    //     Animation& animation = it->second;
-
-    //     Motion::rule myRuleAdd1 = {20.0, Motion::FUNTIONS::ADD};
-    //     Motion::rule myRuleAdd2 = {20.0, Motion::FUNTIONS::ADD};
-    //     Motion::rule myRuleTime = {1.0, Motion::FUNTIONS::TIME};
-    //     Motion::rule myRuleSin =  {10.0, Motion::FUNTIONS::SIN};
-    //     std::vector<Motion::rule> myRuleVector1 = { myRuleAdd1 };
-    //     std::vector<Motion::rule> myRuleVector2 = { myRuleAdd2, myRuleTime,  myRuleSin};
-
-    //     std::pair<float, std::vector<Motion::rule>> frame1 = {0.5, myRuleVector2};
-    //     std::pair<float, std::vector<Motion::rule>> frame2 = {1.0, myRuleVector1};
-        
-    //     animation.motion.ruleFlip.push_back(frame1);
-    //     animation.motion.ruleFlip.push_back(frame2);
-    // }
-
-    loadAnimation(path, "stand_2");
+    // loadAnimation(path, "stand_2");
 
     std::cout << "Wilson skelet size: " << skeletSize << std::endl;
     skelet.printBones(0);
     std::cout << std::endl;
 }
+
+    size_t Wilson::GetSkeletSize() {
+        return Wilson::skeletSize;
+    }
+
+    Bone *Wilson::GetSkelet() {
+        return &Wilson::skelet;
+    }
+
+    std::map<std::string, Sprite> *Wilson::GetSprites() {
+        return &Wilson::Sprites;
+    }
+
+// вектор указателей
+
+// вариант
