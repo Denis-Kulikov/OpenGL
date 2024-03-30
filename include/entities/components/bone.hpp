@@ -2,7 +2,6 @@
 
 #include <pugixml.hpp>
 #include "animation.hpp"
-// #include "component.hpp"
 
 class Bone
 {
@@ -25,6 +24,3 @@ public:
     std::vector<Bone*> children;
     std::map<std::string, Animation> Animations;
 };
-    // objectTransform _anchorPoint
-
-

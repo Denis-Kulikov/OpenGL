@@ -2,18 +2,19 @@
 #include <game/gameTime.hpp>
 #include <entities/templates/playable/Wilson.hpp>
 #include <entities/templates/mobs/spider.hpp>
+#include <entities/templates/decor/wave.hpp>
 
 #include <chrono>
 #include <ctime>
 #include <random>
 #include <thread>
 
-// Растеризация. Проекция перспективы. Скелетная анимация 2D моделей.
 
-#define SPIDER_NUM 1
+#define SPIDER_NUM 4
 
 Wilson *character = nullptr;
 Spider *spider[SPIDER_NUM] = {nullptr};
+Wave *wave = nullptr;
 
 std::chrono::milliseconds totalTime(0);
 
@@ -68,6 +69,12 @@ bool RenderSceneCB(Render *render, Scene *scene)
             GameManager::render->drawObject(&it->transform, it->sprite);
     }
 
+    ActorComponents = wave->getActorComponents();
+
+    for (auto it : ActorComponents) 
+        GameManager::render->drawObject(&it->transform, it->sprite);
+
+
     
     frame++;
     if ((time(0) - prev) > 3) {
@@ -95,6 +102,7 @@ Scene *createScene()
 
     Wilson::Initialize();
     Spider::Initialize();
+    Wave::Initialize();
 
     character = new Wilson();
     character->createCamera(GameManager::width, GameManager::height);
@@ -108,6 +116,10 @@ Scene *createScene()
         spider[i]->Teleport(generateRandomPoint());
         spider[i]->updateAnimation("stand");
     }
+
+    wave = new Wave();
+    wave->updateAnimation("stand");
+
 
     GameManager::PushPlayer(reinterpret_cast<Player*>(character)); // ***
     GameManager::PushCamera(character->GetCamera());

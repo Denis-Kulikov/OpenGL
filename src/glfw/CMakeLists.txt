@@ -14,4 +14,5 @@ target_link_libraries(
 	lib-components
 	lib-playable
 	lib-mobs
+	lib-decor
 )

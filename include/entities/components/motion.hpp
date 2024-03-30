@@ -8,9 +8,7 @@ class Motion
 public:
     Motion() {};
 
-    // typedef std::function<float(float)> FunType;
     typedef std::function<void(float&, const float&)> FunTypeFloat;
-    typedef std::function<void(Vector3<GLfloat>&, const Vector3<GLfloat>&)> FunTypeVector;
 
     enum FUNTIONS {
         ADD,
@@ -25,6 +23,8 @@ public:
     struct rule {
         const float arg;
         const enum FUNTIONS fun;
+        const size_t size_ref;
+        const float *ref = nullptr;
     };
 
 
@@ -146,18 +146,15 @@ public:
     }
 
 
-// protected:
     std::vector<std::pair<float, std::vector<rule>>> ruleFlip;
     std::vector<std::pair<float, std::vector<rule>>> ruleScale;
     std::vector<std::pair<float, std::vector<rule>>> ruleOffset;
+    static inline GLfloat anchorDirection = 0.0;
 
+protected:
     static inline float currentTime = 0.0;
     static inline float timeSpan = 0.0;
     static inline float flip = 0.0;
-    static inline GLfloat anchorDirection = 0.0;
-    // static inline const std::vector<rule> *curRuleFlip = nullptr;
-    // static inline const std::vector<rule> *curRuleScale = nullptr;
-    static inline const std::vector<rule> *curRuleOffset = nullptr;
 
     static inline FunTypeFloat functions[] = {
         [](float &L_value, const float &R_value) { L_value += R_value; }, // ADD,

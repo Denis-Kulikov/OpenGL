@@ -6,8 +6,8 @@
 class Pawn : public Actor
 {
 public:
-    Pawn(const std::string &path)
-        : Actor(path),
+    Pawn(const std::string &path, const size_t SkeletSize)
+        : Actor(path, SkeletSize),
           cameraPos(Vector3<GLfloat>(0.0f, 5.0f, 12)),
           camera(nullptr)
     {

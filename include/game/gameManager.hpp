@@ -16,7 +16,7 @@ public:
     objectTransform trans;
 
     static void PushCamera(Camera *_camera);
-    static void PushPlayer(Player *_player);
+    static void PushPlayer(Character *_player);
 
     static void DrawSphere();
 
@@ -32,7 +32,7 @@ public:
     
     struct CallbackData {
         Camera* camera;
-        Player* player;
+        Character* player;
     };
 protected:
     static CallbackData callbackData;

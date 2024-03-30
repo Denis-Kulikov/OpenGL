@@ -27,7 +27,7 @@ void GameManager::PushCamera(Camera *_camera)
     callbackData.camera = _camera;
 }
 
-void GameManager::PushPlayer(Player *_player)
+void GameManager::PushPlayer(Character *_player)
 {
     callbackData.player = _player;
 }
@@ -52,7 +52,7 @@ void GameManager::KeyboardCB(GLFWwindow* window, int key, int scancode, int acti
 
     GLfloat speed_rotation = -0.125;
 
-    Player* player = callbackData.player;
+    Character* player = callbackData.player;
     Camera* camera = callbackData.camera;
 
     if (action == GLFW_PRESS) {
@@ -66,11 +66,11 @@ void GameManager::KeyboardCB(GLFWwindow* window, int key, int scancode, int acti
         GameManager::IsEnd = true;
     }
 
-    player->direction = Vector3<GLfloat>(
+    player->SetDirection(Vector3<GLfloat>(
         keys[GLFW_KEY_A] * 1.0 - keys[GLFW_KEY_D] * 1.0, 
         0, 
         keys[GLFW_KEY_S] * 1.0 - keys[GLFW_KEY_W] * 1.0
-    );
+    ));
 
     if (keys[GLFW_KEY_SPACE]) {
     }
@@ -116,6 +116,7 @@ Render *GameManager::InitializeGLFW(GLFWwindow* &window, int _width, int _height
     glfwMakeContextCurrent(window);
     glfwSetKeyCallback(window, GameManager::KeyboardCB);
     glfwSetWindowUserPointer(window, &callbackData);
+    glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
 
     GLenum err = glewInit();
     if (err != GLEW_OK) {

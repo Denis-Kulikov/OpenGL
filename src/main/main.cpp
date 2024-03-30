@@ -3,12 +3,11 @@
 
 int main(int argc, char** argv)
 {
-    int width = 1600, height = 960;
+    const int width = 1600, height = 960;
     GLFWwindow* window = nullptr;
     Render *render = GameManager::InitializeGLFW(window, width, height);
     GameManager::InitializeObjects();
     Scene *scene = createScene();
-    glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
 
     if (render == nullptr) {
         std::cout << "Error: render init" << std::endl;
