@@ -2,6 +2,7 @@
 
 #include "../object/sprite.hpp"
 #include "../entities/components/bone.hpp"
+#include "../entities/components/animationInfo.hpp"
 // #include "../game/gameTime.hpp"
 #include <filesystem>
 #include <pugixml.hpp>
@@ -49,15 +50,7 @@ public:
         trans.Rotate = Vector3<GLfloat>(0.0, 0.0, 180);
         direction = Vector3<GLfloat>();
 
-
-        globalFlip = new GLfloat[SkeletSize];
-        components = new Component[SkeletSize];
-        animations = new Animation*[SkeletSize];
-        for (int i = 0; i < SkeletSize; i++) {
-            animations[i] = nullptr;
-        }
-        animations[0] = new Animation();
-        globalFlip[0] = 0;
+        animationInfo.Initialize(SkeletSize);
 
         #if MY_ACTOR_TEST
         spherePos = new Vector3<GLfloat>[SkeletSize]();
@@ -70,13 +63,16 @@ public:
         #endif
     }
     
-    ~Actor() {}
+    ~Actor() 
+    {
+        // delete[] animationInfo.components;
+        // delete[] animationInfo.animations;
+    }
 
     virtual size_t GetSkeletSize() = 0;
     virtual Bone *GetSkelet() = 0;
     virtual std::map<std::string, Sprite> *GetSprites() = 0;
     virtual std::string *GetName() = 0;
-
 
     std::vector<Component*> getActorComponents(Bone *_parent, size_t &n, const GLfloat duration)
     {
@@ -85,46 +81,51 @@ public:
         auto it = _parent->Animations.find("stan");
 
         const size_t parentNumber = n++;
-        const objectTransform ParentSprite = components[parentNumber].transform;
-        const GLfloat globalScaleX = ParentSprite.Scale.x / animations[parentNumber]->spriteScale.x;
-        const GLfloat globalScaleY = ParentSprite.Scale.y / animations[parentNumber]->spriteScale.y;
+        const objectTransform ParentSprite = animationInfo.components[parentNumber].transform;
+        const GLfloat globalScaleX = ParentSprite.Scale.x / animationInfo.animations[parentNumber]->spriteScale.x;
+        const GLfloat globalScaleY = ParentSprite.Scale.y / animationInfo.animations[parentNumber]->spriteScale.y;
 
         for (const auto &it : _parent->children) {
-            const Animation &animation_Num = *animations[n]; // ссылка из-за векторов в Motion
+            const Animation &animation_Num = *animationInfo.animations[n]; // ссылка из-за векторов в Motion
             const objectTransform component = animation_Num.transform;
 
-            Motion::anchorDirection = globalFlip[n]; // нужно для GetFlip
-            const GLfloat flipMotion = component.Rotate.x + animation_Num.motion.GetFlip(AnimationTimeStart, duration);
-            const Vector3<GLfloat> scaleMotion = animation_Num.motion.GetScale(AnimationTimeStart, duration);
-            const Vector3<GLfloat> offetMotion = animation_Num.motion.GetOffset(AnimationTimeStart, duration);
+            // Motion::anchorDirection = animationInfo.globalFlip[n]; // нужно для GetFlip
+            const GLfloat offetMotion[2] = {animationInfo.transformations[n * 5], animationInfo.transformations[n * 5 + 1]};
+            const GLfloat flipMotion     = component.Rotate.x + animationInfo.transformations[n * 5 + 2];
+            const GLfloat scaleMotion[2] = {1 + animationInfo.transformations[n * 5 + 3], 1 + animationInfo.transformations[n * 5 + 4]};
 
-            globalFlip[n] = globalFlip[parentNumber] + flipMotion;
-            GLfloat parentFlipAngle = globalFlip[parentNumber];
-            GLfloat flipAngle = globalFlip[n];
+            // const GLfloat flipMotion = component.Rotate.x + animation_Num.motion.GetFlip(animationInfo.AnimationTimeStart, duration);
+            // const Vector3<GLfloat> scaleMotion = animation_Num.motion.GetScale(animationInfo.AnimationTimeStart, duration);
+            // const Vector3<GLfloat> offetMotion = animation_Num.motion.GetOffset(animationInfo.AnimationTimeStart, duration);
+
+
+            animationInfo.globalFlip[n] = animationInfo.globalFlip[parentNumber] + flipMotion;
+            GLfloat parentFlipAngle = animationInfo.globalFlip[parentNumber];
+            GLfloat flipAngle = animationInfo.globalFlip[n];
 
             objectTransform component_Num;
 
-            component_Num.WorldPos.x = ParentSprite.WorldPos.x + offetMotion.x;
-            component_Num.WorldPos.y = ParentSprite.WorldPos.y + offetMotion.y;
+            component_Num.WorldPos.x = ParentSprite.WorldPos.x + offetMotion[0];
+            component_Num.WorldPos.y = ParentSprite.WorldPos.y + offetMotion[1];
             component_Num.WorldPos.z = ParentSprite.WorldPos.z + component.WorldPos.z;
 
             component_Num.Rotate.y = component.Rotate.y + ParentSprite.Rotate.y;
             component_Num.Rotate.z = component.Rotate.z + ParentSprite.Rotate.z + flipMotion;
 
-            component_Num.Scale.x = component.Scale.x * animation_Num.spriteScale.x * globalScaleX * scaleMotion.x;
-            component_Num.Scale.y = component.Scale.y * animation_Num.spriteScale.y * globalScaleY * scaleMotion.y;
+            component_Num.Scale.x = component.Scale.x * animation_Num.spriteScale.x * globalScaleX * scaleMotion[0];
+            component_Num.Scale.y = component.Scale.y * animation_Num.spriteScale.y * globalScaleY * scaleMotion[1];
 
-            components[n].transform = component_Num;
+            animationInfo.components[n].transform = component_Num;
 
             Vector3<GLfloat> direction = Vector3<GLfloat>(cos(ToRadian(parentFlipAngle)), sin(ToRadian(parentFlipAngle)), 0.0f); // размещение в координатах родительского спрайта
-            components[n].transform.Move(component.WorldPos.x * ParentSprite.Scale.x, direction);
+            animationInfo.components[n].transform.Move(component.WorldPos.x * ParentSprite.Scale.x, direction);
             parentFlipAngle += 90;
             direction = Vector3<GLfloat>(cos(ToRadian(parentFlipAngle)), sin(ToRadian(parentFlipAngle)), 0.0f);
-            components[n].transform.Move(component.WorldPos.y * ParentSprite.Scale.y, direction);
+            animationInfo.components[n].transform.Move(component.WorldPos.y * ParentSprite.Scale.y, direction);
 
             #if MY_ACTOR_TEST
             render->PushGeometry(mySphere.GetGeometry());
-            sphereTransform.WorldPos = components[n].transform.WorldPos;
+            sphereTransform.WorldPos = animationInfo.components[n].transform.WorldPos;
             spherePos[n] = sphereTransform.WorldPos;
             if (render != nullptr) render->drawObject(&sphereTransform, &mySphere);
             render->PushGeometry(myLine.GetGeometry());
@@ -135,12 +136,12 @@ public:
             #endif
 
             direction = Vector3<GLfloat>(cos(ToRadian(flipAngle)), sin(ToRadian(flipAngle)), 0.0f); // трансформация относительно anchor
-            components[n].transform.Move(-animation_Num.anchorPoint.x * globalScaleX, direction);
+            animationInfo.components[n].transform.Move(-animation_Num.anchorPoint.x * globalScaleX, direction);
             flipAngle += 90;
             direction = Vector3<GLfloat>(cos(ToRadian(flipAngle)), sin(ToRadian(flipAngle)), 0.0f);
-            components[n].transform.Move(-animation_Num.anchorPoint.y * globalScaleY, direction);
+            animationInfo.components[n].transform.Move(-animation_Num.anchorPoint.y * globalScaleY, direction);
 
-            ActorComponents.push_back(&components[n]);
+            ActorComponents.push_back(&animationInfo.components[n]);
             std::vector<Component*> componentsToAdd = getActorComponents(it, n, duration);
             ActorComponents.insert(ActorComponents.end(), componentsToAdd.begin(), componentsToAdd.end());
         }
@@ -150,14 +151,17 @@ public:
 
     std::vector<Component*> getActorComponents()
     {
-        if (components == nullptr) {
+        if (animationInfo.components == nullptr) {
             std::vector<Component*> ActorComponents;
             return ActorComponents;
         }
         
         size_t n = 0;
-        animations[0]->transform = components[0].transform = trans; // Updating the skelet position
-        GLfloat duration = Animation::GetDuration(*GetName(), animation);
+        animationInfo.animations[0]->transform = animationInfo.components[0].transform = trans; // Updating the skelet position
+        GLfloat duration = Animation::GetDuration(*GetName(), animationInfo.animation);
+        motionPtr->PushTime( std::fmod((GetTime() - animationInfo.AnimationTimeStart) / 1e9, *motionPtr->FindUniformFloat("duration")) );
+        // timeSpan = std::fmod((currentTime - timeStart) / 1e9, duration);
+        (*motionFunPtr)();
 
         return getActorComponents(GetSkelet(), n, duration);
     }
@@ -168,8 +172,8 @@ public:
         n++;
         for (auto it : _parent->children) {
             if (it->Animations.find(animationName) != it->Animations.end()) {
-                animations[n] = &it->Animations[animationName];
-                components[n].sprite = animations[n]->sprite; 
+                animationInfo.animations[n] = &it->Animations[animationName];
+                animationInfo.components[n].sprite = animationInfo.animations[n]->sprite; 
             } else {
                 std::cout << "Error: " << __FUNCTION__ << " " << animationName << " sprite not found" << std::endl;
             }
@@ -180,10 +184,13 @@ public:
 
     void updateAnimation(const std::string &animationName)
     {
-        if (animation == animationName) return;
+        if (animationInfo.animation == animationName) return;
         if (GetSkelet()->Animations.find(animationName) != GetSkelet()->Animations.end()) {
-            animation = animationName;
-            animations[0] = &GetSkelet()->Animations[animationName];
+            std::pair<float, motion::FunType> *motionPairPtr = &motionPtr->function[animationName];
+            motionPtr->PushDuration(motionPairPtr->first);
+            motionFunPtr = &motionPairPtr->second;
+            animationInfo.animation = animationName;
+            animationInfo.animations[0] = &GetSkelet()->Animations[animationName];
         }
 
         size_t n = 0;
@@ -351,7 +358,6 @@ public:
                         }
                     }
 
-                    std::cout << rules.size() << std::endl;
                     std::pair<float, std::vector<Motion::rule>> rule(end, rules);
                     newAnimation.motion.ruleScale.push_back(rule);
                 }
@@ -428,7 +434,6 @@ public:
                         }
                     }
 
-                    std::cout << rules.size() << std::endl;
                     std::pair<float, std::vector<Motion::rule>> rule(end, rules);
                     newAnimation.motion.ruleOffset.push_back(rule);
                 }
@@ -547,8 +552,9 @@ public:
         Derived::name = _name;
         loadSkelet<Derived>(path);
         loadSprites<Derived>(path);
-        for (const auto &it : _animations)
-            loadAnimation<Derived>(path, it);
+        Derived::SetMotion();
+        for (const auto &it : Derived::_motion.function)
+            loadAnimation<Derived>(path, it.first);
     }
 
     bool loadActor(const std::string &path)
@@ -621,7 +627,8 @@ public:
             if (direction.Length() == 0) {
                 SetState(STATE::STAND, CurrentTime);
             }
-            return std::string("stand_2");
+            // return std::string("stand_2");
+            return std::string("stand");
 
         case STATE::ACTION:
             return GetAnimationByAction();
@@ -636,15 +643,22 @@ public:
 
     void SetState(int _state, const float CurrentTime)
     {
-        state = _state;
-        AnimationTimeStart = CurrentTime;
+        if (state != _state) {
+            animationInfo.AnimationTimeStart = CurrentTime;
+            state = _state;
+        }
     }
 
     static void PushTime(const float _time)
     {
         Motion::PushTime(_time);
+        time = _time;
     }
 
+    float GetTime()
+    {
+        return time;
+    }
 
     #if MY_ACTOR_TEST
     void PushRender(Render *_render)
@@ -659,19 +673,25 @@ public:
     line myLine;
     #endif
 
+    AnimationInfo animationInfo;
+    inline static float time = 0.0;
 
 protected:
     int state = STATE::STAND;
-    float AnimationTimeStart = 0.0;
-    GLfloat *globalFlip = nullptr;
-    Component *components = nullptr;
-    Animation **animations = nullptr;
+    // float animationInfo.AnimationTimeStart = 0.0;
+    // GLfloat *animationInfo.globalFlip = nullptr;
+    // Component *animationInfo.components = nullptr;
+    // Animation **animationInfo.animations = nullptr;
+    // std::string animationInfo.animation;
     Vector3<GLfloat> direction;
     objectTransform trans;
-    std::string animation;
     
+    motion::FunType *motionFunPtr = nullptr;
+    motion *motionPtr = nullptr;
+
     inline static size_t skeletSize = 0;
     inline static Bone skelet; // можно сделать статический массив костей и новую переменную хранящую структуру
     static inline std::string name = "NoName";
     inline static std::map<std::string, Sprite> Sprites;
+    inline static motion _motion;
 };

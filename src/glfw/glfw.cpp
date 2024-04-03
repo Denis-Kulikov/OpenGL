@@ -51,6 +51,8 @@ bool RenderSceneCB(Render *render, Scene *scene)
     static time_t prev = time(0);
     static int frame = 0;
 
+    Actor::PushTime(Time.GetCurrentTime());
+
     for (std::vector<Component>::iterator it = scene->getIterator(); it != scene->component.end(); it++)
         GameManager::render->drawObject(&it->transform, it->sprite);
 
@@ -88,8 +90,25 @@ bool RenderSceneCB(Render *render, Scene *scene)
     return GameManager::IsEnd;
 }
 
+void foo ()
+{
+    // std::vector<std::pair<std::string, float>> _float = { { "var", 1.0 } };
+    // motion myMotion(&_float, nullptr);
+    // myMotion.function = [&myMotion](std::vector<std::pair<std::string, float>> *_float, std::vector<std::pair<std::string, int>> *_int) {
+    //     myMotion.PushTime(7.7);
+    //     myMotion.UniformFloat((*_float)[0].first, 2.0);
+    //     float *var = myMotion.FindUniformFloat("var");
+    //     float *time = myMotion.FindUniformFloat("time");
+
+    //     std::cout << "var=" << *var << "\t time=" << *time << std::endl;
+    // };
+    // myMotion.function(&_float, nullptr);
+}
+
 Scene *createScene()
 {
+    foo();
+
     auto *scene = new Scene(std::string("Main scene"));
 
     Sprite *mySprite = new Sprite(std::string("Grass"), "shaders/sprite_fs.glsl", "shaders/sprite_vs.glsl", "img/grass.png");
@@ -121,7 +140,7 @@ Scene *createScene()
     wave->updateAnimation("stand");
 
 
-    GameManager::PushPlayer(reinterpret_cast<Player*>(character)); // ***
+    GameManager::PushPlayer(character);
     GameManager::PushCamera(character->GetCamera());
     GameManager::render->SetCamera(character->GetCamera());
     GameManager::render->PushGeometry(mySprite->GetGeometry());

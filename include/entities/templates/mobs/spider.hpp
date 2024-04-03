@@ -9,6 +9,7 @@ public:
     ~Spider();
 
     static void Initialize();
+    static void SetMotion();
     
     virtual size_t GetSkeletSize() override;
     virtual Bone *GetSkelet() override;
@@ -16,7 +17,8 @@ public:
     virtual std::string *GetName() override;
 
     static inline std::string name = "NoName";
-    static size_t skeletSize;
-    static Bone skelet;
-    static std::map<std::string, Sprite> Sprites;
+    static inline size_t skeletSize = 0;
+    static inline Bone skelet;
+    static inline std::map<std::string, Sprite> Sprites;
+    static inline motion _motion;
 };

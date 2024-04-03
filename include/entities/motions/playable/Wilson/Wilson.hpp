@@ -1,16 +1,15 @@
 #pragma once
 
-#include "../../actor.hpp"
+#include "../../character.hpp"
 
-class Wave : public Actor
+class Wilson : public Character
 {
 public:
-    Wave();
-    ~Wave();
-
-    static void Initialize();
-    static void SetMotion();
+    Wilson();
+    ~Wilson();
     
+    static void Initialize();
+
     virtual size_t GetSkeletSize() override;
     virtual Bone *GetSkelet() override;
     virtual std::map<std::string, Sprite> *GetSprites() override;
@@ -20,5 +19,4 @@ public:
     static size_t skeletSize;
     static Bone skelet;
     static std::map<std::string, Sprite> Sprites;
-    static inline motion _motion;
 };

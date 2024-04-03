@@ -1,6 +1,6 @@
 #include <render/glfw.hpp>
 
-Matrix4f<GLfloat>* Pipeline::GetTrans()
+Matrix4f<GLfloat>* Pipeline::GetTransform()
 {
     Matrix4f<GLfloat> ScaleTrans, RotateTrans, TranslationTrans, CameraTranslationTrans, CameraRotateTrans, PersProjTrans;
 
@@ -16,5 +16,5 @@ Matrix4f<GLfloat>* Pipeline::GetTrans()
 }
 
 GLfloat* Pipeline::GetGLMatrix() {
-    return reinterpret_cast<GLfloat*>(GetTrans());
+    return reinterpret_cast<GLfloat*>(GetTransform());
 }

@@ -3,8 +3,8 @@
         <frame>
             <Flip>
                 <time />
-                <multiply factor="3.14" />
-                <multiply factor="0.5" />
+                <!-- <multiply factor="3.14" /> -->
+                <!-- <multiply factor="0.5" /> -->
                 <sin factor="5.0" />
             </Flip>
             <Move>

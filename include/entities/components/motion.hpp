@@ -1,6 +1,7 @@
 #pragma once
 #include "../../lib-project/lib.hpp"
 #include "../../math/Vector3.hpp"
+#include "_motion.hpp"
 
 
 class Motion
@@ -23,8 +24,6 @@ public:
     struct rule {
         const float arg;
         const enum FUNTIONS fun;
-        const size_t size_ref;
-        const float *ref = nullptr;
     };
 
 

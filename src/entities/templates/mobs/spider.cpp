@@ -1,20 +1,16 @@
 #include <entities/actor.hpp>
 #include <entities/templates/mobs/spider.hpp>
 
-std::map<std::string, Sprite> Spider::Sprites;
-size_t Spider::skeletSize = 0;
-Bone Spider::skelet;
 
 Spider::Spider() : Character(std::string("mobs/spider"), GetSkeletSize())
 {
     name = "Spider";
+    motionPtr = &_motion;
+    _motion.PushTransform(animationInfo.transformations);
 }
 
 Spider::~Spider()
-{
-    delete[] components;
-    delete[] animations;
-}
+{}
 
 void Spider::Initialize()
 {
@@ -26,6 +22,16 @@ void Spider::Initialize()
     std::cout << "Spider skelet size: " << skeletSize << std::endl;
     skelet.printBones(0);
     std::cout << std::endl;
+}
+
+void Spider::SetMotion()
+{
+    _motion = motion();
+
+    [[maybe_unused]] motion::FunType stand = [&_motion]() {};
+
+    std::pair<float, motion::FunType> _stand = {0.0, stand};
+    _motion.PushMotion("stand", _stand);
 }
 
 size_t Spider::GetSkeletSize() {
