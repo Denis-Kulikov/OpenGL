@@ -6,8 +6,7 @@ Wilson::Wilson()
     : Character(std::string("player/Wilson"), GetSkeletSize())
 {
     name = "Wilson";
-    motionPtr = &_motion;
-    _motion.PushTransform(animationInfo.transformations);
+    motionPtr = &motion;
 }
 
 Wilson::~Wilson()
@@ -27,28 +26,39 @@ void Wilson::Initialize()
 
 void Wilson::SetMotion()
 {
-    _motion = motion();
+    motion = Motion();
+    motion.PushSkelet(&Wilson::skelet);
 
-    [[maybe_unused]] motion::FunType stand = [&_motion]() {
-        int size = Wilson::skeletSize;
-        float *transform = _motion.transformations;
-        std::fill(&transform[0], &transform[5 * size], 0.0);
+    [[maybe_unused]] Motion::FunType stand = [&motion]() {
+        int size = skeletSize;
+        Motion::bone_attribute *T = motion.transformations;
+        std::fill(reinterpret_cast<float*>(&T[0]), reinterpret_cast<float*>(&T[size]), static_cast<float>(0.0));
         
-        // float _time = *_motion.FindUniformFloat("time"); 
+        float _time = *motion.FindUniformFloat("time"); 
+        static size_t head = motion.FindBone("head");
+        static size_t shoulder_left = motion.FindBone("shoulder_left");
+        static size_t arm_left = motion.FindBone("arm_left");
+        static size_t hand_left = motion.FindBone("hand_left");
+        static size_t shoulder_right = motion.FindBone("shoulder_right");
+        static size_t arm_right = motion.FindBone("arm_right");
+        
 
-        // transform[5] = transform[6] = _time * (-1);
-        // transform[5] = sin(transform[5]) * 0.66;
-        // transform[6] = cos(transform[6]) * 0.4;
+        T[head].flip = sin(_time * M_PI / 2) * 20;
 
-        // transform[7] = sin(_time) * 5.0;
+        T[shoulder_left].flip = 30 + sin(_time * M_PI / 2) * 30;
 
-        // transform[8] = transform[9] = 1 + _time;
-        // transform[8] *= 0.1;
-        // transform[9] *= 0.2;
+        T[arm_left].flip = sin(_time) * 10;
+
+        T[hand_left].flip = sin(_time) * 20;
+        T[hand_left].scale[0] = T[hand_left].scale[1] = sin(_time * M_PI / 2) * 0.3;
+
+        T[shoulder_right].flip = -10 + sin(_time * M_PI / 2) * 3;
+
+        T[arm_right].flip = sin(_time * M_PI / 2) * 5;
     };
 
-    std::pair<float, motion::FunType> _stand = {0.0, stand};
-    _motion.PushMotion("stand", _stand);
+    std::pair<float, Motion::FunType> _stand = {2.0, stand};
+    motion.PushMotion("stand", _stand);
 }
 
 size_t Wilson::GetSkeletSize() {

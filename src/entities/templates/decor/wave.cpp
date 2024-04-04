@@ -9,13 +9,7 @@ Wave::Wave()
     : Actor(std::string("decor/wave"), GetSkeletSize())
 {
     name = "wave";
-    motionPtr = &_motion;
-    _motion.PushTransform(animationInfo.transformations);
-
-    std::cout << "Motion: " << std::endl;
-    for (const auto &it : _motion.function) {
-        std::cout << it.first << std::endl;
-    }
+    motionPtr = &motion;
 }
 
 Wave::~Wave()
@@ -35,29 +29,31 @@ void Wave::Initialize()
 
 void Wave::SetMotion()
 {
-    [[maybe_unused]] _motion = motion();
+    motion = Motion();
+    motion.PushSkelet(&skelet);
 
-    [[maybe_unused]] motion::FunType stand = [&_motion]() {
-        int size = Wave::skeletSize;
-        float *transform = _motion.transformations;
-        std::fill(&transform[0], &transform[5 * size], 0.0);
-        
-        float _time = *_motion.FindUniformFloat("time"); 
+    Motion::FunType stand = [&motion]() {
+        static float *__time = motion.FindUniformFloat("time"); 
+        static int size = Wave::skeletSize;
+        static size_t wave = motion.FindBone("wave");
+        Motion::bone_attribute *T = motion.transformations;
+        float _time = *__time; 
 
-        // transform[5] = transform[6] = -_time * M_PI / 2;
-        transform[5] = transform[6] = -_time;
-        transform[5] = sin(transform[5]) * 0.66;
-        transform[6] = cos(transform[6]) * 0.4;
+        std::fill(reinterpret_cast<float*>(&T[0]), reinterpret_cast<float*>(&T[size]), static_cast<float>(0.0));
 
-        transform[7] = sin(_time) * 5.0;
+        T[wave].offset[X] = T[wave].offset[X] = -_time;
+        T[wave].offset[X] = sin(T[wave].offset[X]) * 0.66;
+        T[wave].offset[Y] = cos(T[wave].offset[Y]) * 0.4;
 
-        transform[8] = transform[9] = 1 + _time;
-        transform[8] = sin(transform[8]) * 0.1;
-        transform[9] = sin(transform[9]) * 0.2;
+        T[wave].flip = sin(_time) * 5.0;
+
+        T[wave].scale[X] = T[wave].scale[Y] = 1 + _time;
+        T[wave].scale[X] = sin(T[wave].scale[X]) * 0.1;
+        T[wave].scale[Y] = sin(T[wave].scale[Y]) * 0.2;
     };
 
-    std::pair<float, motion::FunType> _stand = {2 * M_PI, stand};
-    _motion.PushMotion("stand", _stand);
+    std::pair<float, Motion::FunType> _stand = {2 * M_PI, stand};
+    motion.PushMotion("stand", _stand);
 }
 
 size_t Wave::GetSkeletSize() {

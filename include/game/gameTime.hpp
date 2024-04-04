@@ -16,7 +16,6 @@ public:
     void Update() {
         m_prevTime = m_currentTime;
         m_currentTime = std::chrono::steady_clock::now();
-        Motion::PushTime(static_cast<float>(m_currentTime.time_since_epoch().count()) - Start);
     }
 
     float GetDeltaTime() const {

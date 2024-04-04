@@ -20,5 +20,5 @@ public:
     static inline size_t skeletSize = 0;
     static inline Bone skelet;
     static inline std::map<std::string, Sprite> Sprites;
-    static inline motion _motion;
+    static inline Motion motion;
 };

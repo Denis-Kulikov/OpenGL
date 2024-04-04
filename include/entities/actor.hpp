@@ -63,11 +63,7 @@ public:
         #endif
     }
     
-    ~Actor() 
-    {
-        // delete[] animationInfo.components;
-        // delete[] animationInfo.animations;
-    }
+    ~Actor() {}
 
     virtual size_t GetSkeletSize() = 0;
     virtual Bone *GetSkelet() = 0;
@@ -78,8 +74,6 @@ public:
     {
         std::vector<Component*> ActorComponents;
 
-        auto it = _parent->Animations.find("stan");
-
         const size_t parentNumber = n++;
         const objectTransform ParentSprite = animationInfo.components[parentNumber].transform;
         const GLfloat globalScaleX = ParentSprite.Scale.x / animationInfo.animations[parentNumber]->spriteScale.x;
@@ -89,15 +83,9 @@ public:
             const Animation &animation_Num = *animationInfo.animations[n]; // ссылка из-за векторов в Motion
             const objectTransform component = animation_Num.transform;
 
-            // Motion::anchorDirection = animationInfo.globalFlip[n]; // нужно для GetFlip
-            const GLfloat offetMotion[2] = {animationInfo.transformations[n * 5], animationInfo.transformations[n * 5 + 1]};
-            const GLfloat flipMotion     = component.Rotate.x + animationInfo.transformations[n * 5 + 2];
-            const GLfloat scaleMotion[2] = {1 + animationInfo.transformations[n * 5 + 3], 1 + animationInfo.transformations[n * 5 + 4]};
-
-            // const GLfloat flipMotion = component.Rotate.x + animation_Num.motion.GetFlip(animationInfo.AnimationTimeStart, duration);
-            // const Vector3<GLfloat> scaleMotion = animation_Num.motion.GetScale(animationInfo.AnimationTimeStart, duration);
-            // const Vector3<GLfloat> offetMotion = animation_Num.motion.GetOffset(animationInfo.AnimationTimeStart, duration);
-
+            const GLfloat offetMotion[2] = {animationInfo.transformations[n].offset[X], animationInfo.transformations[n].offset[Y]};
+            const GLfloat flipMotion     = component.Rotate.x + animationInfo.transformations[n].flip;
+            const GLfloat scaleMotion[2] = {1 + animationInfo.transformations[n].scale[X], 1 + animationInfo.transformations[n].scale[Y]};
 
             animationInfo.globalFlip[n] = animationInfo.globalFlip[parentNumber] + flipMotion;
             GLfloat parentFlipAngle = animationInfo.globalFlip[parentNumber];
@@ -160,7 +148,7 @@ public:
         animationInfo.animations[0]->transform = animationInfo.components[0].transform = trans; // Updating the skelet position
         GLfloat duration = Animation::GetDuration(*GetName(), animationInfo.animation);
         motionPtr->PushTime( std::fmod((GetTime() - animationInfo.AnimationTimeStart) / 1e9, *motionPtr->FindUniformFloat("duration")) );
-        // timeSpan = std::fmod((currentTime - timeStart) / 1e9, duration);
+        motionPtr->PushTransform(animationInfo.transformations);
         (*motionFunPtr)();
 
         return getActorComponents(GetSkelet(), n, duration);
@@ -186,7 +174,7 @@ public:
     {
         if (animationInfo.animation == animationName) return;
         if (GetSkelet()->Animations.find(animationName) != GetSkelet()->Animations.end()) {
-            std::pair<float, motion::FunType> *motionPairPtr = &motionPtr->function[animationName];
+            std::pair<float, Motion::FunType> *motionPairPtr = &motionPtr->function[animationName];
             motionPtr->PushDuration(motionPairPtr->first);
             motionFunPtr = &motionPairPtr->second;
             animationInfo.animation = animationName;
@@ -234,214 +222,6 @@ public:
         newAnimation.anchorPoint = v;
     }
 
-    static void parseNodeMotion(pugi::xml_node &nodeMotion, const std::string &animationName, Animation &newAnimation, const std::string &ActorName) {
-        constexpr std::size_t addHash      = myHash("add");
-        constexpr std::size_t multiplyHash = myHash("multiply");
-        constexpr std::size_t sinHash      = myHash("sin");
-        constexpr std::size_t cosHash      = myHash("cos");
-        constexpr std::size_t timeHash     = myHash("time");
-
-        for (pugi::xml_node childMotion : nodeMotion.children()) {
-            float end = childMotion.attribute("end") ? std::stof(childMotion.attribute("end").value()) : Animation::GetDuration(ActorName, animationName);
-
-            for (pugi::xml_node childFrame : childMotion.children()) {
-                if (std::string(childFrame.name()) == "Flip") {
-                    std::vector<Motion::rule> rules;
-                    for (pugi::xml_node childRules : childFrame.children()) {
-                        std::string arg = childRules.attribute("arg") ? childRules.attribute("arg").as_string() : "";
-                        float factor = childRules.attribute("factor") ? std::stof(childRules.attribute("factor").value()) : 1.0;
-
-                        if (!arg.empty()) {
-                            if (arg == "time") {
-                                rules.push_back({ 1.0, Motion::FUNTIONS::TIME });
-                            } else {
-                                float add = std::stof(childRules.attribute("arg").value());
-                                rules.push_back({ add, Motion::FUNTIONS::ADD });
-                            }
-                        }
-
-                        switch (myHash(childRules.name()))
-                        {
-                        case addHash:
-                            break;
-
-                        case multiplyHash:
-                            rules.push_back({ factor, Motion::FUNTIONS::MULTIPLY });
-                            break;
-
-                        case sinHash:
-                            rules.push_back({ factor, Motion::FUNTIONS::SIN });
-                            break;
-
-                        case cosHash:
-                            rules.push_back({ factor, Motion::FUNTIONS::COS });
-                            break;
-
-                        case timeHash:
-                            rules.push_back({ factor, Motion::FUNTIONS::TIME });
-                            break;
-                        
-                        default:
-                            break;
-                        }
-                    }
-
-                    std::pair<float, std::vector<Motion::rule>> rule(end, rules);
-                    newAnimation.motion.ruleFlip.push_back(rule);
-                }
-            
-                if (std::string(childFrame.name()) == "Scale") {
-                    std::vector<Motion::rule> rules;
-                    std::string args[2];
-                    float factor[2];
-                    for (pugi::xml_node childRules : childFrame.children()) {
-                        args[X] = childRules.attribute("width") ? childRules.attribute("width").as_string() : "";
-                        args[Y] = childRules.attribute("height") ? childRules.attribute("height").as_string() : "";
-                        factor[X] = childRules.attribute("width_factor") ? std::stof(childRules.attribute("width_factor").value()) : 1.0;
-                        factor[Y] = childRules.attribute("height_factor") ? std::stof(childRules.attribute("height_factor").value()) : 1.0;
-
-                        if (args[X].empty() ^ args[Y].empty()) continue;
-
-                        if ((!args[X].empty()) && (!args[Y].empty())) {
-                            if (args[X] == "time") {
-                                rules.push_back({ 1.0, Motion::FUNTIONS::TIME });
-                            } else {
-                                float add = std::stof(childRules.attribute("width").value());
-                                rules.push_back({ add, Motion::FUNTIONS::ADD });
-                            }
-
-                            if (args[Y] == "time") {
-                                rules.push_back({ 1.0, Motion::FUNTIONS::TIME });
-                            } else {
-                                float add = std::stof(childRules.attribute("height").value());
-                                rules.push_back({ add, Motion::FUNTIONS::ADD });
-                            }
-                        }
-
-
-                        for (size_t i = 0; i < 2; i++) {
-                            std::string ruleName;
-                            if (childRules.name() == "pair") {
-                                if (i == 0) {
-                                    ruleName = childRules.attribute("xfun").as_string();
-                                } else {
-                                    ruleName = childRules.attribute("yfun").as_string();
-                                }
-                            } else {
-                                ruleName = childRules.name();
-                            }
-
-                            switch (myHash(ruleName.c_str()))
-                            {
-                            case addHash:
-                                break;
-
-                            case multiplyHash:
-                                rules.push_back({ factor[i], Motion::FUNTIONS::MULTIPLY });
-                                break;
-
-                            case sinHash:
-                                rules.push_back({ factor[i], Motion::FUNTIONS::SIN });
-                                break;
-
-                            case cosHash:
-                                rules.push_back({ factor[i], Motion::FUNTIONS::COS });
-                                break;
-
-                            case timeHash:
-                                rules.push_back({ factor[i], Motion::FUNTIONS::TIME });
-                                break;
-                            
-                            default:
-                                break;
-                            }
-                        }
-                    }
-
-                    std::pair<float, std::vector<Motion::rule>> rule(end, rules);
-                    newAnimation.motion.ruleScale.push_back(rule);
-                }
-            
-                if (std::string(childFrame.name()) == "Move") {
-                    std::vector<Motion::rule> rules;
-                    std::string args[2];
-                    float factor[2];
-                    for (pugi::xml_node childRules : childFrame.children()) {
-                        args[X] = childRules.attribute("x") ? childRules.attribute("x").as_string() : "";
-                        args[Y] = childRules.attribute("y") ? childRules.attribute("y").as_string() : "";
-                        if (childRules.attribute("factor")) {
-                            factor[X] = factor[Y] = std::stof(childRules.attribute("factor").value());
-                        } else {
-                            factor[X] = childRules.attribute("x_factor") ? std::stof(childRules.attribute("x_factor").value()) : 1.0;
-                            factor[Y] = childRules.attribute("y_factor") ? std::stof(childRules.attribute("y_factor").value()) : 1.0;
-                        }
-
-                        if (args[X].empty() ^ args[Y].empty()) continue;
-
-                        if ((!args[X].empty()) && (!args[Y].empty())) {
-                            if (args[X] == "time") {
-                                rules.push_back({ 1.0, Motion::FUNTIONS::TIME });
-                            } else {
-                                float add = std::stof(childRules.attribute("x").value());
-                                rules.push_back({ add, Motion::FUNTIONS::ADD });
-                            }
-
-                            if (args[Y] == "time") {
-                                rules.push_back({ 1.0, Motion::FUNTIONS::TIME });
-                            } else {
-                                float add = std::stof(childRules.attribute("y").value());
-                                rules.push_back({ add, Motion::FUNTIONS::ADD });
-                            }
-                        }
-
-
-                        for (size_t i = 0; i < 2; i++) {
-                            std::string ruleName;
-                            if (std::string(childRules.name()) == "pair") {
-                                if (i == 0) {
-                                    ruleName = childRules.attribute("xfun").as_string();
-                                } else {
-                                    ruleName = childRules.attribute("yfun").as_string();
-                                }
-                            } else {
-                                ruleName = std::string(childRules.name());
-                            }
-
-                            switch (myHash(ruleName.c_str()))
-                            {
-                            case addHash:
-                                break;
-
-                            case multiplyHash:
-                                rules.push_back({ factor[i], Motion::FUNTIONS::MULTIPLY });
-                                break;
-
-                            case sinHash:
-                                rules.push_back({ factor[i], Motion::FUNTIONS::SIN });
-                                break;
-
-                            case cosHash:
-                                rules.push_back({ factor[i], Motion::FUNTIONS::COS });
-                                break;
-
-                            case timeHash:
-                                rules.push_back({ factor[i], Motion::FUNTIONS::TIME });
-                                break;
-                            
-                            default:
-                                break;
-                            }
-                        }
-                    }
-
-                    std::pair<float, std::vector<Motion::rule>> rule(end, rules);
-                    newAnimation.motion.ruleOffset.push_back(rule);
-                }
-            }
-        }
-        nodeMotion = nodeMotion.next_sibling();
-    }
-
     template<typename Derived>
     static void parseAnimation(pugi::xml_node &nodeAnimation, pugi::xml_node &nodeMotion, Bone *_bone, const std::string &animationName) {
         for (int i = 0; i < _bone->children.size(); i++) {
@@ -449,9 +229,6 @@ public:
             std::string boneName = _bone->children[i]->name;
             pugi::xml_node node = nodeAnimation.child(boneName.c_str());
                 
-            if (nodeMotion && (nodeMotion.name() == boneName))
-                parseNodeMotion(nodeMotion, animationName, newAnimation, Derived::name);
-
             parseNodeAnimation(node, animationName, newAnimation, Derived::Sprites);
             _bone->children[i]->Animations.insert({animationName, newAnimation});
 
@@ -463,13 +240,13 @@ public:
     static bool loadAnimation(const std::string &_path, const std::string &_name)
     {
         std::string animationPath = std::string("assets/entities/") + _path + std::string("/models/animations/") + _name + std::string(".xml");
-        std::string motionPath = std::string("assets/entities/") + _path + std::string("/models/motions/") + _name + std::string(".xml");
+        // std::string motionPath = std::string("assets/entities/") + _path + std::string("/models/motions/") + _name + std::string(".xml");
         pugi::xml_document docAnimation;
-        pugi::xml_document docMotion;
+        // pugi::xml_document docMotion;
         pugi::xml_node nodeAnimation;
         pugi::xml_node nodeMotion;
         pugi::xml_parse_result parseAnimationResult = docAnimation.load_file(animationPath.c_str());
-        pugi::xml_parse_result parseMotionResult = docMotion.load_file(motionPath.c_str());
+        // pugi::xml_parse_result parseMotionResult = docMotion.load_file(motionPath.c_str());
 
         if (!parseAnimationResult) {
             std::cout << "Error Actor.loadAnimation: file not found (" << animationPath << ")" << std::endl;
@@ -505,14 +282,14 @@ public:
         Derived::skelet.Animations.insert({animationName, newAnimation});
 
 
-        nodeMotion = docMotion.child("motion");
-        if (parseMotionResult) {
-            float duration = std::stof(nodeMotion.attribute("duration").value());
-            Animation::PushDuration(Derived::name, animationName, duration);
-            nodeMotion = nodeMotion.first_child();
-        } else {
-            Animation::PushDuration(Derived::name, animationName, 0.0);
-        }
+        // nodeMotion = docMotion.child("motion");
+        // if (parseMotionResult) {
+        //     float duration = std::stof(nodeMotion.attribute("duration").value());
+        //     Animation::PushDuration(Derived::name, animationName, duration);
+        //     nodeMotion = nodeMotion.first_child();
+        // } else {
+        //     Animation::PushDuration(Derived::name, animationName, 0.0);
+        // }
 
         parseAnimation<Derived>(nodeAnimation, nodeMotion, &Derived::skelet, animationName);
 
@@ -553,7 +330,7 @@ public:
         loadSkelet<Derived>(path);
         loadSprites<Derived>(path);
         Derived::SetMotion();
-        for (const auto &it : Derived::_motion.function)
+        for (const auto &it : Derived::motion.function)
             loadAnimation<Derived>(path, it.first);
     }
 
@@ -651,7 +428,7 @@ public:
 
     static void PushTime(const float _time)
     {
-        Motion::PushTime(_time);
+        // Motion::PushTime(_time);
         time = _time;
     }
 
@@ -673,25 +450,20 @@ public:
     line myLine;
     #endif
 
-    AnimationInfo animationInfo;
     inline static float time = 0.0;
 
 protected:
     int state = STATE::STAND;
-    // float animationInfo.AnimationTimeStart = 0.0;
-    // GLfloat *animationInfo.globalFlip = nullptr;
-    // Component *animationInfo.components = nullptr;
-    // Animation **animationInfo.animations = nullptr;
-    // std::string animationInfo.animation;
     Vector3<GLfloat> direction;
     objectTransform trans;
+    AnimationInfo animationInfo;
     
-    motion::FunType *motionFunPtr = nullptr;
-    motion *motionPtr = nullptr;
+    Motion::FunType *motionFunPtr = nullptr;
+    Motion *motionPtr = nullptr;
 
     inline static size_t skeletSize = 0;
     inline static Bone skelet; // можно сделать статический массив костей и новую переменную хранящую структуру
-    static inline std::string name = "NoName";
+    inline static std::string name = "NoName";
     inline static std::map<std::string, Sprite> Sprites;
-    inline static motion _motion;
+    inline static Motion motion;
 };

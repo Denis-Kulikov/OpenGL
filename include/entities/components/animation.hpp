@@ -1,6 +1,6 @@
 #pragma once
 #include "component.hpp"
-#include "motion.hpp"
+#include "_motion.hpp"
 
 class Animation
 {
@@ -33,6 +33,6 @@ public:
     Vector3<GLfloat> spriteScale;
     Vector3<GLfloat> anchorPoint;
     objectTransform transform;
-    Motion motion;
+    // Motion motion;
     static inline std::map<std::string, std::map<std::string, float>> duration;
 };

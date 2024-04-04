@@ -5,8 +5,7 @@
 Spider::Spider() : Character(std::string("mobs/spider"), GetSkeletSize())
 {
     name = "Spider";
-    motionPtr = &_motion;
-    _motion.PushTransform(animationInfo.transformations);
+    motionPtr = &motion;
 }
 
 Spider::~Spider()
@@ -26,12 +25,23 @@ void Spider::Initialize()
 
 void Spider::SetMotion()
 {
-    _motion = motion();
+    motion = Motion();
+    motion.PushSkelet(&skelet);
 
-    [[maybe_unused]] motion::FunType stand = [&_motion]() {};
+    [[maybe_unused]] Motion::FunType stand = [&motion]() {
+        int size = skeletSize;
+        Motion::bone_attribute *T = motion.transformations;
+        std::fill(reinterpret_cast<float*>(&T[0]), reinterpret_cast<float*>(&T[size]), static_cast<float>(0.0));
+        
+        float _time = *motion.FindUniformFloat("time"); 
+        static size_t spider = motion.FindBone("spider");
+        
 
-    std::pair<float, motion::FunType> _stand = {0.0, stand};
-    _motion.PushMotion("stand", _stand);
+        T[spider].flip = sin(_time * M_PI * 2) * 3;
+    };
+
+    std::pair<float, Motion::FunType> _stand = {1.0, stand};
+    motion.PushMotion("stand", _stand);
 }
 
 size_t Spider::GetSkeletSize() {

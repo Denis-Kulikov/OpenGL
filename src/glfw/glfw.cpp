@@ -11,10 +11,11 @@
 
 
 #define SPIDER_NUM 4
+#define WAVE_SUM 20
 
 Wilson *character = nullptr;
 Spider *spider[SPIDER_NUM] = {nullptr};
-Wave *wave = nullptr;
+Wave *wave[WAVE_SUM] = {nullptr};
 
 std::chrono::milliseconds totalTime(0);
 
@@ -71,10 +72,12 @@ bool RenderSceneCB(Render *render, Scene *scene)
             GameManager::render->drawObject(&it->transform, it->sprite);
     }
 
-    ActorComponents = wave->getActorComponents();
 
-    for (auto it : ActorComponents) 
-        GameManager::render->drawObject(&it->transform, it->sprite);
+    for (int i = 0; i < WAVE_SUM; i++) {
+        ActorComponents = wave[i]->getActorComponents();
+        for (auto it : ActorComponents) 
+            GameManager::render->drawObject(&it->transform, it->sprite);
+    }
 
 
     
@@ -130,14 +133,21 @@ Scene *createScene()
     character->PushRender(GameManager::render);
     #endif
 
-    for (int i = 0; i < SPIDER_NUM; i ++) {
+    for (int i = 0; i < SPIDER_NUM; i++) {
         spider[i] = new Spider();
         spider[i]->Teleport(generateRandomPoint());
         spider[i]->updateAnimation("stand");
     }
 
-    wave = new Wave();
-    wave->updateAnimation("stand");
+
+    for (int i = 0; i < WAVE_SUM; i++) {
+        wave[i] = new Wave();
+        wave[i]->updateAnimation("stand");
+        objectTransform *transform = wave[i]->GetTransform();
+        transform->Move(generateRandomPoint());
+    }
+
+
 
 
     GameManager::PushPlayer(character);
