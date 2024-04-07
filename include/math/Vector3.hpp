@@ -146,6 +146,12 @@ public:
         return *this;
     }
 
+    friend std::ostream& operator<<(std::ostream& os, const Vector3<T> &v)
+    {
+        os << v.x << "\t" << v.y << "\t" << v.z;
+
+        return os;
+    }
 
 
     Vector3<T> VSet(const Vector3<T> &v) {

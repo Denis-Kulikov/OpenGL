@@ -38,6 +38,14 @@ Vector3<GLfloat> generateRandomPoint() {
     return Vector3<GLfloat>(x, y, z);
 }
 
+bool isVisible(Camera *camera, Actor *object)
+{
+    Vector3<GLfloat> cameraDirection = camera->Params.Target.Normalize();
+    Vector3<GLfloat> cameraToObject = (object->GetTransform()->GetWorldPos() - camera->Params.WorldPos).Normalize();
+
+    return cameraDirection.VDot(cameraToObject) > 0;
+}
+
 bool RenderSceneCB(Render *render, Scene *scene)
 {
     static const int targetFPS = 60;
@@ -57,6 +65,8 @@ bool RenderSceneCB(Render *render, Scene *scene)
     for (std::vector<Component>::iterator it = scene->getIterator(); it != scene->component.end(); it++)
         GameManager::render->drawObject(&it->transform, it->sprite);
 
+    Camera *camera = character->GetCamera();
+
     character->MoveForward();
     character->UpdateCameraPos();
     character->updateAnimation(character->GetAnimation(Time.GetCurrentTime()));
@@ -67,16 +77,20 @@ bool RenderSceneCB(Render *render, Scene *scene)
 
     for (int i = 0; i < SPIDER_NUM; i++) {
         spider[i]->MoveTowards(character, 0.006);
-        ActorComponents = spider[i]->getActorComponents();
-        for (auto it : ActorComponents) 
-            GameManager::render->drawObject(&it->transform, it->sprite);
+        if (isVisible(camera, spider[i])) {
+            ActorComponents = spider[i]->getActorComponents();
+            for (auto it : ActorComponents) 
+                GameManager::render->drawObject(&it->transform, it->sprite);
+        }
     }
 
 
     for (int i = 0; i < WAVE_SUM; i++) {
-        ActorComponents = wave[i]->getActorComponents();
-        for (auto it : ActorComponents) 
-            GameManager::render->drawObject(&it->transform, it->sprite);
+        if (isVisible(camera, wave[i])) {
+            ActorComponents = wave[i]->getActorComponents();
+            for (auto it : ActorComponents) 
+                GameManager::render->drawObject(&it->transform, it->sprite);
+        }
     }
 
 
@@ -93,25 +107,8 @@ bool RenderSceneCB(Render *render, Scene *scene)
     return GameManager::IsEnd;
 }
 
-void foo ()
-{
-    // std::vector<std::pair<std::string, float>> _float = { { "var", 1.0 } };
-    // motion myMotion(&_float, nullptr);
-    // myMotion.function = [&myMotion](std::vector<std::pair<std::string, float>> *_float, std::vector<std::pair<std::string, int>> *_int) {
-    //     myMotion.PushTime(7.7);
-    //     myMotion.UniformFloat((*_float)[0].first, 2.0);
-    //     float *var = myMotion.FindUniformFloat("var");
-    //     float *time = myMotion.FindUniformFloat("time");
-
-    //     std::cout << "var=" << *var << "\t time=" << *time << std::endl;
-    // };
-    // myMotion.function(&_float, nullptr);
-}
-
 Scene *createScene()
 {
-    foo();
-
     auto *scene = new Scene(std::string("Main scene"));
 
     Sprite *mySprite = new Sprite(std::string("Grass"), "shaders/sprite_fs.glsl", "shaders/sprite_vs.glsl", "img/grass.png");
