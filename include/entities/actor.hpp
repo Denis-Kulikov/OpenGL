@@ -7,7 +7,7 @@
 #include <filesystem>
 #include <pugixml.hpp>
 
-#define MY_ACTOR_TEST true
+#define MY_ACTOR_TEST false
 
 #if MY_ACTOR_TEST
 #include "../render/render.hpp"
@@ -48,7 +48,6 @@ public:
     {
         loadActor(path);
         trans.Rotate = Vector3<GLfloat>(0.0, 0.0, 180);
-        direction = Vector3<GLfloat>();
 
         animationInfo.Initialize(SkeletSize);
 
@@ -450,16 +449,15 @@ public:
     line myLine;
     #endif
 
-    inline static float time = 0.0;
 
 protected:
     int state = STATE::STAND;
-    Vector3<GLfloat> direction;
-    objectTransform trans;
-    AnimationInfo animationInfo;
-    
+    inline static float time = 0.0;
     Motion::FunType *motionFunPtr = nullptr;
     Motion *motionPtr = nullptr;
+    Vector3<GLfloat> direction = 0;
+    objectTransform trans;
+    AnimationInfo animationInfo;
 
     inline static size_t skeletSize = 0;
     inline static Bone skelet; // можно сделать статический массив костей и новую переменную хранящую структуру
