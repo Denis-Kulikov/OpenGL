@@ -10,8 +10,8 @@
 #include <thread>
 
 
-#define SPIDER_NUM 4
-#define WAVE_SUM 20
+#define SPIDER_NUM 3
+#define WAVE_SUM 5
 
 Wilson *character = nullptr;
 Spider *spider[SPIDER_NUM] = {nullptr};
@@ -103,6 +103,8 @@ bool RenderSceneCB(Render *render, Scene *scene)
         prev = time(0);
         frame = 0;
     }
+
+    // std::cout << character->GetTransform() << std::endl;
 
     return GameManager::IsEnd;
 }
