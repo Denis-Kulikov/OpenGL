@@ -26,8 +26,9 @@ void Unit::Initialize()
 
 void Unit::SetMotion()
 {
-    // std::vector<std::pair<std::string, float>> vec = { std::pair<std::string, float>("flip", 0.0) };
-    motion = Motion();
+    auto* vec = new std::vector<std::pair<std::string, float>>;
+    vec->push_back(std::pair<std::string, float>("flip", 20.0));
+    motion = Motion(vec);
     motion.PushSkelet(&Unit::skelet);
 
     [[maybe_unused]] Motion::FunType stand = [&motion]() {
@@ -36,10 +37,10 @@ void Unit::SetMotion()
         std::fill(reinterpret_cast<float*>(&T[0]), reinterpret_cast<float*>(&T[size]), static_cast<float>(0.0));
         
         float _time = *motion.FindUniformFloat("time"); 
-        // float flip = *motion.FindUniformFloat("flip"); 
-        static size_t gun = motion.FindBone("head");
+        float flip = *motion.FindUniformFloat("flip"); 
+        static size_t body = motion.FindBone("body");
 
-        // T[gun].flip = flip;
+        T[body].flip = flip;
     };
 
     std::pair<float, Motion::FunType> _stand = {2.0, stand};
@@ -60,4 +61,12 @@ std::map<std::string, Sprite> *Unit::GetSprites() {
 
 std::string *Unit::GetName() {
     return &Unit::name;
+}
+
+
+void Unit::Update(GLfloat deg) {
+    static float& flip = *motion.FindUniformFloat("flip"); 
+    flip = fmod(deg, 360);
+
+    Actor::SetSpriteColor(this, std::string("circle_bone"), color);
 }

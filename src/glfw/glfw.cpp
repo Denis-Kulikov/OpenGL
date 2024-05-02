@@ -14,7 +14,7 @@
 #define SPIDER_NUM 3
 #define WAVE_SUM 5
 
-extern Wilson *character;
+extern Unit *Player;
 // extern Spider *spider[];
 // extern Wave *wave[];
 extern Unit *unit;
@@ -44,20 +44,25 @@ bool RenderSceneCB(Render *render, Scene *scene)
     Time.Update();
     Actor::PushTime(Time.GetCurrentTime());
 
+    // std::cout << GameManager::xpos << std::endl;
+
     for (std::vector<Component>::iterator it = scene->getIterator(); it != scene->component.end(); it++)
         GameManager::render->drawObject(&it->transform, it->sprite);
 
-    Camera *camera = character->GetCamera();
+    Camera *camera = Player->GetCamera();
 
-    character->MoveForward();
-    character->UpdateCameraPos();
-    character->updateAnimation(character->GetAnimation(Time.GetCurrentTime()));
-    std::vector<Component*> ActorComponents = character->getActorComponents();
+    Player->MoveForward();
+    Player->UpdateCameraPos();
+    Player->updateAnimation(Player->GetAnimation(Time.GetCurrentTime()));
+    Player->Update(GameManager::deg);
+    // std::cout << "camera->Params.WorldPos: " << Player->GetCamera()->Params.WorldPos << std::endl;
+    std::vector<Component*> ActorComponents = Player->getActorComponents();
 
     for (auto it : ActorComponents) 
         GameManager::render->drawObject(&it->transform, it->sprite);
 
-    unit->MoveTowards(character, 0.01);
+    unit->MoveTowards(Player, 0.01);
+    unit->Update(37);
     if (isVisible(camera, unit)) {
         ActorComponents = unit->getActorComponents();
         for (auto it : ActorComponents) 

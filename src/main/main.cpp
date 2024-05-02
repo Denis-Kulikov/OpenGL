@@ -3,7 +3,7 @@
 
 int main(int argc, char** argv)
 {
-    const int width = 1600, height = 960;
+    const int width = 1280, height = 640;
     GLFWwindow* window = nullptr;
     Render *render = GameManager::InitializeGLFW(window, width, height);
     GameManager::InitializeObjects();
@@ -15,6 +15,15 @@ int main(int argc, char** argv)
     }
 
     while (!GameManager::IsEnd) {
+        double xpos, ypos;
+        glfwGetCursorPos(window, &xpos, &ypos);
+        xpos -= width / 2;
+        ypos -= height / 2;
+        ypos = -ypos ;
+
+        GameManager::deg = atan2(ypos, xpos);
+        GameManager::deg = -ToDegree(GameManager::deg);
+
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         GameManager::IsEnd = RenderSceneCB(render, scene);
         glfwSwapBuffers(window);

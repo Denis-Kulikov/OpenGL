@@ -8,7 +8,7 @@ class Pawn : public Actor
 public:
     Pawn(const std::string &path, const size_t SkeletSize)
         : Actor(path, SkeletSize),
-          cameraPos(Vector3<GLfloat>(0.0f, 5.0f, 12)),
+          cameraPos(Vector3<GLfloat>(0.0f, 0.0f, 18)),
           camera(nullptr)
     {}
 
@@ -63,7 +63,7 @@ public:
     {
         auto _camera = new Camera();
 
-        Vector3<GLfloat> CameraPos(0.0f, 3.0f, 15);
+        Vector3<GLfloat> CameraPos(cameraPos);
         Vector3<GLfloat> CameraTarget(0.0f, -0.0f, -1.0f);
         Vector3<GLfloat> CameraUp(0.0f, 1.0f, 0.0f);
 

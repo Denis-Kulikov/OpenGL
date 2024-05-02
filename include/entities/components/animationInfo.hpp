@@ -25,7 +25,6 @@ public:
             for (int j = 0; j < 5; j++) {
                 reinterpret_cast<float*>(transformations)[5 * i + j] = 0.0;
             }
-                // transformations[5 * i + j] = 0.0;
         }
         animations[0] = new Animation();
         globalFlip[0] = 0;

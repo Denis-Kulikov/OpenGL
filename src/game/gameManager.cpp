@@ -36,8 +36,8 @@ Camera *GameManager::createCamera()
 {
     auto camera = new Camera();
 
-    Vector3<GLfloat> CameraPos(0.0f, 3.0f, 15);
-    Vector3<GLfloat> CameraTarget(0.0f, -0.3f, -1.0f);
+    Vector3<GLfloat> CameraPos(0.0f, 0.0f, 15);
+    Vector3<GLfloat> CameraTarget(0.0f, 0.0f, -1.0f);
     Vector3<GLfloat> CameraUp(0.0f, 1.0f, 0.0f);
 
     camera->SetCamera(CameraPos, CameraTarget, CameraUp);
@@ -109,14 +109,14 @@ Render *GameManager::InitializeGLFW(GLFWwindow* &window, int _width, int _height
         exit(EXIT_FAILURE);
     }
 
-    // Camera *camera = createCamera();
-    // callbackData = new CallbackData;
     callbackData.camera = nullptr;
 
     glfwMakeContextCurrent(window);
     glfwSetKeyCallback(window, GameManager::KeyboardCB);
-    glfwSetWindowUserPointer(window, &callbackData);
+    glfwSetWindowUserPointer(window, &GameManager::callbackData);
     glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+
 
     GLenum err = glewInit();
     if (err != GLEW_OK) {

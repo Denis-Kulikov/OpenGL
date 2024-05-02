@@ -13,7 +13,7 @@
 #define SPIDER_NUM 3
 #define WAVE_SUM 5
 
-Wilson *character = nullptr;
+Unit *Player = nullptr;
 // Spider *spider[SPIDER_NUM] = {nullptr};
 // Wave *wave[WAVE_SUM] = {nullptr};
 Unit *unit = nullptr;
@@ -56,47 +56,27 @@ Scene *createScene()
     transformFloor.SetRotate(0, 0, 0);
     transformFloor.SetScale(20, 20, 0);
     component = new Component(transformFloor, mySprite);
-    // scene->pushObject(*component);
+    scene->pushObject(*component);
 
 
-    Wilson::Initialize();
-    // Spider::Initialize();
-    // Wave::Initialize();
     Unit::Initialize();
 
-    character = new Wilson();
-    character->createCamera(GameManager::width, GameManager::height);
-    character->updateAnimation("stand");
-    #if MY_ACTOR_TEST
-    character->PushRender(GameManager::render);
-    #endif
+    Player = new Unit();
+    Player->createCamera(GameManager::width, GameManager::height);
+    Player->updateAnimation("stand");
+    Player->color = Vector3<GLfloat>(0.0, 0.0, 1.0);
+
+    Camera* camera = Player->GetCamera();
 
     unit = new Unit();
     unit->updateAnimation("stand");
-    unit->Teleport(character->GetTransform()->GetWorldPos());
+    unit->Teleport(Player->GetTransform()->GetWorldPos());
     unit->Move(Vector3<GLfloat>(2.0, 0.0, 0.0));
-    // unit->SetSpriteColor(std::string("circle_bone"), Vector3<GLfloat>(1.0, 0.0, 0.0));
-    Actor::SetSpriteColor(unit, std::string("circle_bone"), Vector3<GLfloat>(1.0, 0.0, 0.0));
+    unit->color = Vector3<GLfloat>(1.0, 0.0, 0.0);
 
-
-    // for (int i = 0; i < SPIDER_NUM; i++) {
-    //     spider[i] = new Spider();
-    //     spider[i]->Teleport(generateRandomPoint());
-    //     spider[i]->updateAnimation("stand");
-    // }
-
-
-    // for (int i = 0; i < WAVE_SUM; i++) {
-    //     wave[i] = new Wave();
-    //     wave[i]->updateAnimation("stand");
-    //     objectTransform *transform = wave[i]->GetTransform();
-    //     transform->Move(generateRandomPoint());
-    // }
-
-
-    GameManager::PushPlayer(character);
-    GameManager::PushCamera(character->GetCamera());
-    GameManager::render->SetCamera(character->GetCamera());
+    GameManager::PushPlayer(Player);
+    GameManager::PushCamera(Player->GetCamera());
+    GameManager::render->SetCamera(Player->GetCamera());
     GameManager::render->PushGeometry(mySprite->GetGeometry());
 
     return scene;

@@ -294,7 +294,6 @@ public:
                     std::string spriteName = filename.substr(0, filename.size() - 4);
                     Sprite sprite(spriteName, "shaders/sprite_fs.glsl", "shaders/sprite_vs.glsl", (full_path + filename).c_str());
                     Derived::Sprites.insert({spriteName, sprite});
-                    std::cout << spriteName << std::endl;
                 }
             }
         } 
