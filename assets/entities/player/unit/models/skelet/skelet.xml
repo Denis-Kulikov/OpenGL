@@ -1,0 +1,6 @@
+<skelet name="Unit_s">
+    <bone name="body">
+        <bone name="contour" />
+        <bone name="gun" />
+    </bone>
+</skelet>

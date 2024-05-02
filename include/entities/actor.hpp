@@ -294,9 +294,10 @@ public:
                     std::string spriteName = filename.substr(0, filename.size() - 4);
                     Sprite sprite(spriteName, "shaders/sprite_fs.glsl", "shaders/sprite_vs.glsl", (full_path + filename).c_str());
                     Derived::Sprites.insert({spriteName, sprite});
+                    std::cout << spriteName << std::endl;
                 }
             }
-        }
+        } 
 
         return true;
     }
@@ -421,6 +422,13 @@ public:
     float GetTime()
     {
         return time;
+    }
+
+    template<typename Derived>
+    static void SetSpriteColor(Derived* obj, const std::string name, Vector3<GLfloat> color) {
+        auto it = Derived::Sprites.find(name);
+        if (it != Sprites.end()) it->second.color = color;
+        else std::cout << "Not found: " << name << std::endl;
     }
 
     #if MY_ACTOR_TEST

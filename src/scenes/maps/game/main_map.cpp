@@ -1,5 +1,6 @@
 #include <game/gameManager.hpp>
 #include <game/gameTime.hpp>
+#include <entities/templates/playable/unit.hpp>
 #include <entities/templates/playable/Wilson.hpp>
 #include <entities/templates/mobs/spider.hpp>
 #include <entities/templates/decor/wave.hpp>
@@ -15,6 +16,7 @@
 Wilson *character = nullptr;
 // Spider *spider[SPIDER_NUM] = {nullptr};
 // Wave *wave[WAVE_SUM] = {nullptr};
+Unit *unit = nullptr;
 
 
 float randomFloat(float min, float max) {
@@ -54,12 +56,13 @@ Scene *createScene()
     transformFloor.SetRotate(0, 0, 0);
     transformFloor.SetScale(20, 20, 0);
     component = new Component(transformFloor, mySprite);
-    scene->pushObject(*component);
+    // scene->pushObject(*component);
 
 
     Wilson::Initialize();
-    Spider::Initialize();
-    Wave::Initialize();
+    // Spider::Initialize();
+    // Wave::Initialize();
+    Unit::Initialize();
 
     character = new Wilson();
     character->createCamera(GameManager::width, GameManager::height);
@@ -67,6 +70,14 @@ Scene *createScene()
     #if MY_ACTOR_TEST
     character->PushRender(GameManager::render);
     #endif
+
+    unit = new Unit();
+    unit->updateAnimation("stand");
+    unit->Teleport(character->GetTransform()->GetWorldPos());
+    unit->Move(Vector3<GLfloat>(2.0, 0.0, 0.0));
+    // unit->SetSpriteColor(std::string("circle_bone"), Vector3<GLfloat>(1.0, 0.0, 0.0));
+    Actor::SetSpriteColor(unit, std::string("circle_bone"), Vector3<GLfloat>(1.0, 0.0, 0.0));
+
 
     // for (int i = 0; i < SPIDER_NUM; i++) {
     //     spider[i] = new Spider();

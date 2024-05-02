@@ -1,6 +1,7 @@
 #include <game/gameManager.hpp>
 #include <game/gameTime.hpp>
 #include <entities/templates/playable/Wilson.hpp>
+#include <entities/templates/playable/unit.hpp>
 #include <entities/templates/mobs/spider.hpp>
 #include <entities/templates/decor/wave.hpp>
 
@@ -16,6 +17,7 @@
 extern Wilson *character;
 // extern Spider *spider[];
 // extern Wave *wave[];
+extern Unit *unit;
 
 std::chrono::milliseconds totalTime(0);
 
@@ -55,14 +57,12 @@ bool RenderSceneCB(Render *render, Scene *scene)
     for (auto it : ActorComponents) 
         GameManager::render->drawObject(&it->transform, it->sprite);
 
-    // for (int i = 0; i < SPIDER_NUM; i++) {
-    //     spider[i]->MoveTowards(character, 0.006);
-    //     if (isVisible(camera, spider[i])) {
-    //         ActorComponents = spider[i]->getActorComponents();
-    //         for (auto it : ActorComponents) 
-    //             GameManager::render->drawObject(&it->transform, it->sprite);
-    //     }
-    // }
+    unit->MoveTowards(character, 0.01);
+    if (isVisible(camera, unit)) {
+        ActorComponents = unit->getActorComponents();
+        for (auto it : ActorComponents) 
+            GameManager::render->drawObject(&it->transform, it->sprite);
+    }
 
 
     // for (int i = 0; i < WAVE_SUM; i++) {
