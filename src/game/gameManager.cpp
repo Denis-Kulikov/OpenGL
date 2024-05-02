@@ -68,8 +68,8 @@ void GameManager::KeyboardCB(GLFWwindow* window, int key, int scancode, int acti
 
     player->SetDirection(Vector3<GLfloat>(
         keys[GLFW_KEY_A] * 1.0 - keys[GLFW_KEY_D] * 1.0, 
-        0, 
-        keys[GLFW_KEY_S] * 1.0 - keys[GLFW_KEY_W] * 1.0
+        keys[GLFW_KEY_W] * 1.0 - keys[GLFW_KEY_S] * 1.0,
+        0
     ));
 
     if (keys[GLFW_KEY_SPACE]) {

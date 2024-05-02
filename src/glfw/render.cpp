@@ -1,23 +1,13 @@
 #include <render/render.hpp>
 
-#include <chrono>
-extern std::chrono::milliseconds totalTime;
-
 Render::Render(Pipeline &_pipeline)
 {
     pipeline.camera = _pipeline.camera;
     pipeline.object = _pipeline.object;
 }
 
-Render::Render(Camera *_camera)
-{
-    SetCamera(_camera);
-}
-
-void Render::SetCamera(Camera *_camera)
-{
-    pipeline.camera = _camera;
-}
+Render::Render(Camera *_camera) { SetCamera(_camera); }
+void Render::SetCamera(Camera *_camera) { pipeline.camera = _camera; }
 
 void Render::clearRender() {
     glUseProgram(0);
@@ -48,11 +38,11 @@ void Render::drawObject(objectTransform *_transform, Sprite *_sprite)
 
     glUseProgram(_sprite->shader);
     if (_sprite->gColorLocation != 0xFFFFFFFF) glUniform3f(_sprite->gColorLocation, _sprite->color.x, _sprite->color.y, _sprite->color.z);
+    if (_sprite->gScaleLocation != 0xFFFFFFFF) glUniform2f(_sprite->gScaleLocation, _sprite->Magnification.first, _sprite->Magnification.second);
 
     glUniformMatrix4fv(_sprite->gWorldLocation, 1, GL_TRUE, pipeline.GetGLMatrix());
 
     if (_sprite->GetGeometry()->EBO != 0) {
-        // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, geometry->EBO);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, _sprite->texture);
         glUniform1i(_sprite->gTextureSamplerLocation, 0);
@@ -60,6 +50,4 @@ void Render::drawObject(objectTransform *_transform, Sprite *_sprite)
     } else {
         glDrawArrays(GL_LINE_STRIP, 0, _sprite->GetGeometry()->numVertices);
     }
-
-    // clearRender();
 }

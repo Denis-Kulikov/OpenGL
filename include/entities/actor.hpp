@@ -239,13 +239,10 @@ public:
     static bool loadAnimation(const std::string &_path, const std::string &_name)
     {
         std::string animationPath = std::string("assets/entities/") + _path + std::string("/models/animations/") + _name + std::string(".xml");
-        // std::string motionPath = std::string("assets/entities/") + _path + std::string("/models/motions/") + _name + std::string(".xml");
         pugi::xml_document docAnimation;
-        // pugi::xml_document docMotion;
         pugi::xml_node nodeAnimation;
         pugi::xml_node nodeMotion;
         pugi::xml_parse_result parseAnimationResult = docAnimation.load_file(animationPath.c_str());
-        // pugi::xml_parse_result parseMotionResult = docMotion.load_file(motionPath.c_str());
 
         if (!parseAnimationResult) {
             std::cout << "Error Actor.loadAnimation: file not found (" << animationPath << ")" << std::endl;
@@ -279,16 +276,6 @@ public:
         newAnimation.spriteScale = Vector3<GLfloat>(1.0, 1.0, 1.0);
         newAnimation.transform = objectTransform();
         Derived::skelet.Animations.insert({animationName, newAnimation});
-
-
-        // nodeMotion = docMotion.child("motion");
-        // if (parseMotionResult) {
-        //     float duration = std::stof(nodeMotion.attribute("duration").value());
-        //     Animation::PushDuration(Derived::name, animationName, duration);
-        //     nodeMotion = nodeMotion.first_child();
-        // } else {
-        //     Animation::PushDuration(Derived::name, animationName, 0.0);
-        // }
 
         parseAnimation<Derived>(nodeAnimation, nodeMotion, &Derived::skelet, animationName);
 

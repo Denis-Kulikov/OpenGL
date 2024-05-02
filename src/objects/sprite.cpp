@@ -28,6 +28,7 @@ void Sprite::loadTexures(const char *texturePath)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     gTextureSamplerLocation = glGetUniformLocation(shader, "textureSampler");
+    gScaleLocation = glGetUniformLocation(shader, "gTexScale");
 
     stbi_image_free(img);
 
@@ -121,7 +122,7 @@ void Sprite::compileShaders(const char *FS, const char *VS)
     }
 
     gWorldLocation = glGetUniformLocation(shader, "gWorld");
-    gColorLocation = glGetUniformLocation(shader, "gColor"); // assert(gColorLocation != 0xFFFFFFFF);
+    gColorLocation = glGetUniformLocation(shader, "gColor");
     assert(gWorldLocation != 0xFFFFFFFF);
 }
 

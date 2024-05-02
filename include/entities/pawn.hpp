@@ -10,8 +10,7 @@ public:
         : Actor(path, SkeletSize),
           cameraPos(Vector3<GLfloat>(0.0f, 5.0f, 12)),
           camera(nullptr)
-    {
-    }
+    {}
 
     void Teleport(const Vector3<GLfloat> newPosition) {
         this->trans.WorldPos = newPosition;
@@ -33,7 +32,7 @@ public:
         this->trans.Move(distance, this->direction);
     }
     
-    template<typename T> // ***
+    template<typename T>
     void MoveTowards(T* targetPawn, GLfloat speed) {
         Vector3<GLfloat> direction = targetPawn->GetTransform()->WorldPos - this->trans.WorldPos;
         Move(speed, direction);
@@ -65,7 +64,7 @@ public:
         auto _camera = new Camera();
 
         Vector3<GLfloat> CameraPos(0.0f, 3.0f, 15);
-        Vector3<GLfloat> CameraTarget(0.0f, -0.4f, -1.0f);
+        Vector3<GLfloat> CameraTarget(0.0f, -0.0f, -1.0f);
         Vector3<GLfloat> CameraUp(0.0f, 1.0f, 0.0f);
 
         _camera->SetCamera(CameraPos, CameraTarget, CameraUp);

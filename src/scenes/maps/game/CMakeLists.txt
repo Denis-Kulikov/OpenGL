@@ -1,9 +1,7 @@
-set(target lib-glfw)
+set(target lib-main-map)
 
 add_library(${target} STATIC
-	glfw.cpp
-	pipeline.cpp
-	render.cpp
+	main_map.cpp
 )
 
 target_link_libraries(
@@ -15,5 +13,4 @@ target_link_libraries(
 	lib-playable
 	lib-mobs
 	lib-decor
-	lib-main-map
 )

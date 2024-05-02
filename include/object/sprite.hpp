@@ -19,6 +19,7 @@ public:
     static void initializeGeometry();
 
     std::string name;
+    std::pair<GLfloat, GLfloat> Magnification;
     Vector3<GLfloat> Scale;
     Vector3<GLfloat> color = Vector3<GLfloat>(1.0, 1.0, 1.0);
 
