@@ -1,0 +1,5 @@
+<skelet name="Bullet_s">
+    <bone name="body">
+        <bone name="contour" />
+    </bone>
+</skelet>

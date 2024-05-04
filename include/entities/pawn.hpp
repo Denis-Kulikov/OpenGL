@@ -24,12 +24,12 @@ public:
         this->trans.Move(distance, direction);
     }
 
-    void MoveForward() {
-        this->trans.Move(this->speed, this->direction);
+    void MoveForward(const GLfloat distance) {
+        Move(distance, GetDirection());
     }
 
-    void MoveForward(const GLfloat distance) {
-        this->trans.Move(distance, this->direction);
+    void MoveForward() {
+        MoveForward(GetTickTime() / 1e7 * GetSpeed());
     }
     
     template<typename T>
@@ -54,13 +54,11 @@ public:
         this->trans.Scale *= _scale;
     }
 
-    void attachCamera(Camera *_camera)
-    {
+    void attachCamera(Camera *_camera) {
         camera = _camera;
     }
 
-    bool createCamera(int width, int height)
-    {
+    bool createCamera(int width, int height) {
         auto _camera = new Camera();
 
         Vector3<GLfloat> CameraPos(cameraPos);
@@ -75,24 +73,20 @@ public:
         return true;
     }
 
-    void UpdateCameraPos()
-    {
+    void UpdateCameraPos() {
         this->camera->Params.WorldPos = cameraPos + this->trans.WorldPos;
     }
 
 
-    Camera *GetCamera()
-    {
+    Camera *GetCamera() {
         return camera;
     }
 
-    Vector3<GLfloat> *GetCameraPosition()
-    {
+    Vector3<GLfloat> *GetCameraPosition() {
         return &cameraPos;
     }
 
-    GLfloat GetSpeed()
-    {
+    GLfloat GetSpeed() {
         return speed;
     }
 

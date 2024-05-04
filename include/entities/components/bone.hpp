@@ -94,7 +94,7 @@ public:
     };
 
     
-    int *FindUniformInt(std::string &uniform)
+    int *FindUniformInt(const std::string &uniform)
     {
         auto it = uniform_int.find(uniform);
         if (it != uniform_int.end()) {
@@ -104,7 +104,7 @@ public:
         }
     };
 
-    void UniformInt(std::string &uniform, int new_value)
+    void UniformInt(const std::string &uniform, int new_value)
     {
         int *value = FindUniformInt(uniform);
 

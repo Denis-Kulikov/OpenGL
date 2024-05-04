@@ -48,6 +48,7 @@ public:
     {
         loadActor(path);
         trans.Rotate = Vector3<GLfloat>(0.0, 0.0, 180);
+        birth_time = GetTime();
 
         animationInfo.Initialize(SkeletSize);
 
@@ -62,7 +63,9 @@ public:
         #endif
     }
     
-    ~Actor() {}
+    ~Actor() {
+        std::cout << "Dst" << std::endl; 
+    }
 
     virtual size_t GetSkeletSize() = 0;
     virtual Bone *GetSkelet() = 0;
@@ -332,8 +335,6 @@ public:
             return false;
         }
 
-        // *GetName() = doc.child("character").attribute("name").value();
-
         Vector3<GLfloat> v;
 
         v.x = std::stof(doc.child("character").child("objectTransform").child("worldPos").attribute("x").value());
@@ -352,18 +353,15 @@ public:
     }
 
 
-    objectTransform *GetTransform()
-    {
+    objectTransform *GetTransform() {
         return &trans;
     }
 
-    Vector3<GLfloat> GetDirection()
-    {
+    Vector3<GLfloat> GetDirection() {
         return direction;
     }
 
-    void SetDirection(const Vector3<GLfloat> &_direction)
-    {
+    void SetDirection(const Vector3<GLfloat> &_direction) {
         direction = _direction;
     }
 
@@ -414,14 +412,22 @@ public:
 
     static void PushTime(const float _time)
     {
-        // Motion::PushTime(_time);
+        prev_time = time;
         time = _time;
     }
 
-    float GetTime()
-    {
+    static float GetTime() {
         return time;
     }
+
+    static float GetTickTime() {
+        return time - prev_time;
+    }
+
+    float GetBirthTime() {
+        return birth_time;
+    }
+
 
     template<typename Derived>
     static void SetSpriteColor(Derived* obj, const std::string name, Vector3<GLfloat> color) {
@@ -446,7 +452,9 @@ public:
 
 protected:
     int state = STATE::STAND;
+    float birth_time = 0.0;
     inline static float time = 0.0;
+    inline static float prev_time = 0.0;
     Motion::FunType *motionFunPtr = nullptr;
     Motion *motionPtr = nullptr;
     Vector3<GLfloat> direction = 0;

@@ -5,6 +5,8 @@
 #include "line.hpp"
 #include "cube_bone.hpp"
 #include "../entities/components/component.hpp"
+#include "../entities/templates/playable/unit.hpp"
+#include "../game/gameTime.hpp"
 
 class Scene 
 {
@@ -20,4 +22,7 @@ public:
 
     std::string name;
     std::vector<Component> component;
+    GameTime Time;
+    Unit *player = nullptr;
+    Unit *unit = nullptr;
 };

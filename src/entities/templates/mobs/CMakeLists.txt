@@ -2,6 +2,7 @@ set(target lib-mobs)
 
 add_library(${target} STATIC
 	spider.cpp
+	bullet.cpp
 )
 
 target_link_libraries(

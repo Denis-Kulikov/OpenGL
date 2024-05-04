@@ -27,7 +27,7 @@ void GameManager::PushCamera(Camera *_camera)
     callbackData.camera = _camera;
 }
 
-void GameManager::PushPlayer(Character *_player)
+void GameManager::PushPlayer(Unit *_player)
 {
     callbackData.player = _player;
 }
@@ -46,13 +46,18 @@ Camera *GameManager::createCamera()
     return camera;
 }
 
+void GameManager::MouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
+    Unit* player = callbackData.player;
+    if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) player->isFire = true;
+}
+
 void GameManager::KeyboardCB(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
     static bool keys[GLFW_KEY_LAST] = {false};
 
     GLfloat speed_rotation = -0.125;
 
-    Character* player = callbackData.player;
+    Unit* player = callbackData.player;
     Camera* camera = callbackData.camera;
 
     if (action == GLFW_PRESS) {
@@ -113,6 +118,7 @@ Render *GameManager::InitializeGLFW(GLFWwindow* &window, int _width, int _height
 
     glfwMakeContextCurrent(window);
     glfwSetKeyCallback(window, GameManager::KeyboardCB);
+    glfwSetMouseButtonCallback(window, GameManager::MouseButtonCallback);
     glfwSetWindowUserPointer(window, &GameManager::callbackData);
     glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);

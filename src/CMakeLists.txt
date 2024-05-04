@@ -1,6 +1,7 @@
 add_subdirectory(glfw)
 add_subdirectory(game)
 add_subdirectory(main)
+add_subdirectory(server)
 add_subdirectory(objects)
 add_subdirectory(entities)
 add_subdirectory(scenes)

@@ -1,22 +1,21 @@
 #pragma once
 
 #include "../../character.hpp"
-#include <entities/templates/mobs/bullet.hpp>
 
 
-class Unit : public Character
+class Bullet : public Pawn
 {
 public:
-    Unit();
-    ~Unit();
+    Bullet();
+    ~Bullet();
 
     struct Args {
         GLfloat deg;
     } args;
     
     struct Params {
-        int HP = max_hp;
-        int Damage = max_hp / 3 + 1;
+        int HP = 100;
+        int Damage = 25;
     } params;
 
     static void Initialize();
@@ -29,12 +28,10 @@ public:
 
 
     void Update();
-    void SetID(int id_);
-    Bullet* Fire();
-    bool isAlive();
     void DealingDamage(int damage);
 
-
+    int owner = -1;
+    static inline float lifetime = 2e9;
 
     static inline std::string name = "NoName";
     static inline size_t skeletSize = 0;
@@ -42,11 +39,5 @@ public:
     static inline std::map<std::string, Sprite> Sprites;
     static inline Motion motion;
 
-    Vector3<GLfloat> color = Vector3<GLfloat>(1.0, 1.0, 1.0);
-    bool isFire = false;
-    int id = -1;
-    float last_fire = 0;
-
-    static inline const float rate_fire = 5;
-    static inline const int max_hp = 100;
+    Vector3<GLfloat> color = Vector3<GLfloat>(1.0, 1.0, 0.0);
 };

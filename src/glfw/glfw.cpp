@@ -1,9 +1,6 @@
 #include <game/gameManager.hpp>
-#include <game/gameTime.hpp>
-#include <entities/templates/playable/Wilson.hpp>
 #include <entities/templates/playable/unit.hpp>
-#include <entities/templates/mobs/spider.hpp>
-#include <entities/templates/decor/wave.hpp>
+#include <entities/templates/mobs/bullet.hpp>
 
 #include <chrono>
 #include <ctime>
@@ -11,17 +8,8 @@
 #include <thread>
 
 
-#define SPIDER_NUM 3
-#define WAVE_SUM 5
-
-extern Unit *Player;
-// extern Spider *spider[];
-// extern Wave *wave[];
-extern Unit *unit;
-
+std::list<Bullet*> bullets;
 std::chrono::milliseconds totalTime(0);
-
-GameTime Time;
 
 bool isVisible(Camera *camera, Actor *object)
 {
@@ -35,57 +23,77 @@ bool RenderSceneCB(Render *render, Scene *scene)
 {
     static time_t prev = time(0);
     static int frame = 0;
-    static const int targetFPS = 60;
+    static const int targetFPS = 120;
     static const std::chrono::milliseconds frameDuration(1000 / targetFPS);
     static std::chrono::steady_clock::time_point frameStart;
     std::chrono::steady_clock::time_point frameEnd = std::chrono::steady_clock::now();
+    frameStart = frameEnd;
+    frameEnd += frameDuration;
+    std::this_thread::sleep_until(frameEnd);
 
-    frameStart = std::chrono::steady_clock::now();
-    Time.Update();
-    Actor::PushTime(Time.GetCurrentTime());
-
-    // std::cout << GameManager::xpos << std::endl;
+    scene->Time.Update();
+    Actor::PushTime(scene->Time.GetCurrentTime());
 
     for (std::vector<Component>::iterator it = scene->getIterator(); it != scene->component.end(); it++)
         GameManager::render->drawObject(&it->transform, it->sprite);
 
-    Camera *camera = Player->GetCamera();
 
-    Player->MoveForward();
-    Player->UpdateCameraPos();
-    Player->updateAnimation(Player->GetAnimation(Time.GetCurrentTime()));
-    Player->Update(GameManager::deg);
-    // std::cout << "camera->Params.WorldPos: " << Player->GetCamera()->Params.WorldPos << std::endl;
-    std::vector<Component*> ActorComponents = Player->getActorComponents();
-
-    for (auto it : ActorComponents) 
-        GameManager::render->drawObject(&it->transform, it->sprite);
-
-    unit->MoveTowards(Player, 0.01);
-    unit->Update(37);
-    if (isVisible(camera, unit)) {
-        ActorComponents = unit->getActorComponents();
-        for (auto it : ActorComponents) 
-            GameManager::render->drawObject(&it->transform, it->sprite);
+    for (auto it = bullets.begin(); it != bullets.end();) {
+        if ((*it)->GetTransform()->WorldPos.Distance(scene->unit->GetTransform()->WorldPos) < (1.0 + 0.5)) {
+            if ((*it)->owner != scene->unit->id) {
+                scene->unit->DealingDamage((*it)->params.Damage);
+                it = bullets.erase(it);
+                continue;
+            }
+        } 
+        ++it;
     }
 
 
-    // for (int i = 0; i < WAVE_SUM; i++) {
-    //     if (isVisible(camera, wave[i])) {
-    //         ActorComponents = wave[i]->getActorComponents();
-    //         for (auto it : ActorComponents) 
-    //             GameManager::render->drawObject(&it->transform, it->sprite);
-    //     }
-    // }
+    scene->player->MoveForward();
+    scene->player->UpdateCameraPos();
+    scene->player->args.deg = GameManager::deg;
+    scene->player->Update();
+    std::vector<Component*> ActorComponents = scene->player->getActorComponents();
 
+    if (scene->player->isFire) {
+        Bullet* bullet = scene->player->Fire();
+        scene->player->isFire = !scene->player->isFire;
+        if (bullet != nullptr) {
+            bullets.push_back(bullet);
+        }
+    }
+
+    for (auto it : ActorComponents)  GameManager::render->drawObject(&it->transform, it->sprite);
+
+    // scene->unit->Teleport(Vector3<GLfloat>());
+    scene->unit->MoveTowards(scene->player, 0.01);
+    scene->unit->args.deg = 0;
+    scene->unit->Update();
+    ActorComponents = scene->unit->getActorComponents();
+    for (auto it : ActorComponents) GameManager::render->drawObject(&it->transform, it->sprite);
+
+
+    for (auto blt = bullets.begin(); blt != bullets.end();) {
+        if ((scene->Time.GetCurrentTime() - (*blt)->GetBirthTime()) > Bullet::lifetime) {
+            blt = bullets.erase(blt);
+            if (blt == bullets.end()) break;
+        } else {
+            (*blt)->Update();
+            (*blt)->MoveForward();
+            ActorComponents = (*blt)->getActorComponents();
+            for (auto it : ActorComponents) GameManager::render->drawObject(&it->transform, it->sprite);
+            blt++;
+        }
+    }
 
     
-    frame++;
-    if ((time(0) - prev) > 3) {
-        std::cout << "FPS: " << frame / 3 << std::endl;
-        prev = time(0);
-        frame = 0;
-    }
+    // frame++;
+    // if ((time(0) - prev) > 3) {
+    //     std::cout << "FPS: " << frame / 3 << std::endl;
+    //     prev = time(0);
+    //     frame = 0;
+    // }
 
     return GameManager::IsEnd;
 }

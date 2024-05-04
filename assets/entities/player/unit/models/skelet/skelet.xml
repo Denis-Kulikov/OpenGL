@@ -3,4 +3,7 @@
         <bone name="contour" />
         <bone name="gun" />
     </bone>
+    <bone name="scale">
+        <bone name="HP" />
+    </bone>
 </skelet>

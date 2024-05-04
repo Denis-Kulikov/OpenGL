@@ -8,5 +8,5 @@
 using GLfloat = GLfloat; // for vs code
 
 bool RenderSceneCB(Render *render, Scene *scene);
-Scene *createScene();
+Scene *createScene(int id);
 Render *InitializeGLFW(GLFWwindow* &window, int width, int height);
