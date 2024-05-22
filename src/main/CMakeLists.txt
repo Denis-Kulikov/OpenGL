@@ -16,5 +16,5 @@ target_link_libraries(
 	lib-glfw
 	lib-object
 	lib-game
-	#OpenMP::OpenMP_CXX
+	pthread
 )

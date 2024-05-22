@@ -6,7 +6,7 @@
 class Character : public Pawn
 {
 public:
-    Character(const std::string &path, const size_t SkeletSize) : Pawn(path, SkeletSize) {};
+    Character(const size_t SkeletSize) : Pawn(SkeletSize) {};
 
     
 };

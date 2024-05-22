@@ -6,7 +6,7 @@ Bone Wave::skelet;
 size_t Wave::skeletSize;
 
 Wave::Wave()
-    : Actor(std::string("decor/wave"), GetSkeletSize())
+    : Actor(GetSkeletSize())
 {
     name = "wave";
     motionPtr = &motion;

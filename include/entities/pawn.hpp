@@ -6,8 +6,8 @@
 class Pawn : public Actor
 {
 public:
-    Pawn(const std::string &path, const size_t SkeletSize)
-        : Actor(path, SkeletSize),
+    Pawn(const size_t SkeletSize)
+        : Actor(SkeletSize),
           cameraPos(Vector3<GLfloat>(0.0f, 0.0f, 18)),
           camera(nullptr)
     {}
@@ -96,6 +96,6 @@ public:
 protected:
     Camera *camera;
     Vector3<GLfloat> cameraPos;
-    GLfloat speed = 0.3;
+    GLfloat speed = PLAYER_SPEED;
 };
 

@@ -1,12 +1,5 @@
 #include <game/gameManager.hpp> 
 
-
-bool GameManager::IsEnd = false;
-int GameManager::width = 0;
-int GameManager::height = 0;
-GameManager::CallbackData GameManager::callbackData{nullptr, nullptr};
-Render *GameManager::render = nullptr;
-
 enum {
     FORWARD,
     BACK,
@@ -20,6 +13,11 @@ void GameManager::InitializeObjects()
     Sprite::initializeGeometry();
     line::initializeGeometry();
     cube_bone::initializeGeometry();
+}
+
+void GameManager::PushScene(Scene *_scene)
+{
+    scene = _scene;
 }
 
 void GameManager::PushCamera(Camera *_camera)
@@ -93,7 +91,7 @@ void GameManager::KeyboardCB(GLFWwindow* window, int key, int scancode, int acti
 }
 
 
-Render *GameManager::InitializeGLFW(GLFWwindow* &window, int _width, int _height)
+Render *GameManager::InitializeGLFW(int _width, int _height)
 {
     if (!glfwInit()) {
         std::cerr << "Failed to initialize GLFW" << std::endl;

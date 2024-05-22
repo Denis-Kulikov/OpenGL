@@ -8,10 +8,10 @@ class AnimationInfo
 public:
     AnimationInfo() {};
     ~AnimationInfo() {
-        delete globalFlip;
-        delete components;
-        delete animations;
-        delete animations[0];   
+        // delete globalFlip;
+        // delete components;
+        // delete animations;
+        // delete animations[0];   
     };
 
     void Initialize(size_t SkeletSize)

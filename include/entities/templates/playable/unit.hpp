@@ -3,10 +3,10 @@
 #include "../../character.hpp"
 #include <entities/templates/mobs/bullet.hpp>
 
-
 class Unit : public Character
 {
 public:
+    Unit(int id_);
     Unit();
     ~Unit();
 
@@ -33,7 +33,6 @@ public:
     Bullet* Fire();
     bool isAlive();
     void DealingDamage(int damage);
-
 
 
     static inline std::string name = "NoName";

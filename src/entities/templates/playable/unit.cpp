@@ -1,9 +1,16 @@
 #include <entities/actor.hpp>
 #include <entities/templates/playable/unit.hpp>
 
+Unit::Unit(int id_) : Unit()
+{
+    SetID(id_);
+    // name = "Unit";
+    // motionPtr = &motion;
+    // updateAnimation("stand");
+}
 
 Unit::Unit()
-    : Character(std::string("player/unit"), GetSkeletSize())
+    : Character(GetSkeletSize())
 {
     name = "Unit";
     motionPtr = &motion;
@@ -40,19 +47,23 @@ void Unit::SetMotion()
     motion.PushMotion("kill", _kill);
 
     [[maybe_unused]] Motion::FunType stand = [&motion]() {
-        int size = skeletSize;
+        static int size = skeletSize;
         Motion::bone_attribute *T = motion.transformations;
         std::fill(reinterpret_cast<float*>(&T[0]), reinterpret_cast<float*>(&T[size]), static_cast<float>(0.0));
         
-        float _time = *motion.FindUniformFloat("time"); 
         float flip = *motion.FindUniformFloat("flip"); 
         int hp = *motion.FindUniformInt("HP"); 
         static size_t body = motion.FindBone("body");
         static size_t HP = motion.FindBone("HP");
+        static size_t scale = motion.FindBone("scale");
 
         T[body].flip = flip;
-        T[HP].scale[0] = static_cast<GLfloat>(hp) / static_cast<GLfloat>(max_hp) - 1;
-        T[HP].offset[0] = 1 - static_cast<GLfloat>(hp) / static_cast<GLfloat>(max_hp);
+        if (hp >= max_hp) {
+            T[scale].scale[0] = -1.0f;
+        } else {
+            T[HP].scale[0] = static_cast<GLfloat>(hp) / static_cast<GLfloat>(max_hp) - 1;
+            T[HP].offset[0] = 1 - static_cast<GLfloat>(hp) / static_cast<GLfloat>(max_hp);
+        }
     };
     std::pair<float, Motion::FunType> _stand = {1.0, stand};
     motion.PushMotion("stand", _stand);
@@ -139,7 +150,7 @@ Bullet* Unit::Fire() {
     bullet->Teleport(GetTransform()->GetWorldPos());
     bullet->MoveForward(1.0);
     bullet->color = color;
-    bullet->owner = id;
+    bullet->id = id;
     last_fire = Actor::GetTime();
 
     return bullet;

@@ -3,7 +3,7 @@
 
 
 Wilson::Wilson()
-    : Character(std::string("player/Wilson"), GetSkeletSize())
+    : Character(GetSkeletSize())
 {
     name = "Wilson";
     motionPtr = &motion;

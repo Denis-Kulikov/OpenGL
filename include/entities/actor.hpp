@@ -44,9 +44,9 @@ constexpr size_t myHash(const char* s)
 class Actor 
 {
 public:
-    Actor(const std::string &path, const size_t SkeletSize)
+    Actor(const size_t SkeletSize)
     {
-        loadActor(path);
+        // loadActor(path);
         trans.Rotate = Vector3<GLfloat>(0.0, 0.0, 180);
         birth_time = GetTime();
 

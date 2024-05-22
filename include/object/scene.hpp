@@ -11,7 +11,10 @@
 class Scene 
 {
 public:
-    Scene(std::string _name) : name(_name) {};
+    Scene(const std::string& _name, const int id) : name(_name) {
+        for (int i = 0; i < MAX_PLAYERS; i++) players.insert(std::make_pair(i, Unit(i)));
+        player = &players[id];
+    };
     ~Scene() {};
 
     void pushObject(Component _component) { component.push_back(_component); };
@@ -24,5 +27,5 @@ public:
     std::vector<Component> component;
     GameTime Time;
     Unit *player = nullptr;
-    Unit *unit = nullptr;
+    std::map<int, Unit> players;
 };

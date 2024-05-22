@@ -4,8 +4,25 @@
 class Player
 {
 public:
-    Player(const struct sockaddr_in& client_addr_, const int id_)
-        : client_addr(client_addr_), id(id_) {};
+    Player(const Player& player_) : client_addr(player_.client_addr), sockfd(player_.sockfd) {
+        params.id = player_.params.id;
+        params.position = DegToPnt(static_cast<float>(360 / MAX_PLAYERS * params.id));
+    };
+    Player(const struct sockaddr_in& client_addr_, const int id_) : client_addr(client_addr_) {
+        sockfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+        if (sockfd < 0) {
+            perror("Ошибка при создании сокета");
+            exit(EXIT_FAILURE);
+        }
+
+        if (connect(sockfd, (const struct sockaddr *)&client_addr, sizeof(client_addr)) < 0) {
+            perror("Ошибка при установлении соединения");
+            exit(EXIT_FAILURE);
+        }
+
+        params.id = id_;
+        params.position = DegToPnt(static_cast<float>(360 / MAX_PLAYERS * params.id));
+    };
 
 
     bool operator==(const Player& other) const {
@@ -23,8 +40,14 @@ public:
     }
 
 
-// private:
     struct sockaddr_in client_addr;
-    Vector3<float> position;
-    int id;
+    int sockfd;
+
+    Vector3<float> wrong_offset;
+    struct player_params {
+        Vector3<float> position;
+        float direction;
+        int HP = MAX_HP;
+        int id;
+    } params;
 };

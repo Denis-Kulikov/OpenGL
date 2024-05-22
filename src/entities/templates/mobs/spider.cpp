@@ -2,7 +2,7 @@
 #include <entities/templates/mobs/spider.hpp>
 
 
-Spider::Spider() : Character(std::string("mobs/spider"), GetSkeletSize())
+Spider::Spider() : Character(GetSkeletSize())
 {
     name = "Spider";
     motionPtr = &motion;

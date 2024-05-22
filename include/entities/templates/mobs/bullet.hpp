@@ -2,7 +2,6 @@
 
 #include "../../character.hpp"
 
-
 class Bullet : public Pawn
 {
 public:
@@ -14,8 +13,8 @@ public:
     } args;
     
     struct Params {
-        int HP = 100;
-        int Damage = 25;
+        int HP = max_hp;
+        int Damage = max_hp;
     } params;
 
     static void Initialize();
@@ -30,7 +29,7 @@ public:
     void Update();
     void DealingDamage(int damage);
 
-    int owner = -1;
+    int id = -1;
     static inline float lifetime = 2e9;
 
     static inline std::string name = "NoName";
@@ -40,4 +39,5 @@ public:
     static inline Motion motion;
 
     Vector3<GLfloat> color = Vector3<GLfloat>(1.0, 1.0, 0.0);
+    static inline const int max_hp = 25;
 };

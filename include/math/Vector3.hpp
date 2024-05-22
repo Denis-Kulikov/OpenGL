@@ -8,7 +8,6 @@
 #define ToRadian(x) ((x) * M_PI / 180.0f)
 #define ToDegree(x) ((x) * 180.0f / M_PI)
 
-float radians(float degrees);
 
 template<typename T>
 class Vector3
@@ -180,3 +179,12 @@ public:
     }
 };
 
+template<typename T>
+Vector3<T> DegToPnt(T deg) {
+    return Vector3<T>(-cos(ToRadian(deg)), -sin(ToRadian(deg)), 0.0);
+}
+
+template<typename T>
+Vector3<T> PntToDeg(T x, T y) {
+    return -ToDegree(atan2(y, x));
+}
