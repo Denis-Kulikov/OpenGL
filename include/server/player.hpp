@@ -1,12 +1,14 @@
 #pragma once
 #include "../lib-project/lib.hpp"
 
+float RandF();
+
 class Player
 {
 public:
     Player(const Player& player_) : client_addr(player_.client_addr), sockfd(player_.sockfd) {
         params.id = player_.params.id;
-        params.position = DegToPnt(static_cast<float>(360 / MAX_PLAYERS * params.id));
+        params.position = Vector3<float>(RandF(), RandF(), 0.0);
     };
     Player(const struct sockaddr_in& client_addr_, const int id_) : client_addr(client_addr_) {
         sockfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
@@ -21,7 +23,8 @@ public:
         }
 
         params.id = id_;
-        params.position = DegToPnt(static_cast<float>(360 / MAX_PLAYERS * params.id));
+        params.position = Vector3<float>(RandF(), RandF(), 0.0);
+        // params.position = DegToPnt(static_cast<float>(360 / MAX_PLAYERS * params.id)) * 5;
     };
 
 

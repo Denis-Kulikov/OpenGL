@@ -2,16 +2,6 @@
 #include <entities/templates/playable/unit.hpp>
 #include <entities/templates/mobs/bullet.hpp>
 
-float RandF() {
-    float min = -5;
-    float max = 5;
-    std::random_device rd;  // Источник энтропии
-    std::mt19937 gen(rd()); // Генератор случайных чисел с начальным значением от random_device
-    std::uniform_real_distribution<float> dis(min, max); // Распределение на интервале [min, max]
-
-    return dis(gen);
-}
-
 
 Scene *createScene(int id)
 {
@@ -26,12 +16,13 @@ Scene *createScene(int id)
     Sprite* mySprite = new Sprite(std::string("Floor"), "shaders/sprite_fs.glsl", "shaders/sprite_repeat_vs.glsl", "img/chess_frame.jpg");
     mySprite->Magnification.second = mySprite->Magnification.first = 5;
     objectTransform transformFloor;
-    transformFloor.SetWorldPos(5, -1.0, -0.02);
+    transformFloor.SetWorldPos(0, 0.0, -0.02);
     transformFloor.SetRotate(0, 0, 0);
     transformFloor.SetScale(20, 20, 0);
     Component* component = new Component(transformFloor, mySprite);
     scene->pushObject(*component);
 
+    scene->player->Teleport(GameManager::client.spawn);
     scene->player->createCamera(GameManager::width, GameManager::height);
     GameManager::PushPlayer(scene->player);
     GameManager::PushCamera(scene->player->GetCamera());
@@ -40,7 +31,8 @@ Scene *createScene(int id)
 
     std::cout << "Size = " << scene->players.size() << std::endl;
     for (auto& it : scene->players) {
-        it.second.Teleport(Vector3<float>(RandF(), RandF(), 0.0f));
+        if (it.second.id == scene->player->id) continue;
+        it.second.Teleport(Vector3<float>(100000, 100000, -0.5f));
     }
 
     return scene;

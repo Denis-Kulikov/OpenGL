@@ -29,9 +29,10 @@
 #define PORT 8888
 #define SERVER_IP "127.0.0.1"
 
-#define PLAYER_SPEED 0.3
+#define PLAYER_SPEED 2.0
 #define MAX_HP 100
 #define BULLET_DAMAGE 100 / 4 
+#define BULLET_SPEED PLAYER_SPEED * 1.5
 
 enum {
     CLIENT_CONNECT,
@@ -39,14 +40,8 @@ enum {
 
     MOVE,
     FIRE,
-    // KILL,
-    // REVIVAL,
-    // TELEPORT,
 
     SET_HP
-
-    // DAMAGE,
-    // HEALING,
 };
 
 struct MOVE_INFO {
@@ -79,6 +74,11 @@ struct ID_FIRE_INFO {
 struct ID_SET_HP_INFO {
     int code_message;
     int HP;
+    int id;
+};
+
+struct ID_DISCONNECT {
+    int code_message;
     int id;
 };
 

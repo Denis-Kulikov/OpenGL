@@ -2,6 +2,15 @@
 #include <entities/templates/playable/unit.hpp>
 #include <entities/templates/mobs/bullet.hpp>
 
+float RandF() {
+    float min = -7.5;
+    float max = 7.5;
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_real_distribution<float> dis(min, max);
+
+    return dis(gen);
+}
 
 std::chrono::milliseconds totalTime(0);
 
@@ -15,25 +24,34 @@ bool RenderSceneCB(Render *render, Scene *scene)
     static const std::chrono::milliseconds frameDurationMessage(1000 / targetMessage);
     static std::chrono::steady_clock::time_point framePrevious = std::chrono::steady_clock::now();
     static std::chrono::steady_clock::time_point framePreviousMessage = std::chrono::steady_clock::now();
+    static std::chrono::steady_clock::time_point previous = std::chrono::steady_clock::now();
     std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
-    std::chrono::steady_clock::time_point frameEnd = now + frameDuration;
-    std::this_thread::sleep_until(frameEnd);
+    // std::chrono::steady_clock::time_point cut = now - previous;
+    // std::chrono::steady_clock::time_point frameEnd = now + frameDuration;
+    // std::this_thread::sleep_until(frameEnd);
 
     scene->Time.Update();
+    static float cut = scene->Time.GetCurrentTime();
+    static float prev_time = scene->Time.GetCurrentTime();
+    scene->Time.Update();
+    cut = (scene->Time.GetCurrentTime() - prev_time) * 1e-8;
+    prev_time = scene->Time.GetCurrentTime();
+    // std::cout << cut << std::endl;
     Actor::PushTime(scene->Time.GetCurrentTime());
     for (std::vector<Component>::iterator it = scene->getIterator(); it != scene->component.end(); it++)
         GameManager::render->drawObject(&it->transform, it->sprite);
 
 
     GameManager::client.mutex_lock();
-    scene->player->MoveForward();
+    scene->player->MoveForward(static_cast<float>(cut) * scene->player->GetSpeed());
     GameManager::client.mutex_unlock();
 
     scene->player->UpdateCameraPos();
     scene->player->args.deg = GameManager::deg;
 
-    // Коллизий пуль
+    // Коллизия пуль
     for (auto blt = scene->bullets.begin(); blt != scene->bullets.end();) {
+        (*blt)->MoveForward(cut * (*blt)->GetSpeed());
         if ((scene->Time.GetCurrentTime() - (*blt)->GetBirthTime()) > Bullet::lifetime) {
             blt = scene->bullets.erase(blt);
             if (blt == scene->bullets.end()) break;
@@ -71,7 +89,6 @@ bool RenderSceneCB(Render *render, Scene *scene)
     for (auto blt = scene->bullets.begin(); blt != scene->bullets.end();) {
         std::vector<Component*> ActorComponents;
         (*blt)->Update();
-        (*blt)->MoveForward();
         ActorComponents = (*blt)->getActorComponents();
         for (auto it : ActorComponents) GameManager::render->drawObject(&it->transform, it->sprite);
         blt++;
@@ -82,6 +99,9 @@ bool RenderSceneCB(Render *render, Scene *scene)
         GameManager::client.move(scene->player->GetTransform()->GetWorldPos(), scene->player->args.deg, scene->player->id);
         framePreviousMessage = now;
     }
+
+    std::chrono::steady_clock::time_point frameEnd = now + frameDuration;
+    std::this_thread::sleep_until(frameEnd);
 
     return GameManager::IsEnd;
 }

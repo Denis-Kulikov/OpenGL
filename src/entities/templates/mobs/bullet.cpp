@@ -7,7 +7,7 @@ Bullet::Bullet()
 {
     name = "Bullet";
     motionPtr = &motion;
-    speed *= 1.5;
+    speed *= BULLET_SPEED;
 }
 
 Bullet::~Bullet()

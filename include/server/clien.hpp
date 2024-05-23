@@ -27,13 +27,13 @@ public:
     void connect_game() {
         buffer[0] = CLIENT_CONNECT;
         send(sockfd, (const message_type *)&buffer[0], MAX_SIZE, 0);
-        // sendto(sockfd, (const message_type *)&buffer[0], MAX_SIZE, 0, (const struct sockaddr *)&server_addr, sizeof(server_addr));
-        int temp;
-        n = recv(sockfd, (int*)&temp, 1, 0);
+        struct ID_MOVE_INFO id_move_info;
+        n = recv(sockfd, (ID_MOVE_INFO*)&id_move_info, sizeof(struct ID_MOVE_INFO), 0);
         mutex_lock();
-        id = temp;
+        id = id_move_info.id;
         printf("Получено от сервера: %d\n", id);
         mutex_unlock();
+        spawn = id_move_info.position;
     }
 
     void disconnect_game() {
@@ -68,7 +68,6 @@ public:
 
 
     void move(struct ID_MOVE_INFO* id_move_info) {
-        std::cout << "Move!" << std::endl;
         if (id_move_info->id == scene->player->id) {
             mutex_lock();
             scene->player->Teleport(id_move_info->position);
@@ -82,7 +81,6 @@ public:
     }
 
     void fire(struct ID_FIRE_INFO* id_fire_info) {
-        std::cout << "Fire! " << id_fire_info->id << std::endl;
         move(reinterpret_cast<ID_MOVE_INFO*>(id_fire_info));
         Bullet* bullet = scene->players[id_fire_info->id].Fire();
         if (bullet != nullptr) {
@@ -92,11 +90,17 @@ public:
 
     void set_hp(struct ID_SET_HP_INFO* id_set_hp__info) {
         scene->players[id_set_hp__info->id].params.HP = id_set_hp__info->HP;
+        if (scene->players[id_set_hp__info->id].params.HP <= 0) {
+            scene->players[id_set_hp__info->id].GetTransform()->Move(100000.0, 100000.0, 0.0);
+        }
+    }
+
+    bool client_disconnect(struct ID_DISCONNECT* id_disconnect) {
+        return scene->player->id == id_disconnect->id;
     }
 
     void callback() {
         while (true) {
-            std::cout << "get" << std::endl;
             n = recv(sockfd, (message_type *)buffer, MAX_SIZE, 0);
 
             switch (buffer[0])
@@ -112,6 +116,10 @@ public:
             case SET_HP:
                 set_hp(reinterpret_cast<ID_SET_HP_INFO*>(buffer));
                 break;
+
+            case CLIENT_DISCONNECT:
+                if (client_disconnect(reinterpret_cast<ID_DISCONNECT*>(buffer))) return;
+                break;
             
             default:
                 break;
@@ -125,6 +133,7 @@ public:
     int sockfd, n;
     int id = 777;
     message_type buffer[MAX_SIZE];
+    Vector3<float> spawn;
 
     Scene* scene = nullptr;
     pthread_mutex_t player_mutex = PTHREAD_MUTEX_INITIALIZER;

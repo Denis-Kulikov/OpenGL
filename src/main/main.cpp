@@ -33,6 +33,7 @@ int main(int argc, char** argv)
         }
         GameManager::client.scene = GameManager::scene;
         GameManager::client.callback();
+        GameManager::IsEnd = true;
     });
     client_callback.detach();
 

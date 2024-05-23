@@ -1,7 +1,9 @@
 #pragma once
 #include "../lib-project/lib.hpp"
 #include "player.hpp"
-#include "unit/unitInfo.hpp"
+// #include "unit/unitInfo.hpp"
+#include "../entities/templates/playable/unit.hpp"
+#include "../entities/templates/mobs/bullet.hpp"
 #include <map>
 #include <utility>
 #include <set>
@@ -15,6 +17,8 @@ int generateRandomInt(int min, int max) {
 
     return dis(gen);
 }
+
+Unit gun;
 
 class Server
 {
@@ -67,7 +71,7 @@ public:
             n = recvfrom(sockfd, (message_type *)buffer, MAX_SIZE, 0, (struct sockaddr *)&client_addr, &len);
             std::pair<int, int> player_info(client_addr.sin_addr.s_addr, client_addr.sin_port);
             Player *player = nullptr;
-            auto player_it = players.find(player_info);;
+            auto player_it = players.find(player_info);
 
             if (buffer[0] == CLIENT_CONNECT) {
                 printf("Получено от клиента %s:%d: %s\n", inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port), buffer);
@@ -82,7 +86,19 @@ public:
                     if (player_it == players.end()) {
                         player_id = CreatePlayer(client_addr);
                         std::cout << "Send id " << player_id << std::endl;
-                        sendto(sockfd, (int*)&player_id, 1, 0, (const struct sockaddr *)&client_addr, len);
+                        player_it = players.begin();
+                        while (player_it->second.params.id != player_id) ++player_it;
+                        struct ID_MOVE_INFO id_move_info = {
+                            CLIENT_CONNECT,
+                            player_it->second.params.position,
+                            player_it->second.params.direction,
+                            player_it->second.params.id
+                        };
+                        sendto(sockfd, (const struct ID_MOVE_INFO *)&id_move_info, sizeof(struct ID_MOVE_INFO), 0, (const struct sockaddr *)&(client_addr), sizeof(client_addr));
+                        for (const auto& it : players) {
+                            if (it.second.params.id == player_id) continue;
+                            sendto(sockfd, (const struct ID_MOVE_INFO *)&id_move_info, sizeof(struct ID_MOVE_INFO), 0, (const struct sockaddr *)&(it.second.client_addr), sizeof(it.second.client_addr));
+                        }
                     } else {
                         player_id = (*player_it).second.params.id;
                         std::cout << "Игрок уже существует" << std::endl;
@@ -92,8 +108,6 @@ public:
             } else {
                 if (player_it == players.end()) break;
                 player = &player_it->second;
-                // std::cout << "ID: " << player->params.id;
-
 
                 switch (buffer[0])
                 {
@@ -109,7 +123,16 @@ public:
                 case FIRE:
                 {
                     struct FIRE_INFO* fire_info = reinterpret_cast<FIRE_INFO*>(buffer);
-                    UnitInfo::UnitFire(fire_info->position, fire_info->direction, player->params.id);
+                    gun.SetID(player->params.id);
+                    gun.Teleport(fire_info->position);
+                    gun.args.deg = fire_info->direction;
+                    gun.SetID(player->params.id);
+
+                    Bullet* bullet = gun.Fire();
+                    if (bullet != nullptr) {
+                        bullets.push_back(bullet);
+                    }
+                    // UnitInfo::UnitFire(fire_info->position, fire_info->direction, player->params.id);
 
                     struct ID_FIRE_INFO id_fire_info = {
                         FIRE,
@@ -133,21 +156,7 @@ public:
                     Vector3<float> offset = move_info->position;
                     offset -= player->params.position;
 
-                    // if ((offset * (1000 / TPS)).Length() > PLAYER_SPEED) {
-                    //     if (((offset + player->wrong_offset) * (1000 / TPS)).Length() > PLAYER_SPEED) {
-                    //         player->params.position = move_info->position + player->wrong_offset;
-                    //     } else {
-                    //         offset = offset.Normalize() * PLAYER_SPEED; 
-                    //         player->params.position += offset;
 
-
-                    //         send(player->sockfd, (const struct ID_MOVE_INFO *)&id_move_info, sizeof(struct ID_MOVE_INFO), 0);
-                    //         // sendto(sockfd, (int*)&player_id, 1, 0, (const struct sockaddr *)&client_addr, len);
-                    //     }
-
-                    // } else {
-                    //     player->params.position = move_info->position;
-                    // }
                     player->params.position = move_info->position;
                     player->params.direction = move_info->direction;
 
@@ -162,13 +171,6 @@ public:
                         if (it.second.params.id == player->params.id) continue;
                         sendto(sockfd, (const struct ID_MOVE_INFO *)&id_move_info, sizeof(struct ID_MOVE_INFO), 0, (const struct sockaddr *)&(it.second.client_addr), sizeof(it.second.client_addr));
                     }
-
-
-                    // sendto(client_addr, (const struct ID_MOVE_INFO *)&id_move_info, sizeof(struct ID_MOVE_INFO), 0);
-                    // send(player->sockfd, (const struct ID_MOVE_INFO *)&id_move_info, sizeof(struct ID_MOVE_INFO), 0);
-
-                    // sendto(sockfd, (const struct ID_MOVE_INFO *)&id_move_info, sizeof(struct ID_MOVE_INFO), 0, (const struct sockaddr *)&(player->client_addr), sizeof(player->client_addr));
-                    // sendto(sockfd, (const struct ID_MOVE_INFO *)&id_move_info, 1, 0, (const struct sockaddr *)&client_addr, len);
                     break;
                 }
 
@@ -179,6 +181,67 @@ public:
         }
     }
 
+    void DealingDamage(Player& player_, int damage) {
+        player_.params.HP -= damage;
+        struct ID_SET_HP_INFO id_set_hp_info = {
+            SET_HP,
+            player_.params.HP,
+            player_.params.id
+        };
+        for (const auto& it : players) {
+            sendto(sockfd, (const struct ID_SET_HP_INFO *)&id_set_hp_info, sizeof(struct ID_SET_HP_INFO), 0, (const struct sockaddr *)&(it.second.client_addr), sizeof(it.second.client_addr));
+        }
+        if (player_.params.HP <= 0) {
+            auto it = players.begin();
+            while (it->second.params.id != player_.params.id) ++it;
+            struct ID_DISCONNECT id_disconnect = {
+                CLIENT_DISCONNECT,
+                player_.params.id
+            };
+            sendto(sockfd, (const struct ID_DISCONNECT *)&id_disconnect, sizeof(struct ID_DISCONNECT), 0, (const struct sockaddr *)&(it->second.client_addr), sizeof(it->second.client_addr));
+            players.erase(it);          
+        }
+    }
+
+    void tick() {
+        static const int targetFPS = 33;
+        static const std::chrono::milliseconds frameDuration(1000 / targetFPS);
+        static std::chrono::steady_clock::time_point framePrevious = std::chrono::steady_clock::now();
+        std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
+        std::chrono::steady_clock::time_point frameEnd = now + frameDuration;
+        std::this_thread::sleep_until(frameEnd);
+
+        Time.Update();
+        static float cut = Time.GetCurrentTime();
+        static float prev_time = Time.GetCurrentTime();
+        Time.Update();
+        cut = (Time.GetCurrentTime() - prev_time) * 1e-8;
+        prev_time = Time.GetCurrentTime();
+        Actor::PushTime(Time.GetCurrentTime());
+
+
+        // Коллизия пуль
+        for (auto blt = bullets.begin(); blt != bullets.end();) {
+            (*blt)->MoveForward(cut * (*blt)->GetSpeed());
+            if ((Time.GetCurrentTime() - (*blt)->GetBirthTime()) > Bullet::lifetime) {
+                blt = bullets.erase(blt);
+                if (blt == bullets.end()) break;
+            }
+            for (auto& plr : players) {
+                if ((plr.second.params.id != (*blt)->id) && (plr.second.params.HP > 0)) {
+                    if ((*blt)->GetTransform()->WorldPos.Distance(plr.second.params.position) < (1.0 + 0.5)) {
+                        std::cout << "DealingDamage" << std::endl;
+                        DealingDamage(plr.second, BULLET_DAMAGE);
+                        blt = bullets.erase(blt);
+                        break;
+                    }
+                }
+            }
+            if (blt == bullets.end()) break;
+            ++blt;
+        }
+    }
+
 
 private:
     std::map<std::pair<int, int>, Player> players;
@@ -186,4 +249,6 @@ private:
     int sockfd, n;
     bool id[MAX_PLAYERS];
     message_type buffer[MAX_SIZE];
+    std::list<Bullet*> bullets;
+    GameTime Time;
 };
