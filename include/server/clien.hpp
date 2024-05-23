@@ -66,8 +66,32 @@ public:
     void mutex_lock()   { pthread_mutex_lock(&player_mutex); }
     void mutex_unlock() { pthread_mutex_unlock(&player_mutex); }
 
-    static void callback_start(Client& client) {
-        client.callback();
+
+    void move(struct ID_MOVE_INFO* id_move_info) {
+        std::cout << "Move!" << std::endl;
+        if (id_move_info->id == scene->player->id) {
+            mutex_lock();
+            scene->player->Teleport(id_move_info->position);
+            scene->player->args.deg = id_move_info->direction;
+            mutex_unlock();
+        } else {
+            if (id_move_info->id < 0 || id_move_info->id >= MAX_PLAYERS) return;
+            scene->players[id_move_info->id].Teleport(id_move_info->position);
+            scene->players[id_move_info->id].args.deg = id_move_info->direction;
+        }
+    }
+
+    void fire(struct ID_FIRE_INFO* id_fire_info) {
+        std::cout << "Fire! " << id_fire_info->id << std::endl;
+        move(reinterpret_cast<ID_MOVE_INFO*>(id_fire_info));
+        Bullet* bullet = scene->players[id_fire_info->id].Fire();
+        if (bullet != nullptr) {
+            scene->bullets.push_back(bullet);
+        }
+    }
+
+    void set_hp(struct ID_SET_HP_INFO* id_set_hp__info) {
+        scene->players[id_set_hp__info->id].params.HP = id_set_hp__info->HP;
     }
 
     void callback() {
@@ -78,17 +102,15 @@ public:
             switch (buffer[0])
             {
             case MOVE:
-            {               
-                struct ID_MOVE_INFO* id_move_info = reinterpret_cast<ID_MOVE_INFO*>(buffer);
-                if (id_move_info->id == scene->player->id) {
-                    mutex_lock();
-                    scene->player->Teleport(id_move_info->position);
-                    mutex_unlock();
-                } else {
-                    if (id_move_info->id < 0 || id_move_info->id >= MAX_PLAYERS) break;
-                    scene->players[id_move_info->id].Teleport(id_move_info->position);
-                }
-            }
+                move(reinterpret_cast<ID_MOVE_INFO*>(buffer));
+                break;
+
+            case FIRE:
+                fire(reinterpret_cast<ID_FIRE_INFO*>(buffer));
+                break;
+
+            case SET_HP:
+                set_hp(reinterpret_cast<ID_SET_HP_INFO*>(buffer));
                 break;
             
             default:

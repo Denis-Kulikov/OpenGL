@@ -28,4 +28,5 @@ public:
     GameTime Time;
     Unit *player = nullptr;
     std::map<int, Unit> players;
+    std::list<Bullet*> bullets;
 };

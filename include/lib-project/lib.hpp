@@ -61,31 +61,24 @@ struct FIRE_INFO {
     float direction;
 };
 
-// struct KILL_INFO {
-//     int code_message;
-//     int id;
-// }
-
-// struct REVIVAL_INFO {
-//     int code_message;
-//     int id;
-// }
-
-struct SET_HP_INFO {
-    int code_message;
-    int HP;
-    int id;
-};
-
 
 struct ID_MOVE_INFO {
     int code_message;
     Vector3<float> position;
+    float direction;
     int id;
 };
 
 struct ID_FIRE_INFO {
-    // struct ID_FIRE_INFO fire_info;
+    int code_message;
+    Vector3<float> position;
+    float direction;
+    int id;
+};
+
+struct ID_SET_HP_INFO {
+    int code_message;
+    int HP;
     int id;
 };
 

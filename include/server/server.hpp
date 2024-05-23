@@ -8,6 +8,14 @@
 
 #define TPS 30
 
+int generateRandomInt(int min, int max) {
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<int> dis(min, max);
+
+    return dis(gen);
+}
+
 class Server
 {
 public:
@@ -84,7 +92,7 @@ public:
             } else {
                 if (player_it == players.end()) break;
                 player = &player_it->second;
-                std::cout << "ID: " << player->params.id;
+                // std::cout << "ID: " << player->params.id;
 
 
                 switch (buffer[0])
@@ -102,6 +110,20 @@ public:
                 {
                     struct FIRE_INFO* fire_info = reinterpret_cast<FIRE_INFO*>(buffer);
                     UnitInfo::UnitFire(fire_info->position, fire_info->direction, player->params.id);
+
+                    struct ID_FIRE_INFO id_fire_info = {
+                        FIRE,
+                        player->params.position,
+                        player->params.direction,
+                        player->params.id
+                    };
+
+                    for (const auto& it : players) {
+                        if (it.second.params.id == player->params.id) continue;
+                        sendto(sockfd, (const struct ID_FIRE_INFO *)&id_fire_info, sizeof(struct ID_FIRE_INFO), 0, (const struct sockaddr *)&(it.second.client_addr), sizeof(it.second.client_addr));
+                    }
+
+                          
                     break;
                 }
 
@@ -111,38 +133,42 @@ public:
                     Vector3<float> offset = move_info->position;
                     offset -= player->params.position;
 
-                    if ((offset * (1000 / TPS)).Length() > PLAYER_SPEED) {
-                        if (((offset + player->wrong_offset) * (1000 / TPS)).Length() > PLAYER_SPEED) {
-                            player->params.position = move_info->position + player->wrong_offset;
-                        } else {
-                            offset = offset.Normalize() * PLAYER_SPEED; 
-                            player->params.position += offset;
+                    // if ((offset * (1000 / TPS)).Length() > PLAYER_SPEED) {
+                    //     if (((offset + player->wrong_offset) * (1000 / TPS)).Length() > PLAYER_SPEED) {
+                    //         player->params.position = move_info->position + player->wrong_offset;
+                    //     } else {
+                    //         offset = offset.Normalize() * PLAYER_SPEED; 
+                    //         player->params.position += offset;
 
-                            struct ID_MOVE_INFO id_move_info = {
-                                MOVE,
-                                player->params.position,
-                                player->params.id
-                            };
-                            send(player->sockfd, (const struct ID_MOVE_INFO *)&id_move_info, sizeof(struct ID_MOVE_INFO), 0);
-                            // sendto(sockfd, (int*)&player_id, 1, 0, (const struct sockaddr *)&client_addr, len);
-                        }
 
-                    } else {
-                        player->params.position = move_info->position;
-                    }
+                    //         send(player->sockfd, (const struct ID_MOVE_INFO *)&id_move_info, sizeof(struct ID_MOVE_INFO), 0);
+                    //         // sendto(sockfd, (int*)&player_id, 1, 0, (const struct sockaddr *)&client_addr, len);
+                    //     }
+
+                    // } else {
+                    //     player->params.position = move_info->position;
+                    // }
+                    player->params.position = move_info->position;
                     player->params.direction = move_info->direction;
 
-                            struct ID_MOVE_INFO id_move_info = {
-                                MOVE,
-                                player->params.position,
-                                player->params.id
-                            };
-                    send(player->sockfd, (const struct ID_MOVE_INFO *)&id_move_info, sizeof(struct ID_MOVE_INFO), 0);
-                    // sendto(client_addr, (const struct ID_MOVE_INFO *)&id_move_info, sizeof(struct ID_MOVE_INFO), 0);
-                    sendto(sockfd, (message_type *)buffer, MAX_SIZE, 0, (struct sockaddr *)&client_addr, sizeof(client_addr));
-                    sendto(sockfd, (const struct ID_MOVE_INFO *)&id_move_info, 1, 0, (const struct sockaddr *)&client_addr, len);
 
-                    std::cout << "Player(" << id << "): " << player->params.position << " | " << player->params.direction << std::endl;
+                    struct ID_MOVE_INFO id_move_info = {
+                        MOVE,
+                        player->params.position,
+                        player->params.direction,
+                        player->params.id
+                    };
+                    for (const auto& it : players) {
+                        if (it.second.params.id == player->params.id) continue;
+                        sendto(sockfd, (const struct ID_MOVE_INFO *)&id_move_info, sizeof(struct ID_MOVE_INFO), 0, (const struct sockaddr *)&(it.second.client_addr), sizeof(it.second.client_addr));
+                    }
+
+
+                    // sendto(client_addr, (const struct ID_MOVE_INFO *)&id_move_info, sizeof(struct ID_MOVE_INFO), 0);
+                    // send(player->sockfd, (const struct ID_MOVE_INFO *)&id_move_info, sizeof(struct ID_MOVE_INFO), 0);
+
+                    // sendto(sockfd, (const struct ID_MOVE_INFO *)&id_move_info, sizeof(struct ID_MOVE_INFO), 0, (const struct sockaddr *)&(player->client_addr), sizeof(player->client_addr));
+                    // sendto(sockfd, (const struct ID_MOVE_INFO *)&id_move_info, 1, 0, (const struct sockaddr *)&client_addr, len);
                     break;
                 }
 

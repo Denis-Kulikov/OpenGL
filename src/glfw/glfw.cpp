@@ -3,7 +3,6 @@
 #include <entities/templates/mobs/bullet.hpp>
 
 
-std::list<Bullet*> bullets;
 std::chrono::milliseconds totalTime(0);
 
 bool RenderSceneCB(Render *render, Scene *scene)
@@ -11,7 +10,7 @@ bool RenderSceneCB(Render *render, Scene *scene)
     static time_t prev = time(0);
     static int frame = 0;
     static const int targetFPS = 120;
-    static const int targetMessage = 5;
+    static const int targetMessage = 40;
     static const std::chrono::milliseconds frameDuration(1000 / targetFPS);
     static const std::chrono::milliseconds frameDurationMessage(1000 / targetMessage);
     static std::chrono::steady_clock::time_point framePrevious = std::chrono::steady_clock::now();
@@ -22,6 +21,9 @@ bool RenderSceneCB(Render *render, Scene *scene)
 
     scene->Time.Update();
     Actor::PushTime(scene->Time.GetCurrentTime());
+    for (std::vector<Component>::iterator it = scene->getIterator(); it != scene->component.end(); it++)
+        GameManager::render->drawObject(&it->transform, it->sprite);
+
 
     GameManager::client.mutex_lock();
     scene->player->MoveForward();
@@ -29,59 +31,51 @@ bool RenderSceneCB(Render *render, Scene *scene)
 
     scene->player->UpdateCameraPos();
     scene->player->args.deg = GameManager::deg;
-    scene->player->Update();
 
-    for (std::vector<Component>::iterator it = scene->getIterator(); it != scene->component.end(); it++)
-        GameManager::render->drawObject(&it->transform, it->sprite);
+    // Коллизий пуль
+    for (auto blt = scene->bullets.begin(); blt != scene->bullets.end();) {
+        if ((scene->Time.GetCurrentTime() - (*blt)->GetBirthTime()) > Bullet::lifetime) {
+            blt = scene->bullets.erase(blt);
+            if (blt == scene->bullets.end()) break;
+        }
+        for (auto& plr : GameManager::scene->players) {
+            if ((plr.first != (*blt)->id) && (plr.second.params.HP > 0)) {
+                if ((*blt)->GetTransform()->WorldPos.Distance(plr.second.GetTransform()->WorldPos) < (1.0 + 0.5)) {
+                    blt = scene->bullets.erase(blt);
+                    break;
+                }
+            }
+        }
+        if (blt == scene->bullets.end()) break;
+        ++blt;
+    }
 
-
-    // for (auto it = bullets.begin(); it != bullets.end();) {
-    //     if ((*it)->GetTransform()->WorldPos.Distance(scene->unit->GetTransform()->WorldPos) < (1.0 + 0.5)) {
-    //         if ((*it)->id != scene->unit->id) {
-    //             scene->unit->DealingDamage((*it)->params.Damage);
-    //             it = bullets.erase(it);
-    //             continue;
-    //         }
-    //     } 
-    //     ++it;
-    // }
-
-
-    for (const auto& it : scene->players) {
-        std::vector<Component*> ActorComponents = scene->player->getActorComponents();
+    // отрисовка игроков
+    for (auto& it : scene->players) {
+        it.second.Update();
+        std::vector<Component*> ActorComponents = it.second.getActorComponents();
         for (auto ac : ActorComponents)  GameManager::render->drawObject(&ac->transform, ac->sprite);
     }
 
+    // выстрелы
     if (scene->player->isFire) {
         Bullet* bullet = scene->player->Fire();
-        Vector3<float> direction = scene->player->args.deg;
         GameManager::client.fire(scene->player->GetTransform()->GetWorldPos(), scene->player->args.deg, scene->player->id);
-        scene->player->isFire = !scene->player->isFire;
+        scene->player->isFire = false;
         if (bullet != nullptr) {
-            bullets.push_back(bullet);
+            scene->bullets.push_back(bullet);
         }
     }
 
-
-    // scene->unit->Teleport(Vector3<GLfloat>());
-    // scene->unit->args.deg = 0;
-    // scene->unit->Update();
-    // ActorComponents = scene->unit->getActorComponents();
-    // for (auto it : ActorComponents) GameManager::render->drawObject(&it->transform, it->sprite);
-
-
-    // for (auto blt = bullets.begin(); blt != bullets.end();) {
-    //     if ((scene->Time.GetCurrentTime() - (*blt)->GetBirthTime()) > Bullet::lifetime) {
-    //         blt = bullets.erase(blt);
-    //         if (blt == bullets.end()) break;
-    //     } else {
-    //         (*blt)->Update();
-    //         (*blt)->MoveForward();
-    //         ActorComponents = (*blt)->getActorComponents();
-    //         for (auto it : ActorComponents) GameManager::render->drawObject(&it->transform, it->sprite);
-    //         blt++;
-    //     }
-    // }
+    // отрисовка пуль
+    for (auto blt = scene->bullets.begin(); blt != scene->bullets.end();) {
+        std::vector<Component*> ActorComponents;
+        (*blt)->Update();
+        (*blt)->MoveForward();
+        ActorComponents = (*blt)->getActorComponents();
+        for (auto it : ActorComponents) GameManager::render->drawObject(&it->transform, it->sprite);
+        blt++;
+    }
 
 
     if (now - framePreviousMessage >= frameDurationMessage) {

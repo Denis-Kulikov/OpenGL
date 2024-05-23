@@ -24,9 +24,7 @@ void GameCallback()
 int main(int argc, char** argv)
 {
     std::thread client_callback([&]() {
-        std::cout << "client_callback" << std::endl;
         GameManager::client.connect_game();
-        std::cout << "connected " << GameManager::client.GetID() << std::endl;
         bool wait = true;
         while (wait) {
             GameManager::client.mutex_lock();
@@ -34,7 +32,6 @@ int main(int argc, char** argv)
             GameManager::client.mutex_unlock();
         }
         GameManager::client.scene = GameManager::scene;
-        std::cout << "get scene" << std::endl;
         GameManager::client.callback();
     });
     client_callback.detach();

@@ -64,7 +64,7 @@ public:
     }
     
     ~Actor() {
-        std::cout << "Dst" << std::endl; 
+        // std::cout << "Dst" << std::endl; 
     }
 
     virtual size_t GetSkeletSize() = 0;
