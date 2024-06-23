@@ -30,6 +30,10 @@ public:
     GLuint gRotateLocation;
     GLuint gColorLocation;
 
+    GLuint gObjectLocation;
+    GLuint gCameraParamsLocation;
+    GLuint gPersProjParamsLocation;
+
     GLuint gTextureSamplerLocation;
 
     virtual struct GeometryInfo *GetGeometry();

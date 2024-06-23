@@ -42,8 +42,6 @@ public:
         SetPerspectiveProj(_camera.PersProj.FOV, _camera.PersProj.Width, _camera.PersProj.Height, _camera.PersProj.zNear, _camera.PersProj.zFar);
     }
 
-    objectTransform *parentTransform = nullptr;
-
     struct {
         Vector3<GLfloat> WorldPos;
         Vector3<GLfloat> Target;

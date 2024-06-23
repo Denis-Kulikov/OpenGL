@@ -122,6 +122,11 @@ void Sprite::compileShaders(const char *FS, const char *VS)
 
     gWorldLocation = glGetUniformLocation(shader, "gWorld");
     gColorLocation = glGetUniformLocation(shader, "gColor"); // assert(gColorLocation != 0xFFFFFFFF);
+
+    gObjectLocation = glGetUniformLocation(shader, "object");
+    gCameraParamsLocation = glGetUniformLocation(shader, "cameraParams");
+    gPersProjParamsLocation = glGetUniformLocation(shader, "PersProjParams");
+
     assert(gWorldLocation != 0xFFFFFFFF);
 }
 

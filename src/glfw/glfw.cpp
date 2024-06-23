@@ -1,25 +1,17 @@
 #include <game/gameManager.hpp>
-#include <game/gameTime.hpp>
+// #include <game/gameTime.hpp>
 #include <entities/templates/playable/Wilson.hpp>
 #include <entities/templates/mobs/spider.hpp>
 #include <entities/templates/decor/wave.hpp>
 
-#include <chrono>
-#include <ctime>
-#include <random>
-#include <thread>
-
-
-#define SPIDER_NUM 3
-#define WAVE_SUM 5
+#define SPIDER_NUM 500
+#define WAVE_SUM 300
 
 Wilson *character = nullptr;
 Spider *spider[SPIDER_NUM] = {nullptr};
 Wave *wave[WAVE_SUM] = {nullptr};
 
 std::chrono::milliseconds totalTime(0);
-
-GameTime Time;
 
 float randomFloat(float min, float max) {
     static std::random_device rd;
@@ -55,12 +47,12 @@ bool RenderSceneCB(Render *render, Scene *scene)
 
     // std::this_thread::sleep_until(frameStart + frameDuration);
     frameStart = std::chrono::steady_clock::now();
-    Time.Update();
+    GameManager::Time.Update();
 
     static time_t prev = time(0);
     static int frame = 0;
 
-    Actor::PushTime(Time.GetCurrentTime());
+    Actor::PushTime(GameManager::Time.GetCurrentTime());
 
     for (std::vector<Component>::iterator it = scene->getIterator(); it != scene->component.end(); it++)
         GameManager::render->drawObject(&it->transform, it->sprite);
@@ -69,7 +61,7 @@ bool RenderSceneCB(Render *render, Scene *scene)
 
     character->MoveForward();
     character->UpdateCameraPos();
-    character->updateAnimation(character->GetAnimation(Time.GetCurrentTime()));
+    character->updateAnimation(character->GetAnimation(GameManager::Time.GetCurrentTime()));
     std::vector<Component*> ActorComponents = character->getActorComponents();
 
     for (auto it : ActorComponents) 

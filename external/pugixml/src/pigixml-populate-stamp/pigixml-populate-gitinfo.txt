@@ -1,3 +1,0 @@
-repository='https://github.com/zeux/pugixml'
-module=''
-tag='origin'

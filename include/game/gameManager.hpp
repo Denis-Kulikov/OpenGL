@@ -1,5 +1,6 @@
 #pragma once
 
+#include "gameTime.hpp"
 #include "../render/glfw.hpp"
 #include "../render/render.hpp"
 #include "../object/sprite.hpp"
@@ -29,6 +30,7 @@ public:
     static int width;
     static int height;
     static Render *render;
+    inline static GameTime Time;
     
     struct CallbackData {
         Camera* camera;
