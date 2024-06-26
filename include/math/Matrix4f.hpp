@@ -9,6 +9,10 @@ public:
     T m[4][4];
 
     Matrix4f() {};
+
+    T* operator &() {
+        return &m[0][0];
+    }
     
     void SetMatrix4f(const Matrix4f &_Matrix4f) {
         for (unsigned int i = 0 ; i < 4 ; i++)

@@ -56,18 +56,18 @@ void Wave::SetMotion()
     motion.PushMotion("stand", _stand);
 }
 
-size_t Wave::GetSkeletSize() {
+size_t Wave::GetSkeletSize() const {
     return Wave::skeletSize;
 }
 
-Bone *Wave::GetSkelet() {
+Bone *Wave::GetSkelet() const {
     return &Wave::skelet;
 }
 
-std::map<std::string, Sprite> *Wave::GetSprites() {
+std::map<std::string, Sprite> *Wave::GetSprites() const {
     return &Wave::Sprites;
 }
 
-std::string *Wave::GetName() {
+std::string *Wave::GetName() const {
     return &Wave::name;
 }

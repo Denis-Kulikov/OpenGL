@@ -1,20 +1,22 @@
 #include <render/glfw.hpp>
 
-Matrix4f<GLfloat>* Pipeline::GetTransform()
+Matrix4f<GLfloat> Pipeline::GetTransform(const objectTransform *transform) const
 {
     Matrix4f<GLfloat> ScaleTrans, RotateTrans, TranslationTrans, CameraTranslationTrans, CameraRotateTrans, PersProjTrans;
+    Vector3<GLfloat> CameraPos = -camera->GetPosition();
 
-    ScaleTrans.InitScaleTransform(object->Scale.x, object->Scale.y, object->Scale.z);
-    RotateTrans.InitRotateTransform(object->Rotate.x, object->Rotate.y, object->Rotate.z);
-    TranslationTrans.InitTranslationTransform(object->WorldPos.x, object->WorldPos.y, object->WorldPos.z);
-    CameraTranslationTrans.InitTranslationTransform(-camera->Params.WorldPos.x, -camera->Params.WorldPos.y, -camera->Params.WorldPos.z);
+    ScaleTrans.InitScaleTransform(transform->Scale.x, transform->Scale.y, transform->Scale.z);
+    RotateTrans.InitRotateTransform(transform->Rotate.x, transform->Rotate.y, transform->Rotate.z);
+    TranslationTrans.InitTranslationTransform(transform->WorldPos.x, transform->WorldPos.y, transform->WorldPos.z);
+    CameraTranslationTrans.InitTranslationTransform(CameraPos.x, CameraPos.y, CameraPos.z);
     CameraRotateTrans.InitCameraTransform(camera->Params.Target, camera->Params.Up);
     PersProjTrans.InitPersProjTransform(camera->PersProj.FOV, camera->PersProj.Width, camera->PersProj.Height, camera->PersProj.zNear, camera->PersProj.zFar);
 
-    m_transformation = PersProjTrans * CameraRotateTrans * CameraTranslationTrans * TranslationTrans * RotateTrans * ScaleTrans;
-    return &m_transformation;
+    return PersProjTrans * CameraRotateTrans * CameraTranslationTrans * TranslationTrans * RotateTrans * ScaleTrans;
 }
 
-GLfloat* Pipeline::GetGLMatrix() {
-    return reinterpret_cast<GLfloat*>(GetTransform());
-}
+// GLfloat* Pipeline::GetGLMatrix(const objectTransform *transform) const
+// {
+//     Matrix4f<GLfloat> m_transformation = GetTransform(transform);
+//     return reinterpret_cast<GLfloat*>(&m_transformation);
+// }

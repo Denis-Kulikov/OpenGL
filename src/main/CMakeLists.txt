@@ -13,6 +13,7 @@ target_sources(
 target_link_libraries(
   ${target}
   PRIVATE
+	pthread
 	lib-glfw
 	lib-object
 	lib-game

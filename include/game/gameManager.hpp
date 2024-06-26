@@ -6,6 +6,7 @@
 #include "../object/sprite.hpp"
 #include "../entities/character.hpp"
 #include "../entities/templates/playable/player.hpp"
+#include "../threads/threads.hpp"
 
 
 class GameManager  
@@ -24,18 +25,19 @@ public:
     static void InitializeObjects();
     static Camera *createCamera();
     static void KeyboardCB(GLFWwindow* window, int key, int scancode, int action, int mods);
-    static Render *InitializeGLFW(GLFWwindow* &window, int _width, int _height);
+    static Render *InitializeGLFW(int _width, int _height);
 
-    static bool IsEnd;
-    static int width;
-    static int height;
-    static Render *render;
-    inline static GameTime Time;
-    
     struct CallbackData {
         Camera* camera;
         Character* player;
     };
-protected:
+
+    inline static bool IsEnd = false;
+    inline static int width = 640;
+    inline static int height = 480;
+    inline static GLFWwindow* window = nullptr;
+    inline static Render *render = nullptr;
+    inline static GameTime Time;
+    inline static SceneThread threads;
     static CallbackData callbackData;
 };

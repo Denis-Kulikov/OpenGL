@@ -2,7 +2,7 @@
 
 #include "../../character.hpp"
 
-class Spider : public Character
+class Spider : public Pawn
 {
 public:
     Spider();
@@ -11,10 +11,10 @@ public:
     static void Initialize();
     static void SetMotion();
     
-    virtual size_t GetSkeletSize() override;
-    virtual Bone *GetSkelet() override;
-    virtual std::map<std::string, Sprite> *GetSprites() override;
-    virtual std::string *GetName() override;
+    virtual size_t GetSkeletSize() const override;
+    virtual Bone *GetSkelet() const override;
+    virtual std::map<std::string, Sprite> *GetSprites() const override;
+    virtual std::string *GetName() const override;
 
     static inline std::string name = "NoName";
     static inline size_t skeletSize = 0;

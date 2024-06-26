@@ -1,6 +1,4 @@
-#include <entities/actor.hpp>
 #include <entities/templates/playable/Wilson.hpp>
-
 
 Wilson::Wilson()
     : Character(std::string("player/Wilson"), GetSkeletSize())
@@ -29,7 +27,7 @@ void Wilson::SetMotion()
     motion = Motion();
     motion.PushSkelet(&Wilson::skelet);
 
-    [[maybe_unused]] Motion::FunType stand = [&motion]() {
+    [[maybe_unused]] Motion::FunType stand = [&motion]() mutable {
         int size = skeletSize;
         Motion::bone_attribute *T = motion.transformations;
         std::fill(reinterpret_cast<float*>(&T[0]), reinterpret_cast<float*>(&T[size]), static_cast<float>(0.0));
@@ -61,18 +59,18 @@ void Wilson::SetMotion()
     motion.PushMotion("stand", _stand);
 }
 
-size_t Wilson::GetSkeletSize() {
+size_t Wilson::GetSkeletSize() const {
     return Wilson::skeletSize;
 }
 
-Bone *Wilson::GetSkelet() {
+Bone *Wilson::GetSkelet() const {
     return &Wilson::skelet;
 }
 
-std::map<std::string, Sprite> *Wilson::GetSprites() {
+std::map<std::string, Sprite> *Wilson::GetSprites() const {
     return &Wilson::Sprites;
 }
 
-std::string *Wilson::GetName() {
+std::string *Wilson::GetName() const {
     return &Wilson::name;
 }

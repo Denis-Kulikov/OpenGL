@@ -4,22 +4,17 @@
 int main(int argc, char** argv)
 {
     const int width = 1600, height = 960;
-    GLFWwindow* window = nullptr;
-    Render *render = GameManager::InitializeGLFW(window, width, height);
+    Render *render = GameManager::InitializeGLFW(width, height);
     GameManager::InitializeObjects();
-    Scene *scene = createScene();
 
     if (render == nullptr) {
         std::cout << "Error: render init" << std::endl;
         return -1;
     }
 
-    while (!GameManager::IsEnd) {
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        GameManager::IsEnd = RenderSceneCB(render, scene);
-        glfwSwapBuffers(window);
-        glfwPollEvents();
-    }
+    Scene *scene = createScene();
+    GameManager::threads.setScene(scene);
+    GameManager::threads.start();
 
     glfwTerminate();
 

@@ -11,6 +11,16 @@ public:
         Params.Up          = Vector3<GLfloat>(0.0f, 1.0f, 0.0f);
     }
 
+    void attachOwnerTransform(const objectTransform* TransformPtr)
+    {
+        OwnerTransformPtr = TransformPtr;
+    }
+
+    Vector3<GLfloat> GetPosition()
+    {
+        return OwnerTransformPtr == nullptr ? Params.WorldPos : Params.WorldPos + OwnerTransformPtr->GetWorldPos();
+    }
+
     void SetPerspectiveProj(GLfloat FOV, GLfloat Width, GLfloat Height, GLfloat zNear, GLfloat zFar)
     {
         PersProj.FOV    = FOV;
@@ -55,4 +65,6 @@ public:
         GLfloat zNear;
         GLfloat zFar;
     } PersProj;
+
+    const objectTransform* OwnerTransformPtr = nullptr;
 };

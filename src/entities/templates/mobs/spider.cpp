@@ -2,7 +2,7 @@
 #include <entities/templates/mobs/spider.hpp>
 
 
-Spider::Spider() : Character(std::string("mobs/spider"), GetSkeletSize())
+Spider::Spider() : Pawn(std::string("mobs/spider"), GetSkeletSize())
 {
     name = "Spider";
     motionPtr = &motion;
@@ -44,18 +44,18 @@ void Spider::SetMotion()
     motion.PushMotion("stand", _stand);
 }
 
-size_t Spider::GetSkeletSize() {
+size_t Spider::GetSkeletSize() const {
     return Spider::skeletSize;
 }
 
-Bone *Spider::GetSkelet() {
+Bone *Spider::GetSkelet() const {
     return &Spider::skelet;
 }
 
-std::map<std::string, Sprite> *Spider::GetSprites() {
+std::map<std::string, Sprite> *Spider::GetSprites() const {
     return &Spider::Sprites;
 }
 
-std::string *Spider::GetName() {
+std::string *Spider::GetName() const {
     return &Spider::name;
 }

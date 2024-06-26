@@ -79,6 +79,10 @@ public:
         return *this;
     }
 
+    Vector3<T> operator-() const {
+        return Vector3<T>(-x, -y, -z);
+    }
+
     Vector3<T> operator+(const Vector3<T> &v) {
         return Vector3(x + v.x, y + v.y, z + v.z);
     }

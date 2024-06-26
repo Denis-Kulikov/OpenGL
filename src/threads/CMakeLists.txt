@@ -1,11 +1,12 @@
-set(target lib-mobs)
+set(target lib-threads)
 
 add_library(${target} STATIC
-	spider.cpp
+	threads.cpp
 )
 
 target_link_libraries(
   ${target}
   PRIVATE
+	glfw GL GLEW
 	lib-entities
 )

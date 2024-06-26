@@ -10,8 +10,8 @@ target_link_libraries(
   ${target}
   PRIVATE
 	glfw GL GLEW
-	lib-object
-	lib-components
+	lib-entities
+	lib-threads
 	lib-playable
 	lib-mobs
 	lib-decor
