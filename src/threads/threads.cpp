@@ -9,12 +9,11 @@ RenderThread::RenderThread(std::atomic<bool>* endTickPtr)
 }
 
 void RenderThread::job() {
-    while (true) callback();
+    while (!GameManager::IsEnd) callback();
 }
 
 void RenderThread::callback() {
         if (components.empty()) {
-        //std::cout << "No components" << std::endl;
         // std::this_thread::sleep_for(std::chrono::milliseconds(THREADS_SLEEP_TIME_MS));
         if (endTick) {
             endTick = false;
@@ -23,7 +22,6 @@ void RenderThread::callback() {
         }
     } else {
         mutex.lock();
-        //std::cout << "Draw actor" << std::endl;
         const std::vector<Component*> component = components.top();
         components.pop();
         mutex.unlock();
@@ -50,6 +48,11 @@ bool RenderThread::empty() {
     return components.empty();
 }
 
+void RenderThread::setEnd()
+{
+    endTick = true;
+}
+
 // Реализация методов ComponentsThread
 
 ComponentsThread::ComponentsThread(std::atomic<bool>* endTickPtr)
@@ -57,29 +60,26 @@ ComponentsThread::ComponentsThread(std::atomic<bool>* endTickPtr)
 {}
 
 void ComponentsThread::job() {
-    while (true) callback();
+    while (!GameManager::IsEnd) callback();
 }
 
 void ComponentsThread::callback() {
     if (actors.empty()) {
-        //std::cout << "No actors" << std::endl;
         // std::this_thread::sleep_for(std::chrono::milliseconds(THREADS_SLEEP_TIME_MS));
         if (endTick) {
             endTick = false;
-            renderThread.endTick = true;
+            renderThread.setEnd();
         }
     } else {
         mutex.lock();
         const Actor* actor = actors.top();
         actors.pop();
         mutex.unlock();
-        //std::cout << "Push Components" << std::endl;
         renderThread.pushComponents(actor->getActorComponents());
     }
 }
 
 void ComponentsThread::pushActor(const Actor* actor) {
-    //std::cout << "Push Actor" << std::endl;
     std::lock_guard<std::mutex> lock(mutex);
     actors.push(actor);
 }
@@ -87,6 +87,11 @@ void ComponentsThread::pushActor(const Actor* actor) {
 bool ComponentsThread::empty() {
     std::lock_guard<std::mutex> lock(mutex);
     return actors.empty() && renderThread.empty();
+}
+
+void ComponentsThread::setEnd()
+{
+    endTick = true;
 }
 
 
@@ -148,14 +153,12 @@ void SceneThread::callback()
         // }
     }
 
-    componentsThread.endTick = true;
+    componentsThread.setEnd();
     while (!endTick) {
         // std::this_thread::sleep_for(std::chrono::milliseconds(THREADS_SLEEP_TIME_MS));
     }
     endTick = false;
 
-    //std::cout << "frame " << frame << std::endl;
-    //std::cout << "scene size " << scene->actors.size() << std::endl;
     frame++;
     if ((time(0) - prev) > 3) {
         std::cout << "FPS: " << frame / 3 << std::endl;

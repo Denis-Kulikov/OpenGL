@@ -11,15 +11,16 @@ public:
     void pushComponents(const std::vector<Component*>& ActorComponents);
     bool empty();
     void job();
+    void setEnd();
 
-    std::atomic<bool> endTick = false;
-// private:
+private:
     void callback();
     void popActor();
     void swapBuffer();
 
     std::stack<std::vector<Component*>> components;
     std::mutex mutex;
+    std::atomic<bool> endTick = false;
     std::atomic<bool>* sceneEndTickPtr = nullptr;
 };
 
@@ -27,18 +28,20 @@ public:
 class ComponentsThread {
 public:
     ComponentsThread(std::atomic<bool>* endTickPtr);
+    void job();
     void setScene(const Scene* _scene);
     void pushActor(const Actor* actor);
     bool empty();
-    void job();
-
-    std::atomic<bool> endTick = false;
-// private:
-    void callback();
+    void setEnd();
 
     RenderThread renderThread;
+    
+private:
+    void callback();
+
     std::stack<const Actor*> actors;
     std::mutex mutex;
+    std::atomic<bool> endTick = false;
 };
 
 class SceneThread {
