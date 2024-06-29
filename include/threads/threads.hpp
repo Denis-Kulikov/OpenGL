@@ -3,7 +3,10 @@
 #include "../render/render.hpp"
 #include "../object/scene.hpp"
 
-#define THREADS_SLEEP_TIME_MS 3
+#define THREADS_SLEEP_TIME_MS 2
+#define THREAD_SCENE 5
+#define THREAD_COMPONENTS 5
+#define THREAD_RENDER 4
 
 class RenderThread {
 public:

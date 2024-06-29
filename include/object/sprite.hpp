@@ -42,7 +42,7 @@ public:
 
 protected:
     GLuint loadShader(const char *shaderPath, GLuint type);
-    void loadTexures(const char *texturePath);
+    void loadTextures(const char *texturePath);
     void compileShaders(const char *FS, const char *VS);
 
     static struct GeometryInfo geometryInfo;

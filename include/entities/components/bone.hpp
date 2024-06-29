@@ -1,6 +1,7 @@
 #pragma once
 
-#include "pugixml.hpp"
+#include "../_deps/pigixml-src/src/pugixml.hpp"
+// #include <pugixml.hpp>
 #include "animation.hpp"
 
 class Bone

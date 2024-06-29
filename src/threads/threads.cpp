@@ -31,7 +31,7 @@ void RenderThread::callback() {
         startWorkTime = std::chrono::high_resolution_clock::now();
         for (std::size_t i = 0; i < num; i++) {
             if (endTicks[i] == false) {
-                std::this_thread::sleep_for(std::chrono::milliseconds(THREADS_SLEEP_TIME_MS));
+                std::this_thread::sleep_for(std::chrono::milliseconds(THREADS_SLEEP_TIME_MS * THREAD_RENDER));
                 endWorkTime = std::chrono::high_resolution_clock::now();
                 idleDuration += endWorkTime - startWorkTime;
                 return;
@@ -113,7 +113,7 @@ void ComponentsThread::callback() {
             endTick = false;
             renderThread->setEnd(num);
         } else {
-            std::this_thread::sleep_for(std::chrono::milliseconds(THREADS_SLEEP_TIME_MS));
+            std::this_thread::sleep_for(std::chrono::milliseconds(THREADS_SLEEP_TIME_MS * THREAD_COMPONENTS));
         }
     } else {
         startWorkTime = std::chrono::high_resolution_clock::now();
@@ -257,7 +257,7 @@ void SceneThread::callback()
         if (GameManager::IsEnd) return;
     // endWorkTime = std::chrono::high_resolution_clock::now();
     // idleDuration += endWorkTime - startWorkTime;
-        std::this_thread::sleep_for(std::chrono::milliseconds(THREADS_SLEEP_TIME_MS * 10));
+        std::this_thread::sleep_for(std::chrono::milliseconds(THREADS_SLEEP_TIME_MS * THREAD_SCENE));
         // renderThread.callback();
     }
 

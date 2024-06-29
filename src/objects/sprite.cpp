@@ -4,10 +4,12 @@
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
+#define STB_IMAGE_RESIZE_IMPLEMENTATION
+#include <stb_image_resize.h>
 
 struct GeometryInfo Sprite::geometryInfo = {0, 0, 0, 0, 0};
 
-void Sprite::loadTexures(const char *texturePath)
+void Sprite::loadTextures(const char *texturePath)
 {
     if (texturePath == nullptr) return;
 
@@ -17,10 +19,29 @@ void Sprite::loadTexures(const char *texturePath)
 
     TRY(img == nullptr, std::string("Failed to load texture: " + path))
 
+    // Найти ближайшие значения, кратные степени 2
+    int new_x = 1 << (int)std::ceil(std::log2(x));
+    int new_y = 1 << (int)std::ceil(std::log2(y));
+
+    // Выделить память для измененного изображения
+    unsigned char *resized_img = (unsigned char*)malloc(new_x * new_y * n);
+    if (resized_img == nullptr) {
+        std::cerr << "Failed to allocate memory for resized texture" << std::endl;
+        stbi_image_free(img);
+        return;
+    }
+
+    // Изменить размер изображения
+    stbir_resize_uint8(img, x, y, 0, resized_img, new_x, new_y, 0, n);
+
     glGenTextures(1, &texture);
     glBindTexture(GL_TEXTURE_2D, texture);
 
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, x, y, 0, (n == 4) ? GL_RGBA : GL_RGB, GL_UNSIGNED_BYTE, img);
+    // Проверка формата изображения
+    GLenum format = (n == 4) ? GL_RGBA : GL_RGB;
+
+    // Загрузка текстуры в OpenGL
+    glTexImage2D(GL_TEXTURE_2D, 0, format, new_x, new_y, 0, format, GL_UNSIGNED_BYTE, resized_img);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -30,13 +51,16 @@ void Sprite::loadTexures(const char *texturePath)
     gTextureSamplerLocation = glGetUniformLocation(shader, "textureSampler");
 
     stbi_image_free(img);
+    free(resized_img);
 
     glGenerateMipmap(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, 0);
 
-    Scale.VSet(1.0, static_cast<GLfloat>(y) / static_cast<GLfloat>(x), 0.0);
-    // trans.SetScale(1.0f, static_cast<GLfloat>(y) / static_cast<GLfloat>(x), 0.0f);
-    // trans.SetRotate(0.0f, 180.0f, 180.0f);
+    GLfloat scale_x = static_cast<GLfloat>(x) / static_cast<GLfloat>(new_x);
+    GLfloat scale_y = static_cast<GLfloat>(y) / static_cast<GLfloat>(new_y);
+    Scale.VSet(1, static_cast<GLfloat>(new_y * scale_y) / static_cast<GLfloat>(new_x * scale_x), 0.0);
+    // Устанавливаем правильное соотношение сторон на основе измененных размеров
+    // Scale.VSet(1.0, static_cast<GLfloat>(new_y) / static_cast<GLfloat>(new_x), 0.0);
 
     GLenum error = glGetError();
     if (error != GL_NO_ERROR) {
@@ -179,7 +203,7 @@ Sprite::Sprite(const std::string &_name, const char *FS, const char *VS, const c
     : name(_name)
 {
     compileShaders(FS, VS);
-    loadTexures(texturePath);
+    loadTextures(texturePath);
 }
 
 Sprite::Sprite() {}

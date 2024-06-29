@@ -4,8 +4,8 @@
 #include <entities/templates/mobs/spider.hpp>
 #include <entities/templates/decor/wave.hpp>
 
-#define SPIDER_NUM 300
-#define WAVE_SUM 200
+#define SPIDER_NUM 3
+#define WAVE_SUM 2
 #define WILSON_NUM 1
 
 std::chrono::milliseconds totalTime(0);
