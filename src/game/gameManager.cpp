@@ -1,6 +1,7 @@
 #include <game/gameManager.hpp> 
 
 GameManager::CallbackData GameManager::callbackData{nullptr, nullptr};
+SceneThread GameManager::threads(1);
 
 enum {
     FORWARD,
@@ -112,6 +113,7 @@ Render *GameManager::InitializeGLFW(int _width, int _height)
     glfwSetKeyCallback(window, GameManager::KeyboardCB);
     glfwSetWindowUserPointer(window, &callbackData);
     glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
+    glfwSwapInterval(0);
 
     GLenum err = glewInit();
     if (err != GLEW_OK) {

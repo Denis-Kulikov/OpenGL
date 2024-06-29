@@ -6,11 +6,9 @@ add_library(${target} STATIC
 	sphere.cpp
 	line.cpp
 	cube_bone.cpp
-#	circle.cpp
 )
 
 target_link_libraries(
   ${target}
-  PRIVATE
-
+	glfw GL GLEW
 )

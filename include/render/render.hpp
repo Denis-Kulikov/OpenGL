@@ -11,7 +11,10 @@ public:
     void SetCamera(Camera *_camera);
     void clearRender();
     void PushGeometry(struct GeometryInfo *geometry);
-    void drawObject(objectTransform *transform, Sprite *sprite) const;
+    void drawObject(Matrix4f<GLfloat>& matrix, Sprite *sprite);
 
     Pipeline pipeline;
+
+    GLuint shader;
+    GLuint texture;
 };

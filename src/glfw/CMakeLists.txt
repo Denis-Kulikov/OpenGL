@@ -8,8 +8,14 @@ add_library(${target} STATIC
 
 target_link_libraries(
   ${target}
-  PRIVATE
-	glfw GL GLEW
+	#glfw GL GLEW
+#lib/glfw3
+#lib/glew32
+	#C:/msys64/mingw64/lib/libglfw3.a C:/msys64/mingw64/lib/libglew32.a C:/msys64/mingw64/lib/libopengl32.a
+    #C:/prog/OpenGL/lib/glfw3.lib
+    #C:/prog/OpenGL/lib/glew32.lib
+    #opengl32
+
 	lib-entities
 	lib-threads
 	lib-playable

@@ -4,8 +4,9 @@
 #include <entities/templates/mobs/spider.hpp>
 #include <entities/templates/decor/wave.hpp>
 
-#define SPIDER_NUM 3000
-#define WAVE_SUM 2000
+#define SPIDER_NUM 300
+#define WAVE_SUM 200
+#define WILSON_NUM 1
 
 std::chrono::milliseconds totalTime(0);
 
@@ -30,6 +31,7 @@ Vector3<GLfloat> generateRandomPoint() {
 Scene *createScene()
 {
     Wilson *character = nullptr;
+    Wilson *wilson[WILSON_NUM] = {nullptr};
     Spider *spider[SPIDER_NUM] = {nullptr};
     Wave *wave[WAVE_SUM] = {nullptr};
 
@@ -56,13 +58,21 @@ Scene *createScene()
     character->PushRender(GameManager::render);
     #endif
 
+    // for (int i = 0; i < WILSON_NUM; i++) {
+    //     wilson[i] = new Wilson();
+    //     wilson[i]->Teleport(generateRandomPoint());
+    //     wilson[i]->updateAnimation("stand");
+    //     scene->pushActor(wilson[i]);
+    // }
+
+
+
     for (int i = 0; i < SPIDER_NUM; i++) {
         spider[i] = new Spider();
         spider[i]->Teleport(generateRandomPoint());
         spider[i]->updateAnimation("stand");
         scene->pushActor(spider[i]);
     }
-
 
     for (int i = 0; i < WAVE_SUM; i++) {
         wave[i] = new Wave();

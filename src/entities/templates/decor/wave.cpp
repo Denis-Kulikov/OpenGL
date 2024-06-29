@@ -32,7 +32,7 @@ void Wave::SetMotion()
     motion = Motion();
     motion.PushSkelet(&skelet);
 
-    Motion::FunType stand = [&motion]() {
+    Motion::FunType stand = [&]() {
         static float *__time = motion.FindUniformFloat("time"); 
         static int size = Wave::skeletSize;
         static size_t wave = motion.FindBone("wave");

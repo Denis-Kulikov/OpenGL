@@ -38,6 +38,6 @@ public:
     inline static GLFWwindow* window = nullptr;
     inline static Render *render = nullptr;
     inline static GameTime Time;
-    inline static SceneThread threads;
+    static SceneThread threads;
     static CallbackData callbackData;
 };

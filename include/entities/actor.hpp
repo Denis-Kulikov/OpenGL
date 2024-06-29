@@ -4,7 +4,7 @@
 #include "../entities/components/bone.hpp"
 #include "../entities/components/animationInfo.hpp"
 #include <filesystem>
-#include <pugixml.hpp>
+#include "pugixml.hpp"
 
 #define MY_ACTOR_TEST false
 
