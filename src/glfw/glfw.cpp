@@ -39,12 +39,12 @@ Scene *createScene()
     auto *scene = new Scene(std::string("Main scene"));
 
     Sprite *mySprite = new Sprite(std::string("Grass"), "shaders/sprite_fs.glsl", "shaders/sprite_vs.glsl", "img/grass.png");
-    objectTransform transformGrass;
-    transformGrass.Move(0, -5, -2);
-    transformGrass.SetRotate(90, 0, 0);
-    transformGrass.SetScale(10, 10, 0);
-    Component component(transformGrass, mySprite);
-    scene->pushObject(component);
+    // objectTransform transformGrass;
+    // transformGrass.Move(0, -5, -2);
+    // transformGrass.SetRotate(90, 0, 0);
+    // transformGrass.SetScale(10, 10, 0);
+    // Component component(transformGrass, mySprite);
+    // scene->pushObject(component);
 
     Wilson::Initialize();
     Spider::Initialize();
@@ -87,6 +87,8 @@ Scene *createScene()
     GameManager::PushCamera(character->GetCamera());
     GameManager::render->SetCamera(character->GetCamera());
     GameManager::render->PushGeometry(mySprite->GetGeometry());
+
+    delete mySprite;
 
     return scene;
 }

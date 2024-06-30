@@ -19,11 +19,9 @@ void Sprite::loadTextures(const char *texturePath)
 
     TRY(img == nullptr, std::string("Failed to load texture: " + path))
 
-    // Найти ближайшие значения, кратные степени 2
     int new_x = 1 << (int)std::ceil(std::log2(x));
     int new_y = 1 << (int)std::ceil(std::log2(y));
 
-    // Выделить память для измененного изображения
     unsigned char *resized_img = (unsigned char*)malloc(new_x * new_y * n);
     if (resized_img == nullptr) {
         std::cerr << "Failed to allocate memory for resized texture" << std::endl;
@@ -31,16 +29,13 @@ void Sprite::loadTextures(const char *texturePath)
         return;
     }
 
-    // Изменить размер изображения
     stbir_resize_uint8(img, x, y, 0, resized_img, new_x, new_y, 0, n);
 
     glGenTextures(1, &texture);
     glBindTexture(GL_TEXTURE_2D, texture);
 
-    // Проверка формата изображения
     GLenum format = (n == 4) ? GL_RGBA : GL_RGB;
 
-    // Загрузка текстуры в OpenGL
     glTexImage2D(GL_TEXTURE_2D, 0, format, new_x, new_y, 0, format, GL_UNSIGNED_BYTE, resized_img);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -59,8 +54,6 @@ void Sprite::loadTextures(const char *texturePath)
     GLfloat scale_x = static_cast<GLfloat>(x) / static_cast<GLfloat>(new_x);
     GLfloat scale_y = static_cast<GLfloat>(y) / static_cast<GLfloat>(new_y);
     Scale.VSet(1, static_cast<GLfloat>(new_y * scale_y) / static_cast<GLfloat>(new_x * scale_x), 0.0);
-    // Устанавливаем правильное соотношение сторон на основе измененных размеров
-    // Scale.VSet(1.0, static_cast<GLfloat>(new_y) / static_cast<GLfloat>(new_x), 0.0);
 
     GLenum error = glGetError();
     if (error != GL_NO_ERROR) {

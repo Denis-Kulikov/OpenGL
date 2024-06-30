@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../object/sprite.hpp"
-#include "../entities/components/bone.hpp"
+#include "../entities/components/motion.hpp"
 #include "../entities/components/animationInfo.hpp"
 #include <filesystem>
 // #include "pugixml.hpp"
@@ -52,24 +52,24 @@ public:
     virtual std::map<std::string, Sprite> *GetSprites() const = 0;
     virtual std::string *GetName() const = 0;
 
-    std::vector<Component*> getActorComponents(Bone *_parent, size_t &n, const GLfloat duration) const;
-    std::vector<Component*> getActorComponents() const;
-    void updateAnimationRecursive(Bone *_parent, const std::string &animationName, size_t &n);
+    std::vector<Component*> getActorComponents(const Bone &_parent, size_t &n, const GLfloat duration);
+    std::vector<Component*> getActorComponents();
+    void updateAnimationRecursive(Bone &_parent, const std::string &animationName, size_t &n);
     void updateAnimation(const std::string &animationName);
 
     static void parseNodeAnimation(pugi::xml_node &nodeAnimation, const std::string &animationName, Animation &newAnimation, std::map<std::string, Sprite> &Sprites);
 
     template<typename Derived>
-    static void parseAnimation(pugi::xml_node &nodeAnimation, pugi::xml_node &nodeMotion, Bone *_bone, const std::string &animationName) {
-        for (int i = 0; i < _bone->children.size(); i++) {
+    static void parseAnimation(pugi::xml_node &nodeAnimation, pugi::xml_node &nodeMotion, Bone &_bone, const std::string &animationName) {
+        for (int i = 0; i < _bone.children.size(); i++) {
             Animation newAnimation;
-            std::string boneName = _bone->children[i]->name;
+            std::string boneName = _bone.children[i].name;
             pugi::xml_node node = nodeAnimation.child(boneName.c_str());
                 
             parseNodeAnimation(node, animationName, newAnimation, Derived::Sprites);
-            _bone->children[i]->Animations.insert({animationName, newAnimation});
+            _bone.children[i].Animations.insert({animationName, newAnimation});
 
-            parseAnimation<Derived>(node, nodeMotion, _bone->children[i], animationName);
+            parseAnimation<Derived>(node, nodeMotion, _bone.children[i], animationName);
         }
     }
 
@@ -77,13 +77,10 @@ public:
     static bool loadAnimation(const std::string &_path, const std::string &_name)
     {
         std::string animationPath = std::string("assets/entities/") + _path + std::string("/models/animations/") + _name + std::string(".xml");
-        // std::string motionPath = std::string("assets/entities/") + _path + std::string("/models/motions/") + _name + std::string(".xml");
         pugi::xml_document docAnimation;
-        // pugi::xml_document docMotion;
         pugi::xml_node nodeAnimation;
         pugi::xml_node nodeMotion;
         pugi::xml_parse_result parseAnimationResult = docAnimation.load_file(animationPath.c_str());
-        // pugi::xml_parse_result parseMotionResult = docMotion.load_file(motionPath.c_str());
 
         if (!parseAnimationResult) {
             std::cout << "Error Actor.loadAnimation: file not found (" << animationPath << ")" << std::endl;
@@ -118,17 +115,7 @@ public:
         newAnimation.transform = objectTransform();
         Derived::skelet.Animations.insert({animationName, newAnimation});
 
-
-        // nodeMotion = docMotion.child("motion");
-        // if (parseMotionResult) {
-        //     float duration = std::stof(nodeMotion.attribute("duration").value());
-        //     Animation::PushDuration(Derived::name, animationName, duration);
-        //     nodeMotion = nodeMotion.first_child();
-        // } else {
-        //     Animation::PushDuration(Derived::name, animationName, 0.0);
-        // }
-
-        parseAnimation<Derived>(nodeAnimation, nodeMotion, &Derived::skelet, animationName);
+        parseAnimation<Derived>(nodeAnimation, nodeMotion, Derived::skelet, animationName);
 
         return true;
     }

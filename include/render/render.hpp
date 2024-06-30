@@ -15,6 +15,6 @@ public:
 
     Pipeline pipeline;
 
-    GLuint shader;
-    GLuint texture;
+    GLuint shader = 0;
+    GLuint texture = 0;
 };

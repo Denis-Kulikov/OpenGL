@@ -8,11 +8,18 @@
 #include "../entities/templates/playable/player.hpp"
 #include "../threads/threads.hpp"
 
+enum {
+    FORWARD,
+    BACK,
+    RIGHT,
+    LEFT
+};
 
 class GameManager  
 {
 public:
-    GameManager () {};
+    GameManager ();
+    ~GameManager ();
 
     std::string name;
     objectTransform trans;
@@ -38,6 +45,6 @@ public:
     inline static GLFWwindow* window = nullptr;
     inline static Render *render = nullptr;
     inline static GameTime Time;
-    static SceneThread threads;
-    static CallbackData callbackData;
+    inline static SceneThread threads;
+    inline static CallbackData callbackData = {nullptr, nullptr};
 };

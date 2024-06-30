@@ -16,6 +16,8 @@ int main(int argc, char** argv)
     GameManager::threads.setScene(scene);
     GameManager::threads.start();
 
+    delete scene;
+    glfwDestroyWindow(GameManager::window);
     glfwTerminate();
 
     return 0;

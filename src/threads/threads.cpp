@@ -1,19 +1,10 @@
 #include <threads/threads.hpp>
 #include <game/gameManager.hpp> 
-#include <random>
-
-std::random_device rd;
-std::mt19937 gen(rd());
-std::uniform_real_distribution<> dis(0.3, 0.7);
 
 
-RenderThread::RenderThread(std::atomic<bool>* endTickPtr, std::size_t numComponentsThreads)
-    : sceneEndTickPtr(endTickPtr), num(numComponentsThreads)
+RenderThread::RenderThread(std::atomic<bool>* endTickPtr)
+    : sceneEndTickPtr(endTickPtr)
 {
-    // endTicks = new std::atomic<bool>[num];
-    for (std::size_t i = 0; i < num; i++) {
-        endTicks[i] = false;
-    }
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
@@ -29,17 +20,13 @@ void RenderThread::callback() {
     static std::size_t index = 0;
     if (empty()) {
         startWorkTime = std::chrono::high_resolution_clock::now();
-        for (std::size_t i = 0; i < num; i++) {
-            if (endTicks[i] == false) {
-                std::this_thread::sleep_for(std::chrono::milliseconds(THREADS_SLEEP_TIME_MS * THREAD_RENDER));
-                endWorkTime = std::chrono::high_resolution_clock::now();
-                idleDuration += endWorkTime - startWorkTime;
-                return;
-            }
+        if (endTicks == false) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(THREADS_SLEEP_TIME_MS * THREAD_RENDER));
+            endWorkTime = std::chrono::high_resolution_clock::now();
+            idleDuration += endWorkTime - startWorkTime;
+            return;
         }
-        for (std::size_t i = 0; i < num; i++) {
-            endTicks[i] = false;
-        }
+        endTicks = false;
         *sceneEndTickPtr = true;
         endWorkTime = std::chrono::high_resolution_clock::now();
         idleDuration += endWorkTime - startWorkTime;
@@ -50,12 +37,10 @@ void RenderThread::callback() {
         swapDuration += endWorkTime - startWorkTime;
     } else {
         startWorkTime = std::chrono::high_resolution_clock::now();
-        index = (index + 1) % num;
-        if (sprites[index].empty()) return;
-        mutex[index].lock();
-        std::pair<Matrix4f<GLfloat>, Sprite*> sprite = sprites[index].top();
-        sprites[index].pop();
-        mutex[index].unlock();
+        mutex.lock();
+        std::pair<Matrix4f<GLfloat>, Sprite*> sprite = sprites.top();
+        sprites.pop();
+        mutex.unlock();
         GameManager::render->drawObject(sprite.first, sprite.second);
 
         endWorkTime = std::chrono::high_resolution_clock::now();
@@ -70,48 +55,37 @@ void RenderThread::swapBuffer()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void RenderThread::pushSprite(const std::pair<Matrix4f<GLfloat>, Sprite*>& componentSprite, std::size_t n) {
-    std::lock_guard<std::mutex> lock(mutex[n]);
-    // std::cout << "pushSprite " << sprites[n].size() << std::endl;
-    sprites[n].push(componentSprite);
+void RenderThread::pushSprite(const std::pair<Matrix4f<GLfloat>, Sprite*>& componentSprite) {
+    std::lock_guard<std::mutex> lock(mutex);
+    sprites.push(componentSprite);
 }
 
 bool RenderThread::empty() {
-    for (std::size_t i = 0; i < num; i++) {
-        // std::lock_guard<std::mutex> lock(mutex[i]);
-        if (!sprites[i].empty()) return false;
-    }
-    return true;
+    return sprites.empty();
 }
 
-void RenderThread::setEnd(std::size_t n)
+void RenderThread::setEnd()
 {
-    endTicks[n] = true;
+    endTicks = true;
 }
 
-// Реализация методов ComponentsThread
 
-ComponentsThread::ComponentsThread() {}
-
-void ComponentsThread::init(std::size_t n, RenderThread* renderThreadPtr)
-{
-    num = n;
-    renderThread = renderThreadPtr;
-}
+ComponentsThread::ComponentsThread(std::atomic<bool>* endTickPtr)
+    : renderThread(endTickPtr) 
+{}
 
 void ComponentsThread::job() {
     while (!GameManager::IsEnd) callback();
-    std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(100 * (num + 1))));
+    std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(100 )));
 
     std::cout << "ComponentsThread worked for: " << workDuration.count() << " | " << idleDuration.count() << " seconds\n";
 }
 
 void ComponentsThread::callback() {
     if (actors.empty()) {
-        // std::this_thread::sleep_for(std::chrono::milliseconds(THREADS_SLEEP_TIME_MS));
         if (endTick) {
             endTick = false;
-            renderThread->setEnd(num);
+            renderThread.setEnd();
         } else {
             std::this_thread::sleep_for(std::chrono::milliseconds(THREADS_SLEEP_TIME_MS * THREAD_COMPONENTS));
         }
@@ -119,15 +93,14 @@ void ComponentsThread::callback() {
         startWorkTime = std::chrono::high_resolution_clock::now();
 
         mutex.lock();
-        const Actor* actor = actors.top();
+        Actor* actor = actors.top();
         actors.pop();
         mutex.unlock();
-        for (const auto& it : actor->getActorComponents()) {
-            renderThread->pushSprite(
+        for (auto& it : actor->getActorComponents()) {
+            renderThread.pushSprite(
                 std::pair<Matrix4f<GLfloat>, Sprite *>(
                     GameManager::render->pipeline.GetTransform(it->transform), it->sprite
-                ),
-                num
+                )
             );
         }
 
@@ -136,7 +109,7 @@ void ComponentsThread::callback() {
     }
 }
 
-void ComponentsThread::pushActor(const Actor* actor) {
+void ComponentsThread::pushActor(Actor* actor) {
     std::lock_guard<std::mutex> lock(mutex);
         startWorkTime = std::chrono::high_resolution_clock::now();
     actors.push(actor);
@@ -145,7 +118,6 @@ void ComponentsThread::pushActor(const Actor* actor) {
 }
 
 bool ComponentsThread::empty() {
-    // std::lock_guard<std::mutex> lock(mutex);
     return actors.empty();
 }
 
@@ -155,26 +127,15 @@ void ComponentsThread::setEnd()
 }
 
 
-SceneThread::SceneThread(std::size_t numComponentsThreads)
-    : numThreads(numComponentsThreads), renderThread(&endTick, numComponentsThreads) 
-{
-    // componentsThreads = new ComponentsThread[numThreads]();
-    for (std::size_t i = 0; i < numThreads; i++) {
-        componentsThreads[i].init(i, &renderThread);
-    }
-};
-
 SceneThread::SceneThread()
-    : SceneThread(1)
-{};
+    : componentsThread(&endTick)
+{}
 
 void SceneThread::start() {
     std::chrono::high_resolution_clock::time_point startTime = std::chrono::high_resolution_clock::now();
     std::thread(&SceneThread::job, this).detach();
-    for (std::size_t i = 0; i < numThreads; i++) {
-        std::thread(&ComponentsThread::job, &componentsThreads[i]).detach();
-    }
-    renderThread.job();
+    std::thread(&ComponentsThread::job, &componentsThread).detach();
+    componentsThread.renderThread.job();
     std::chrono::high_resolution_clock::time_point endTime = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> Total = endTime - startTime;
     std::cout << "Total worked for: " << Total.count() << " seconds\n";
@@ -240,23 +201,17 @@ void SceneThread::callback()
             (reinterpret_cast<Pawn*>(it))->MoveTowards(scene->actors[0], 0.006);
         }
         // if (isVisible(GameManager::callbackData.camera, it)) {
-            index = (index + 1) % numThreads;
-            componentsThreads[index].pushActor(it);
+            componentsThread.pushActor(it);
         // }
     }
 
-    for (std::size_t i = 0; i < numThreads; i++) {
-        componentsThreads[i].setEnd();
-    }
+    componentsThread.setEnd();
 
     endWorkTime = std::chrono::high_resolution_clock::now();
     workDuration += endWorkTime - startWorkTime;
 
     while (!endTick) {
-    // startWorkTime = std::chrono::high_resolution_clock::now();
         if (GameManager::IsEnd) return;
-    // endWorkTime = std::chrono::high_resolution_clock::now();
-    // idleDuration += endWorkTime - startWorkTime;
         std::this_thread::sleep_for(std::chrono::milliseconds(THREADS_SLEEP_TIME_MS * THREAD_SCENE));
         // renderThread.callback();
     }
@@ -267,8 +222,6 @@ void SceneThread::callback()
     if ((time(0) - prev) > 3) {
         std::cout << "FPS: " << frame / 3 << std::endl;
         sleep = 1000 / frame;
-        // //std::cout << "Total time: " << totalTime.count() << " milliseconds" << std::endl;
-        // totalTime = std::chrono::milliseconds(0);
         prev = time(0);
         frame = 0;
     }

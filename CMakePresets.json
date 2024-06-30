@@ -25,6 +25,17 @@
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug"
       }
+    },
+    {
+      "name": "valgrind",
+      "inherits": "base",
+      "displayName": "Valgrind",
+      "description": "Build with debugging symbols for Valgrind",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_CXX_FLAGS": "-g",
+        "CMAKE_C_FLAGS": "-g"
+      }
     }
   ],
     "buildPresets": [
@@ -41,6 +52,11 @@
       {
         "name": "debug",
         "configurePreset": "debug",
+        "jobs": 8
+      },
+      {
+        "name": "valgrind",
+        "configurePreset": "valgrind",
         "jobs": 8
       }
     ]

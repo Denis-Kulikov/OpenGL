@@ -11,7 +11,11 @@ class Scene
 {
 public:
     Scene(std::string _name) : name(_name) {};
-    ~Scene() {};
+    ~Scene() {
+        for (auto& it : actors) {
+            delete it;
+        }
+    };
 
     void pushObject(Component _component) { component.push_back(_component); };
     void pushActor(Actor* actor) { actors.push_back(actor); };

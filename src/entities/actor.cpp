@@ -20,22 +20,22 @@ Actor::Actor(const std::string &path, const size_t SkeletSize)
 
 Actor::~Actor() {};
 
-    std::vector<Component*> Actor::getActorComponents(Bone *_parent, size_t &n, const GLfloat duration) const
+    std::vector<Component*> Actor::getActorComponents(const Bone &_parent, size_t &n, const GLfloat duration)
     {
         std::vector<Component*> ActorComponents;
 
         const size_t parentNumber = n++;
         const objectTransform ParentSprite = animationInfo.components[parentNumber].transform;
-        const GLfloat globalScaleX = ParentSprite.Scale.x / animationInfo.animations[parentNumber]->spriteScale.x;
-        const GLfloat globalScaleY = ParentSprite.Scale.y / animationInfo.animations[parentNumber]->spriteScale.y;
+        const GLfloat globalScaleX = ParentSprite.Scale.x / animationInfo.animations[parentNumber].spriteScale.x;
+        const GLfloat globalScaleY = ParentSprite.Scale.y / animationInfo.animations[parentNumber].spriteScale.y;
 
-        for (const auto &it : _parent->children) {
-            const Animation &animation_Num = *animationInfo.animations[n]; // ссылка из-за векторов в Motion
+        for (const auto &it : _parent.children) {
+            const Animation &animation_Num = animationInfo.animations[n]; // ссылка из-за векторов в Motion
             const objectTransform component = animation_Num.transform;
 
-            const GLfloat offetMotion[2] = {animationInfo.transformations[n].offset[X], animationInfo.transformations[n].offset[Y]};
-            const GLfloat flipMotion     = component.Rotate.x + animationInfo.transformations[n].flip;
-            const GLfloat scaleMotion[2] = {1 + animationInfo.transformations[n].scale[X], 1 + animationInfo.transformations[n].scale[Y]};
+            const GLfloat offetMotion[2] = {animationInfo.transforms[n].offset[X], animationInfo.transforms[n].offset[Y]};
+            const GLfloat flipMotion     = component.Rotate.x + animationInfo.transforms[n].flip;
+            const GLfloat scaleMotion[2] = {1 + animationInfo.transforms[n].scale[X], 1 + animationInfo.transforms[n].scale[Y]};
 
             animationInfo.globalFlip[n] = animationInfo.globalFlip[parentNumber] + flipMotion;
             GLfloat parentFlipAngle = animationInfo.globalFlip[parentNumber];
@@ -87,31 +87,31 @@ Actor::~Actor() {};
         return ActorComponents;
     }
 
-    std::vector<Component*> Actor::getActorComponents() const
+    std::vector<Component*> Actor::getActorComponents()
     {
-        if (animationInfo.components == nullptr) {
+        if (animationInfo.components.size() == 0) {
             std::vector<Component*> ActorComponents;
             return ActorComponents;
         }
         
         size_t n = 0;
-        animationInfo.animations[0]->transform = animationInfo.components[0].transform = trans; // Updating the skelet position
-        GLfloat duration = Animation::GetDuration(*GetName(), animationInfo.animation);
+        animationInfo.animations[0].transform = animationInfo.components[0].transform = trans; // Updating the skelet position
+        GLfloat duration = Animation::GetDuration(*GetName(), &animationInfo.animation[0]);
         motionPtr->PushTime( std::fmod((GetTime() - animationInfo.AnimationTimeStart) / 1e9, *motionPtr->FindUniformFloat("duration")) );
-        motionPtr->PushTransform(animationInfo.transformations);
+        motionPtr->PushTransform(&animationInfo.transforms[0]);
         (*motionFunPtr)();
 
-        return getActorComponents(GetSkelet(), n, duration);
+        return getActorComponents(*GetSkelet(), n, duration);
     }
 
 
-    void Actor::updateAnimationRecursive(Bone *_parent, const std::string &animationName, size_t &n)
+    void Actor::updateAnimationRecursive(Bone &_parent, const std::string &animationName, size_t &n)
     {
         n++;
-        for (auto it : _parent->children) {
-            if (it->Animations.find(animationName) != it->Animations.end()) {
-                animationInfo.animations[n] = &it->Animations[animationName];
-                animationInfo.components[n].sprite = animationInfo.animations[n]->sprite; 
+        for (auto& it : _parent.children) {
+            if (it.Animations.find(animationName) != it.Animations.end()) {
+                animationInfo.animations[n] = it.Animations[animationName];
+                animationInfo.components[n].sprite = animationInfo.animations[n].sprite; 
             } else {
                 std::cout << "Error: " << __FUNCTION__ << " " << animationName << " sprite not found" << std::endl;
             }
@@ -128,11 +128,11 @@ Actor::~Actor() {};
             motionPtr->PushDuration(motionPairPtr->first);
             motionFunPtr = &motionPairPtr->second;
             animationInfo.animation = animationName;
-            animationInfo.animations[0] = &GetSkelet()->Animations[animationName];
+            animationInfo.animations[0] = GetSkelet()->Animations[animationName];
         }
 
         size_t n = 0;
-        updateAnimationRecursive(GetSkelet(), animationName, n);
+        updateAnimationRecursive(*GetSkelet(), animationName, n);
     }
 
 

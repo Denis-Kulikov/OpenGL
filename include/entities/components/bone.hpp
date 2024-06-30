@@ -1,7 +1,6 @@
 #pragma once
 
 #include "../_deps/pigixml-src/src/pugixml.hpp"
-// #include <pugixml.hpp>
 #include "animation.hpp"
 
 class Bone
@@ -10,142 +9,144 @@ public:
     Bone(const std::string &_name, Bone *_parent) : name(_name), parent(_parent) {};
     Bone(const std::string &_name) : name(_name) {};
     Bone() {};
+    ~Bone();
 
     static const char BONE[];
     static const char NAME[];
 
+    void clear();
     void printBones(int lvl);
-    size_t addChildBone(pugi::xml_node &node, std::string _name, Bone *_parent);
-    size_t parseBone(pugi::xml_node &node, Bone *_parent);
+    size_t addChildBone(pugi::xml_node &node, std::string _name, Bone& _parent);
+    size_t parseBone(pugi::xml_node &node, Bone& _parent);
     size_t createSkelet(const std::string &_path, const std::string &_name);
 
 
-    std::string name;
+    std::string name = "None";
     Bone *parent = nullptr;
-    std::vector<Bone*> children;
+    std::vector<Bone> children;
     std::map<std::string, Animation> Animations;
 };
 
 
-class Motion
-{
-public:
-    Motion(std::vector<std::pair<std::string, float>> *_float, std::vector<std::pair<std::string, int>> *_int)
-    {
-        if (_float != nullptr) {
-            for (auto &it : *_float)
-                uniform_float.insert(it);
-        }
+// class Motion
+// {
+// public:
+//     Motion(std::vector<std::pair<std::string, float>> *_float, std::vector<std::pair<std::string, int>> *_int)
+//     {
+//         if (_float != nullptr) {
+//             for (auto &it : *_float)
+//                 uniform_float.insert(it);
+//         }
 
-        if (_int != nullptr) {
-            for (auto &it : *_int)
-                uniform_int.insert(it);
-        }
-    };
-    Motion(std::vector<std::pair<std::string, float>> *_float) : Motion(_float, nullptr) {};
-    Motion(std::vector<std::pair<std::string, int>> *_int) : Motion(nullptr, _int) {};
-    Motion() {};
-    ~Motion() {};
+//         if (_int != nullptr) {
+//             for (auto &it : *_int)
+//                 uniform_int.insert(it);
+//         }
+//     };
+//     Motion(std::vector<std::pair<std::string, float>> *_float) : Motion(_float, nullptr) {};
+//     Motion(std::vector<std::pair<std::string, int>> *_int) : Motion(nullptr, _int) {};
+//     Motion() {};
+//     ~Motion() {};
 
-    typedef std::function<void()> FunType;
+//     typedef std::function<void()> FunType;
 
-    struct bone_attribute
-    {
-        float offset[2];
-        float flip;
-        float scale[2];
-    };
+//     struct bone_attribute
+//     {
+//         float offset[2];
+//         float flip;
+//         float scale[2];
+//     };
 
-    void FindBoneRecursive(const std::string &name, const Bone *parent, size_t &bone, size_t &number)
-    {
-        for (const auto &it : parent->children) {
-            number++;
-            if (it->name == name) bone = number;
-            if (bone) return;
-            FindBoneRecursive(name, it, bone, number);
-        }
-    }
+//     void FindBoneRecursive(const std::string &name, const Bone &parent, size_t &bone, size_t &number)
+//     {
+//         for (const auto &it : parent.children) {
+//             number++;
+//             if (it.name == name) bone = number;
+//             if (bone) return;
+//             FindBoneRecursive(name, it, bone, number);
+//         }
+//     }
 
-    size_t FindBone(std::string name)
-    {
-        size_t bone = 0;
-        size_t number = 0;
-        FindBoneRecursive(name, skelet, bone, number);
-        return bone;
-    }
+//     size_t FindBone(std::string name)
+//     {
+//         size_t bone = 0;
+//         size_t number = 0;
+//         FindBoneRecursive(name, *skelet, bone, number);
+//         return bone;
+//     }
 
-    float *FindUniformFloat(const std::string &uniform)
-    {
-        auto it = uniform_float.find(uniform);
-        if (it != uniform_float.end()) {
-            return &it->second;
-        } else {
-            return nullptr;
-        }
-    };
+//     float *FindUniformFloat(const std::string &uniform)
+//     {
+//         auto it = uniform_float.find(uniform);
+//         if (it != uniform_float.end()) {
+//             return &it->second;
+//         } else {
+//             return nullptr;
+//         }
+//     };
 
-    void UniformFloat(const std::string &uniform, float new_value)
-    {
-        float *value = FindUniformFloat(uniform);
+//     void UniformFloat(const std::string &uniform, float new_value)
+//     {
+//         float *value = FindUniformFloat(uniform);
 
-        if (value == nullptr)
-            return;
+//         if (value == nullptr)
+//             return;
 
-        *value = new_value;
-    };
+//         *value = new_value;
+//     };
 
     
-    int *FindUniformInt(std::string &uniform)
-    {
-        auto it = uniform_int.find(uniform);
-        if (it != uniform_int.end()) {
-            return &it->second;
-        } else {
-            return nullptr;
-        }
-    };
+//     int *FindUniformInt(std::string &uniform)
+//     {
+//         auto it = uniform_int.find(uniform);
+//         if (it != uniform_int.end()) {
+//             return &it->second;
+//         } else {
+//             return nullptr;
+//         }
+//     };
 
-    void UniformInt(std::string &uniform, int new_value)
-    {
-        int *value = FindUniformInt(uniform);
+//     void UniformInt(std::string &uniform, int new_value)
+//     {
+//         int *value = FindUniformInt(uniform);
 
-        if (value == nullptr)
-            return;
+//         if (value == nullptr)
+//             return;
 
-        *value = new_value;
-    };
+//         *value = new_value;
+//     };
 
-    void PushTransform(Motion::bone_attribute *transform)
-    {
-        transformations = transform;
-    };
+//     void PushTransform(Motion::bone_attribute *transform)
+//     {
+//         transformations = transform;
+//     };
 
-    void PushSkelet(Bone *_skelet)
-    {
-        skelet = _skelet;
-    };
+//     void PushSkelet(Bone *_skelet)
+//     {
+//         skelet = _skelet;
+//     };
 
-    void PushTime(float time)
-    {
-        *FindUniformFloat(std::string("time")) = time;
-    };
+//     void PushTime(float time)
+//     {
+//         *FindUniformFloat(std::string("time")) = time;
+//     };
 
-    void PushDuration(float time)
-    {
-        *FindUniformFloat(std::string("duration")) = time;
-    };
+//     void PushDuration(float time)
+//     {
+//         *FindUniformFloat(std::string("duration")) = time;
+//     };
 
-    void PushMotion(const std::string &name, std::pair<float, FunType> &_motion)
-    {
-        function[name] = _motion;
-    };
+//     void PushMotion(const std::string &name, std::pair<float, FunType> &_motion)
+//     {
+//         function[name] = _motion;
+//     };
 
 
-    Motion::bone_attribute *transformations = nullptr;
+//     Motion::bone_attribute *transformations = nullptr;
 
-// private:
-    Bone *skelet = nullptr;
-    std::unordered_map<std::string, std::pair<float, FunType>> function;
-    std::unordered_map<std::string, float> uniform_float = { { "time", 0.0 }, { "duration", 0.0 }};
-    std::unordered_map<std::string, int> uniform_int;
-};
+// // private:
+//     Bone *skelet = nullptr;
+//     std::unordered_map<std::string, std::pair<float, FunType>> function;
+//     std::unordered_map<std::string, float> uniform_float = { { "time", 0.0 }, { "duration", 0.0 }};
+//     std::unordered_map<std::string, int> uniform_int;
+// };

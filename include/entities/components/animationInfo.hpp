@@ -1,44 +1,40 @@
 #pragma once
 
 #include "animation.hpp"
-#include "_motion.hpp"
+#include "motion.hpp"
 
 class AnimationInfo
 {
 public:
-    AnimationInfo() {};
-    ~AnimationInfo() {
-        delete globalFlip;
-        delete components;
-        delete animations;
-        delete animations[0];   
-    };
+    AnimationInfo() {}
+    ~AnimationInfo() {}
 
-    void Initialize(size_t SkeletSize)
+    void Initialize(std::size_t SkeletSize)
     {
-        globalFlip = new GLfloat[SkeletSize];
-        transformations = new Motion::bone_attribute[SkeletSize];
-        components = new Component[SkeletSize];
-        animations = new Animation*[SkeletSize];
-        for (int i = 0; i < SkeletSize; i++) {
-            animations[i] = nullptr;
-            for (int j = 0; j < 5; j++) {
-                reinterpret_cast<float*>(transformations)[5 * i + j] = 0.0;
-            }
-                // transformations[5 * i + j] = 0.0;
+        skeletSize = SkeletSize;
+
+        globalFlip.reserve(SkeletSize);
+        transforms.reserve(SkeletSize);
+        components.reserve(SkeletSize);
+        animations.reserve(SkeletSize);
+        animations.reserve(SkeletSize);
+        globalFlip.reserve(SkeletSize);
+
+        for (size_t i = 0; i < skeletSize; ++i) {
+            globalFlip.emplace_back(GLfloat());
+            transforms.emplace_back(Motion::bone_attribute());
+            components.emplace_back(Component());
+            animations.emplace_back(Animation());
+            animations.emplace_back(Animation());
+            globalFlip.emplace_back(0);
         }
-        animations[0] = new Animation();
-        globalFlip[0] = 0;
-    };
+    }
 
-
-
-    GLfloat *globalFlip = nullptr;
-    Motion::bone_attribute *transformations = nullptr;
-    Component *components = nullptr;
-    Animation **animations = nullptr;
+    std::vector<GLfloat> globalFlip;
+    std::vector<Motion::bone_attribute> transforms;
+    std::vector<Component> components;
+    std::vector<Animation> animations;
     float AnimationTimeStart = 0.0;
     std::string animation;
-    // Motion *_motion;
+    std::size_t skeletSize = 0;
 };
-

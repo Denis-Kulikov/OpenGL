@@ -1,15 +1,13 @@
 #include <game/gameManager.hpp> 
 
-GameManager::CallbackData GameManager::callbackData{nullptr, nullptr};
-SceneThread GameManager::threads(1);
 
-enum {
-    FORWARD,
-    BACK,
-    RIGHT,
-    LEFT
-};
+GameManager::GameManager() {};
 
+GameManager::~GameManager()
+{
+    delete render;
+    delete callbackData.camera;
+}
 
 void GameManager::InitializeObjects()
 {
@@ -105,8 +103,6 @@ Render *GameManager::InitializeGLFW(int _width, int _height)
         exit(EXIT_FAILURE);
     }
 
-    // Camera *camera = createCamera();
-    // callbackData = new CallbackData;
     callbackData.camera = nullptr;
 
     glfwMakeContextCurrent(window);
