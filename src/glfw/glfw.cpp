@@ -1,8 +1,8 @@
 #include <game/gameManager.hpp>
-// #include <game/gameTime.hpp>
 #include <entities/templates/playable/Wilson.hpp>
 #include <entities/templates/mobs/spider.hpp>
 #include <entities/templates/decor/wave.hpp>
+#include <entities/templates/decor/grass.hpp>
 
 #define SPIDER_NUM 3
 #define WAVE_SUM 2
@@ -34,11 +34,13 @@ Scene *createScene()
     Wilson *wilson[WILSON_NUM] = {nullptr};
     Spider *spider[SPIDER_NUM] = {nullptr};
     Wave *wave[WAVE_SUM] = {nullptr};
+    Grass *grass = nullptr;
 
 
     auto *scene = new Scene(std::string("Main scene"));
 
     Sprite *mySprite = new Sprite(std::string("Grass"), "shaders/sprite_fs.glsl", "shaders/sprite_vs.glsl", "img/grass.png");
+
     // objectTransform transformGrass;
     // transformGrass.Move(0, -5, -2);
     // transformGrass.SetRotate(90, 0, 0);
@@ -49,6 +51,18 @@ Scene *createScene()
     Wilson::Initialize();
     Spider::Initialize();
     Wave::Initialize();
+    Grass::Initialize();
+
+
+    grass = new Grass();
+
+    grass->GetTransform()->Move(4, -4, -10);
+    grass->GetTransform()->SetRotate(90, 0, 0);
+    grass->GetTransform()->SetScale(10, 10, 0);
+    grass->updateAnimation("stand");
+
+    scene->pushActor(grass);
+
 
     character = new Wilson();
     character->createCamera(GameManager::width, GameManager::height);
@@ -64,8 +78,6 @@ Scene *createScene()
     //     wilson[i]->updateAnimation("stand");
     //     scene->pushActor(wilson[i]);
     // }
-
-
 
     for (int i = 0; i < SPIDER_NUM; i++) {
         spider[i] = new Spider();

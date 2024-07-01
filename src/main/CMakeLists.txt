@@ -15,7 +15,6 @@ find_package(Threads REQUIRED)
 target_link_libraries(
   ${target}
   PRIVATE
-	pthread
 	lib-glfw
 	lib-object
 	lib-game

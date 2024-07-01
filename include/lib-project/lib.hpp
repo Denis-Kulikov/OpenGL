@@ -22,3 +22,11 @@
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+
+#pragma comment (lib, "opengl32.lib" )
+
+// #define GLEW_STATIC
+// #pragma comment (lib, "glew32.lib")
+
+// #pragma comment ( lib, "glew32.lib" )
+// #pragma comment ( lib, "GLFW.lib" )

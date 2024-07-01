@@ -47,6 +47,7 @@ Actor::~Actor() {};
             component_Num.WorldPos.y = ParentSprite.WorldPos.y + offetMotion[1];
             component_Num.WorldPos.z = ParentSprite.WorldPos.z + component.WorldPos.z;
 
+            component_Num.Rotate.x = ParentSprite.Rotate.x;
             component_Num.Rotate.y = component.Rotate.y + ParentSprite.Rotate.y;
             component_Num.Rotate.z = component.Rotate.z + ParentSprite.Rotate.z + flipMotion;
 

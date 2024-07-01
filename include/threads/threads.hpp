@@ -3,10 +3,10 @@
 #include "../render/render.hpp"
 #include "../object/scene.hpp"
 
-#define THREADS_SLEEP_TIME_MS 2
-#define THREAD_SCENE 5
-#define THREAD_COMPONENTS 5
-#define THREAD_RENDER 4
+#define THREADS_SLEEP_TIME_MS 2 - 1
+#define THREAD_SCENE 2
+#define THREAD_COMPONENTS 1
+#define THREAD_RENDER 1
 
 class RenderThread {
 public:
@@ -31,7 +31,6 @@ private:
     std::chrono::duration<double> workDuration;
     std::chrono::duration<double> idleDuration;
     std::chrono::duration<double> swapDuration;
-
 };
 
 

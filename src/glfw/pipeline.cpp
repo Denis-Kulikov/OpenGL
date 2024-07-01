@@ -14,9 +14,3 @@ Matrix4f<GLfloat> Pipeline::GetTransform(const objectTransform& transform) const
 
     return PersProjTrans * CameraRotateTrans * CameraTranslationTrans * TranslationTrans * RotateTrans * ScaleTrans;
 }
-
-// GLfloat* Pipeline::GetGLMatrix(const objectTransform *transform) const
-// {
-//     Matrix4f<GLfloat> m_transformation = GetTransform(transform);
-//     return reinterpret_cast<GLfloat*>(&m_transformation);
-// }

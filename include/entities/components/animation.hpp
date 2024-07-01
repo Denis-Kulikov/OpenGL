@@ -33,6 +33,5 @@ public:
     Vector3<GLfloat> spriteScale;
     Vector3<GLfloat> anchorPoint;
     objectTransform transform;
-    // Motion motion;
     static inline std::map<std::string, std::map<std::string, float>> duration;
 };

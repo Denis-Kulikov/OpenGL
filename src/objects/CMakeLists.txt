@@ -8,7 +8,3 @@ add_library(${target} STATIC
 	cube_bone.cpp
 )
 
-target_link_libraries(
-  ${target}
-	glfw GL GLEW
-)

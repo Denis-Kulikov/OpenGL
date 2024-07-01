@@ -11,9 +11,9 @@ RenderThread::RenderThread(std::atomic<bool>* endTickPtr)
 void RenderThread::job() {
     while (!GameManager::IsEnd) callback();
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(400)));
-    std::cout << "RenderThread worked for: " << workDuration.count() << " | " << idleDuration.count() << " | " << swapDuration.count() << " seconds\n";
     std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(200)));
+    std::cout << "RenderThread worked for: " << workDuration.count() << " | " << idleDuration.count() << " | " << swapDuration.count() << " seconds\n";
+    std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(50)));
 }
 
 void RenderThread::callback() {
@@ -76,7 +76,7 @@ ComponentsThread::ComponentsThread(std::atomic<bool>* endTickPtr)
 
 void ComponentsThread::job() {
     while (!GameManager::IsEnd) callback();
-    std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(100 )));
+    std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(50)));
 
     std::cout << "ComponentsThread worked for: " << workDuration.count() << " | " << idleDuration.count() << " seconds\n";
 }
@@ -198,8 +198,9 @@ void SceneThread::callback()
              (reinterpret_cast<Pawn*>(it))->MoveForward();
             it->updateAnimation(it->GetAnimation(GameManager::Time.GetCurrentTime()));
         } else if (*it->GetName() == "Spider") {
-            (reinterpret_cast<Pawn*>(it))->MoveTowards(scene->actors[0], 0.006);
+            (reinterpret_cast<Pawn*>(it))->MoveTowards(scene->actors[1], 0.008);
         }
+
         // if (isVisible(GameManager::callbackData.camera, it)) {
             componentsThread.pushActor(it);
         // }
