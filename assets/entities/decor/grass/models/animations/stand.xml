@@ -1,0 +1,4 @@
+<animation name="stand" x="0.0" y="0.0" z="0.0" tangent="0.0" radius="0.0" flip="0.0" rotate="0.0" width="1.0" height="1.0">
+    <grass sprite="grass" x="0.0" y="0.0" z="0.0" tangent="0.0" radius="0.0" flip="0.0" rotate="0.0" width="2.0" height="2.0">
+    </grass>
+</animation>

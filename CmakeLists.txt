@@ -1,0 +1,62 @@
+cmake_minimum_required(VERSION 3.18.4)
+
+project(openGL VERSION 1.0 LANGUAGES CXX)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -pthread")
+
+link_directories(lib)
+
+include_directories(include)
+include_directories(_deps/stb_image-src)
+include_directories(_deps/pugixml-src/src)
+
+include_directories(build/_deps/stb_image-src)
+include_directories(build/_deps/pugixml-src/src)
+
+
+add_subdirectory(src)
+add_subdirectory(external)
+
+
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake)
+
+if(DEFINED CMAKE_LINKER_FLAGS)
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS}")
+    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_LINKER_FLAGS}")
+endif()
+
+
+message(STATUS "CMAKE_RUNTIME_OUTPUT_DIRECTORY set to ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
+
+add_custom_target(clear
+    COMMAND find ${CMAKE_SOURCE_DIR} -name "CMakeFiles" -exec rm -rf {} +
+    COMMAND find ${CMAKE_SOURCE_DIR} -name "cmake_install.cmake" -exec rm -rf {} +
+    COMMAND find ${CMAKE_SOURCE_DIR} -name "CMakeCache.txt" -exec rm -rf {} +
+    COMMAND find ${CMAKE_SOURCE_DIR} -name "CPackConfig.cmake" -exec rm -rf {} +
+    COMMAND find ${CMAKE_SOURCE_DIR} -name "CPackSourceConfig.cmake" -exec rm -rf {} +
+    COMMAND find ${CMAKE_SOURCE_DIR} -name "DartConfiguration.tcl" -exec rm -rf {} +
+    COMMAND find ${CMAKE_SOURCE_DIR} -name "Makefile" -exec rm -rf {} +
+
+    COMMAND find ${CMAKE_SOURCE_DIR} -name "*.vcxproj" -exec rm -rf {} +
+    COMMAND find ${CMAKE_SOURCE_DIR} -name "*.filters" -exec rm -rf {} +
+
+    COMMAND rm -rf ${CMAKE_BINARY_DIR}/build
+    COMMAND rm -rf ${CMAKE_BINARY_DIR}/build.ninja
+    COMMAND rm -rf ${CMAKE_BINARY_DIR}/.ninja_log
+    COMMAND rm -rf ${CMAKE_BINARY_DIR}/.ninja_deps
+
+    COMMAND rm -rf ${CMAKE_BINARY_DIR}/_deps
+    COMMAND find ${CMAKE_SOURCE_DIR}/external/ -type d -name "tmp" -exec rm -rf {} +
+    COMMAND find ${CMAKE_SOURCE_DIR}/external/ -type d -name "src" -exec rm -rf {} +
+
+    COMMAND find ${CMAKE_SOURCE_DIR} -name "bin/openGL" -exec rm -rf {} +
+
+    DEPENDS clean
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    COMMENT "Clearing project files"
+)
+

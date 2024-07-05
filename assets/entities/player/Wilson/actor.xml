@@ -1,0 +1,7 @@
+<character name="Wilson">
+    <objectTransform>
+        <worldPos x="0.0" y="0.0" z="0.0" />
+        <rotate  deg="0" />
+        <scale   x="1.0" y="1.0" />
+    </objectTransform>
+</character>

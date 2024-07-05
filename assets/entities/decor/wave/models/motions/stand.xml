@@ -1,0 +1,22 @@
+<motion duration="6.2831853071795865">
+    <wave>
+        <frame>
+            <Flip>
+                <time />
+                <!-- <multiply factor="3.14" /> -->
+                <!-- <multiply factor="0.5" /> -->
+                <sin factor="5.0" />
+            </Flip>
+            <Move>
+                <time />
+                <multiply factor="-1" />
+                <pair xfun="sin" yfun="cos" x_factor="0.66" y_factor="0.4" />
+            </Move>
+            <Scale>
+                <add width="0.0" height="0.0" />
+                <add width="time" height="time" />
+                <sin width_factor="0.1" height_factor="0.2" />
+            </Scale>
+        </frame>    
+    </wave>
+</motion>

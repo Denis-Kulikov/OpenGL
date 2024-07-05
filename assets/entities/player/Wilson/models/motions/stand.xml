@@ -1,0 +1,89 @@
+<motion duration="2.0">
+    <!-- <body>
+        <frame>
+            <Flip>
+                <time />
+                <multiply factor="3.14" />
+                <multiply factor="0.5" />
+                <sin factor="5.0" />
+            </Flip>
+        </frame>    
+    </body> -->
+
+    <head>
+        <frame>
+            <Flip>
+                <time />
+                <multiply factor="3.14" />
+                <multiply factor="0.5" />
+                <sin factor="20.0" />
+            </Flip>
+        </frame>
+    </head>
+
+    <shoulder_left>
+        <frame>
+            <Flip>
+                <add arg="30" />
+                <time />
+                <multiply factor="3.14" />
+                <multiply factor="0.5" />
+                <sin factor="30.0" />
+            </Flip>
+        </frame>
+    </shoulder_left>
+    <arm_left>
+        <frame>
+            <Flip>
+                <sin arg="time" factor="10.0" />
+            </Flip>
+        </frame>
+    </arm_left>
+    <hand_left>
+        <frame>
+            <Flip>
+                <sin arg="time" factor="20.0" />
+            </Flip>
+            <Scale>
+                <add width="0.0" height="0.0" />
+                <add width="time" height="time" />
+                <multiply width_factor="3.14" height_factor="3.14" />
+                <multiply width_factor="0.5" height_factor="0.5" />
+                <sin width_factor="0.3" height_factor="0.3"/>
+            </Scale>
+        </frame>
+    </hand_left>
+
+    <shoulder_right>
+        <frame>
+            <Flip>
+                <time />
+                <multiply factor="3.14" />
+                <multiply factor="0.5" />
+                <sin factor="3.0" />
+            </Flip>
+        </frame>
+    </shoulder_right>
+    <arm_right>
+        <frame>
+            <Flip>
+                <time />
+                <multiply factor="3.14" />
+                <multiply factor="0.5" />
+                <sin factor="5.0" />
+            </Flip>
+        </frame>
+    </arm_right>
+    <hand_right>
+    </hand_right>
+
+    <!-- <leg_left>
+    </leg_left>
+    <foot_left>
+    </foot_left>
+
+    <leg_right>
+    </leg_right>
+    <foot_right>
+    </foot_right> -->
+</motion>
