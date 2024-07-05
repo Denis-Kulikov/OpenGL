@@ -14,37 +14,26 @@
 #include "../object/line.hpp"
 #endif
 
-
 namespace fs = std::filesystem;
 
 namespace STATE
 {
-    enum
-    {
-        DEFAULT,
-        STAND,
-        GO,
-        ACTION,
-        GET_HIT
-    };
+enum
+{
+    DEFAULT,
+    STAND,
+    GO,
+    ACTION,
+    GET_HIT
+};
 }
 
-constexpr size_t myHash(const char* s)
-{
-    size_t hash = 0;
-    while (*s) {
-        hash = (hash * 31) + *s;
-        ++s;
-    }
-    
-    return hash;
-}
 
 class Actor 
 {
-public:
+    public:
     Actor(const std::string &path, const size_t SkeletSize);
-    
+
     ~Actor();
 
     virtual size_t GetSkeletSize() const = 0;
@@ -178,11 +167,11 @@ public:
     Render *render = nullptr;
     Vector3<GLfloat> *spherePos = nullptr;
     objectTransform sphereTransform;
-    sphere mySphere;
+    sphere<10> mySphere;
     line myLine;
     #endif
 
-protected:
+    protected:
     int state = STATE::STAND;
     inline static float time = 0.0;
     Motion::FunType *motionFunPtr = nullptr;

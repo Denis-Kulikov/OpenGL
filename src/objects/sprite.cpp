@@ -7,89 +7,33 @@
 #define STB_IMAGE_RESIZE_IMPLEMENTATION
 #include <stb_image_resize.h>
 
-struct GeometryInfo Sprite::geometryInfo = {0, 0, 0, 0, 0};
 
-void Sprite::loadTextures(const char *texturePath)
+Sprite::Sprite(const std::string &_name, const char *FS, const char *VS, const char *texturePath)
+    : name(_name)
 {
-    if (texturePath == nullptr) return;
-
-    int x, y, n;
-    std::string path = std::string("assets/") + texturePath;
-    unsigned char *img = stbi_load(path.c_str(), &x, &y, &n, 0);
-
-    TRY(img == nullptr, std::string("Failed to load texture: " + path))
-
-    int new_x = 1 << (int)std::ceil(std::log2(x));
-    int new_y = 1 << (int)std::ceil(std::log2(y));
-
-    unsigned char *resized_img = (unsigned char*)malloc(new_x * new_y * n);
-    if (resized_img == nullptr) {
-        std::cerr << "Failed to allocate memory for resized texture" << std::endl;
-        stbi_image_free(img);
-        return;
+    auto sdr = shadersMap.find(std::string(FS) + std::string(VS));
+    if (sdr != shadersMap.end()) {
+        shader                  = sdr->second[0];
+        gWorldLocation          = sdr->second[1];
+        gColorLocation          = sdr->second[2];
+        gTextureSamplerLocation = sdr->second[3];
+    } else {
+        compileShaders(FS, VS);
+        shadersMap[std::string(FS) + std::string(VS)] = std::array<GLuint, 4>{shader, gWorldLocation, gColorLocation, gTextureSamplerLocation};
     }
 
-    stbir_resize_uint8(img, x, y, 0, resized_img, new_x, new_y, 0, n);
-
-    glGenTextures(1, &texture);
-    glBindTexture(GL_TEXTURE_2D, texture);
-
-    GLenum format = (n == 4) ? GL_RGBA : GL_RGB;
-
-    glTexImage2D(GL_TEXTURE_2D, 0, format, new_x, new_y, 0, format, GL_UNSIGNED_BYTE, resized_img);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    gTextureSamplerLocation = glGetUniformLocation(shader, "textureSampler");
-
-    stbi_image_free(img);
-    free(resized_img);
-
-    glGenerateMipmap(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, 0);
-
-    GLfloat scale_x = static_cast<GLfloat>(x) / static_cast<GLfloat>(new_x);
-    GLfloat scale_y = static_cast<GLfloat>(y) / static_cast<GLfloat>(new_y);
-    Scale.VSet(1, static_cast<GLfloat>(new_y * scale_y) / static_cast<GLfloat>(new_x * scale_x), 0.0);
-
-    GLenum error = glGetError();
-    if (error != GL_NO_ERROR) {
-        std::cerr << "OpenGL error: " << error << std::endl;
+    auto txr = texturesMap.find(std::string(texturePath));
+    if (txr != texturesMap.end()) {
+        texture = txr->second;
+    } else {
+        loadTextures(texturePath);
+        texturesMap[std::string(texturePath)] = texture;
     }
 }
 
-GLuint Sprite::loadShader(const char *shaderPath, GLuint type)
+struct GeometryInfo *Sprite::GetGeometry()
 {
-    std::ifstream shaderFile(shaderPath);
-    if (!shaderFile.is_open()) {
-        std::cerr << "Error: Could not open shader file '" << shaderPath << "'" << std::endl;
-        return 0;
-    }
-
-    std::stringstream shaderStream;
-    shaderStream << shaderFile.rdbuf();
-    shaderFile.close();
-
-    std::string shaderCode = shaderStream.str();
-    const GLchar* shaderCodePtr = shaderCode.c_str();
-
-    GLuint shader = glCreateShader(type);
-    glShaderSource(shader, 1, &shaderCodePtr, NULL);
-    glCompileShader(shader);
-
-    GLint ok;
-    GLchar log[2000];
-    glGetShaderiv(shader, GL_COMPILE_STATUS, &ok);
-    if (!ok) {
-        glGetShaderInfoLog(shader, 2000, NULL, log);
-        printf("Shader(%s): %s\n", shaderPath, log);
-        std::cout << shaderCode << std::endl;
-    }
-
-    return shader;
+    return &geometryInfo;
 }
 
 void Sprite::compileShaders(const char *FS, const char *VS)
@@ -103,6 +47,7 @@ void Sprite::compileShaders(const char *FS, const char *VS)
     if (FS != nullptr) {
         fragmentShader = loadShader(FS, GL_FRAGMENT_SHADER);
         glAttachShader(shader, fragmentShader);
+        if (VS == nullptr) return;
     }
     if (VS != nullptr) {
         vertexShader = loadShader(VS, GL_VERTEX_SHADER);
@@ -138,13 +83,91 @@ void Sprite::compileShaders(const char *FS, const char *VS)
     }
 
     gWorldLocation = glGetUniformLocation(shader, "gWorld");
-    gColorLocation = glGetUniformLocation(shader, "gColor"); // assert(gColorLocation != 0xFFFFFFFF);
-
-    gObjectLocation = glGetUniformLocation(shader, "object");
-    gCameraParamsLocation = glGetUniformLocation(shader, "cameraParams");
-    gPersProjParamsLocation = glGetUniformLocation(shader, "PersProjParams");
+    gColorLocation = glGetUniformLocation(shader, "gColor");
+    gTextureSamplerLocation = glGetUniformLocation(shader, "textureSampler");
 
     assert(gWorldLocation != 0xFFFFFFFF);
+}
+
+GLuint Sprite::loadShader(const char *shaderPath, GLuint type)
+{
+    std::ifstream shaderFile(shaderPath);
+    if (!shaderFile.is_open()) {
+        std::cerr << "Error: Could not open shader file '" << shaderPath << "'" << std::endl;
+        return 0;
+    }
+
+    std::stringstream shaderStream;
+    shaderStream << shaderFile.rdbuf();
+    shaderFile.close();
+
+    std::string shaderCode = shaderStream.str();
+    const GLchar* shaderCodePtr = shaderCode.c_str();
+
+    GLuint shader = glCreateShader(type);
+    glShaderSource(shader, 1, &shaderCodePtr, NULL);
+    glCompileShader(shader);
+
+    GLint ok;
+    GLchar log[2000];
+    glGetShaderiv(shader, GL_COMPILE_STATUS, &ok);
+    if (!ok) {
+        glGetShaderInfoLog(shader, 2000, NULL, log);
+        printf("Shader(%s): %s\n", shaderPath, log);
+        std::cout << shaderCode << std::endl;
+    }
+
+    return shader;
+}
+
+void Sprite::loadTextures(const char *texturePath)
+{
+    if (texturePath == nullptr) return;
+
+    int x, y, n;
+    std::string path = std::string("assets/") + texturePath;
+    unsigned char *img = stbi_load(path.c_str(), &x, &y, &n, 0);
+
+    TRY(img == nullptr, std::string("Failed to load texture: " + path))
+
+    int new_x = 1 << (int)std::ceil(std::log2(x));
+    int new_y = 1 << (int)std::ceil(std::log2(y));
+
+    unsigned char *resized_img = (unsigned char*)malloc(new_x * new_y * n);
+    if (resized_img == nullptr) {
+        std::cerr << "Failed to allocate memory for resized texture" << std::endl;
+        stbi_image_free(img);
+        return;
+    }
+
+    stbir_resize_uint8(img, x, y, 0, resized_img, new_x, new_y, 0, n);
+
+    glGenTextures(1, &texture);
+    glBindTexture(GL_TEXTURE_2D, texture);
+
+    GLenum format = (n == 4) ? GL_RGBA : GL_RGB;
+
+    glTexImage2D(GL_TEXTURE_2D, 0, format, new_x, new_y, 0, format, GL_UNSIGNED_BYTE, resized_img);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    stbi_image_free(img);
+    free(resized_img);
+
+    glGenerateMipmap(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    GLfloat scale_x = static_cast<GLfloat>(x) / static_cast<GLfloat>(new_x);
+    GLfloat scale_y = static_cast<GLfloat>(y) / static_cast<GLfloat>(new_y);
+    Scale.VSet(1, static_cast<GLfloat>(new_y * scale_y) / static_cast<GLfloat>(new_x * scale_x), 0.0);
+
+    GLenum error = glGetError();
+    if (error != GL_NO_ERROR) {
+        std::cerr << "OpenGL error: " << error << std::endl;
+    }
 }
 
 void Sprite::initializeGeometry()
@@ -181,22 +204,5 @@ void Sprite::initializeGeometry()
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, geometryInfo.EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), indices.data(), GL_STATIC_DRAW);
 
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 }
-
-struct GeometryInfo *Sprite::GetGeometry()
-{
-    return &geometryInfo;
-}
-
-
-Sprite::Sprite(const std::string &_name, const char *FS, const char *VS, const char *texturePath)
-    : name(_name)
-{
-    compileShaders(FS, VS);
-    loadTextures(texturePath);
-}
-
-Sprite::Sprite() {}

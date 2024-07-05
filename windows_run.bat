@@ -1,1 +1,1 @@
-bin\Debug\openGL.exe
+bin\Release\openGL.exe

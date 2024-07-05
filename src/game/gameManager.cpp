@@ -1,19 +1,12 @@
 #include <game/gameManager.hpp> 
 
-
 GameManager::GameManager() {};
 
 GameManager::~GameManager()
 {
     delete render;
+    delete threads;
     delete callbackData.camera;
-}
-
-void GameManager::InitializeObjects()
-{
-    Sprite::initializeGeometry();
-    line::initializeGeometry();
-    cube_bone::initializeGeometry();
 }
 
 void GameManager::PushCamera(Camera *_camera)
@@ -29,6 +22,10 @@ void GameManager::PushPlayer(Character *_player)
 Camera *GameManager::createCamera()
 {
     auto camera = new Camera();
+    if (camera == nullptr) {
+        std::cerr << "Error: " << "Failed to allocate memory to the camera" << std::endl;
+        exit(EXIT_FAILURE);
+    }
 
     Vector3<GLfloat> CameraPos(0.0f, 3.0f, 15);
     Vector3<GLfloat> CameraTarget(0.0f, -0.3f, -1.0f);
@@ -44,7 +41,7 @@ void GameManager::KeyboardCB(GLFWwindow* window, int key, int scancode, int acti
 {
     static bool keys[GLFW_KEY_LAST] = {false};
 
-    GLfloat speed_rotation = -0.125;
+    const GLfloat speed_rotation = -0.125;
 
     Character* player = callbackData.player;
     Camera* camera = callbackData.camera;
@@ -81,11 +78,15 @@ void GameManager::KeyboardCB(GLFWwindow* window, int key, int scancode, int acti
     }
 }
 
+void GameManager::InitializeObjects()
+{
+    Sprite::initializeGeometry();
+}
 
-Render *GameManager::InitializeGLFW(int _width, int _height)
+void GameManager::InitializeGLFW(int _width, int _height)
 {
     if (!glfwInit()) {
-        std::cerr << "Failed to initialize GLFW" << std::endl;
+        std::cerr << "Error: " << "Failed to initialize GLFW" << std::endl;
         exit(EXIT_FAILURE);
     }
 
@@ -98,30 +99,36 @@ Render *GameManager::InitializeGLFW(int _width, int _height)
 
     window = glfwCreateWindow(width, height, "Game", NULL, NULL);
     if (!window) {
-        std::cerr << "Failed to create GLFW window" << std::endl;
         glfwTerminate();
+        std::cerr << "Error: " << "Failed to create GLFW window" << std::endl;
         exit(EXIT_FAILURE);
     }
-
-    callbackData.camera = nullptr;
 
     glfwMakeContextCurrent(window);
     glfwSetKeyCallback(window, GameManager::KeyboardCB);
     glfwSetWindowUserPointer(window, &callbackData);
     glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
-    glfwSwapInterval(0);
 
     GLenum err = glewInit();
     if (err != GLEW_OK) {
-        std::cerr << "Error: " << glewGetErrorString(err) << std::endl;
+        std::cerr << "Error: " << "Failed to initialize glew" << std::endl;
         exit(EXIT_FAILURE);
     }
 
     glEnable(GL_DEPTH_TEST);
-
     glClearColor(0.12f, 0.12f, 0.12f, 0.0f);
 
-    render = new Render(callbackData.camera);
+    PushCamera(createCamera());
 
-    return render;
+    render = new Render(callbackData.camera);
+    if (render == nullptr) {
+        std::cerr << "Error: " << "Failed to allocate memory to the renderer" << std::endl;
+        exit(EXIT_FAILURE);
+    }
+
+    threads = new SceneThread();
+    if (threads == nullptr) {
+        std::cerr << "Error: " << "Failed to allocate memory to the threads" << std::endl;
+        exit(EXIT_FAILURE);
+    }
 }

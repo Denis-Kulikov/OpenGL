@@ -18,9 +18,9 @@ float randomFloat(float min, float max) {
 }
 
 Vector3<GLfloat> generateRandomPoint() {
-    float MIN_X = -16.0, MAX_X = 16.0;
-    float MIN_Y = -2.0, MAX_Y = 2.0;
-    float MIN_Z = -16.0, MAX_Z = 2.0;
+    float MIN_X = -30.0, MAX_X = 30.0;
+    float MIN_Y = -3.0, MAX_Y = 3.0;
+    float MIN_Z = -64.0, MAX_Z = 2.0;
     float x = randomFloat(MIN_X, MAX_X);
     float y = randomFloat(MIN_Y, MAX_Y);
     float z = randomFloat(MIN_Z, MAX_Z);
@@ -35,37 +35,21 @@ Scene *createScene()
     Spider *spider[SPIDER_NUM] = {nullptr};
     Wave *wave[WAVE_SUM] = {nullptr};
     Grass *grass = nullptr;
-
-
-    auto *scene = new Scene(std::string("Main scene"));
-
-    Sprite *mySprite = new Sprite(std::string("Grass"), "shaders/sprite_fs.glsl", "shaders/sprite_vs.glsl", "img/grass.png");
-
-    // objectTransform transformGrass;
-    // transformGrass.Move(0, -5, -2);
-    // transformGrass.SetRotate(90, 0, 0);
-    // transformGrass.SetScale(10, 10, 0);
-    // Component component(transformGrass, mySprite);
-    // scene->pushObject(component);
+    auto *scene = new Scene();
 
     Wilson::Initialize();
     Spider::Initialize();
     Wave::Initialize();
     Grass::Initialize();
 
-
     grass = new Grass();
-
     grass->GetTransform()->Move(4, -4, -10);
     grass->GetTransform()->SetRotate(90, 0, 0);
     grass->GetTransform()->SetScale(10, 10, 0);
     grass->updateAnimation("stand");
-
     scene->pushActor(grass);
 
-
     character = new Wilson();
-    character->createCamera(GameManager::width, GameManager::height);
     character->updateAnimation("stand");
     scene->pushActor(character);
     #if MY_ACTOR_TEST
@@ -94,13 +78,10 @@ Scene *createScene()
         scene->pushActor(wave[i]);
     }
 
-
+    Sprite mySprite(std::string("Grass"), "shaders/sprite_fs.glsl", "shaders/sprite_vs.glsl", "img/grass.png");
     GameManager::PushPlayer(character);
-    GameManager::PushCamera(character->GetCamera());
-    GameManager::render->SetCamera(character->GetCamera());
-    GameManager::render->PushGeometry(mySprite->GetGeometry());
-
-    delete mySprite;
+    GameManager::render->PushGeometry(mySprite.GetGeometry());
+    GameManager::render->pipeline.camera->OwnerTransformPtr = character->GetTransform();
 
     return scene;
 }

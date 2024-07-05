@@ -3,8 +3,8 @@
 #include "../render/render.hpp"
 #include "../object/scene.hpp"
 
-#define THREADS_SLEEP_TIME_MS 2 - 1
-#define THREAD_SCENE 2
+#define THREADS_SLEEP_TIME_MS 1
+#define THREAD_SCENE 3
 #define THREAD_COMPONENTS 1
 #define THREAD_RENDER 1
 
@@ -12,7 +12,6 @@ class RenderThread {
 public:
     RenderThread(std::atomic<bool>* endTickPtr);
     void pushSprite(const std::pair<Matrix4f<GLfloat>, Sprite*>& ComponentSprite);
-    bool empty();
     void job();
     void setEnd();
 
@@ -39,7 +38,6 @@ public:
     ComponentsThread(std::atomic<bool>* endTickPtr);
     void job();
     void pushActor(Actor* actor);
-    bool empty();
     void setEnd();
 
     RenderThread renderThread;

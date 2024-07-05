@@ -6,7 +6,6 @@ class line : public Sprite
 public:
     line(const std::string &_name, const objectTransform &_trans, const Vector3<GLfloat> _color);
     line(const std::string &_name, const Vector3<GLfloat> _color);
-    line() : Sprite() {};
 
     void setPoints(const Vector3<GLfloat> &_start, const Vector3<GLfloat> &_end);
     static void initializeGeometry();

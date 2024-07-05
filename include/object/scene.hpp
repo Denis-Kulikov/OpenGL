@@ -10,21 +10,10 @@
 class Scene 
 {
 public:
-    Scene(std::string _name) : name(_name) {};
+    Scene() {};
     ~Scene() {
-        for (auto& it : actors) {
-            delete it;
-        }
+        for (auto& it : actors) delete it;
     };
-
-    void pushObject(Component _component) { component.push_back(_component); };
     void pushActor(Actor* actor) { actors.push_back(actor); };
-
-    void deleteObject(Component _component) {};
-
-    std::vector<Component>::iterator getIterator() { return component.begin(); }
-
-    std::string name;
-    std::vector<Component> component;
     std::vector<Actor*> actors;
 };

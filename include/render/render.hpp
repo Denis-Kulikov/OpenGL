@@ -7,6 +7,7 @@ class Render
 public:
     Render(Pipeline &_pipeline);
     Render(Camera *_camera);
+    Render();
     
     void SetCamera(Camera *_camera);
     void clearRender();

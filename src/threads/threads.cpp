@@ -12,24 +12,20 @@ void RenderThread::job() {
     while (!GameManager::IsEnd) callback();
 
     std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(200)));
-    std::cout << "RenderThread worked for: " << workDuration.count() << " | " << idleDuration.count() << " | " << swapDuration.count() << " seconds\n";
+    std::cout << "RenderThread worked for: " << workDuration.count() << " | " << swapDuration.count() << " seconds\n";
     std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(50)));
 }
 
 void RenderThread::callback() {
-    static std::size_t index = 0;
-    if (empty()) {
-        startWorkTime = std::chrono::high_resolution_clock::now();
+    if (sprites.empty()) {
         if (endTicks == false) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(THREADS_SLEEP_TIME_MS * THREAD_RENDER));
             endWorkTime = std::chrono::high_resolution_clock::now();
             idleDuration += endWorkTime - startWorkTime;
+            std::this_thread::sleep_for(std::chrono::milliseconds(THREADS_SLEEP_TIME_MS * THREAD_RENDER));
             return;
         }
         endTicks = false;
         *sceneEndTickPtr = true;
-        endWorkTime = std::chrono::high_resolution_clock::now();
-        idleDuration += endWorkTime - startWorkTime;
 
         startWorkTime = std::chrono::high_resolution_clock::now();
         swapBuffer();
@@ -48,8 +44,7 @@ void RenderThread::callback() {
     }
 }
 
-void RenderThread::swapBuffer()
-{
+void RenderThread::swapBuffer() {
     glfwSwapBuffers(GameManager::window);
     glfwPollEvents();
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -60,12 +55,7 @@ void RenderThread::pushSprite(const std::pair<Matrix4f<GLfloat>, Sprite*>& compo
     sprites.push(componentSprite);
 }
 
-bool RenderThread::empty() {
-    return sprites.empty();
-}
-
-void RenderThread::setEnd()
-{
+void RenderThread::setEnd() {
     endTicks = true;
 }
 
@@ -87,7 +77,7 @@ void ComponentsThread::callback() {
             endTick = false;
             renderThread.setEnd();
         } else {
-            std::this_thread::sleep_for(std::chrono::milliseconds(THREADS_SLEEP_TIME_MS * THREAD_COMPONENTS));
+            // std::this_thread::sleep_for(std::chrono::milliseconds(THREADS_SLEEP_TIME_MS * THREAD_COMPONENTS));
         }
     } else {
         startWorkTime = std::chrono::high_resolution_clock::now();
@@ -117,12 +107,7 @@ void ComponentsThread::pushActor(Actor* actor) {
         idleDuration += endWorkTime - startWorkTime;
 }
 
-bool ComponentsThread::empty() {
-    return actors.empty();
-}
-
-void ComponentsThread::setEnd()
-{
+void ComponentsThread::setEnd() {
     endTick = true;
 }
 
@@ -142,40 +127,27 @@ void SceneThread::start() {
     // job();
 }
 
-void SceneThread::setScene(const Scene* _scene)
-{
+void SceneThread::setScene(const Scene* _scene) {
     scene = _scene;
 }
 
 void SceneThread::job() {
-    while (!GameManager::IsEnd) {
-        callback();
-    }
-    // std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(100)));
-
+    while (!GameManager::IsEnd) callback();
     std::cout << "SceneThread worked for: " << workDuration.count() << " seconds\n";
-
-    // std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(400)));
-    // std::cout << "RenderThread worked for: " << renderThread.workDuration.count() << " seconds\n";
-    // std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(200)));
-
 }
 
 
-bool isVisible(Camera *camera, Actor *object)
-{
+bool isVisible(Camera *camera, Actor *object) {
     Vector3<GLfloat> cameraDirection = camera->Params.Target.Normalize();
     Vector3<GLfloat> cameraToObject = (object->GetTransform()->GetWorldPos() - camera->Params.WorldPos).Normalize();
 
     return cameraDirection.VDot(cameraToObject) > 0;
 }
 
-void SceneThread::callback()
-{
+void SceneThread::callback() {
     startWorkTime = std::chrono::high_resolution_clock::now();
 
-
-    static const int targetFPS = 400;
+    static const int targetFPS = 144;
     static const std::chrono::milliseconds frameDuration(1000 / targetFPS);
     static std::chrono::steady_clock::time_point frameStart;
     std::chrono::steady_clock::time_point frameEnd = std::chrono::steady_clock::now();
@@ -187,23 +159,16 @@ void SceneThread::callback()
     static time_t prev = time(0);
     static int frame = 0;
     static std::size_t index = 0; 
-    static std::size_t sleep = THREADS_SLEEP_TIME_MS; 
-
-
-    // for (std::vector<Component>::iterator it = scene->getIterator(); it != scene->component.end(); it++)
-        // GameManager::render->drawObject(&it->transform, it->sprite);
 
     for (auto& it : scene->actors) {
         if (*it->GetName() == "Wilson") {
-             (reinterpret_cast<Pawn*>(it))->MoveForward();
+            (reinterpret_cast<Pawn*>(it))->MoveForward();
             it->updateAnimation(it->GetAnimation(GameManager::Time.GetCurrentTime()));
         } else if (*it->GetName() == "Spider") {
             (reinterpret_cast<Pawn*>(it))->MoveTowards(scene->actors[1], 0.008);
         }
 
-        // if (isVisible(GameManager::callbackData.camera, it)) {
-            componentsThread.pushActor(it);
-        // }
+        componentsThread.pushActor(it);
     }
 
     componentsThread.setEnd();
@@ -211,18 +176,19 @@ void SceneThread::callback()
     endWorkTime = std::chrono::high_resolution_clock::now();
     workDuration += endWorkTime - startWorkTime;
 
+    startWorkTime = std::chrono::high_resolution_clock::now();
+
     while (!endTick) {
         if (GameManager::IsEnd) return;
-        std::this_thread::sleep_for(std::chrono::milliseconds(THREADS_SLEEP_TIME_MS * THREAD_SCENE));
-        // renderThread.callback();
     }
+    endWorkTime = std::chrono::high_resolution_clock::now();
+    idleDuration += endWorkTime - startWorkTime;
 
     endTick = false;
 
     frame++;
     if ((time(0) - prev) > 3) {
         std::cout << "FPS: " << frame / 3 << std::endl;
-        sleep = 1000 / frame;
         prev = time(0);
         frame = 0;
     }

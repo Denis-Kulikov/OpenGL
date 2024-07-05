@@ -1,22 +1,15 @@
-#include <render/glfw.hpp> 
 #include <game/gameManager.hpp> 
 
 int main(int argc, char** argv)
 {
     const int width = 1600, height = 960;
-    Render *render = GameManager::InitializeGLFW(width, height);
+    GameManager::InitializeGLFW(width, height);
     GameManager::InitializeObjects();
 
-    if (render == nullptr) {
-        std::cout << "Error: render init" << std::endl;
-        return -1;
-    }
+    std::unique_ptr<Scene> scene(createScene());
+    GameManager::threads->setScene(scene.get());
+    GameManager::threads->start();
 
-    Scene *scene = createScene();
-    GameManager::threads.setScene(scene);
-    GameManager::threads.start();
-
-    delete scene;
     glfwDestroyWindow(GameManager::window);
     glfwTerminate();
 

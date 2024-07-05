@@ -116,7 +116,7 @@ public:
     };
 
 
-    Motion::bone_attribute *transformations = nullptr;
+    bone_attribute *transformations = nullptr;
     Bone *skelet = nullptr;
     std::unordered_map<std::string, std::pair<float, FunType>> function;
     std::unordered_map<std::string, float> uniform_float = { { "time", 0.0 }, { "duration", 0.0 }};

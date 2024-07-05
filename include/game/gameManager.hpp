@@ -21,30 +21,24 @@ public:
     GameManager ();
     ~GameManager ();
 
-    std::string name;
-    objectTransform trans;
-
     static void PushCamera(Camera *_camera);
     static void PushPlayer(Character *_player);
-
-    static void DrawSphere();
-
-    static void InitializeObjects();
     static Camera *createCamera();
     static void KeyboardCB(GLFWwindow* window, int key, int scancode, int action, int mods);
-    static Render *InitializeGLFW(int _width, int _height);
+    static void InitializeObjects();
+    static void InitializeGLFW(int _width, int _height);
 
     struct CallbackData {
-        Camera* camera;
-        Character* player;
+        Camera* camera = nullptr;
+        Character* player = nullptr;
     };
 
-    inline static bool IsEnd = false;
+    inline static GameTime Time;
+    inline static SceneThread* threads = nullptr;
+    inline static Render* render = nullptr;
+    inline static CallbackData callbackData = {nullptr, nullptr};
+    inline static GLFWwindow* window = nullptr;
     inline static int width = 640;
     inline static int height = 480;
-    inline static GLFWwindow* window = nullptr;
-    inline static Render *render = nullptr;
-    inline static GameTime Time;
-    inline static SceneThread threads;
-    inline static CallbackData callbackData = {nullptr, nullptr};
+    inline static bool IsEnd = false;
 };
