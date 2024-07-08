@@ -2,11 +2,19 @@
 #include <object/sprite.hpp>
 #include <lib-project/try.hpp>
 
+#ifndef STB_IMAGE_WRAPPER_H
+#define STB_IMAGE_WRAPPER_H
+
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
+
+#endif
+
 #define STB_IMAGE_RESIZE_IMPLEMENTATION
 #include <stb_image_resize.h>
 
+
+#include "../mesh/mesh.cpp"
 
 Sprite::Sprite(const std::string &_name, const char *FS, const char *VS, const char *texturePath)
     : name(_name)

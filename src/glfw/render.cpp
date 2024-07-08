@@ -29,6 +29,9 @@ void Render::clearRender() {
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+    shader = 0;
+    texture = 0;
 }
 
 void Render::PushGeometry(struct GeometryInfo *geometry)

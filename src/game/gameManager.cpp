@@ -40,7 +40,8 @@ Camera *GameManager::createCamera()
 void GameManager::KeyboardCB(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
     static bool keys[GLFW_KEY_LAST] = {false};
-
+    static float yaw = -180;
+    static float pitch = 0;
     const GLfloat speed_rotation = -0.125;
 
     Character* player = callbackData.player;
@@ -59,22 +60,35 @@ void GameManager::KeyboardCB(GLFWwindow* window, int key, int scancode, int acti
 
     player->SetDirection(Vector3<GLfloat>(
         keys[GLFW_KEY_A] * 1.0 - keys[GLFW_KEY_D] * 1.0, 
-        0, 
+        keys[GLFW_KEY_SPACE] * 1.0 - keys[GLFW_KEY_C] * 1.0,
         keys[GLFW_KEY_S] * 1.0 - keys[GLFW_KEY_W] * 1.0
     ));
 
-    if (keys[GLFW_KEY_SPACE]) {
-    }
-
-    if (keys[GLFW_KEY_C]) {
-    }
 
     if (keys[GLFW_KEY_E]) {
-        camera->Params.Target.x += speed_rotation;
+        yaw += 5;
+        camera->Params.Target.x = cos(ToRadian(yaw));
+        camera->Params.Target.z = sin(ToRadian(yaw));
     }
 
     if (keys[GLFW_KEY_Q]) {
-        camera->Params.Target.x -= speed_rotation;
+        yaw -= 5;
+        camera->Params.Target.x = cos(ToRadian(yaw));
+        camera->Params.Target.z = sin(ToRadian(yaw));
+    }
+
+    const float pitch_speed = 2.5;
+    const float pitch_limit = 65;
+    if (keys[GLFW_KEY_1]) {
+        pitch += pitch_speed;
+        if (pitch > pitch_limit) pitch = pitch_limit;
+        camera->Params.Target.y = tan(ToRadian(pitch));
+    }
+
+    if (keys[GLFW_KEY_2]) {
+        pitch -= pitch_speed;
+        if (pitch < -pitch_limit) pitch = -pitch_limit;
+        camera->Params.Target.y = tan(ToRadian(pitch));
     }
 }
 

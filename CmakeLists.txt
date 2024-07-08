@@ -10,11 +10,11 @@ SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -pthread")
 link_directories(lib)
 
 include_directories(include)
-include_directories(_deps/stb_image-src)
-include_directories(_deps/pugixml-src/src)
+include_directories(assimp/include)
 
 include_directories(build/_deps/stb_image-src)
 include_directories(build/_deps/pugixml-src/src)
+include_directories(build/_deps/glm-src)
 
 
 add_subdirectory(src)

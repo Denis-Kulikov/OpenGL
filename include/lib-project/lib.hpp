@@ -26,5 +26,8 @@
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
+
+#define INVALID_OGL_VALUE 0
 
 #pragma comment (lib, "opengl32.lib" )

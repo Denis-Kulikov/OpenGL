@@ -1,5 +1,6 @@
 #include <threads/threads.hpp>
 #include <game/gameManager.hpp> 
+#include <mesh/mesh.hpp> 
 
 
 RenderThread::RenderThread(std::atomic<bool>* endTickPtr)
@@ -11,12 +12,18 @@ RenderThread::RenderThread(std::atomic<bool>* endTickPtr)
 void RenderThread::job() {
     while (!GameManager::IsEnd) callback();
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(200)));
-    std::cout << "RenderThread worked for: " << workDuration.count() << " | " << swapDuration.count() << " seconds\n";
-    std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(50)));
+    // std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(200)));
+    // std::cout << "RenderThread worked for: " << workDuration.count() << " | " << swapDuration.count() << " seconds\n";
+    // std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(50)));
 }
 
 void RenderThread::callback() {
+    static Mesh model(std::string("assets/model/2b01.fbx"));
+    objectTransform transform;
+    transform.SetWorldPos(0.0, -10.0, -5.0);
+    transform.SetRotate(0.0, 0.0, 0.0);
+    transform.MultiplyScale(Vector3<GLfloat>(0.1, 0.1, 0.1));
+
     if (sprites.empty()) {
         if (endTicks == false) {
             endWorkTime = std::chrono::high_resolution_clock::now();
@@ -24,6 +31,13 @@ void RenderThread::callback() {
             std::this_thread::sleep_for(std::chrono::milliseconds(THREADS_SLEEP_TIME_MS * THREAD_RENDER));
             return;
         }
+
+        GameManager::render->clearRender();
+        model.Render(GameManager::render->pipeline.GetTransform(transform));
+        GameManager::render->clearRender();
+        Sprite mySprite(std::string("Grass"), "shaders/sprite_fs.glsl", "shaders/sprite_vs.glsl", "img/grass.png");
+        GameManager::render->PushGeometry(mySprite.GetGeometry());
+
         endTicks = false;
         *sceneEndTickPtr = true;
 
@@ -66,14 +80,14 @@ ComponentsThread::ComponentsThread(std::atomic<bool>* endTickPtr)
 
 void ComponentsThread::job() {
     while (!GameManager::IsEnd) callback();
-    std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(50)));
-
-    std::cout << "ComponentsThread worked for: " << workDuration.count() << " | " << idleDuration.count() << " seconds\n";
+    // std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(50)));
+    // std::cout << "ComponentsThread worked for: " << workDuration.count() << " | " << idleDuration.count() << " seconds\n";
 }
 
 void ComponentsThread::callback() {
     if (actors.empty()) {
         if (endTick) {
+            
             endTick = false;
             renderThread.setEnd();
         } else {
@@ -123,8 +137,7 @@ void SceneThread::start() {
     componentsThread.renderThread.job();
     std::chrono::high_resolution_clock::time_point endTime = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> Total = endTime - startTime;
-    std::cout << "Total worked for: " << Total.count() << " seconds\n";
-    // job();
+    // std::cout << "Total worked for: " << Total.count() << " seconds\n";
 }
 
 void SceneThread::setScene(const Scene* _scene) {
@@ -133,7 +146,7 @@ void SceneThread::setScene(const Scene* _scene) {
 
 void SceneThread::job() {
     while (!GameManager::IsEnd) callback();
-    std::cout << "SceneThread worked for: " << workDuration.count() << " seconds\n";
+    // std::cout << "SceneThread worked for: " << workDuration.count() << " seconds\n";
 }
 
 

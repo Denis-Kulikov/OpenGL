@@ -12,6 +12,8 @@ if(WIN32)
         glfw3
         glew32
         opengl32
+	assimp-vc143-mtd
+	#lib-model
         lib-entities
         lib-threads
         lib-playable

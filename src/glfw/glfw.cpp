@@ -3,6 +3,7 @@
 #include <entities/templates/mobs/spider.hpp>
 #include <entities/templates/decor/wave.hpp>
 #include <entities/templates/decor/grass.hpp>
+#include <model/model.hpp>
 
 #define SPIDER_NUM 3
 #define WAVE_SUM 2
@@ -38,16 +39,16 @@ Scene *createScene()
     auto *scene = new Scene();
 
     Wilson::Initialize();
-    Spider::Initialize();
-    Wave::Initialize();
-    Grass::Initialize();
+    // Spider::Initialize();
+    // Wave::Initialize();
+    // Grass::Initialize();
 
-    grass = new Grass();
-    grass->GetTransform()->Move(4, -4, -10);
-    grass->GetTransform()->SetRotate(90, 0, 0);
-    grass->GetTransform()->SetScale(10, 10, 0);
-    grass->updateAnimation("stand");
-    scene->pushActor(grass);
+    // grass = new Grass();
+    // grass->GetTransform()->Move(4, -4, -10);
+    // grass->GetTransform()->SetRotate(90, 0, 0);
+    // grass->GetTransform()->SetScale(10, 10, 0);
+    // grass->updateAnimation("stand");
+    // scene->pushActor(grass);
 
     character = new Wilson();
     character->updateAnimation("stand");
@@ -63,20 +64,20 @@ Scene *createScene()
     //     scene->pushActor(wilson[i]);
     // }
 
-    for (int i = 0; i < SPIDER_NUM; i++) {
-        spider[i] = new Spider();
-        spider[i]->Teleport(generateRandomPoint());
-        spider[i]->updateAnimation("stand");
-        scene->pushActor(spider[i]);
-    }
+    // for (int i = 0; i < SPIDER_NUM; i++) {
+    //     spider[i] = new Spider();
+    //     spider[i]->Teleport(generateRandomPoint());
+    //     spider[i]->updateAnimation("stand");
+    //     scene->pushActor(spider[i]);
+    // }
 
-    for (int i = 0; i < WAVE_SUM; i++) {
-        wave[i] = new Wave();
-        wave[i]->updateAnimation("stand");
-        objectTransform *transform = wave[i]->GetTransform();
-        transform->Move(generateRandomPoint());
-        scene->pushActor(wave[i]);
-    }
+    // for (int i = 0; i < WAVE_SUM; i++) {
+    //     wave[i] = new Wave();
+    //     wave[i]->updateAnimation("stand");
+    //     objectTransform *transform = wave[i]->GetTransform();
+    //     transform->Move(generateRandomPoint());
+    //     scene->pushActor(wave[i]);
+    // }
 
     Sprite mySprite(std::string("Grass"), "shaders/sprite_fs.glsl", "shaders/sprite_vs.glsl", "img/grass.png");
     GameManager::PushPlayer(character);
