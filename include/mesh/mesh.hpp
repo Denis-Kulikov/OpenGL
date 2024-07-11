@@ -63,6 +63,11 @@ private:
     std::vector<Texture*> m_Textures;
 
     GLuint shaderProgram;
-    GLuint gWorldLocation;
     GLuint gTextureSamplerLocation;
+    // GLuint gNormalMapLocation;
+    GLuint gWorldLocation;
+    GLuint gColorLocation;
+    GLuint gDirectionLocation;
+    GLuint gAmbientIntensityLocation;
+    GLuint gDiffuseIntensityLocation;
 };

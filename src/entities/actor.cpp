@@ -4,7 +4,7 @@ Actor::Actor(const std::string &path, const size_t SkeletSize)
     : animationInfo(SkeletSize)
 {
     loadActor(path);
-    trans.Rotate = Vector3<GLfloat>(0.0, 0.0, 180);
+    transform.Rotate = Vector3<GLfloat>(0.0, 0.0, 180);
 
     #if MY_ACTOR_TEST
     spherePos = new Vector3<GLfloat>[SkeletSize]();
@@ -68,7 +68,7 @@ std::vector<Component*> Actor::getActorComponents(const Bone &_parent, size_t &n
         if (render != nullptr) render->drawObject(render->pipeline.GetTransform(sphereTransform), &mySphere);
         render->PushGeometry(myLine.GetGeometry());
         myLine.setPoints(spherePos[n], spherePos[parentNumber]);
-        if (render != nullptr) render->drawObject(render->pipeline.GetTransform(myLine.trans), &myLine);
+        if (render != nullptr) render->drawObject(render->pipeline.GetTransform(myLine.transform), &myLine);
         spherePos[0] = spherePos[1];
         render->PushGeometry(Sprite().GetGeometry());
         #endif
@@ -95,7 +95,7 @@ std::vector<Component*> Actor::getActorComponents()
     }
     
     size_t n = 0;
-    animationInfo.animations[0].transform = animationInfo.components[0].transform = trans; // Updating the skelet position
+    animationInfo.animations[0].transform = animationInfo.components[0].transform = transform; // Updating the skelet position
     GLfloat duration = Animation::GetDuration(*GetName(), &animationInfo.animation[0]);
     motionPtr->PushTime( std::fmod((GetTime() - animationInfo.AnimationTimeStart) / 1e9, *motionPtr->FindUniformFloat("duration")) );
     motionPtr->PushTransform(&animationInfo.transforms[0]);
@@ -189,14 +189,14 @@ bool Actor::loadActor(const std::string &path)
     v.x = std::stof(doc.child("character").child("objectTransform").child("worldPos").attribute("x").value());
     v.y = std::stof(doc.child("character").child("objectTransform").child("worldPos").attribute("y").value());
     v.z = std::stof(doc.child("character").child("objectTransform").child("worldPos").attribute("z").value());
-    trans.SetWorldPos(v.x, v.y, v.z);
+    transform.SetWorldPos(v.x, v.y, v.z);
 
     v.x = std::stof(doc.child("character").child("objectTransform").child("rotate").attribute("deg").value());
-    trans.SetRotate(0.0, 0.0, v.x);
+    transform.SetRotate(0.0, 0.0, v.x);
 
     v.x = std::stof(doc.child("character").child("objectTransform").child("scale").attribute("x").value());
     v.y = std::stof(doc.child("character").child("objectTransform").child("scale").attribute("y").value());
-    trans.SetScale(v.x, v.y, 0.0);
+    transform.SetScale(v.x, v.y, 0.0);
 
     return true;
 }
@@ -204,7 +204,7 @@ bool Actor::loadActor(const std::string &path)
 
 objectTransform *Actor::GetTransform()
 {
-    return &trans;
+    return &transform;
 }
 
 Vector3<GLfloat> Actor::GetDirection() const
@@ -216,6 +216,16 @@ void Actor::SetDirection(const Vector3<GLfloat> &_direction)
 {
     direction = _direction;
 }
+
+//Vector3<GLfloat> Actor::GetTarget() const
+//{
+//    return target;
+//}
+//
+//void Actor::SetTarget(const Vector3<GLfloat> &_target)
+//{
+//    target = _target;
+//}
 
 std::string Actor::GetAnimationByAction()
 {

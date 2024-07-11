@@ -1,4 +1,4 @@
-add_subdirectory(glfw)
+add_subdirectory(render)
 add_subdirectory(game)
 add_subdirectory(main)
 add_subdirectory(objects)

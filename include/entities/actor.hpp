@@ -177,7 +177,7 @@ class Actor
     Motion::FunType *motionFunPtr = nullptr;
     Motion *motionPtr = nullptr;
     Vector3<GLfloat> direction = 0;
-    objectTransform trans;
+    objectTransform transform;
     AnimationInfo animationInfo;
 
     inline static size_t skeletSize = 0;

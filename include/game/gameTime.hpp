@@ -5,12 +5,12 @@ class GameTime {
 private:
     std::chrono::steady_clock::time_point m_prevTime;
     std::chrono::steady_clock::time_point m_currentTime;
+    std::chrono::steady_clock::time_point Start;
 
 public:
-    GameTime() {
-        m_prevTime = std::chrono::steady_clock::now();
-        m_currentTime = m_prevTime;
-        Start = static_cast<float>(m_currentTime.time_since_epoch().count());
+    GameTime()
+    {
+        Start = m_currentTime = m_prevTime = std::chrono::steady_clock::now();
     }
 
     void Update() {
@@ -24,8 +24,7 @@ public:
     }
 
     float GetCurrentTime() const {
-        return static_cast<float>(m_currentTime.time_since_epoch().count()) - Start;
+        std::chrono::duration<float> currentTime = m_currentTime - Start;
+        return currentTime.count();
     }
-
-    float Start = 0.0;
 };

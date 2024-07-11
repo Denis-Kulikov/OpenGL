@@ -11,24 +11,20 @@ RenderThread::RenderThread(std::atomic<bool>* endTickPtr)
 
 void RenderThread::job() {
     while (!GameManager::IsEnd) callback();
-
-    // std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(200)));
-    // std::cout << "RenderThread worked for: " << workDuration.count() << " | " << swapDuration.count() << " seconds\n";
-    // std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(50)));
 }
 
 void RenderThread::callback() {
-    static Mesh model(std::string("assets/model/2b01.fbx"));
+    static Mesh model(std::string("assets/model/test2b.fbx"));
     objectTransform transform;
-    transform.SetWorldPos(0.0, -10.0, -5.0);
-    transform.SetRotate(0.0, 0.0, 0.0);
+    transform.SetWorldPos(-25.0, -10.0, 15.0);
+    transform.SetRotate(0.0, -90.0, 0.0);
     transform.MultiplyScale(Vector3<GLfloat>(0.1, 0.1, 0.1));
 
     if (sprites.empty()) {
         if (endTicks == false) {
             endWorkTime = std::chrono::high_resolution_clock::now();
             idleDuration += endWorkTime - startWorkTime;
-            std::this_thread::sleep_for(std::chrono::milliseconds(THREADS_SLEEP_TIME_MS * THREAD_RENDER));
+            std::this_thread::sleep_for(std::chrono::milliseconds(THREADS_SLEEP_TIME_MS * THREAD_RENDER * 10));
             return;
         }
 
@@ -80,8 +76,6 @@ ComponentsThread::ComponentsThread(std::atomic<bool>* endTickPtr)
 
 void ComponentsThread::job() {
     while (!GameManager::IsEnd) callback();
-    // std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(50)));
-    // std::cout << "ComponentsThread worked for: " << workDuration.count() << " | " << idleDuration.count() << " seconds\n";
 }
 
 void ComponentsThread::callback() {
@@ -137,7 +131,6 @@ void SceneThread::start() {
     componentsThread.renderThread.job();
     std::chrono::high_resolution_clock::time_point endTime = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> Total = endTime - startTime;
-    // std::cout << "Total worked for: " << Total.count() << " seconds\n";
 }
 
 void SceneThread::setScene(const Scene* _scene) {
@@ -146,7 +139,6 @@ void SceneThread::setScene(const Scene* _scene) {
 
 void SceneThread::job() {
     while (!GameManager::IsEnd) callback();
-    // std::cout << "SceneThread worked for: " << workDuration.count() << " seconds\n";
 }
 
 
@@ -173,13 +165,11 @@ void SceneThread::callback() {
     static int frame = 0;
     static std::size_t index = 0; 
 
+    GameManager::UpdateCamera();
+
     for (auto& it : scene->actors) {
-        if (*it->GetName() == "Wilson") {
-            (reinterpret_cast<Pawn*>(it))->MoveForward();
-            it->updateAnimation(it->GetAnimation(GameManager::Time.GetCurrentTime()));
-        } else if (*it->GetName() == "Spider") {
-            (reinterpret_cast<Pawn*>(it))->MoveTowards(scene->actors[1], 0.008);
-        }
+        (reinterpret_cast<Pawn*>(it))->MoveForward();
+        it->updateAnimation(it->GetAnimation(GameManager::Time.GetCurrentTime()));
 
         componentsThread.pushActor(it);
     }

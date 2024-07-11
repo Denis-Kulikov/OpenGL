@@ -7,6 +7,8 @@ GameManager::~GameManager()
     delete render;
     delete threads;
     delete callbackData.camera;
+
+    glfwDestroyWindow(window);
 }
 
 void GameManager::PushCamera(Camera *_camera)
@@ -32,7 +34,7 @@ Camera *GameManager::createCamera()
     Vector3<GLfloat> CameraUp(0.0f, 1.0f, 0.0f);
 
     camera->SetCamera(CameraPos, CameraTarget, CameraUp);
-    camera->SetPerspectiveProj(60.0f, width, height, 0.5f, 1000.0f);
+    camera->SetPerspectiveProj(90.0f, width, height, 0.5f, 1000.0f);
 
     return camera;
 }
@@ -40,7 +42,7 @@ Camera *GameManager::createCamera()
 void GameManager::KeyboardCB(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
     static bool keys[GLFW_KEY_LAST] = {false};
-    static float yaw = -180;
+    static float yaw = 90;
     static float pitch = 0;
     const GLfloat speed_rotation = -0.125;
 
@@ -59,37 +61,33 @@ void GameManager::KeyboardCB(GLFWwindow* window, int key, int scancode, int acti
     }
 
     player->SetDirection(Vector3<GLfloat>(
-        keys[GLFW_KEY_A] * 1.0 - keys[GLFW_KEY_D] * 1.0, 
-        keys[GLFW_KEY_SPACE] * 1.0 - keys[GLFW_KEY_C] * 1.0,
-        keys[GLFW_KEY_S] * 1.0 - keys[GLFW_KEY_W] * 1.0
+        keys[GLFW_KEY_D] - keys[GLFW_KEY_A], 
+        keys[GLFW_KEY_SPACE] - keys[GLFW_KEY_C],
+        keys[GLFW_KEY_S] - keys[GLFW_KEY_W]
     ));
 
+    buttons.yaw = keys[GLFW_KEY_Q] - keys[GLFW_KEY_E];
+    buttons.pitch = keys[GLFW_KEY_1] - keys[GLFW_KEY_2];
+}
 
-    if (keys[GLFW_KEY_E]) {
-        yaw += 5;
-        camera->Params.Target.x = cos(ToRadian(yaw));
-        camera->Params.Target.z = sin(ToRadian(yaw));
-    }
 
-    if (keys[GLFW_KEY_Q]) {
-        yaw -= 5;
-        camera->Params.Target.x = cos(ToRadian(yaw));
-        camera->Params.Target.z = sin(ToRadian(yaw));
-    }
+void GameManager::UpdateCamera()
+{
+    const float yaw_speed = 90.0;
+    const float pitch_speed = 90.0;
+    const float pitch_limit = 90.0;
 
-    const float pitch_speed = 2.5;
-    const float pitch_limit = 65;
-    if (keys[GLFW_KEY_1]) {
-        pitch += pitch_speed;
-        if (pitch > pitch_limit) pitch = pitch_limit;
-        camera->Params.Target.y = tan(ToRadian(pitch));
-    }
+    Character& player = *callbackData.player;
+    Camera& camera = *callbackData.camera;
 
-    if (keys[GLFW_KEY_2]) {
-        pitch -= pitch_speed;
-        if (pitch < -pitch_limit) pitch = -pitch_limit;
-        camera->Params.Target.y = tan(ToRadian(pitch));
-    }
+    player.SetYaw(player.GetYaw() + yaw_speed * buttons.yaw * Time.GetDeltaTime());
+    player.SetPitch(player.GetPitch() + pitch_speed * buttons.pitch * Time.GetDeltaTime());
+    if (fabs(player.GetPitch()) > pitch_limit) player.SetPitch(std::copysign(pitch_limit - 1e-3, player.GetPitch()));
+
+    camera.Params.Target.x = -cos(ToRadian(player.GetYaw()));
+    camera.Params.Target.z = -sin(ToRadian(player.GetYaw()));
+    camera.Params.Target.y = tan(ToRadian(player.GetPitch()));
+    camera.PersProj.FOV = pitch_limit - fabs(player.GetPitch());
 }
 
 void GameManager::InitializeObjects()
@@ -122,6 +120,7 @@ void GameManager::InitializeGLFW(int _width, int _height)
     glfwSetKeyCallback(window, GameManager::KeyboardCB);
     glfwSetWindowUserPointer(window, &callbackData);
     glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
+    glfwSetWindowPos(window, 320, 75);
 
     GLenum err = glewInit();
     if (err != GLEW_OK) {

@@ -192,11 +192,21 @@ void Mesh::compileShaders(const std::string &FS, const std::string &VS)
         std::cout << std::endl;
     }
 
-    gTextureSamplerLocation = glGetUniformLocation(shaderProgram, "TextureSampler");
-    gWorldLocation          = glGetUniformLocation(shaderProgram, "gWorld");
+    gTextureSamplerLocation   = glGetUniformLocation(shaderProgram, "TextureSampler");
+    // gNormalMapLocation        = glGetUniformLocation(shaderProgram, "NormalMap");
+    gWorldLocation            = glGetUniformLocation(shaderProgram, "gWorld");
+    gColorLocation            = glGetUniformLocation(shaderProgram, "gDirectionalLight.Color");
+    gDirectionLocation        = glGetUniformLocation(shaderProgram, "gDirectionalLight.Direction");
+    gAmbientIntensityLocation = glGetUniformLocation(shaderProgram, "gDirectionalLight.AmbientIntensity");
+    gDiffuseIntensityLocation = glGetUniformLocation(shaderProgram, "gDirectionalLight.DiffuseIntensity");
 
-    assert(gTextureSamplerLocation != 0xFFFFFFFF);
-    assert(gWorldLocation          != 0xFFFFFFFF);
+    assert(gTextureSamplerLocation   != 0xFFFFFFFF);
+    // assert(gNormalMapLocation        != 0xFFFFFFFF);
+    assert(gWorldLocation            != 0xFFFFFFFF);
+    assert(gColorLocation            != 0xFFFFFFFF);
+    assert(gDirectionLocation        != 0xFFFFFFFF);
+    assert(gAmbientIntensityLocation != 0xFFFFFFFF);
+    assert(gDiffuseIntensityLocation != 0xFFFFFFFF);
 }
 
 
@@ -207,6 +217,7 @@ bool Mesh::InitFromScene(const aiScene* pScene, const std::string& Filename)
 
     for (unsigned int i = 0; i < m_Entries.size(); i++) {
         const aiMesh* paiMesh = pScene->mMeshes[i];
+        std::cout << pScene->mMeshes[i]->mName.C_Str() << std::endl;
         InitMesh(i, paiMesh);
     }
 
@@ -279,8 +290,17 @@ bool Mesh::InitMaterials(const aiScene* pScene, const std::string& Filename)
 
 void Mesh::Render(Matrix4f<GLfloat>& mtx_transform)
 {
+    GLfloat color[3] = { 0.8, 0.8, 0.9 };
+    GLfloat direction[3] = { -0.3, -1.0, 0.2 };
+    GLfloat AmbientIntensity = 0.9;
+    GLfloat DiffuseIntensity = 0.5;
+
     glUseProgram(shaderProgram);
     glUniformMatrix4fv(gWorldLocation, 1, GL_TRUE, &mtx_transform);
+    glUniform3f(gColorLocation, color[0], color[1], color[2]);
+    glUniform3f(gDirectionLocation, direction[0], direction[1], direction[2]);
+    glUniform1f(gAmbientIntensityLocation, AmbientIntensity);
+    glUniform1f(gDiffuseIntensityLocation, DiffuseIntensity);
 
     for (unsigned int i = 0; i < m_Entries.size(); i++) {
         glBindVertexArray(m_Entries[i].VAO);

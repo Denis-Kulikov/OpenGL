@@ -25,6 +25,8 @@ public:
     static void PushPlayer(Character *_player);
     static Camera *createCamera();
     static void KeyboardCB(GLFWwindow* window, int key, int scancode, int action, int mods);
+    static void UpdateCamera();
+
     static void InitializeObjects();
     static void InitializeGLFW(int _width, int _height);
 
@@ -33,6 +35,12 @@ public:
         Character* player = nullptr;
     };
 
+    struct Buttons {
+        int yaw = 0;
+        int pitch = 0;
+    };
+
+    inline static Buttons buttons;
     inline static GameTime Time;
     inline static SceneThread* threads = nullptr;
     inline static Render* render = nullptr;

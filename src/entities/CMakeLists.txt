@@ -7,6 +7,7 @@ add_library(${target} STATIC
 	actor.cpp
 	pawn.cpp
 	character.cpp
+	owner.cpp
 )
 
 target_link_libraries(
