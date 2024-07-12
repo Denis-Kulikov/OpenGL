@@ -1,6 +1,7 @@
 #include <mesh/mesh.hpp>
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
+#include <game/gameManager.hpp>
 
 
 Texture::Texture(const std::string& Filename)
@@ -192,21 +193,27 @@ void Mesh::compileShaders(const std::string &FS, const std::string &VS)
         std::cout << std::endl;
     }
 
-    gTextureSamplerLocation   = glGetUniformLocation(shaderProgram, "TextureSampler");
+    gTextureSamplerLocation       = glGetUniformLocation(shaderProgram, "gTextureSampler");
     // gNormalMapLocation        = glGetUniformLocation(shaderProgram, "NormalMap");
-    gWorldLocation            = glGetUniformLocation(shaderProgram, "gWorld");
-    gColorLocation            = glGetUniformLocation(shaderProgram, "gDirectionalLight.Color");
-    gDirectionLocation        = glGetUniformLocation(shaderProgram, "gDirectionalLight.Direction");
-    gAmbientIntensityLocation = glGetUniformLocation(shaderProgram, "gDirectionalLight.AmbientIntensity");
-    gDiffuseIntensityLocation = glGetUniformLocation(shaderProgram, "gDirectionalLight.DiffuseIntensity");
+    gEyeWorldPosLocation          = glGetUniformLocation(shaderProgram, "gEyeWorldPos");
+    gWorldLocation                = glGetUniformLocation(shaderProgram, "gWorld");
+    gColorLocation                = glGetUniformLocation(shaderProgram, "gDirectionalLight.Color");
+    gDirectionLocation            = glGetUniformLocation(shaderProgram, "gDirectionalLight.Direction");
+    gAmbientIntensityLocation     = glGetUniformLocation(shaderProgram, "gDirectionalLight.AmbientIntensity");
+    gDiffuseIntensityLocation     = glGetUniformLocation(shaderProgram, "gDirectionalLight.DiffuseIntensity");
+    gMatSpecularIntensityLocation = glGetUniformLocation(shaderProgram, "gMatSpecularIntensity");
+    gSpecularPowerLocation        = glGetUniformLocation(shaderProgram, "gSpecularPower");
 
-    assert(gTextureSamplerLocation   != 0xFFFFFFFF);
+    assert(gTextureSamplerLocation       != 0xFFFFFFFF);
     // assert(gNormalMapLocation        != 0xFFFFFFFF);
-    assert(gWorldLocation            != 0xFFFFFFFF);
-    assert(gColorLocation            != 0xFFFFFFFF);
-    assert(gDirectionLocation        != 0xFFFFFFFF);
-    assert(gAmbientIntensityLocation != 0xFFFFFFFF);
-    assert(gDiffuseIntensityLocation != 0xFFFFFFFF);
+    assert(gEyeWorldPosLocation          != 0xFFFFFFFF);
+    assert(gWorldLocation                != 0xFFFFFFFF);
+    assert(gColorLocation                != 0xFFFFFFFF);
+    assert(gDirectionLocation            != 0xFFFFFFFF);
+    assert(gAmbientIntensityLocation     != 0xFFFFFFFF);
+    assert(gDiffuseIntensityLocation     != 0xFFFFFFFF);
+    assert(gMatSpecularIntensityLocation != 0xFFFFFFFF);
+    assert(gSpecularPowerLocation        != 0xFFFFFFFF);
 }
 
 
@@ -292,15 +299,22 @@ void Mesh::Render(Matrix4f<GLfloat>& mtx_transform)
 {
     GLfloat color[3] = { 0.8, 0.8, 0.9 };
     GLfloat direction[3] = { -0.3, -1.0, 0.2 };
-    GLfloat AmbientIntensity = 0.9;
+    GLfloat AmbientIntensity = 0.7;
     GLfloat DiffuseIntensity = 0.5;
+    GLfloat SpecularPower = 0.1;
+    GLfloat MatSpecularIntensity = 0.3;
+    Vector3<GLfloat> EyesPos = GameManager::callbackData.camera->GetPosition();
 
     glUseProgram(shaderProgram);
     glUniformMatrix4fv(gWorldLocation, 1, GL_TRUE, &mtx_transform);
     glUniform3f(gColorLocation, color[0], color[1], color[2]);
     glUniform3f(gDirectionLocation, direction[0], direction[1], direction[2]);
+    glUniform3f(gEyeWorldPosLocation, EyesPos[0], EyesPos[1], EyesPos[2]);
     glUniform1f(gAmbientIntensityLocation, AmbientIntensity);
     glUniform1f(gDiffuseIntensityLocation, DiffuseIntensity);
+    glUniform1f(gSpecularPowerLocation, SpecularPower);
+    glUniform1f(gMatSpecularIntensityLocation, MatSpecularIntensity);
+    
 
     for (unsigned int i = 0; i < m_Entries.size(); i++) {
         glBindVertexArray(m_Entries[i].VAO);

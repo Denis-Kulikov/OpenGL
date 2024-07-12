@@ -63,6 +63,7 @@ private:
     std::vector<Texture*> m_Textures;
 
     GLuint shaderProgram;
+    GLuint gEyeWorldPosLocation;
     GLuint gTextureSamplerLocation;
     // GLuint gNormalMapLocation;
     GLuint gWorldLocation;
@@ -70,4 +71,8 @@ private:
     GLuint gDirectionLocation;
     GLuint gAmbientIntensityLocation;
     GLuint gDiffuseIntensityLocation;
+    GLuint gMatSpecularIntensityLocation;
+    GLuint gSpecularPowerLocation;
+
+
 };

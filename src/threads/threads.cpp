@@ -14,7 +14,8 @@ void RenderThread::job() {
 }
 
 void RenderThread::callback() {
-    static Mesh model(std::string("assets/model/test2b.fbx"));
+    static Mesh model1(std::string("assets/model/test2b.fbx"));
+    // static Mesh model2(std::string("assets/model/bus-stop-diorama/BusStop.fbx"));
     objectTransform transform;
     transform.SetWorldPos(-25.0, -10.0, 15.0);
     transform.SetRotate(0.0, -90.0, 0.0);
@@ -29,7 +30,8 @@ void RenderThread::callback() {
         }
 
         GameManager::render->clearRender();
-        model.Render(GameManager::render->pipeline.GetTransform(transform));
+        model1.Render(GameManager::render->pipeline.GetTransform(transform));
+        // model2.Render(GameManager::render->pipeline.GetTransform(transform));
         GameManager::render->clearRender();
         Sprite mySprite(std::string("Grass"), "shaders/sprite_fs.glsl", "shaders/sprite_vs.glsl", "img/grass.png");
         GameManager::render->PushGeometry(mySprite.GetGeometry());

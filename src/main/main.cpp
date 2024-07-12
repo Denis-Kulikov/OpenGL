@@ -1,5 +1,7 @@
 #include <game/gameManager.hpp> 
 
+std::chrono::milliseconds totalTime(0);
+
 int main(int argc, char** argv)
 {
     const int width = 1600, height = 960;
