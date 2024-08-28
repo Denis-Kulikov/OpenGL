@@ -13,9 +13,13 @@ struct GeometryInfo {
 class Sprite
 {
 public:
+    Sprite(const std::string &_name, const char *FS, const char *VS, const char *texturePath, const Vector3<GLfloat> &_color);
     Sprite(const std::string &_name, const char *FS, const char *VS, const char *texturePath);
     static void initializeGeometry();
     virtual struct GeometryInfo *GetGeometry();
+    static void PushTexture(const GLuint new_texture, const std::string &name);
+    void SetTexture(const std::string &name);
+    static GLuint GetTexture(const std::string &name);
 
     std::string name;
     Vector3<GLfloat> Scale;

@@ -59,12 +59,13 @@ public:
     SceneThread();
     void start();
     void setScene(const Scene* _scene);
+    void drowNode(objectTransform transform, const std::string &text);
     void job();
 
 private:
     void callback();
     const Scene* scene = nullptr;
-    ComponentsThread componentsThread;
+    RenderThread renderThread;
     std::atomic<bool> endTick;
     std::mutex mutex;
 

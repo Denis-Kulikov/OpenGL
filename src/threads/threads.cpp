@@ -59,7 +59,7 @@ void RenderThread::setEnd() {
     endTicks = true;
 }
 
-
+/*
 ComponentsThread::ComponentsThread(std::atomic<bool>* endTickPtr)
     : renderThread(endTickPtr) 
 {}
@@ -111,16 +111,17 @@ void ComponentsThread::setEnd() {
     endTick = true;
 }
 
+*/
+
 
 SceneThread::SceneThread()
-    : componentsThread(&endTick)
+    : renderThread(&endTick)
 {}
 
 void SceneThread::start() {
     std::chrono::high_resolution_clock::time_point startTime = std::chrono::high_resolution_clock::now();
     std::thread(&SceneThread::job, this).detach();
-    std::thread(&ComponentsThread::job, &componentsThread).detach();
-    componentsThread.renderThread.job();
+    renderThread.job();
     std::chrono::high_resolution_clock::time_point endTime = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> Total = endTime - startTime;
     std::cout << "Total worked for: " << Total.count() << " seconds\n";
@@ -144,6 +145,51 @@ bool isVisible(Camera *camera, Actor *object) {
     return cameraDirection.VDot(cameraToObject) > 0;
 }
 
+GLuint createTextTexture(const std::string& text);
+GLuint createTextTexture(FT_Library ft, const char* fontPath, const char* text, int fontSize); //
+
+void SceneThread::drowNode(objectTransform transform, const std::string &text)
+{
+    static std::vector<Sprite> symbols(100, Sprite(std::string("Symbol"), "shaders/sprite_fs.glsl", "shaders/sprite_vs.glsl", "a", Vector3<GLfloat>(0.0, 0.0, 0.0)));
+    static Sprite mySprite(std::string("Node"), "shaders/sprite_fs.glsl", "shaders/sprite_vs.glsl", "img/grass.png");
+    
+    const GLfloat frame = 1.1;
+
+    transform.Scale.x *= text.size() * frame;
+    transform.Scale.z = transform.Scale.y *= frame;
+    renderThread.pushSprite(
+        std::pair<Matrix4f<GLfloat>, Sprite *>(
+            GameManager::render->pipeline.GetTransform(transform), &mySprite
+        )
+    );
+    transform.Scale.x /= text.size() * frame;
+    transform.Scale.z = transform.Scale.y /= frame;
+
+    const GLfloat save_x = transform.WorldPos.x;
+    const GLfloat offset = transform.Scale.x * frame * 2;
+    transform.WorldPos.x += ((text.size() - 1) * offset) / 2;
+    transform.WorldPos.z += 0.01;
+
+    auto it_s = symbols.begin();
+    for (const auto &it : text) {
+        std::string charStr(1, it);
+        it_s->SetTexture(charStr);
+
+        renderThread.pushSprite(
+            std::pair<Matrix4f<GLfloat>, Sprite *>(
+                GameManager::render->pipeline.GetTransform(transform), &*it_s
+            )
+        );
+
+        transform.WorldPos.x -= offset;
+        ++it_s;
+    }
+
+    transform.WorldPos.z -= 0.01;
+    transform.WorldPos.x = save_x;
+}
+
+
 void SceneThread::callback() {
     startWorkTime = std::chrono::high_resolution_clock::now();
 
@@ -160,18 +206,18 @@ void SceneThread::callback() {
     static int frame = 0;
     static std::size_t index = 0; 
 
-    for (auto& it : scene->actors) {
-        if (*it->GetName() == "Wilson") {
-            (reinterpret_cast<Pawn*>(it))->MoveForward();
-            it->updateAnimation(it->GetAnimation(GameManager::Time.GetCurrentTime()));
-        } else if (*it->GetName() == "Spider") {
-            (reinterpret_cast<Pawn*>(it))->MoveTowards(scene->actors[1], 0.008);
-        }
+    // 
+    static_cast<Pawn*>(scene->actors[0])->MoveForward();
 
-        componentsThread.pushActor(it);
-    }
+    const std::size_t size = 100;
+    objectTransform transform;
+    transform.SetRotate(0, 0, 180);
+    std::string str("Node");
 
-    componentsThread.setEnd();
+    drowNode(transform, str);
+    //
+
+    renderThread.setEnd();
 
     endWorkTime = std::chrono::high_resolution_clock::now();
     workDuration += endWorkTime - startWorkTime;

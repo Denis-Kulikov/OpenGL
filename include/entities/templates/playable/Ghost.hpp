@@ -2,11 +2,11 @@
 
 #include "../../character.hpp"
 
-class Wilson : public Pawn
+class Ghost : public Pawn
 {
 public:
-    Wilson();
-    ~Wilson();
+    Ghost();
+    ~Ghost();
     
     static void Initialize();
     static void SetMotion();

@@ -1,7 +1,7 @@
 #pragma once
 #include "../../character.hpp"
 
-class Player : public Character
+class Player : public Pawn
 {
 public:
 };

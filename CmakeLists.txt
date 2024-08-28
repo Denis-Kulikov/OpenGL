@@ -15,6 +15,9 @@ include_directories(_deps/pugixml-src/src)
 
 include_directories(build/_deps/stb_image-src)
 include_directories(build/_deps/pugixml-src/src)
+include_directories(build/_deps/freetype-src/include)
+include_directories(build/_deps/glm-src)
+include_directories(build/_deps/libpng-src)
 
 
 add_subdirectory(src)

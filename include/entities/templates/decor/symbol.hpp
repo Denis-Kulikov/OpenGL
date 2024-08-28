@@ -1,24 +1,24 @@
 #pragma once
 
-#include "../../character.hpp"
+#include "../../actor.hpp"
 
-class Wilson : public Pawn
+class Symbol : public Actor
 {
 public:
-    Wilson();
-    ~Wilson();
-    
+    Symbol();
+    ~Symbol();
+
     static void Initialize();
     static void SetMotion();
-
+    
     virtual size_t GetSkeletSize() const override;
     virtual Bone *GetSkelet() const override;
     virtual std::map<std::string, Sprite> *GetSprites() const override;
     virtual std::string *GetName() const override;
 
     static inline std::string name = "NoName";
-    static inline size_t skeletSize = 0;
-    static inline Bone skelet;
-    static inline std::map<std::string, Sprite> Sprites;
+    static size_t skeletSize;
+    static Bone skelet;
+    static std::map<std::string, Sprite> Sprites;
     static inline Motion motion;
 };

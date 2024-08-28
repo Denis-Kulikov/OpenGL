@@ -1,11 +1,89 @@
 #include <render/glfw.hpp>
 #include <object/sprite.hpp>
-#include <lib-project/try.hpp>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 #define STB_IMAGE_RESIZE_IMPLEMENTATION
 #include <stb_image_resize.h>
+
+#include <ft2build.h>
+#include FT_FREETYPE_H
+#include FT_ERRORS_H
+
+
+GLuint createTextTexture(FT_Library ft, const char* fontPath, const char* text, int fontSize) {
+    auto txr = Sprite::GetTexture(std::string(text));
+    if (txr) return txr;
+
+    FT_Face face;
+    if (FT_New_Face(ft, fontPath, 0, &face)) {
+        std::cerr << "Failed to load font" << std::endl;
+        return 0;
+    }
+
+    FT_Set_Pixel_Sizes(face, 0, fontSize);
+
+    int width = 0;
+    int height = 0;
+
+    // Calculate the size of the texture
+    for (const char* p = text; *p; p++) {
+        if (FT_Load_Char(face, *p, FT_LOAD_RENDER)) {
+            std::cerr << "Failed to load Glyph for character: " << *p << std::endl;
+            continue;
+        }
+
+        width += (face->glyph->advance.x >> 6); // advance.x is in 1/64th pixels, shift by 6 to get pixels
+        height = std::max(height, static_cast<int>(face->glyph->bitmap.rows));
+    }
+
+    // Create a 2D buffer for the texture
+    std::vector<std::vector<unsigned char>> buffer(height, std::vector<unsigned char>(width, 0));
+
+    int xOffset = 0;
+    for (const char* p = text; *p; p++) {
+        if (FT_Load_Char(face, *p, FT_LOAD_RENDER)) {
+            std::cerr << "Failed to load Glyph for character: " << *p << std::endl;
+            continue;
+        }
+
+        // Copy glyph bitmap into buffer
+        for (int row = 0; row < face->glyph->bitmap.rows; ++row) {
+            for (int col = 0; col < face->glyph->bitmap.width; ++col) {
+                buffer[row][xOffset + col] = face->glyph->bitmap.buffer[row * face->glyph->bitmap.width + col];
+            }
+        }
+
+        xOffset += (face->glyph->advance.x >> 6); // Move to the next character position
+    }
+
+    // Convert 2D buffer to 1D array for OpenGL
+    std::vector<unsigned char> buffer1D;
+    for (const auto& row : buffer) {
+        buffer1D.insert(buffer1D.end(), row.begin(), row.end());
+    }
+
+    GLuint texture;
+    glGenTextures(1, &texture);
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, width, height, 0, GL_RED, GL_UNSIGNED_BYTE, buffer1D.data());
+
+    // Set texture parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    Sprite::PushTexture(texture, std::string(text));
+
+    FT_Done_Face(face);
+
+    return texture;
+}
+
+
+
 
 
 Sprite::Sprite(const std::string &_name, const char *FS, const char *VS, const char *texturePath)
@@ -31,10 +109,37 @@ Sprite::Sprite(const std::string &_name, const char *FS, const char *VS, const c
     }
 }
 
+Sprite::Sprite(const std::string &_name, const char *FS, const char *VS, const char *texturePath, const Vector3<GLfloat> &_color)
+    : Sprite(_name, FS, VS, texturePath)
+{
+    color = _color;
+}
+
+
 struct GeometryInfo *Sprite::GetGeometry()
 {
     return &geometryInfo;
 }
+
+void Sprite::PushTexture(const GLuint new_texture, const std::string &name)
+{
+    texturesMap[std::string(name)] = new_texture;
+}
+
+void Sprite::SetTexture(const std::string &name)
+{
+    auto txr = texturesMap.find(std::string(name));
+    if (txr != texturesMap.end()) {
+        texture = txr->second;
+    }
+}
+
+GLuint Sprite::GetTexture(const std::string &name)
+{
+    auto txr = texturesMap.find(std::string(name));
+    return txr != texturesMap.end() ? txr->second : 0;
+}
+
 
 void Sprite::compileShaders(const char *FS, const char *VS)
 {
@@ -114,22 +219,26 @@ GLuint Sprite::loadShader(const char *shaderPath, GLuint type)
     if (!ok) {
         glGetShaderInfoLog(shader, 2000, NULL, log);
         printf("Shader(%s): %s\n", shaderPath, log);
+        // std::cout << "Shader(" << shaderPath << "): " << log << std::endl; 
         std::cout << shaderCode << std::endl;
     }
 
     return shader;
 }
 
-void Sprite::loadTextures(const char *texturePath)
-{
+void Sprite::loadTextures(const char *texturePath) {
     if (texturePath == nullptr) return;
 
     int x, y, n;
     std::string path = std::string("assets/") + texturePath;
     unsigned char *img = stbi_load(path.c_str(), &x, &y, &n, 0);
 
-    TRY(img == nullptr, std::string("Failed to load texture: " + path))
+    if (img == nullptr) {
+        std::cerr << "Failed to load texture: " << path << std::endl;
+        return;
+    }
 
+    // Determine new dimensions for texture to be power of two
     int new_x = 1 << (int)std::ceil(std::log2(x));
     int new_y = 1 << (int)std::ceil(std::log2(y));
 
@@ -140,15 +249,16 @@ void Sprite::loadTextures(const char *texturePath)
         return;
     }
 
+    // Resize image to the new dimensions
     stbir_resize_uint8(img, x, y, 0, resized_img, new_x, new_y, 0, n);
 
     glGenTextures(1, &texture);
     glBindTexture(GL_TEXTURE_2D, texture);
 
     GLenum format = (n == 4) ? GL_RGBA : GL_RGB;
-
     glTexImage2D(GL_TEXTURE_2D, 0, format, new_x, new_y, 0, format, GL_UNSIGNED_BYTE, resized_img);
 
+    // Set texture parameters
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -159,15 +269,6 @@ void Sprite::loadTextures(const char *texturePath)
 
     glGenerateMipmap(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, 0);
-
-    GLfloat scale_x = static_cast<GLfloat>(x) / static_cast<GLfloat>(new_x);
-    GLfloat scale_y = static_cast<GLfloat>(y) / static_cast<GLfloat>(new_y);
-    Scale.VSet(1, static_cast<GLfloat>(new_y * scale_y) / static_cast<GLfloat>(new_x * scale_x), 0.0);
-
-    GLenum error = glGetError();
-    if (error != GL_NO_ERROR) {
-        std::cerr << "OpenGL error: " << error << std::endl;
-    }
 }
 
 void Sprite::initializeGeometry()

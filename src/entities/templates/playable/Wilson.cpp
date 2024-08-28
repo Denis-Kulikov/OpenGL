@@ -1,7 +1,7 @@
 #include <entities/templates/playable/Wilson.hpp>
 
 Wilson::Wilson()
-    : Character(std::string("player/Wilson"), GetSkeletSize())
+    : Pawn(std::string("player/Wilson"), GetSkeletSize())
 {
     name = "Wilson";
     motionPtr = &motion;

@@ -1,9 +1,12 @@
 #include <game/gameManager.hpp>
+#include <entities/templates/playable/Ghost.hpp>
 #include <entities/templates/playable/Wilson.hpp>
 #include <entities/templates/mobs/spider.hpp>
 #include <entities/templates/decor/wave.hpp>
 #include <entities/templates/decor/grass.hpp>
+#include <entities/templates/decor/symbol.hpp>
 
+#define SYMBOL_NUM 2
 #define SPIDER_NUM 3
 #define WAVE_SUM 2
 #define WILSON_NUM 1
@@ -30,26 +33,30 @@ Vector3<GLfloat> generateRandomPoint() {
 
 Scene *createScene()
 {
-    Wilson *character = nullptr;
-    Wilson *wilson[WILSON_NUM] = {nullptr};
-    Spider *spider[SPIDER_NUM] = {nullptr};
-    Wave *wave[WAVE_SUM] = {nullptr};
-    Grass *grass = nullptr;
+    Ghost *character = nullptr;
+    // Wilson *wilson[WILSON_NUM] = {nullptr};
+    // Spider *spider[SPIDER_NUM] = {nullptr};
+    // Wave *wave[WAVE_SUM] = {nullptr};
+    // Symbol *symbol[SYMBOL_NUM] = {nullptr};
+    // Grass *grass = nullptr;
     auto *scene = new Scene();
 
-    Wilson::Initialize();
-    Spider::Initialize();
-    Wave::Initialize();
-    Grass::Initialize();
+    Ghost::Initialize();
+    // Wilson::Initialize();
+    // Spider::Initialize();
+    // Wave::Initialize();
+    // Grass::Initialize();
+    // Symbol::Initialize();
 
-    grass = new Grass();
-    grass->GetTransform()->Move(4, -4, -10);
-    grass->GetTransform()->SetRotate(90, 0, 0);
-    grass->GetTransform()->SetScale(10, 10, 0);
-    grass->updateAnimation("stand");
-    scene->pushActor(grass);
+    // grass = new Grass();
+    // grass->GetTransform()->Move(4, -4, -10);
+    // grass->GetTransform()->SetRotate(90, 0, 0);
+    // grass->GetTransform()->SetScale(10, 10, 0);
+    // grass->updateAnimation("stand");
+    // scene->pushActor(grass);
 
-    character = new Wilson();
+
+    character = new Ghost();
     character->updateAnimation("stand");
     scene->pushActor(character);
     #if MY_ACTOR_TEST
@@ -63,20 +70,35 @@ Scene *createScene()
     //     scene->pushActor(wilson[i]);
     // }
 
-    for (int i = 0; i < SPIDER_NUM; i++) {
-        spider[i] = new Spider();
-        spider[i]->Teleport(generateRandomPoint());
-        spider[i]->updateAnimation("stand");
-        scene->pushActor(spider[i]);
-    }
+    // for (int i = 0; i < SPIDER_NUM; i++) {
+    //     spider[i] = new Spider();
+    //     spider[i]->Teleport(generateRandomPoint());
+    //     spider[i]->updateAnimation("stand");
+    //     scene->pushActor(spider[i]);
+    // }
 
-    for (int i = 0; i < WAVE_SUM; i++) {
-        wave[i] = new Wave();
-        wave[i]->updateAnimation("stand");
-        objectTransform *transform = wave[i]->GetTransform();
-        transform->Move(generateRandomPoint());
-        scene->pushActor(wave[i]);
-    }
+    // for (int i = 0; i < WAVE_SUM; i++) {
+    //     wave[i] = new Wave();
+    //     wave[i]->updateAnimation("stand");
+    //     objectTransform *transform = wave[i]->GetTransform();
+    //     transform->Move(generateRandomPoint());
+    //     scene->pushActor(wave[i]);
+    // }
+    
+    // for (int i = 0; i < SYMBOL_NUM; i++) {
+    //     symbol[i] = new Symbol();
+    //     symbol[i]->updateAnimation("stand");
+    //     objectTransform *transform = symbol[i]->GetTransform();
+    //     transform->Move(generateRandomPoint());
+    //     char s[2] = {'0' + i, '\0'};
+    //     symbol[i]->GetSprites()->at("symbol").SetTexture(s);
+
+    //     scene->pushActor(symbol[i]);
+    // }
+
+    // for (const auto &it : *symbol[0]->GetSprites()) {
+    // std::cout << it.first << std::endl;;
+    // }
 
     Sprite mySprite(std::string("Grass"), "shaders/sprite_fs.glsl", "shaders/sprite_vs.glsl", "img/grass.png");
     GameManager::PushPlayer(character);

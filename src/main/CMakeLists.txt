@@ -16,6 +16,7 @@ target_link_libraries(
   ${target}
   PRIVATE
 	lib-glfw
+	lib-render
 	lib-object
 	lib-game
 )

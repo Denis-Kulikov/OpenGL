@@ -1,5 +1,6 @@
 #include <game/gameManager.hpp> 
 
+
 GameManager::GameManager() {};
 
 GameManager::~GameManager()
@@ -9,12 +10,67 @@ GameManager::~GameManager()
     delete callbackData.camera;
 }
 
+void GameManager::Intit_characters()
+{
+    FT_Face face;
+
+    if (FT_New_Face(ft, "assets/ttf/ArialRegular.ttf", 0, &face)) {
+        std::cerr << "Failed to load font" << std::endl;
+        return;
+    }
+
+    FT_Set_Pixel_Sizes(face, 0, 48);
+    
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+    for (GLubyte c = 32; c < 128; c++) {
+        if (FT_Load_Char(face, c, FT_LOAD_RENDER)) {
+            std::cerr << "Failed to load Glyph" << std::endl;
+            continue;
+        }
+
+        GLuint texture;
+        glGenTextures(1, &texture);
+        glBindTexture(GL_TEXTURE_2D, texture);
+        glTexImage2D(
+            GL_TEXTURE_2D,
+            0,
+            GL_RED,
+            face->glyph->bitmap.width,
+            face->glyph->bitmap.rows,
+            0,
+            GL_RED,
+            GL_UNSIGNED_BYTE,
+            face->glyph->bitmap.buffer
+        );
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+        Character character = {
+            texture,
+            glm::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),
+            glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top),
+            static_cast<GLuint>(face->glyph->advance.x)
+        };
+        Characters->insert(std::pair<GLchar, Character>(c, character));
+
+        std::string s(1, c); 
+        Sprite::PushTexture(texture, std::string(s));
+    }
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    FT_Done_Face(face);
+}
+
 void GameManager::PushCamera(Camera *_camera)
 {
     callbackData.camera = _camera;
 }
 
-void GameManager::PushPlayer(Character *_player)
+void GameManager::PushPlayer(Pawn *_player)
 {
     callbackData.player = _player;
 }
@@ -27,8 +83,8 @@ Camera *GameManager::createCamera()
         exit(EXIT_FAILURE);
     }
 
-    Vector3<GLfloat> CameraPos(0.0f, 3.0f, 15);
-    Vector3<GLfloat> CameraTarget(0.0f, -0.3f, -1.0f);
+    Vector3<GLfloat> CameraPos(0.0f, 0.2f, 10);
+    Vector3<GLfloat> CameraTarget(0.0f, 0.0f, -1.0f);
     Vector3<GLfloat> CameraUp(0.0f, 1.0f, 0.0f);
 
     camera->SetCamera(CameraPos, CameraTarget, CameraUp);
@@ -43,7 +99,7 @@ void GameManager::KeyboardCB(GLFWwindow* window, int key, int scancode, int acti
 
     const GLfloat speed_rotation = -0.125;
 
-    Character* player = callbackData.player;
+    Pawn* player = callbackData.player;
     Camera* camera = callbackData.camera;
 
     if (action == GLFW_PRESS) {
@@ -58,24 +114,17 @@ void GameManager::KeyboardCB(GLFWwindow* window, int key, int scancode, int acti
     }
 
     player->SetDirection(Vector3<GLfloat>(
-        keys[GLFW_KEY_A] * 1.0 - keys[GLFW_KEY_D] * 1.0, 
-        0, 
-        keys[GLFW_KEY_S] * 1.0 - keys[GLFW_KEY_W] * 1.0
+        keys[GLFW_KEY_A]     - keys[GLFW_KEY_D], 
+        keys[GLFW_KEY_SPACE] - keys[GLFW_KEY_C], 
+        keys[GLFW_KEY_S]     - keys[GLFW_KEY_W]
     ));
 
-    if (keys[GLFW_KEY_SPACE]) {
-    }
 
-    if (keys[GLFW_KEY_C]) {
-    }
-
-    if (keys[GLFW_KEY_E]) {
+    if (keys[GLFW_KEY_E]) 
         camera->Params.Target.x += speed_rotation;
-    }
 
-    if (keys[GLFW_KEY_Q]) {
+    if (keys[GLFW_KEY_Q]) 
         camera->Params.Target.x -= speed_rotation;
-    }
 }
 
 void GameManager::InitializeObjects()
@@ -131,4 +180,13 @@ void GameManager::InitializeGLFW(int _width, int _height)
         std::cerr << "Error: " << "Failed to allocate memory to the threads" << std::endl;
         exit(EXIT_FAILURE);
     }
+
+
+    if (FT_Init_FreeType(&ft)) {
+        std::cerr << "Could not init FreeType Library" << std::endl;
+        return;
+    }
+    Characters = new std::map<GLchar, Character>;
+
+    Intit_characters();
 }
