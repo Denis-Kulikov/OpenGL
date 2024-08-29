@@ -2,6 +2,7 @@
 #include "../entities/actor.hpp"
 #include "../render/render.hpp"
 #include "../object/scene.hpp"
+#include "../binary-tree/binary_tree.hpp"
 
 #define THREADS_SLEEP_TIME_MS 1
 #define THREAD_SCENE 3
@@ -15,8 +16,8 @@ public:
     void job();
     void setEnd();
 
-private:
     void callback();
+private:
     void popActor();
     void swapBuffer();
 
@@ -60,12 +61,14 @@ public:
     void start();
     void setScene(const Scene* _scene);
     void drowNode(objectTransform transform, const std::string &text);
+    void drowBinaryTree(const objectTransform &transform, const tree_node<std::string> &node);
     void job();
 
 private:
     void callback();
     const Scene* scene = nullptr;
-    RenderThread renderThread;
+    RenderThread *renderThread = nullptr;
+    ComponentsThread componentsThread;
     std::atomic<bool> endTick;
     std::mutex mutex;
 

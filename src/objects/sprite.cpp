@@ -131,6 +131,8 @@ void Sprite::SetTexture(const std::string &name)
     auto txr = texturesMap.find(std::string(name));
     if (txr != texturesMap.end()) {
         texture = txr->second;
+    } else {
+        std::cout << "Texture '" << name << "' was not found" << std::endl;
     }
 }
 
@@ -146,53 +148,75 @@ void Sprite::compileShaders(const char *FS, const char *VS)
     if (shader == 0) 
         shader = glCreateProgram();
 
-    GLuint fragmentShader;
-    GLuint vertexShader;
+    GLuint fragmentShader = 0;
+    GLuint vertexShader = 0;
 
+    // Загружаем и компилируем шейдеры
     if (FS != nullptr) {
         fragmentShader = loadShader(FS, GL_FRAGMENT_SHADER);
+        if (fragmentShader == 0) {
+            std::cerr << "Ошибка компиляции фрагментного шейдера" << std::endl;
+            return;
+        }
         glAttachShader(shader, fragmentShader);
-        if (VS == nullptr) return;
     }
     if (VS != nullptr) {
         vertexShader = loadShader(VS, GL_VERTEX_SHADER);
+        if (vertexShader == 0) {
+            std::cerr << "Ошибка компиляции вершинного шейдера" << std::endl;
+            return;
+        }
         glAttachShader(shader, vertexShader);
     }
 
+    // Линкуем шейдерную программу
     glLinkProgram(shader);
 
     GLint ok;
     GLchar log[2000];
     glGetProgramiv(shader, GL_LINK_STATUS, &ok);
     if (!ok) {
-        glGetProgramInfoLog(shader, 2000, NULL, log);
-        std::cout << "Shader " << name << " compilation Log:\n" << log << std::endl;
+        glGetProgramInfoLog(shader, sizeof(log), NULL, log);
+        std::cerr << "Shader " << name << " compilation Log:\n" << log << std::endl;
     
-        if (FS != nullptr) {
-            GLint infoLogLength;
+        // Выводим логи ошибок фрагментного шейдера
+        if (fragmentShader != 0) {
+            GLint infoLogLength = 0;
             glGetShaderiv(fragmentShader, GL_INFO_LOG_LENGTH, &infoLogLength);
-            GLchar *infoLog = new GLchar[infoLogLength + 1];
-            glGetShaderInfoLog(fragmentShader, infoLogLength, NULL, infoLog);
-            std::cout << "Shader fragmentShader Log:\n" << infoLog << std::endl;
-            delete[] infoLog;
+            if (infoLogLength > 0) {
+                GLchar *infoLog = new GLchar[infoLogLength];
+                glGetShaderInfoLog(fragmentShader, infoLogLength, NULL, infoLog);
+                std::cerr << "Shader fragmentShader Log:\n" << infoLog << std::endl;
+                delete[] infoLog;
+            }
         }
-        if (VS != nullptr) {
-            GLint infoLogLength;
+
+        // Выводим логи ошибок вершинного шейдера
+        if (vertexShader != 0) {
+            GLint infoLogLength = 0;
             glGetShaderiv(vertexShader, GL_INFO_LOG_LENGTH, &infoLogLength);
-            GLchar *infoLog = new GLchar[infoLogLength + 1];
-            glGetShaderInfoLog(vertexShader, infoLogLength, NULL, infoLog);
-            std::cout << "Shader vertexShader Log:\n" << infoLog << std::endl;
-            delete[] infoLog;
+            if (infoLogLength > 0) {
+                GLchar *infoLog = new GLchar[infoLogLength];
+                glGetShaderInfoLog(vertexShader, infoLogLength, NULL, infoLog);
+                std::cerr << "Shader vertexShader Log:\n" << infoLog << std::endl;
+                delete[] infoLog;
+            }
         }
-        std::cout << std::endl;
+        return;
     }
 
+    // Проверка uniform-переменных
     gWorldLocation = glGetUniformLocation(shader, "gWorld");
     gColorLocation = glGetUniformLocation(shader, "gColor");
     gTextureSamplerLocation = glGetUniformLocation(shader, "textureSampler");
 
+    if (gWorldLocation == -1 || gColorLocation == -1 || gTextureSamplerLocation == -1) {
+        std::cerr << "Не удалось получить локейшн uniform-переменных." << std::endl;
+    }
+
     assert(gWorldLocation != 0xFFFFFFFF);
 }
+
 
 GLuint Sprite::loadShader(const char *shaderPath, GLuint type)
 {

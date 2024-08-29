@@ -59,7 +59,7 @@ void RenderThread::setEnd() {
     endTicks = true;
 }
 
-/*
+
 ComponentsThread::ComponentsThread(std::atomic<bool>* endTickPtr)
     : renderThread(endTickPtr) 
 {}
@@ -111,22 +111,29 @@ void ComponentsThread::setEnd() {
     endTick = true;
 }
 
-*/
 
 
 SceneThread::SceneThread()
-    : renderThread(&endTick)
+    : componentsThread(&endTick)
 {}
 
 void SceneThread::start() {
     std::chrono::high_resolution_clock::time_point startTime = std::chrono::high_resolution_clock::now();
-    std::thread(&SceneThread::job, this).detach();
-    renderThread.job();
+
+    std::thread t_sceneThread(&SceneThread::job, this);
+    std::thread t_componentsThread(&ComponentsThread::job, &this->componentsThread);
+    
+    t_sceneThread.detach();
+    t_componentsThread.detach();
+
+    renderThread = &componentsThread.renderThread;
+    renderThread->job();
+
     std::chrono::high_resolution_clock::time_point endTime = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> Total = endTime - startTime;
     std::cout << "Total worked for: " << Total.count() << " seconds\n";
-    // job();
 }
+
 
 void SceneThread::setScene(const Scene* _scene) {
     scene = _scene;
@@ -145,19 +152,31 @@ bool isVisible(Camera *camera, Actor *object) {
     return cameraDirection.VDot(cameraToObject) > 0;
 }
 
-GLuint createTextTexture(const std::string& text);
-GLuint createTextTexture(FT_Library ft, const char* fontPath, const char* text, int fontSize); //
+void createSymbols(std::vector<Sprite> &symbols)
+{
+    for (int i = 32; i < 128; i++) {
+        std::string textureName(1, i);
+        symbols[i - 32].SetTexture(textureName);
+    }
+}
 
 void SceneThread::drowNode(objectTransform transform, const std::string &text)
 {
-    static std::vector<Sprite> symbols(100, Sprite(std::string("Symbol"), "shaders/sprite_fs.glsl", "shaders/sprite_vs.glsl", "a", Vector3<GLfloat>(0.0, 0.0, 0.0)));
-    static Sprite mySprite(std::string("Node"), "shaders/sprite_fs.glsl", "shaders/sprite_vs.glsl", "img/grass.png");
+    static std::vector<Sprite> symbols(128 - 32, Sprite(std::string("Symbol"), "shaders/symbol_fs.glsl", "shaders/sprite_vs.glsl", "a", Vector3<GLfloat>(0.0, 0.0, 0.0)));
+    static Sprite mySprite(std::string("Node"), "shaders/sprite_fs.glsl", "shaders/sprite_vs.glsl", "img/cell.jpg");
     
     const GLfloat frame = 1.1;
 
+    static bool b = true;
+
+    if (b) {
+        createSymbols(symbols);
+        b = !b;
+    } 
+
     transform.Scale.x *= text.size() * frame;
     transform.Scale.z = transform.Scale.y *= frame;
-    renderThread.pushSprite(
+    renderThread->pushSprite(
         std::pair<Matrix4f<GLfloat>, Sprite *>(
             GameManager::render->pipeline.GetTransform(transform), &mySprite
         )
@@ -165,30 +184,58 @@ void SceneThread::drowNode(objectTransform transform, const std::string &text)
     transform.Scale.x /= text.size() * frame;
     transform.Scale.z = transform.Scale.y /= frame;
 
+    const GLfloat save_width = transform.Scale.x;
     const GLfloat save_x = transform.WorldPos.x;
     const GLfloat offset = transform.Scale.x * frame * 2;
     transform.WorldPos.x += ((text.size() - 1) * offset) / 2;
     transform.WorldPos.z += 0.01;
 
-    auto it_s = symbols.begin();
     for (const auto &it : text) {
-        std::string charStr(1, it);
-        it_s->SetTexture(charStr);
+        if (it < 32 || it > 127) continue;
 
-        renderThread.pushSprite(
+        renderThread->pushSprite(
             std::pair<Matrix4f<GLfloat>, Sprite *>(
-                GameManager::render->pipeline.GetTransform(transform), &*it_s
+                GameManager::render->pipeline.GetTransform(transform), &symbols[it - 32]
             )
         );
 
         transform.WorldPos.x -= offset;
-        ++it_s;
     }
 
     transform.WorldPos.z -= 0.01;
     transform.WorldPos.x = save_x;
 }
 
+void SceneThread::drowBinaryTree(const objectTransform &transform, const tree_node<std::string> &node)
+{
+    drowNode(transform, node.get_value());
+
+    objectTransform left(transform); 
+    objectTransform right(transform);
+    
+    right.WorldPos.y = left.WorldPos.y -= left.GetScale().x * 2;
+
+    left.SetScale(left.GetScale().x / 2);
+    right.SetScale(right.GetScale().x / 2);
+
+
+    left.WorldPos.x += 3 * transform.GetScale().x;
+    right.WorldPos.x -= 3 * transform.GetScale().x;
+
+    if (node.left_  != nullptr) drowBinaryTree(left, node.left());
+    if (node.right_ != nullptr) drowBinaryTree(right, node.right());
+}
+
+tree_node<std::string>* deserialize(std::ifstream& in) {
+    std::string value;
+    in >> value;
+    if (value == "#") return nullptr;
+
+    tree_node<std::string>* node = new tree_node<std::string>(value);
+    node->left_ = deserialize(in);
+    node->right_ = deserialize(in);
+    return node;
+}
 
 void SceneThread::callback() {
     startWorkTime = std::chrono::high_resolution_clock::now();
@@ -212,12 +259,12 @@ void SceneThread::callback() {
     const std::size_t size = 100;
     objectTransform transform;
     transform.SetRotate(0, 0, 180);
-    std::string str("Node");
 
-    drowNode(transform, str);
+    std::ifstream in("tree.txt");
+    drowBinaryTree(transform, *deserialize(in));
     //
 
-    renderThread.setEnd();
+    renderThread->setEnd();
 
     endWorkTime = std::chrono::high_resolution_clock::now();
     workDuration += endWorkTime - startWorkTime;

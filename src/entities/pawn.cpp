@@ -44,3 +44,8 @@ GLfloat Pawn::GetSpeed()
 {
     return speed;
 }
+
+void Pawn::SetSpeed(GLfloat s)
+{
+    speed = s;
+}

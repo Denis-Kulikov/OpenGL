@@ -56,8 +56,12 @@ Scene *createScene()
     // scene->pushActor(grass);
 
 
+    Sprite symbols(std::string("Symbol"), "shaders/symbol_fs.glsl", "shaders/sprite_vs.glsl", "a", Vector3<GLfloat>(0.0, 0.0, 0.0));
+
+
     character = new Ghost();
     character->updateAnimation("stand");
+    character->Move(1, Vector3<GLfloat>(0, 0, 1));
     scene->pushActor(character);
     #if MY_ACTOR_TEST
     character->PushRender(GameManager::render);
@@ -100,7 +104,7 @@ Scene *createScene()
     // std::cout << it.first << std::endl;;
     // }
 
-    Sprite mySprite(std::string("Grass"), "shaders/sprite_fs.glsl", "shaders/sprite_vs.glsl", "img/grass.png");
+    Sprite mySprite(std::string("Grass"), "shaders/sprite_fs.glsl", "shaders/sprite_vs.glsl", "img/cell.jpg");
     GameManager::PushPlayer(character);
     GameManager::render->PushGeometry(mySprite.GetGeometry());
     GameManager::render->pipeline.camera->OwnerTransformPtr = character->GetTransform();

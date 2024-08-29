@@ -25,6 +25,7 @@ public:
     void SetScale(const Vector3<GLfloat> _scale);
     void MultiplyScale(const Vector3<GLfloat> _scale);
     GLfloat GetSpeed();
+    void SetSpeed(GLfloat s);
 
 protected:
     GLfloat speed = 0.3;

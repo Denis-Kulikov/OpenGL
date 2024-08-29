@@ -1,5 +1,7 @@
 #include <game/gameManager.hpp> 
 
+// #include <fcntl.h>
+// #include <unistd.h>
 
 GameManager::GameManager() {};
 
@@ -98,6 +100,7 @@ void GameManager::KeyboardCB(GLFWwindow* window, int key, int scancode, int acti
     static bool keys[GLFW_KEY_LAST] = {false};
 
     const GLfloat speed_rotation = -0.125;
+    const GLfloat speed_movement = 0.1;
 
     Pawn* player = callbackData.player;
     Camera* camera = callbackData.camera;
@@ -114,22 +117,27 @@ void GameManager::KeyboardCB(GLFWwindow* window, int key, int scancode, int acti
     }
 
     player->SetDirection(Vector3<GLfloat>(
-        keys[GLFW_KEY_A]     - keys[GLFW_KEY_D], 
-        keys[GLFW_KEY_SPACE] - keys[GLFW_KEY_C], 
-        keys[GLFW_KEY_S]     - keys[GLFW_KEY_W]
+        keys[GLFW_KEY_A] - keys[GLFW_KEY_D], 
+        keys[GLFW_KEY_W] - keys[GLFW_KEY_S], 
+        keys[GLFW_KEY_LEFT_SHIFT] - keys[GLFW_KEY_SPACE]
     ));
 
+    if (keys[GLFW_KEY_E]) camera->Params.Target.x += speed_rotation;
+    if (keys[GLFW_KEY_Q]) camera->Params.Target.x -= speed_rotation;
 
-    if (keys[GLFW_KEY_E]) 
-        camera->Params.Target.x += speed_rotation;
+    if (keys[GLFW_KEY_EQUAL]) player->SetSpeed(player->GetSpeed() * 1.4);
+    if (keys[GLFW_KEY_MINUS]) player->SetSpeed(player->GetSpeed() / 1.4);
 
-    if (keys[GLFW_KEY_Q]) 
-        camera->Params.Target.x -= speed_rotation;
+    if (keys[GLFW_KEY_ENTER]) {
+        player->GetTransform()->SetWorldPos(Vector3<GLfloat>(0, -1, 0));
+        player->SetSpeed(0.5);
+    }
 }
 
 void GameManager::InitializeObjects()
 {
     Sprite::initializeGeometry();
+    // line::initializeGeometry();
 }
 
 void GameManager::InitializeGLFW(int _width, int _height)
