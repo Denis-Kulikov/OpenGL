@@ -151,11 +151,10 @@ void Sprite::compileShaders(const char *FS, const char *VS)
     GLuint fragmentShader = 0;
     GLuint vertexShader = 0;
 
-    // Загружаем и компилируем шейдеры
     if (FS != nullptr) {
         fragmentShader = loadShader(FS, GL_FRAGMENT_SHADER);
         if (fragmentShader == 0) {
-            std::cerr << "Ошибка компиляции фрагментного шейдера" << std::endl;
+            std::cerr << "Fragment Shader compilation error" << std::endl;
             return;
         }
         glAttachShader(shader, fragmentShader);
@@ -163,13 +162,12 @@ void Sprite::compileShaders(const char *FS, const char *VS)
     if (VS != nullptr) {
         vertexShader = loadShader(VS, GL_VERTEX_SHADER);
         if (vertexShader == 0) {
-            std::cerr << "Ошибка компиляции вершинного шейдера" << std::endl;
+            std::cerr << "Vertex Shader compilation error" << std::endl;
             return;
         }
         glAttachShader(shader, vertexShader);
     }
 
-    // Линкуем шейдерную программу
     glLinkProgram(shader);
 
     GLint ok;
@@ -179,7 +177,6 @@ void Sprite::compileShaders(const char *FS, const char *VS)
         glGetProgramInfoLog(shader, sizeof(log), NULL, log);
         std::cerr << "Shader " << name << " compilation Log:\n" << log << std::endl;
     
-        // Выводим логи ошибок фрагментного шейдера
         if (fragmentShader != 0) {
             GLint infoLogLength = 0;
             glGetShaderiv(fragmentShader, GL_INFO_LOG_LENGTH, &infoLogLength);
@@ -191,7 +188,6 @@ void Sprite::compileShaders(const char *FS, const char *VS)
             }
         }
 
-        // Выводим логи ошибок вершинного шейдера
         if (vertexShader != 0) {
             GLint infoLogLength = 0;
             glGetShaderiv(vertexShader, GL_INFO_LOG_LENGTH, &infoLogLength);
@@ -205,14 +201,9 @@ void Sprite::compileShaders(const char *FS, const char *VS)
         return;
     }
 
-    // Проверка uniform-переменных
     gWorldLocation = glGetUniformLocation(shader, "gWorld");
     gColorLocation = glGetUniformLocation(shader, "gColor");
     gTextureSamplerLocation = glGetUniformLocation(shader, "textureSampler");
-
-    if (gWorldLocation == -1 || gColorLocation == -1 || gTextureSamplerLocation == -1) {
-        std::cerr << "Не удалось получить локейшн uniform-переменных." << std::endl;
-    }
 
     assert(gWorldLocation != 0xFFFFFFFF);
 }

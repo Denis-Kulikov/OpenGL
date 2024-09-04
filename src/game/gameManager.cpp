@@ -119,7 +119,7 @@ void GameManager::KeyboardCB(GLFWwindow* window, int key, int scancode, int acti
     player->SetDirection(Vector3<GLfloat>(
         keys[GLFW_KEY_A] - keys[GLFW_KEY_D], 
         keys[GLFW_KEY_W] - keys[GLFW_KEY_S], 
-        keys[GLFW_KEY_LEFT_SHIFT] - keys[GLFW_KEY_SPACE]
+        keys[GLFW_KEY_SPACE] - keys[GLFW_KEY_LEFT_SHIFT]
     ));
 
     if (keys[GLFW_KEY_E]) camera->Params.Target.x += speed_rotation;

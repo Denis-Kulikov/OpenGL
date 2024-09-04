@@ -31,6 +31,9 @@ void RenderThread::callback() {
         swapBuffer();
         endWorkTime = std::chrono::high_resolution_clock::now();
         swapDuration += endWorkTime - startWorkTime;
+
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(THREADS_SLEEP_TIME_MS)));
     } else {
         startWorkTime = std::chrono::high_resolution_clock::now();
         mutex.lock();
@@ -79,6 +82,7 @@ void ComponentsThread::callback() {
         } else {
             // std::this_thread::sleep_for(std::chrono::milliseconds(THREADS_SLEEP_TIME_MS * THREAD_COMPONENTS));
         }
+        std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(THREADS_SLEEP_TIME_MS)));
     } else {
         startWorkTime = std::chrono::high_resolution_clock::now();
 
@@ -165,7 +169,7 @@ void SceneThread::drowNode(objectTransform transform, const std::string &text)
     static std::vector<Sprite> symbols(128 - 32, Sprite(std::string("Symbol"), "shaders/symbol_fs.glsl", "shaders/sprite_vs.glsl", "a", Vector3<GLfloat>(0.0, 0.0, 0.0)));
     static Sprite mySprite(std::string("Node"), "shaders/sprite_fs.glsl", "shaders/sprite_vs.glsl", "img/cell.jpg");
     
-    const GLfloat frame = 1.1;
+    const GLfloat frame = 1.3;
 
     static bool b = true;
 
@@ -175,14 +179,14 @@ void SceneThread::drowNode(objectTransform transform, const std::string &text)
     } 
 
     transform.Scale.x *= text.size() * frame;
-    transform.Scale.z = transform.Scale.y *= frame;
+    transform.Scale.y *= frame * 1.15;
     renderThread->pushSprite(
         std::pair<Matrix4f<GLfloat>, Sprite *>(
             GameManager::render->pipeline.GetTransform(transform), &mySprite
         )
     );
     transform.Scale.x /= text.size() * frame;
-    transform.Scale.z = transform.Scale.y /= frame;
+    transform.Scale.y /= frame;
 
     const GLfloat save_width = transform.Scale.x;
     const GLfloat save_x = transform.WorldPos.x;
@@ -193,11 +197,15 @@ void SceneThread::drowNode(objectTransform transform, const std::string &text)
     for (const auto &it : text) {
         if (it < 32 || it > 127) continue;
 
+        if (it == 'i' || it == 'I' || it == 'l' || it == 'L' || it == '1') transform.Scale.x /= 3;
+
         renderThread->pushSprite(
             std::pair<Matrix4f<GLfloat>, Sprite *>(
                 GameManager::render->pipeline.GetTransform(transform), &symbols[it - 32]
             )
         );
+
+        if (it == 'i' || it == 'I' || it == 'l' || it == 'L' || it == '1') transform.Scale.x *= 3;
 
         transform.WorldPos.x -= offset;
     }
@@ -213,14 +221,14 @@ void SceneThread::drowBinaryTree(const objectTransform &transform, const tree_no
     objectTransform left(transform); 
     objectTransform right(transform);
     
-    right.WorldPos.y = left.WorldPos.y -= left.GetScale().x * 2;
+    right.WorldPos.y = left.WorldPos.y -= left.GetScale().x * 3;
 
     left.SetScale(left.GetScale().x / 2);
     right.SetScale(right.GetScale().x / 2);
 
 
-    left.WorldPos.x += 3 * transform.GetScale().x;
-    right.WorldPos.x -= 3 * transform.GetScale().x;
+    left.WorldPos.x += 5 * transform.GetScale().x;
+    right.WorldPos.x -= 5 * transform.GetScale().x;
 
     if (node.left_  != nullptr) drowBinaryTree(left, node.left());
     if (node.right_ != nullptr) drowBinaryTree(right, node.right());
@@ -260,8 +268,15 @@ void SceneThread::callback() {
     objectTransform transform;
     transform.SetRotate(0, 0, 180);
 
-    std::ifstream in("tree.txt");
-    drowBinaryTree(transform, *deserialize(in));
+
+    std::ifstream test_in("compilers/tree.txt");
+    std::string value;
+    test_in >> value;
+    if (value != "#") {
+        std::ifstream in("compilers/tree.txt");
+        drowBinaryTree(transform, *deserialize(in));
+    }
+    
     //
 
     renderThread->setEnd();
@@ -273,6 +288,7 @@ void SceneThread::callback() {
 
     while (!endTick) {
         if (GameManager::IsEnd) return;
+        std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(THREADS_SLEEP_TIME_MS)));
     }
     endWorkTime = std::chrono::high_resolution_clock::now();
     idleDuration += endWorkTime - startWorkTime;

@@ -4,7 +4,7 @@
 #include "../object/scene.hpp"
 #include "../binary-tree/binary_tree.hpp"
 
-#define THREADS_SLEEP_TIME_MS 1
+#define THREADS_SLEEP_TIME_MS 15
 #define THREAD_SCENE 3
 #define THREAD_COMPONENTS 1
 #define THREAD_RENDER 1
