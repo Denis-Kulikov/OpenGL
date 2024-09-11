@@ -216,10 +216,19 @@ void SceneThread::drowNode(objectTransform transform, const std::string &text)
 
 void SceneThread::drowBinaryTree(const objectTransform &transform, const tree_node<std::string> &node)
 {
+    static Sprite arrow(std::string("Arrow"), "shaders/sprite_fs.glsl", "shaders/sprite_vs.glsl", "img/arrow.png");
+    static Sprite line(std::string("Line"), "shaders/sprite_fs.glsl", "shaders/sprite_vs.glsl", "img/line.png");
     drowNode(transform, node.get_value());
 
     objectTransform left(transform); 
     objectTransform right(transform);
+    objectTransform left_arrow(transform); 
+    objectTransform right_arrow(transform);
+    objectTransform left_line(transform); 
+    objectTransform right_line(transform);
+
+
+
     
     right.WorldPos.y = left.WorldPos.y -= left.GetScale().x * 3;
 
@@ -227,11 +236,56 @@ void SceneThread::drowBinaryTree(const objectTransform &transform, const tree_no
     right.SetScale(right.GetScale().x / 2);
 
 
-    left.WorldPos.x += 5 * transform.GetScale().x;
-    right.WorldPos.x -= 5 * transform.GetScale().x;
+    left_arrow.WorldPos.x = left.WorldPos.x += 5 * transform.GetScale().x;
+    right_arrow.WorldPos.x = right.WorldPos.x -= 5 * transform.GetScale().x;
 
-    if (node.left_  != nullptr) drowBinaryTree(left, node.left());
-    if (node.right_ != nullptr) drowBinaryTree(right, node.right());
+    left_line.WorldPos.x += 5 * transform.GetScale().x / 2;
+    right_line.WorldPos.x -= 5 * transform.GetScale().x / 2;
+
+    
+    left_arrow.WorldPos.y = right_arrow.WorldPos.y -= left.GetScale().x * 3;
+    left_line.WorldPos.y = right_line.WorldPos.y -= left.GetScale().x * 3 / 1.75;
+
+    left_arrow.SetScale(left_arrow.GetScale().x / 1.5);
+    right_arrow.SetScale(right_arrow.GetScale().x / 1.5);
+    left_line.SetScale(left_arrow.GetScale().x / 1.5);
+    right_line.SetScale(left_arrow.GetScale().x / 1.5);
+
+    left_line.Scale.x = right_line.Scale.x *= 5.75;
+
+
+    // left_arrow.WorldPos.x += left.WorldPos.x += 5 * transform.GetScale().x;
+    // right_arrow.WorldPos.x -= right.WorldPos.x -= 5 * transform.GetScale().x;
+
+    left_arrow.Rotate.z = -90;
+    right_arrow.Rotate.z = -90;
+
+    if (node.left_  != nullptr) {
+        renderThread->pushSprite(
+            std::pair<Matrix4f<GLfloat>, Sprite *>(
+                GameManager::render->pipeline.GetTransform(left_arrow), &arrow
+            )
+        );
+        renderThread->pushSprite(
+            std::pair<Matrix4f<GLfloat>, Sprite *>(
+                GameManager::render->pipeline.GetTransform(left_line), &line
+            )
+        );
+        drowBinaryTree(left, node.left());
+    }
+    if (node.right_ != nullptr) {
+        renderThread->pushSprite(
+            std::pair<Matrix4f<GLfloat>, Sprite *>(
+                GameManager::render->pipeline.GetTransform(right_arrow), &arrow
+            )
+        );
+        renderThread->pushSprite(
+            std::pair<Matrix4f<GLfloat>, Sprite *>(
+                GameManager::render->pipeline.GetTransform(right_line), &line
+            )
+        );
+        drowBinaryTree(right, node.right());
+    }
 }
 
 tree_node<std::string>* deserialize(std::ifstream& in) {

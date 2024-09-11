@@ -57,6 +57,8 @@ Scene *createScene()
 
 
     Sprite symbols(std::string("Symbol"), "shaders/symbol_fs.glsl", "shaders/sprite_vs.glsl", "a", Vector3<GLfloat>(0.0, 0.0, 0.0));
+    Sprite arrow(std::string("Arrow"), "shaders/sprite_fs.glsl", "shaders/sprite_vs.glsl", "img/arrow.png");
+    Sprite line(std::string("Arrow"), "shaders/sprite_fs.glsl", "shaders/sprite_vs.glsl", "img/line.png");
 
 
     character = new Ghost();
