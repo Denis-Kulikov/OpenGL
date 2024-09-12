@@ -1,6 +1,6 @@
 #version 330
 
-out vec4 FragColor; 
+out vec4 FragColor;
 uniform vec3 gColor;
 
 void main()

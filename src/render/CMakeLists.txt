@@ -1,7 +1,7 @@
 set(target lib-render)
 
 add_library(${target} STATIC
-	glfw.cpp
+	stb_image_impl.cpp
 	pipeline.cpp
 	render.cpp
 )
@@ -13,8 +13,7 @@ if(WIN32)
         glew32
         opengl32
 	assimp-vc143-mtd
-	#lib-model
-        lib-entities
+	pugixml
         lib-threads
         lib-playable
         lib-mobs
@@ -26,7 +25,7 @@ else()
         glfw
         GL
         GLEW
-        lib-entities
+	pugixml
         lib-threads
         lib-playable
         lib-mobs

@@ -9,5 +9,4 @@ target_link_libraries(
   ${target}
   PRIVATE
 	lib-object
-	pugixml
 )

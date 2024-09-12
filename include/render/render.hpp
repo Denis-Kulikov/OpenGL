@@ -1,6 +1,7 @@
 #pragma once
 #include "pipeline.hpp"
 #include "../object/sprite.hpp"
+#include "../object/cube.hpp"
 
 class Render
 {
@@ -13,6 +14,7 @@ public:
     void clearRender();
     void PushGeometry(struct GeometryInfo *geometry);
     void drawObject(Matrix4f<GLfloat>& matrix, Sprite *sprite);
+    void drawSkybox(Cube &skybox);
 
     Pipeline pipeline;
 

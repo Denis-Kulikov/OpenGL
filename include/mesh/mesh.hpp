@@ -11,18 +11,15 @@ struct Texture {
 };
 
 struct Vertex {
+    Vertex() {}
+    Vertex(const glm::vec3& pos, const glm::vec3& normal, const glm::vec3& Tangent, const glm::vec2& tex) 
+        : m_pos(pos), m_tex(tex), m_normal(normal), m_tangent(Tangent)
+    {}
+
     glm::vec3 m_pos;
     glm::vec3 m_normal;
+    glm::vec3 m_tangent;
     glm::vec2 m_tex;
-
-    Vertex() {}
-
-    Vertex(const glm::vec3& pos, const glm::vec3& normal, const glm::vec2& tex)
-    {
-        m_pos    = pos;
-        m_normal = normal;
-        m_tex    = tex;
-    }
 };
 
 class Mesh
@@ -65,7 +62,7 @@ private:
     GLuint shaderProgram;
     GLuint gEyeWorldPosLocation;
     GLuint gTextureSamplerLocation;
-    // GLuint gNormalMapLocation;
+    GLuint gNormalMapLocation;
     GLuint gWorldLocation;
     GLuint gColorLocation;
     GLuint gDirectionLocation;
@@ -73,6 +70,17 @@ private:
     GLuint gDiffuseIntensityLocation;
     GLuint gMatSpecularIntensityLocation;
     GLuint gSpecularPowerLocation;
-
+    struct {
+        GLuint Color;
+        GLuint AmbientIntensity;
+        GLuint DiffuseIntensity;
+        GLuint Position;
+        struct
+        {
+            GLuint Constant;
+            GLuint Linear;
+            GLuint Exp;
+        } Atten;
+    } gPointLightsLocation[1];
 
 };

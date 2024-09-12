@@ -14,12 +14,25 @@ void RenderThread::job() {
 }
 
 void RenderThread::callback() {
+    static Cube cube;
     static Mesh model1(std::string("assets/model/test2b.fbx"));
-    // static Mesh model2(std::string("assets/model/bus-stop-diorama/BusStop.fbx"));
+    static Mesh model2(std::string("assets/model/ramen/source/ramen shop/ramen shop/ShoWaHouse01.FBX"));
+    static Mesh model3(std::string("assets/model/sidewalk/source/SIDEWALK.fbx"));
+    static Mesh model4(std::string("assets/model/2b.fbx"));
     objectTransform transform;
     transform.SetWorldPos(-25.0, -10.0, 15.0);
     transform.SetRotate(0.0, -90.0, 0.0);
     transform.MultiplyScale(Vector3<GLfloat>(0.1, 0.1, 0.1));
+
+    objectTransform transform_ramen;
+    transform_ramen.SetWorldPos(-60.0, 15.9, 25.0);
+    transform_ramen.SetRotate(-90.0, -90.0, 0.0);
+    transform_ramen.MultiplyScale(Vector3<GLfloat>(6.1, 6.1, 6.1));
+
+    objectTransform transform_road;
+    transform_road.SetWorldPos(-20.0, -11.0, -45.0);
+    transform_road.SetRotate(0.0, -90.0, 0.0);
+    transform_road.MultiplyScale(Vector3<GLfloat>(3.1, 3.1, 3.1));
 
     if (sprites.empty()) {
         if (endTicks == false) {
@@ -31,16 +44,16 @@ void RenderThread::callback() {
 
         GameManager::render->clearRender();
         model1.Render(GameManager::render->pipeline.GetTransform(transform));
-        // model2.Render(GameManager::render->pipeline.GetTransform(transform));
+        model2.Render(GameManager::render->pipeline.GetTransform(transform_ramen));
+        model3.Render(GameManager::render->pipeline.GetTransform(transform_road));
         GameManager::render->clearRender();
-        Sprite mySprite(std::string("Grass"), "shaders/sprite_fs.glsl", "shaders/sprite_vs.glsl", "img/grass.png");
-        GameManager::render->PushGeometry(mySprite.GetGeometry());
 
         endTicks = false;
         *sceneEndTickPtr = true;
 
         startWorkTime = std::chrono::high_resolution_clock::now();
         swapBuffer();
+        GameManager::render->drawSkybox(cube);
         endWorkTime = std::chrono::high_resolution_clock::now();
         swapDuration += endWorkTime - startWorkTime;
     } else {

@@ -31,7 +31,7 @@ public:
     void SetPitch(GLfloat new_pitch);
 
 protected:
-    GLfloat speed = 20.0;
+    GLfloat speed = 30.0;
     GLfloat yaw = 0;
     GLfloat pitch = 0;
 };

@@ -10,7 +10,7 @@ callgrind.*
 _deps
 external/CMakeLists.txt
 external/stb_image
-#external/pugixml
+external/pugixml
 external/boost_statechart
 
 CMakeFiles

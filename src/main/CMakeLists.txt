@@ -16,6 +16,5 @@ target_link_libraries(
   ${target}
   PRIVATE
 	lib-render
-	lib-object
 	lib-game
 )

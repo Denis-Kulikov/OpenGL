@@ -1,6 +1,4 @@
-#include <render/glfw.hpp>
 #include <object/circle.hpp>
-#include <lib-project/try.hpp>
 
 void circle::initializeGeometry()
 {
@@ -8,7 +6,7 @@ void circle::initializeGeometry()
     std::vector<GLuint> indices;
     std::vector<GLfloat> texCoords;
 
-    TRY(numVertices < 3, "Error: CreateList (vert < 3)");
+    assert(numVertices >= 3);
 
     float deg = 360.0f / numVertices;
     for (size_t i = 0; i < numVertices; ++i) {
@@ -57,7 +55,7 @@ void circle::initializeGeometry()
 }
 
 circle::circle(const std::string &_name, const objectTransform &_trans, const char *FS, const char *VS, const char *texturePath, const GLint _numVertices)
-    : Sprite(_name, _trans, FS, VS, nullptr)
+    : Sprite(_name, FS, VS, nullptr)
 {
     numVertices = _numVertices;
     initializeGeometry();

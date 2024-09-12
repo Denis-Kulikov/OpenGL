@@ -1,6 +1,4 @@
-#include <render/glfw.hpp>
 #include <object/cube_bone.hpp>
-#include <lib-project/try.hpp>
 
 struct GeometryInfo cube_bone::geometryInfo = {0, 0, 0, 0, 0};
 

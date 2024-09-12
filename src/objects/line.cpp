@@ -1,6 +1,4 @@
-#include <render/glfw.hpp>
 #include <object/line.hpp>
-#include <lib-project/try.hpp>
 
 struct GeometryInfo line::geometryInfo = {0, 0, 0, 0, 0};
 

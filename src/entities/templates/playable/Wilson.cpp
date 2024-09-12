@@ -27,7 +27,7 @@ void Wilson::SetMotion()
     motion = Motion();
     motion.PushSkelet(&Wilson::skelet);
 
-    Motion::FunType stand = [&]() mutable {
+    Motion::FunType stand = [&]() {
         int size = skeletSize;
         Motion::bone_attribute *T = motion.transformations;
         std::fill(reinterpret_cast<float*>(&T[0]), reinterpret_cast<float*>(&T[size]), static_cast<float>(0.0));

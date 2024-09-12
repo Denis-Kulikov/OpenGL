@@ -2,18 +2,20 @@
 #include "sprite.hpp"
 
 template<std::size_t N>
-class sphere : public Sprite
+class Sphere : public Sprite
 {
 public:
-    sphere(const std::string &_name, const char *FS, const char *VS, const char *texturePath)
+    Sphere(const std::string &_name, const char *FS, const char *VS, const char *texturePath)
         : Sprite(_name, FS, VS, texturePath) {}
+
+    Sphere()
+        : Sphere(std::string("None"), "shaders/sphere_fs.glsl", "shaders/sphere_vs.glsl", nullptr) {}
 
     struct GeometryInfo *GetGeometry() override {
         return &geometryInfo;
     }
 
-private:
-    void initializeGeometry() {
+    static void initializeGeometry() {
         std::vector<GLfloat> vertices;
         std::vector<GLuint> indices;
         geometryInfo.numVertices = N;
@@ -73,5 +75,6 @@ private:
         glBindVertexArray(0);
     }
 
+private:
     inline static struct GeometryInfo geometryInfo = {0, 0, 0, 0, 0};
 };

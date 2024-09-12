@@ -10,11 +10,13 @@ if(WIN32)
         PRIVATE	
 	${CMAKE_THREAD_LIBS_INIT}
 	lib-entities
+	lib-mesh
     )
 else()
     target_link_libraries(${target}
         PRIVATE
 	pthread
 	lib-entities
+	lib-mesh
     )
 endif()

@@ -73,8 +73,8 @@ void GameManager::KeyboardCB(GLFWwindow* window, int key, int scancode, int acti
 
 void GameManager::UpdateCamera()
 {
-    const float yaw_speed = 90.0;
-    const float pitch_speed = 90.0;
+    const float yaw_speed = 120.0;
+    const float pitch_speed = 100.0;
     const float pitch_limit = 90.0;
 
     Character& player = *callbackData.player;

@@ -1,7 +1,11 @@
-#include <mesh/mesh.hpp>
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
 #include <game/gameManager.hpp>
+#include <mesh/mesh.hpp>
+#include <stb_image.h>
+
+#include <object/sphere.hpp>
+#include <object/cube.hpp>
 
 
 Texture::Texture(const std::string& Filename)
@@ -112,9 +116,7 @@ bool Mesh::LoadMesh(const std::string& Filename)
 
     Assimp::Importer Importer;
 
-    const aiScene* pScene = Importer.ReadFile(Filename.c_str(),
-                                    aiProcess_Triangulate | aiProcess_GenSmoothNormals|
-                                    aiProcess_FlipUVs);
+    const aiScene* pScene = Importer.ReadFile(Filename.c_str(), aiProcess_Triangulate | aiProcess_GenSmoothNormals| aiProcess_FlipUVs);
 
     if (pScene) {
         InitFromScene(pScene, Filename);
@@ -194,7 +196,7 @@ void Mesh::compileShaders(const std::string &FS, const std::string &VS)
     }
 
     gTextureSamplerLocation       = glGetUniformLocation(shaderProgram, "gTextureSampler");
-    // gNormalMapLocation        = glGetUniformLocation(shaderProgram, "NormalMap");
+    gNormalMapLocation            = glGetUniformLocation(shaderProgram, "gNormalMap");
     gEyeWorldPosLocation          = glGetUniformLocation(shaderProgram, "gEyeWorldPos");
     gWorldLocation                = glGetUniformLocation(shaderProgram, "gWorld");
     gColorLocation                = glGetUniformLocation(shaderProgram, "gDirectionalLight.Color");
@@ -204,8 +206,17 @@ void Mesh::compileShaders(const std::string &FS, const std::string &VS)
     gMatSpecularIntensityLocation = glGetUniformLocation(shaderProgram, "gMatSpecularIntensity");
     gSpecularPowerLocation        = glGetUniformLocation(shaderProgram, "gSpecularPower");
 
+    for (unsigned int i = 0 ; i < 1 ; i++) {
+        gPointLightsLocation[i].Color               = glGetUniformLocation(shaderProgram, std::string(("gPointLights[") + std::string("0" + i) + std::string("].Color"           )).c_str());
+        gPointLightsLocation[i].AmbientIntensity    = glGetUniformLocation(shaderProgram, std::string(("gPointLights[") + std::string("0" + i) + std::string("].AmbientIntensity")).c_str());
+        gPointLightsLocation[i].DiffuseIntensity    = glGetUniformLocation(shaderProgram, std::string(("gPointLights[") + std::string("0" + i) + std::string("].DiffuseIntensity")).c_str());
+        gPointLightsLocation[i].Position            = glGetUniformLocation(shaderProgram, std::string(("gPointLights[") + std::string("0" + i) + std::string("].Position"        )).c_str());
+        gPointLightsLocation[i].Atten.Constant      = glGetUniformLocation(shaderProgram, std::string(("gPointLights[") + std::string("0" + i) + std::string("].Constant"  )).c_str());
+        gPointLightsLocation[i].Atten.Linear        = glGetUniformLocation(shaderProgram, std::string(("gPointLights[") + std::string("0" + i) + std::string("].Linear"    )).c_str());
+        gPointLightsLocation[i].Atten.Exp           = glGetUniformLocation(shaderProgram, std::string(("gPointLights[") + std::string("0" + i) + std::string("].Exp"       )).c_str());
+    }
     assert(gTextureSamplerLocation       != 0xFFFFFFFF);
-    // assert(gNormalMapLocation        != 0xFFFFFFFF);
+    assert(gNormalMapLocation            != 0xFFFFFFFF);
     assert(gEyeWorldPosLocation          != 0xFFFFFFFF);
     assert(gWorldLocation                != 0xFFFFFFFF);
     assert(gColorLocation                != 0xFFFFFFFF);
@@ -214,6 +225,16 @@ void Mesh::compileShaders(const std::string &FS, const std::string &VS)
     assert(gDiffuseIntensityLocation     != 0xFFFFFFFF);
     assert(gMatSpecularIntensityLocation != 0xFFFFFFFF);
     assert(gSpecularPowerLocation        != 0xFFFFFFFF);
+
+    for (unsigned int i = 0 ; i < 1 ; i++) {
+        assert(gPointLightsLocation[i].Color            != 0xFFFFFFFF);
+        assert(gPointLightsLocation[i].AmbientIntensity != 0xFFFFFFFF);
+        assert(gPointLightsLocation[i].DiffuseIntensity != 0xFFFFFFFF);
+        assert(gPointLightsLocation[i].Position         != 0xFFFFFFFF);
+        assert(gPointLightsLocation[i].Atten.Constant   != 0xFFFFFFFF);
+        assert(gPointLightsLocation[i].Atten.Linear     != 0xFFFFFFFF);
+        assert(gPointLightsLocation[i].Atten.Exp        != 0xFFFFFFFF);
+    }
 }
 
 
@@ -222,11 +243,15 @@ bool Mesh::InitFromScene(const aiScene* pScene, const std::string& Filename)
     m_Entries.resize(pScene->mNumMeshes);
     m_Textures.resize(pScene->mNumMaterials);
 
+    std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
     for (unsigned int i = 0; i < m_Entries.size(); i++) {
         const aiMesh* paiMesh = pScene->mMeshes[i];
         std::cout << pScene->mMeshes[i]->mName.C_Str() << std::endl;
         InitMesh(i, paiMesh);
     }
+    std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> Total = end - start;
+    std::cout << "Init model time: " << Total.count() << std::endl; 
 
     return InitMaterials(pScene, Filename);
 }
@@ -247,9 +272,45 @@ void Mesh::InitMesh(unsigned int Index, const aiMesh* paiMesh)
 
         Vertex v(glm::vec3(pPos->x, pPos->y, pPos->z),
                  glm::vec3(pNormal->x, pNormal->y, pNormal->z),
+                 glm::vec3(0, 0, 0),
                  glm::vec2(pTexCoord->x,pTexCoord->y));
         Vertices.push_back(v);
     }
+
+    for (unsigned int i = 0 ; i < Indices.size() ; i += 3) {
+        Vertex& v0 = Vertices[Indices[i]];
+        Vertex& v1 = Vertices[Indices[i+1]];
+        Vertex& v2 = Vertices[Indices[i+2]];
+    
+        glm::vec3 Edge1 = v1.m_pos - v0.m_pos;
+        glm::vec3 Edge2 = v2.m_pos - v0.m_pos;
+    
+        float DeltaU1 = v1.m_tex.x - v0.m_tex.x;
+        float DeltaV1 = v1.m_tex.y - v0.m_tex.y;
+        float DeltaU2 = v2.m_tex.x - v0.m_tex.x;
+        float DeltaV2 = v2.m_tex.y - v0.m_tex.y;
+    
+        float f = 1.0f / (DeltaU1 * DeltaV2 - DeltaU2 * DeltaV1);
+    
+        glm::vec3 Tangent, Bitangent;
+    
+        Tangent.x = f * (DeltaV2 * Edge1.x - DeltaV1 * Edge2.x);
+        Tangent.y = f * (DeltaV2 * Edge1.y - DeltaV1 * Edge2.y);
+        Tangent.z = f * (DeltaV2 * Edge1.z - DeltaV1 * Edge2.z);
+    
+        Bitangent.x = f * (-DeltaU2 * Edge1.x - DeltaU1 * Edge2.x);
+        Bitangent.y = f * (-DeltaU2 * Edge1.y - DeltaU1 * Edge2.y);
+        Bitangent.z = f * (-DeltaU2 * Edge1.z - DeltaU1 * Edge2.z);
+    
+        v0.m_tangent += Tangent;
+        v1.m_tangent += Tangent;
+        v2.m_tangent += Tangent;
+    }
+    
+    // for (unsigned int i = 0 ; i < Vertices.size() ; i++) {
+    //     if (glm::length(Vertices[i].m_tangent) > 0.0)
+    //         Vertices[i].m_tangent = glm::normalize(Vertices[i].m_tangent);
+    // }
 
     for (unsigned int i = 0; i < paiMesh->mNumFaces; i++){
         const aiFace& Face = paiMesh->mFaces[i];
@@ -290,6 +351,12 @@ bool Mesh::InitMaterials(const aiScene* pScene, const std::string& Filename)
                 m_Textures[i] = new Texture("assets/img/white.png");
             }
         }
+
+        for (unsigned int j = 0; j < pMaterial->GetTextureCount(aiTextureType_DIFFUSE); j++) {
+            aiString path;
+            pMaterial->GetTexture(aiTextureType_DIFFUSE, j, &path);
+            std::cout << "Texture Path: " << path.C_Str() << std::endl;
+        }
     }
 
     return Ret;
@@ -298,12 +365,22 @@ bool Mesh::InitMaterials(const aiScene* pScene, const std::string& Filename)
 void Mesh::Render(Matrix4f<GLfloat>& mtx_transform)
 {
     GLfloat color[3] = { 0.8, 0.8, 0.9 };
-    GLfloat direction[3] = { -0.3, -1.0, 0.2 };
-    GLfloat AmbientIntensity = 0.7;
-    GLfloat DiffuseIntensity = 0.5;
-    GLfloat SpecularPower = 0.1;
-    GLfloat MatSpecularIntensity = 0.3;
+    GLfloat direction[3] = { -0.4, -1.0, 0.2 };
+    GLfloat AmbientIntensity = 0.9;
+    GLfloat DiffuseIntensity = 0.35;
+    GLfloat SpecularPower = 0.25;
+    GLfloat MatSpecularIntensity = 0.25;
     Vector3<GLfloat> EyesPos = GameManager::callbackData.camera->GetPosition();
+
+    static Sphere<10> sphere;
+    objectTransform sphere_transform;
+    sphere_transform.SetWorldPos(-25.0, 7.0, 10.0);
+    sphere_transform.SetRotate(0.0, 0.0, 0.0);
+    sphere_transform.SetScale(0.9);
+    sphere.color = Vector3<GLfloat>(0.8, 0.0, 1.0);
+
+    GameManager::render->PushGeometry(sphere.GetGeometry());
+    GameManager::render->drawObject(GameManager::render->pipeline.GetTransform(sphere_transform), &sphere);
 
     glUseProgram(shaderProgram);
     glUniformMatrix4fv(gWorldLocation, 1, GL_TRUE, &mtx_transform);
@@ -314,22 +391,50 @@ void Mesh::Render(Matrix4f<GLfloat>& mtx_transform)
     glUniform1f(gDiffuseIntensityLocation, DiffuseIntensity);
     glUniform1f(gSpecularPowerLocation, SpecularPower);
     glUniform1f(gMatSpecularIntensityLocation, MatSpecularIntensity);
+
+    for (unsigned int i = 0 ; i < 1 ; i++) {
+        struct {
+            Vector3<GLfloat> Position = {-20.0, 0.0, 15.0};
+            Vector3<GLfloat> Color = {1.0, 0.0, 0.9};
+            GLfloat AmbientIntensity = 50.0;
+            GLfloat DiffuseIntensity = 0.8;
+            struct
+            {
+                GLfloat Constant = 1.0;
+                GLfloat Linear = 0.09 * 25;
+                GLfloat Exp = 0.032 * 15;
+            } Atten;
+        } pLights[1];
+
+
+        pLights[i].Position = sphere_transform.GetWorldPos();
+        pLights[i].Color = sphere.color;
+
+        glUniform3f(gPointLightsLocation[i].Color, pLights[i].Color.x, pLights[i].Color.y, pLights[i].Color.z);
+        glUniform1f(gPointLightsLocation[i].AmbientIntensity, pLights[i].AmbientIntensity);
+        glUniform1f(gPointLightsLocation[i].DiffuseIntensity, pLights[i].DiffuseIntensity);
+        glUniform3f(gPointLightsLocation[i].Position, pLights[i].Position.x, pLights[i].Position.y, pLights[i].Position.z);
+        glUniform1f(gPointLightsLocation[i].Atten.Constant, pLights[i].Atten.Constant);
+        glUniform1f(gPointLightsLocation[i].Atten.Linear, pLights[i].Atten.Linear);
+        glUniform1f(gPointLightsLocation[i].Atten.Exp, pLights[i].Atten.Exp);
+    }
     
 
     for (unsigned int i = 0; i < m_Entries.size(); i++) {
         glBindVertexArray(m_Entries[i].VAO);
-
         const unsigned int MaterialIndex = m_Entries[i].MaterialIndex;
 
         if (MaterialIndex < m_Textures.size() && m_Textures[MaterialIndex]) {
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, m_Textures[MaterialIndex]->texture);
             glUniform1i(gTextureSamplerLocation, 0);
+            glUniform1i(gNormalMapLocation, 0);
         }
 
         glDrawElements(GL_TRIANGLES, m_Entries[i].NumIndices, GL_UNSIGNED_INT, 0);
 
         glBindVertexArray(0);
     }
+
 }
 

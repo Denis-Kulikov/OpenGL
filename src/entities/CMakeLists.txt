@@ -12,7 +12,6 @@ add_library(${target} STATIC
 
 target_link_libraries(
   ${target}
-  PRIVATE
-	lib-object	
+  PRIVATE	
 	lib-components
 )

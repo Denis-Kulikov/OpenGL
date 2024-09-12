@@ -1,24 +1,13 @@
-#include <render/glfw.hpp>
 #include <object/sprite.hpp>
-#include <lib-project/try.hpp>
 
-#ifndef STB_IMAGE_WRAPPER_H
-#define STB_IMAGE_WRAPPER_H
-
-#define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
-
-#endif
-
-#define STB_IMAGE_RESIZE_IMPLEMENTATION
 #include <stb_image_resize.h>
 
-
-#include "../mesh/mesh.cpp"
 
 Sprite::Sprite(const std::string &_name, const char *FS, const char *VS, const char *texturePath)
     : name(_name)
 {
+    if (FS == nullptr || VS == nullptr) return;
     auto sdr = shadersMap.find(std::string(FS) + std::string(VS));
     if (sdr != shadersMap.end()) {
         shader                  = sdr->second[0];
@@ -29,6 +18,8 @@ Sprite::Sprite(const std::string &_name, const char *FS, const char *VS, const c
         compileShaders(FS, VS);
         shadersMap[std::string(FS) + std::string(VS)] = std::array<GLuint, 4>{shader, gWorldLocation, gColorLocation, gTextureSamplerLocation};
     }
+
+    if (texturePath == nullptr) return;
 
     auto txr = texturesMap.find(std::string(texturePath));
     if (txr != texturesMap.end()) {
@@ -135,8 +126,7 @@ void Sprite::loadTextures(const char *texturePath)
     int x, y, n;
     std::string path = std::string("assets/") + texturePath;
     unsigned char *img = stbi_load(path.c_str(), &x, &y, &n, 0);
-
-    TRY(img == nullptr, std::string("Failed to load texture: " + path))
+    assert(img != nullptr);
 
     int new_x = 1 << (int)std::ceil(std::log2(x));
     int new_y = 1 << (int)std::ceil(std::log2(y));

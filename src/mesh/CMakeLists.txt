@@ -1,5 +1,5 @@
-set(target lib-model)
+set(target lib-mesh)
 
 add_library(${target} STATIC
-	model.cpp
+	mesh.cpp
 )

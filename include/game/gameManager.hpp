@@ -1,7 +1,6 @@
 #pragma once
 
 #include "gameTime.hpp"
-#include "../render/glfw.hpp"
 #include "../render/render.hpp"
 #include "../object/sprite.hpp"
 #include "../entities/character.hpp"

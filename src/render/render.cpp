@@ -73,3 +73,27 @@ void Render::drawObject(Matrix4f<GLfloat>& matrix, Sprite *sprite)
         glDrawArrays(GL_LINE_STRIP, 0, sprite->GetGeometry()->numVertices);
     }
 }
+
+void Render::drawSkybox(Cube &skybox)
+{
+    GLint OldCullFaceMode;
+    glGetIntegerv(GL_CULL_FACE_MODE, &OldCullFaceMode);
+    GLint OldDepthFuncMode;
+    glGetIntegerv(GL_DEPTH_FUNC, &OldDepthFuncMode);
+ 
+    glCullFace(GL_FRONT);
+    glDepthFunc(GL_LEQUAL);
+
+    PushGeometry(skybox.GetGeometry());
+
+    objectTransform skybox_transform;
+    skybox_transform.SetWorldPos(pipeline.camera->GetPosition());
+    skybox_transform.SetRotate(Vector3<GLfloat>(0.0, 90.0, 180));
+    
+    glDepthMask(GL_FALSE);
+    drawObject(pipeline.GetTransform(skybox_transform), &skybox);
+    glDepthMask(GL_TRUE);
+
+    glCullFace(OldCullFaceMode);
+    glDepthFunc(OldDepthFuncMode);
+}
