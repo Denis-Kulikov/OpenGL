@@ -23,6 +23,7 @@ public:
     static void PushCamera(Camera *_camera);
     static void PushPlayer(Character *_player);
     static Camera *createCamera();
+    static void MouseCB(GLFWwindow* window, double xpos, double ypos);
     static void KeyboardCB(GLFWwindow* window, int key, int scancode, int action, int mods);
     static void UpdateCamera();
 
@@ -37,6 +38,9 @@ public:
     struct Buttons {
         int yaw = 0;
         int pitch = 0;
+
+        bool firstMouse = true;
+        float lastX = 400, lastY = 300;
     };
 
     inline static Buttons buttons;

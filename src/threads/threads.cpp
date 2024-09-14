@@ -15,14 +15,15 @@ void RenderThread::job() {
 
 void RenderThread::callback() {
     static Cube cube;
-    static Mesh model1(std::string("assets/model/test2b.fbx"));
-    static Mesh model2(std::string("assets/model/ramen/source/ramen shop/ramen shop/ShoWaHouse01.FBX"));
-    static Mesh model3(std::string("assets/model/sidewalk/source/SIDEWALK.fbx"));
-    static Mesh model4(std::string("assets/model/2b.fbx"));
+    static Mesh model1(std::string("assets/model/2b/2b.fbx"));
+    // static Mesh model2(std::string("assets/model/ramen/source/ramen shop/ramen shop/ShoWaHouse01.FBX"));
+    // static Mesh model3(std::string("assets/model/sidewalk/source/SIDEWALK.fbx"));
+    // static Mesh model4(std::string("assets/model/2b.fbx"));
     objectTransform transform;
-    transform.SetWorldPos(-25.0, -10.0, 15.0);
-    transform.SetRotate(0.0, -90.0, 0.0);
-    transform.MultiplyScale(Vector3<GLfloat>(0.1, 0.1, 0.1));
+    transform.SetWorldPos(0.0, -10.0, -10.0);
+    transform.SetRotate(-90.0, 0.0, 0.0);
+    float scale = 5;
+    transform.MultiplyScale(Vector3<GLfloat>(scale, scale, scale));
 
     objectTransform transform_ramen;
     transform_ramen.SetWorldPos(-60.0, 15.9, 25.0);
@@ -44,8 +45,8 @@ void RenderThread::callback() {
 
         GameManager::render->clearRender();
         model1.Render(GameManager::render->pipeline.GetTransform(transform));
-        model2.Render(GameManager::render->pipeline.GetTransform(transform_ramen));
-        model3.Render(GameManager::render->pipeline.GetTransform(transform_road));
+        // model2.Render(GameManager::render->pipeline.GetTransform(transform_ramen));
+        // model3.Render(GameManager::render->pipeline.GetTransform(transform_road));
         GameManager::render->clearRender();
 
         endTicks = false;

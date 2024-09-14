@@ -29,8 +29,8 @@ Camera *GameManager::createCamera()
         exit(EXIT_FAILURE);
     }
 
-    Vector3<GLfloat> CameraPos(0.0f, 3.0f, 15);
-    Vector3<GLfloat> CameraTarget(0.0f, -0.3f, -1.0f);
+    Vector3<GLfloat> CameraPos(0.0f, 0.0f, 0.0f);
+    Vector3<GLfloat> CameraTarget(0.0f, 0.0f, 1.0f);
     Vector3<GLfloat> CameraUp(0.0f, 1.0f, 0.0f);
 
     camera->SetCamera(CameraPos, CameraTarget, CameraUp);
@@ -39,21 +39,48 @@ Camera *GameManager::createCamera()
     return camera;
 }
 
+void GameManager::MouseCB(GLFWwindow* window, double xpos, double ypos) {
+    static float yaw = 90.0f;
+    static float pitch = 0.0f;
+    const float sensitivity = 4.0f;
+
+    if (buttons.firstMouse) {
+        buttons.lastX = xpos;
+        buttons.lastY = ypos;
+        buttons.firstMouse = false;
+    }
+
+    float xOffset = xpos - buttons.lastX;
+    float yOffset = buttons.lastY - ypos;
+
+    buttons.lastX = xpos;
+    buttons.lastY = ypos;
+
+    xOffset *= sensitivity * Time.GetDeltaTime();
+    yOffset *= sensitivity * Time.GetDeltaTime();
+
+    yaw -= xOffset;
+    pitch += yOffset;
+
+    if (pitch > 89.0f) pitch = 89.0f;
+    if (pitch < -89.0f) pitch = -89.0f;
+
+    Character* player = callbackData.player;
+
+    player->SetYaw(yaw);
+    player->SetPitch(pitch);
+}
+
 void GameManager::KeyboardCB(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
     static bool keys[GLFW_KEY_LAST] = {false};
-    static float yaw = 90;
-    static float pitch = 0;
-    const GLfloat speed_rotation = -0.125;
 
     Character* player = callbackData.player;
-    Camera* camera = callbackData.camera;
 
-    if (action == GLFW_PRESS) {
+    if (action == GLFW_PRESS) 
         keys[key] = true;
-    } else if (action == GLFW_RELEASE) {
+    else if (action == GLFW_RELEASE) 
         keys[key] = false;
-    }
 
     if (keys[GLFW_KEY_F]) {
         glfwSetWindowShouldClose(window, GLFW_TRUE);
@@ -62,12 +89,9 @@ void GameManager::KeyboardCB(GLFWwindow* window, int key, int scancode, int acti
 
     player->SetDirection(Vector3<GLfloat>(
         keys[GLFW_KEY_D] - keys[GLFW_KEY_A], 
-        keys[GLFW_KEY_SPACE] - keys[GLFW_KEY_C],
+        keys[GLFW_KEY_SPACE] - keys[GLFW_KEY_LEFT_CONTROL],
         keys[GLFW_KEY_S] - keys[GLFW_KEY_W]
     ));
-
-    buttons.yaw = keys[GLFW_KEY_Q] - keys[GLFW_KEY_E];
-    buttons.pitch = keys[GLFW_KEY_1] - keys[GLFW_KEY_2];
 }
 
 
@@ -80,9 +104,9 @@ void GameManager::UpdateCamera()
     Character& player = *callbackData.player;
     Camera& camera = *callbackData.camera;
 
-    player.SetYaw(player.GetYaw() + yaw_speed * buttons.yaw * Time.GetDeltaTime());
-    player.SetPitch(player.GetPitch() + pitch_speed * buttons.pitch * Time.GetDeltaTime());
-    if (fabs(player.GetPitch()) > pitch_limit) player.SetPitch(std::copysign(pitch_limit - 1e-3, player.GetPitch()));
+    // player.SetYaw(player.GetYaw() + yaw_speed * buttons.yaw * Time.GetDeltaTime());
+    // player.SetPitch(player.GetPitch() + pitch_speed * buttons.pitch * Time.GetDeltaTime());
+    // if (fabs(player.GetPitch()) > pitch_limit) player.SetPitch(std::copysign(pitch_limit - 1e-3, player.GetPitch()));
 
     camera.Params.Target.x = -cos(ToRadian(player.GetYaw()));
     camera.Params.Target.z = -sin(ToRadian(player.GetYaw()));
@@ -117,8 +141,10 @@ void GameManager::InitializeGLFW(int _width, int _height)
     }
 
     glfwMakeContextCurrent(window);
+    glfwSetCursorPosCallback(window, GameManager::MouseCB);
     glfwSetKeyCallback(window, GameManager::KeyboardCB);
     glfwSetWindowUserPointer(window, &callbackData);
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
     glfwSetWindowPos(window, 320, 75);
 

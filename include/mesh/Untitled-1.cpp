@@ -37,7 +37,7 @@ public:
     ~Mesh();
  
     bool LoadMesh(const std::string& Filename);
-    void Render(Matrix4f<GLfloat>& mtx_transform);
+    void Render(const objectTransform &model_transform);
  
 private:
     GLuint loadShader(const std::string &shaderPath, GLuint type);
@@ -100,6 +100,23 @@ private:
     GLuint gDiffuseIntensityLocation;
     GLuint gMatSpecularIntensityLocation;
     GLuint gSpecularPowerLocation;
+
+    GLuint gModelLocation;
+    GLuint gViewLocation;
+    GLuint gProjectionLocation;
+
+    GLuint gDirLightColorLocation;
+    GLuint gDirLightDirectionLocation;
+    GLuint gDirLightAmbientIntensityLocation;
+    GLuint gDirLightDiffuseIntensityLocation;
+
+    GLuint gPointLightPosLocation;
+    GLuint gPointLightColorLocation;
+    GLuint gPointLightAmbientIntensityLocation;
+    GLuint gPointLightDiffuseIntensityLocation;
+    GLuint gPointLightConstantLocation;
+    GLuint gPointLightLinearLocation;
+    GLuint gPointLightExpLocation;
 
     std::vector<MeshEntry> m_Entries;
     std::vector<textures_names> m_Textures;
