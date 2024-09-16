@@ -16,22 +16,23 @@ typedef struct stb_img_struct {
 } stb_img;
 
 struct Texture {
-    Texture(const stb_img& Filename);
+    Texture(const stb_img& img, const std::string &n);
+    Texture(const stb_img& img);
 
+    std::string name;
     GLuint texture;
 };
 
-struct Vertex {
-    Vertex() {}
-    Vertex(const glm::vec3& pos, const glm::vec3& normal, const glm::vec3& Tangent, const glm::vec2& tex) 
-        : m_pos(pos), m_tex(tex), m_normal(normal), m_tangent(Tangent)
-    {}
+// struct Vertex_vector {
+//     Vertex_vector() {}
+//     // Vertex_vector(const glm::vec3& pos, const glm::vec3& normal, const glm::vec3& Tangent, const glm::vec2& tex) 
+//     //     : m_pos(pos), m_tex(tex), m_normal(normal), m_tangent(Tangent)
+//     // {}
 
-    glm::vec3 m_pos;
-    glm::vec3 m_normal;
-    glm::vec3 m_tangent;
-    glm::vec2 m_tex;
-};
+//     std::vector<glm::vec3> m_pos;
+//     std::vector<glm::vec3> m_normal;
+//     std::vector<glm::vec2> m_tex;
+// };
 
 class Mesh
 {
@@ -39,17 +40,18 @@ public:
     Mesh(const std::string& Filename);
     ~Mesh();
  
+    void set_transform(const objectTransform &transform);
     bool LoadMesh(const std::string& Filename);
     void Render(objectTransform &trans);
 
 #define INVALID_MATERIAL 0xFFFFFFFF
-#define NUM_BONES_PER_VEREX 10
+#define NUM_BONES_PER_VEREX 8
 
 #define POSITION_LOCATION    0
-#define TEX_COORD_LOCATION   1
-#define NORMAL_LOCATION      2
+#define TEX_COORD_LOCATION   2
+#define NORMAL_LOCATION      1
 #define BONE_ID_LOCATION     3
-#define BONE_WEIGHT_LOCATION 4
+#define BONE_WEIGHT_LOCATION 5
 
 enum VB_TYPES {
     INDEX_BUFFER,
@@ -57,20 +59,13 @@ enum VB_TYPES {
     NORMAL_VB,
     TEXCOORD_VB,
     BONE_VB,
-    NUM_VBs            
+    NUM_VBs = BONE_VB + 2          
 };
 
     struct MeshEntry {
         MeshEntry();
         ~MeshEntry();
  
-        void Init(const std::vector<Vertex>& Vertices,
-                  const std::vector<unsigned int>& Indices);
- 
-        GLuint VB;
-        GLuint IB;
-        GLuint VAO;
-        
         unsigned int NumIndices;
         unsigned int BaseVertex;
         unsigned int BaseIndex;
@@ -102,9 +97,9 @@ enum VB_TYPES {
     };
 
     struct VertexBoneData {
-        void Mesh::VertexBoneData::AddBoneData(std::size_t BoneID, float Weight);
+        void Mesh::VertexBoneData::AddBoneData(unsigned int BoneID, float Weight);
         static const int size = NUM_BONES_PER_VEREX;
-        std::size_t IDs[size];
+        unsigned int IDs[size];
         float Weights[size];
     };
 
@@ -122,9 +117,9 @@ enum VB_TYPES {
 private:
     void push_uniforms(objectTransform &trans);
 
-    std::size_t FindPosition(float AnimationTime, const aiNodeAnim* pNodeAnim);
-    std::size_t FindRotation(float AnimationTime, const aiNodeAnim* pNodeAnim);
-    std::size_t FindScaling(float AnimationTime, const aiNodeAnim* pNodeAnim);
+    unsigned int FindPosition(float AnimationTime, const aiNodeAnim* pNodeAnim);
+    unsigned int FindRotation(float AnimationTime, const aiNodeAnim* pNodeAnim);
+    unsigned int FindScaling(float AnimationTime, const aiNodeAnim* pNodeAnim);
     void CalcInterpolatedPosition(aiVector3D& Out, float AnimationTime, const aiNodeAnim* pNodeAnim);
     void CalcInterpolatedRotation(aiQuaternion& Out, float AnimationTime, const aiNodeAnim* pNodeAnim);
     void CalcInterpolatedScaling(aiVector3D& Out, float AnimationTime, const aiNodeAnim* pNodeAnim);
@@ -134,18 +129,18 @@ private:
 
     void ReadNodeHeirarchy(float AnimationTime, const aiNode* pNode, const aiMatrix4x4& ParentTransform);
     void BoneTransform(float TimeInSeconds, std::vector<aiMatrix4x4>& Transforms);
-    void LoadBones(std::size_t MeshIndex, const aiMesh* pMesh, std::vector<VertexBoneData>& Bones);
+    void LoadBones(unsigned int MeshIndex, const aiMesh* pMesh, std::vector<VertexBoneData>& Bones);
     GLuint loadShader(const std::string &shaderPath, GLuint type);
     void compileShaders(const std::string &FS, const std::string &VS);
     bool InitFromScene(const aiScene* pScene, const std::string& Filename);
     bool LoadEmbeddedTexture(const aiScene* scene, const std::string& fileName, int materialIndex);
-    void InitMesh(std::size_t MeshIndex,
+    void InitMesh(unsigned int MeshIndex,
                     const aiMesh* paiMesh,
                     std::vector<glm::vec3>& Positions,
                     std::vector<glm::vec3>& Normals,
                     std::vector<glm::vec2>& TexCoords,
                     std::vector<VertexBoneData>& Bones,
-                    std::vector<std::size_t>& Indices);
+                    std::vector<unsigned int>& Indices);
     bool InitMaterials(const aiScene* pScene, const std::string& Filename);
     void Clear();
     
@@ -175,8 +170,8 @@ private:
 
     std::vector<MeshEntry> m_Entries;
     std::vector<textures_names> m_Textures;
-    std::size_t m_NumBones = 0;
-    std::unordered_map<std::string, std::size_t> m_BoneMapping;
+    unsigned int m_NumBones = 0;
+    std::unordered_map<std::string, unsigned int> m_BoneMapping;
     std::vector<BoneInfo> m_BoneInfo;
     std::vector<VertexBoneData> Bones;
     std::vector<MaterialUniforms*> m_material;

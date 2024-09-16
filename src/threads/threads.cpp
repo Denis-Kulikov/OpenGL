@@ -20,10 +20,16 @@ void RenderThread::callback() {
     // static Mesh model3(std::string("assets/model/sidewalk/source/SIDEWALK.fbx"));
     // static Mesh model4(std::string("assets/model/2b.fbx"));
     objectTransform transform;
-    transform.SetWorldPos(0.0, -10.0, -10.0);
+    transform.SetWorldPos(0.0, 0.0, 0.0);
     transform.SetRotate(-90.0, 0.0, 0.0);
     float scale = 5;
     transform.MultiplyScale(Vector3<GLfloat>(scale, scale, scale));
+
+    static bool flag = true;
+    if (flag) {
+        model1.set_transform(transform);
+        flag = !flag;
+    }
 
     objectTransform transform_ramen;
     transform_ramen.SetWorldPos(-60.0, 15.9, 25.0);
