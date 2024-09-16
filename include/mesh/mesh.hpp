@@ -40,7 +40,7 @@ public:
     ~Mesh();
  
     bool LoadMesh(const std::string& Filename);
-    void Render(Matrix4f<GLfloat>& mtx_transform);
+    void Render(objectTransform &trans);
 
 #define INVALID_MATERIAL 0xFFFFFFFF
 #define NUM_BONES_PER_VEREX 10
@@ -120,7 +120,7 @@ enum VB_TYPES {
 
 
 private:
-    void push_uniforms(Matrix4f<GLfloat>& mtx_transform);
+    void push_uniforms(objectTransform &trans);
 
     std::size_t FindPosition(float AnimationTime, const aiNodeAnim* pNodeAnim);
     std::size_t FindRotation(float AnimationTime, const aiNodeAnim* pNodeAnim);
@@ -156,6 +156,7 @@ private:
     GLuint gBones;
     GLuint gProjection;
     GLuint gView;
+    GLuint gModel;
 
     GLuint shaderProgram;
     GLuint gEyeWorldPosLocation;

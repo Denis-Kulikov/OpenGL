@@ -87,9 +87,7 @@ Mesh::MeshEntry::~MeshEntry()
 Mesh::Mesh(const std::string& Filename)
 {
     LoadMesh(Filename);
-    compileShaders("assets\\model\\shaders\\model_fs.glsl", "assets\\model\\shaders\\model_vs.glsl");
-
-
+    compileShaders("assets\\model\\2b\\shaders\\model_fs.glsl", "assets\\model\\2b\\shaders\\model_vs.glsl");
 }
 
 Mesh::~Mesh() {}
@@ -449,10 +447,10 @@ void Mesh::compileShaders(const std::string &FS, const std::string &VS)
 
     m_material.push_back(new MaterialUniforms);
 
+    gWorldLocation                = glGetUniformLocation(shaderProgram, "gWorld");
     gTextureSamplerLocation       = glGetUniformLocation(shaderProgram, "gTextureSampler");
     gNormalMapLocation            = glGetUniformLocation(shaderProgram, "gNormalMap");
     gEyeWorldPosLocation          = glGetUniformLocation(shaderProgram, "gEyeWorldPos");
-    gWorldLocation                = glGetUniformLocation(shaderProgram, "gWorld");
     gColorLocation                = glGetUniformLocation(shaderProgram, "gDirectionalLight.Color");
     gDirectionLocation            = glGetUniformLocation(shaderProgram, "gDirectionalLight.Direction");
     gAmbientIntensityLocation     = glGetUniformLocation(shaderProgram, "gDirectionalLight.AmbientIntensity");
@@ -463,6 +461,7 @@ void Mesh::compileShaders(const std::string &FS, const std::string &VS)
     gBones          = glGetUniformLocation(shaderProgram, "gBones");
     gProjection     = glGetUniformLocation(shaderProgram, "Projection");
     gView           = glGetUniformLocation(shaderProgram, "View");
+    gModel           = glGetUniformLocation(shaderProgram, "Model");
 
 
     for (unsigned int i = 0 ; i < 1 ; i++) {
@@ -474,10 +473,16 @@ void Mesh::compileShaders(const std::string &FS, const std::string &VS)
         m_material[i]->Atten.Linear        = glGetUniformLocation(shaderProgram, std::string(("gPointLights[") + std::string("0" + i) + std::string("].Linear"    )).c_str());
         m_material[i]->Atten.Exp           = glGetUniformLocation(shaderProgram, std::string(("gPointLights[") + std::string("0" + i) + std::string("].Exp"       )).c_str());
     }
+
+    assert(gBones                != 0xFFFFFFFF);
+    assert(gProjection                != 0xFFFFFFFF);
+    assert(gView                != 0xFFFFFFFF);
+    assert(gModel                != 0xFFFFFFFF);
+
+    // assert(gWorldLocation                != 0xFFFFFFFF);
     assert(gTextureSamplerLocation       != 0xFFFFFFFF);
     assert(gNormalMapLocation            != 0xFFFFFFFF);
     assert(gEyeWorldPosLocation          != 0xFFFFFFFF);
-    assert(gWorldLocation                != 0xFFFFFFFF);
     assert(gColorLocation                != 0xFFFFFFFF);
     assert(gDirectionLocation            != 0xFFFFFFFF);
     assert(gAmbientIntensityLocation     != 0xFFFFFFFF);
@@ -545,30 +550,30 @@ bool Mesh::InitFromScene(const aiScene* m_pScene, const std::string& Filename)
         return false;
     }
 
-  	glBindBuffer(GL_ARRAY_BUFFER, m_Buffers[POS_VB]);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(Positions[0]) * Positions.size(), &Positions[0], GL_STATIC_DRAW);
-    glEnableVertexAttribArray(POSITION_LOCATION);
-    glVertexAttribPointer(POSITION_LOCATION, 3, GL_FLOAT, GL_FALSE, 0, 0);    
+  	// glBindBuffer(GL_ARRAY_BUFFER, m_Buffers[POS_VB]);
+    // glBufferData(GL_ARRAY_BUFFER, sizeof(Positions[0]) * Positions.size(), &Positions[0], GL_STATIC_DRAW);
+    // glEnableVertexAttribArray(POSITION_LOCATION);
+    // glVertexAttribPointer(POSITION_LOCATION, 3, GL_FLOAT, GL_FALSE, 0, 0);    
 
-    glBindBuffer(GL_ARRAY_BUFFER, m_Buffers[TEXCOORD_VB]);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(TexCoords[0]) * TexCoords.size(), &TexCoords[0], GL_STATIC_DRAW);
-    glEnableVertexAttribArray(TEX_COORD_LOCATION);
-    glVertexAttribPointer(TEX_COORD_LOCATION, 2, GL_FLOAT, GL_FALSE, 0, 0);
+    // glBindBuffer(GL_ARRAY_BUFFER, m_Buffers[TEXCOORD_VB]);
+	// glBufferData(GL_ARRAY_BUFFER, sizeof(TexCoords[0]) * TexCoords.size(), &TexCoords[0], GL_STATIC_DRAW);
+    // glEnableVertexAttribArray(TEX_COORD_LOCATION);
+    // glVertexAttribPointer(TEX_COORD_LOCATION, 2, GL_FLOAT, GL_FALSE, 0, 0);
 
-   	glBindBuffer(GL_ARRAY_BUFFER, m_Buffers[NORMAL_VB]);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(Normals[0]) * Normals.size(), &Normals[0], GL_STATIC_DRAW);
-    glEnableVertexAttribArray(NORMAL_LOCATION);
-    glVertexAttribPointer(NORMAL_LOCATION, 3, GL_FLOAT, GL_FALSE, 0, 0);
+   	// glBindBuffer(GL_ARRAY_BUFFER, m_Buffers[NORMAL_VB]);
+	// glBufferData(GL_ARRAY_BUFFER, sizeof(Normals[0]) * Normals.size(), &Normals[0], GL_STATIC_DRAW);
+    // glEnableVertexAttribArray(NORMAL_LOCATION);
+    // glVertexAttribPointer(NORMAL_LOCATION, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
-   	glBindBuffer(GL_ARRAY_BUFFER, m_Buffers[BONE_VB]);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(Bones[0]) * Bones.size(), &Bones[0], GL_STATIC_DRAW);
-    glEnableVertexAttribArray(BONE_ID_LOCATION);
-    glVertexAttribIPointer(BONE_ID_LOCATION, 4, GL_INT, sizeof(VertexBoneData), (const GLvoid*)0);
-    glEnableVertexAttribArray(BONE_WEIGHT_LOCATION);    
-    glVertexAttribPointer(BONE_WEIGHT_LOCATION, 4, GL_FLOAT, GL_FALSE, sizeof(VertexBoneData), (const GLvoid*)16);
+   	// glBindBuffer(GL_ARRAY_BUFFER, m_Buffers[BONE_VB]);
+	// glBufferData(GL_ARRAY_BUFFER, sizeof(Bones[0]) * Bones.size(), &Bones[0], GL_STATIC_DRAW);
+    // glEnableVertexAttribArray(BONE_ID_LOCATION);
+    // glVertexAttribIPointer(BONE_ID_LOCATION, 4, GL_INT, sizeof(VertexBoneData), (const GLvoid*)0);
+    // glEnableVertexAttribArray(BONE_WEIGHT_LOCATION);    
+    // glVertexAttribPointer(BONE_WEIGHT_LOCATION, 4, GL_FLOAT, GL_FALSE, sizeof(VertexBoneData), (const GLvoid*)16);
     
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Buffers[INDEX_BUFFER]);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(Indices[0]) * Indices.size(), &Indices[0], GL_STATIC_DRAW);
+    // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Buffers[INDEX_BUFFER]);
+	// glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(Indices[0]) * Indices.size(), &Indices[0], GL_STATIC_DRAW);
 
     std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> Total = end - start;
@@ -724,7 +729,7 @@ bool Mesh::InitMaterials(const aiScene* m_pScene, const std::string& Filename)
     return Ret;
 }
 
-void Mesh::push_uniforms(Matrix4f<GLfloat>& mtx_transform) {
+void Mesh::push_uniforms(objectTransform &trans) {
     GLfloat color[3] = { 0.8, 0.8, 0.9 };
     GLfloat direction[3] = { -0.4, -1.0, 0.2 };
     GLfloat AmbientIntensity = 0.9;
@@ -734,7 +739,7 @@ void Mesh::push_uniforms(Matrix4f<GLfloat>& mtx_transform) {
     Vector3<GLfloat> EyesPos = GameManager::callbackData.camera->GetPosition();
 
     glUseProgram(shaderProgram);
-    glUniformMatrix4fv(gWorldLocation, 1, GL_TRUE, &mtx_transform);
+    // glUniformMatrix4fv(gWorldLocation, 1, GL_TRUE, &mtx_transform);
     glUniform3f(gColorLocation, color[0], color[1], color[2]);
     glUniform3f(gDirectionLocation, direction[0], direction[1], direction[2]);
     glUniform3f(gEyeWorldPosLocation, EyesPos[0], EyesPos[1], EyesPos[2]);
@@ -771,9 +776,9 @@ void Mesh::push_uniforms(Matrix4f<GLfloat>& mtx_transform) {
     }
 }
 
-void Mesh::Render(Matrix4f<GLfloat>& mtx_transform)
+void Mesh::Render(objectTransform &trans)
 {
-    push_uniforms(mtx_transform);
+    push_uniforms(trans);
 
     Matrix4f<GLfloat> CameraTranslationTrans, CameraRotateTrans, PersProjTrans;
     Matrix4f<GLfloat> ScaleTrans, RotateTrans, TranslationTrans;
@@ -782,8 +787,15 @@ void Mesh::Render(Matrix4f<GLfloat>& mtx_transform)
     CameraRotateTrans.InitCameraTransform(GameManager::render->pipeline.camera->Params.Target, GameManager::render->pipeline.camera->Params.Up);
     PersProjTrans.InitPersProjTransform(GameManager::render->pipeline.camera->PersProj.FOV, GameManager::render->pipeline.camera->PersProj.Width, GameManager::render->pipeline.camera->PersProj.Height, GameManager::render->pipeline.camera->PersProj.zNear, GameManager::render->pipeline.camera->PersProj.zFar);
 
+    ScaleTrans.InitScaleTransform(trans.Scale.x, trans.Scale.y, trans.Scale.z);
+    RotateTrans.InitRotateTransform(trans.Rotate.x, trans.Rotate.y, trans.Rotate.z);
+    TranslationTrans.InitTranslationTransform(trans.WorldPos.x, trans.WorldPos.y, trans.WorldPos.z);
+
     Matrix4f<GLfloat> &Projection = PersProjTrans;
-    Matrix4f<GLfloat> View = CameraTranslationTrans * CameraRotateTrans;
+    Matrix4f<GLfloat> View = CameraRotateTrans * CameraTranslationTrans;
+    Matrix4f<GLfloat> Model = TranslationTrans * RotateTrans * ScaleTrans;
+
+    glUniformMatrix4fv(gModel, 1, GL_TRUE, &Model);
 
     glUniformMatrix4fv(gProjection, 1, GL_TRUE, &Projection);
     glUniformMatrix4fv(gView, 1, GL_TRUE, &View);

@@ -1,0 +1,10 @@
+skirt   suit.png   suit_nrm.png suit_spc.png    suit_lmp.png
+hairpin suit.png   suit_nrm.png suit_spc.png    suit_lmp.png
+patch   suit.png   suit_nrm.png suit_spc.png    suit_lmp.png
+clothes suit.png   suit_nrm.png suit_spc.png    suit_lmp.png
+teeth   head.png    head_nrm.png    head_spc.png    head_lmp.png
+face    head.png    head_nrm.png    head_spc.png    head_lmp.png
+body    head.png    head_nrm.png    head_spc.png    head_lmp.png
+hair_1 
+hair_2 
+hair_3 

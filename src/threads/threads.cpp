@@ -44,7 +44,7 @@ void RenderThread::callback() {
         }
 
         GameManager::render->clearRender();
-        model1.Render(GameManager::render->pipeline.GetTransform(transform));
+        model1.Render((transform));
         // model2.Render(GameManager::render->pipeline.GetTransform(transform_ramen));
         // model3.Render(GameManager::render->pipeline.GetTransform(transform_road));
         GameManager::render->clearRender();
