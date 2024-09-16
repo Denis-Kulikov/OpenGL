@@ -34,7 +34,7 @@ Camera *GameManager::createCamera()
     Vector3<GLfloat> CameraUp(0.0f, 1.0f, 0.0f);
 
     camera->SetCamera(CameraPos, CameraTarget, CameraUp);
-    camera->SetPerspectiveProj(90.0f, width, height, 0.5f, 1000.0f);
+    camera->SetPerspectiveProj(70.0f, width, height, 0.5f, 1000.0f);
 
     return camera;
 }

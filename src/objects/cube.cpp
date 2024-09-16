@@ -64,7 +64,10 @@ struct GeometryInfo *Cube::GetGeometry()
     return &geometryInfo;
 }
 
+Cube::Cube(const std::string &texture_path)
+    : Sprite(std::string("None"), "shaders/cube_fs.glsl", "shaders/cube_vs.glsl", texture_path.c_str())
+{}
 
 Cube::Cube()
-    : Sprite (std::string("None"), "shaders/cube_fs.glsl", "shaders/cube_vs.glsl", "img/skybox.jpeg")
+    : Sprite (std::string("None"), "shaders/cube_fs.glsl", "shaders/cube_vs.glsl", "img/skybox.png")
 {}

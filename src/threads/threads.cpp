@@ -14,7 +14,7 @@ void RenderThread::job() {
 }
 
 void RenderThread::callback() {
-    static Cube cube;
+    static Cube cube("img/skybox.png");
     static Mesh model1(std::string("assets/model/2b/2b.fbx"));
     // static Mesh model2(std::string("assets/model/ramen/source/ramen shop/ramen shop/ShoWaHouse01.FBX"));
     // static Mesh model3(std::string("assets/model/sidewalk/source/SIDEWALK.fbx"));
