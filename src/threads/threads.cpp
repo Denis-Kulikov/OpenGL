@@ -186,7 +186,7 @@ void SceneThread::callback() {
 
     for (auto& it : scene->actors) {
         (reinterpret_cast<Pawn*>(it))->MoveForward();
-        (reinterpret_cast<Pawn*>(it))->SetYaw(it->GetTransform()->GetRotateTowards(glm::vec3(0.0f, 0.0f, -10.0f)));
+        // (reinterpret_cast<Pawn*>(it))->SetYaw(it->GetTransform()->GetRotateTowards(glm::vec3(0.0f, 0.0f, -10.0f)));
         // (reinterpret_cast<Pawn*>(it))->MoveTowards();
         // it->updateAnimation(it->GetAnimation(GameManager::Time.GetCurrentTime()));
         // componentsThread.pushActor(it);
