@@ -160,7 +160,7 @@ void Sprite::loadTextures(const char *texturePath)
 
     GLfloat scale_x = static_cast<GLfloat>(x) / static_cast<GLfloat>(new_x);
     GLfloat scale_y = static_cast<GLfloat>(y) / static_cast<GLfloat>(new_y);
-    Scale.VSet(1, static_cast<GLfloat>(new_y * scale_y) / static_cast<GLfloat>(new_x * scale_x), 0.0);
+    Scale = glm::vec3(1, static_cast<GLfloat>(new_y * scale_y) / static_cast<GLfloat>(new_x * scale_x), 0.0);
 
     GLenum error = glGetError();
     if (error != GL_NO_ERROR) {

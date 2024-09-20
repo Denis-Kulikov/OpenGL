@@ -80,7 +80,7 @@ class Actor
         std::string animationName = nodeAnimation.attribute("name").as_string();
         
         objectTransform _transform;
-        Vector3<GLfloat> v;
+        glm::vec3 v;
 
         v.x = std::stof(nodeAnimation.attribute("x").value());
         v.y = std::stof(nodeAnimation.attribute("y").value());
@@ -100,7 +100,7 @@ class Actor
 
         Animation newAnimation;
         newAnimation.sprite = nullptr;
-        newAnimation.spriteScale = Vector3<GLfloat>(1.0, 1.0, 1.0);
+        newAnimation.spriteScale = glm::vec3(1.0, 1.0, 1.0);
         newAnimation.transform = objectTransform();
         Derived::skelet.Animations.insert({animationName, newAnimation});
 
@@ -151,8 +151,8 @@ class Actor
 
 
     objectTransform *GetTransform();
-    Vector3<GLfloat> GetDirection() const;
-    void SetDirection(const Vector3<GLfloat> &_direction);
+    glm::vec3 GetDirection() const;
+    void SetDirection(const glm::vec3 &_direction);
     std::string GetAnimationByAction();
     std::string GetAnimation(const float CurrentTime);
 
@@ -165,7 +165,7 @@ class Actor
     void PushRender(Render *_render);
 
     Render *render = nullptr;
-    Vector3<GLfloat> *spherePos = nullptr;
+    glm::vec3 *spherePos = nullptr;
     objectTransform sphereTransform;
     sphere<10> mySphere;
     line myLine;
@@ -176,7 +176,7 @@ class Actor
     inline static float time = 0.0;
     Motion::FunType *motionFunPtr = nullptr;
     Motion *motionPtr = nullptr;
-    Vector3<GLfloat> direction = 0;
+    glm::vec3 direction = {0, 0, 0};
     objectTransform transform;
     AnimationInfo animationInfo;
 

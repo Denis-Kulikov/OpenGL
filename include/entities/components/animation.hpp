@@ -4,7 +4,7 @@
 class Animation
 {
 public:
-    Animation(Sprite *_sprite, const Vector3<GLfloat> &_spriteScale, const objectTransform &_transform) 
+    Animation(Sprite *_sprite, const glm::vec3 &_spriteScale, const objectTransform &_transform) 
         : sprite(_sprite), spriteScale(_spriteScale), transform(_transform) {};
     Animation() {};
 
@@ -27,8 +27,8 @@ public:
     }
 
     Sprite *sprite = nullptr;
-    Vector3<GLfloat> spriteScale;
-    Vector3<GLfloat> anchorPoint;
+    glm::vec3 spriteScale;
+    glm::vec3 anchorPoint;
     objectTransform transform;
     static inline std::map<std::string, std::map<std::string, float>> duration;
 };

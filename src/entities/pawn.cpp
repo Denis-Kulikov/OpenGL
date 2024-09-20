@@ -5,15 +5,15 @@ Pawn::Pawn(const std::string &path, const size_t SkeletSize)
     : Actor(path, SkeletSize)
 {}
 
-void Pawn::Teleport(const Vector3<GLfloat> newPosition) {
+void Pawn::Teleport(const glm::vec3 newPosition) {
     this->transform.WorldPos = newPosition;
 }
 
-void Pawn::Move(const Vector3<GLfloat> offset) {
+void Pawn::Move(const glm::vec3 offset) {
     this->transform.Move(offset);
 }
 
-void Pawn::Move(const GLfloat distance, const Vector3<GLfloat> direction) {
+void Pawn::Move(const GLfloat distance, const glm::vec3 direction) {
     this->transform.Move(distance, direction);
 }
 
@@ -29,10 +29,10 @@ void Pawn::MoveForward(const GLfloat distance) {
     GLfloat finalX = forwardX + rightX;
     GLfloat finalZ = forwardZ + rightZ;
 
-    Vector3<GLfloat> finalDirection(finalX, y, finalZ);
-    if (finalDirection.Length() != 0) {
-        finalDirection.Normalize();
-    }
+    glm::vec3 finalDirection(finalX, y, finalZ);
+    // if (finalDirection.Length() != 0) {
+    //     finalDirection.Normalize();
+    // }
 
     this->transform.Move(distance, finalDirection);
 }
@@ -41,19 +41,19 @@ void Pawn::MoveForward() {
     MoveForward(this->speed * GameManager::Time.GetDeltaTime());
 }
 
-void Pawn::Rotate(const Vector3<GLfloat> _rotate) {
+void Pawn::Rotate(const glm::vec3 _rotate) {
     this->transform.Rotate = _rotate;
 }
 
-void Pawn::AddRotate(const Vector3<GLfloat> _rotate) {
+void Pawn::AddRotate(const glm::vec3 _rotate) {
     this->transform.Rotate += _rotate;
 }
 
-void Pawn::SetScale(const Vector3<GLfloat> _scale) {
+void Pawn::SetScale(const glm::vec3 _scale) {
     this->transform.Scale = _scale;
 }
 
-void Pawn::MultiplyScale(const Vector3<GLfloat> _scale) {
+void Pawn::MultiplyScale(const glm::vec3 _scale) {
     this->transform.Scale *= _scale;
 }
 

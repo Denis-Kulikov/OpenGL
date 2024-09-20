@@ -15,45 +15,43 @@ void RenderThread::job() {
 
 void RenderThread::callback() {
     static Cube cube("img/skybox.png");
-    static Mesh model1(std::string("assets/model/2b/2b.fbx"));
-    // static Mesh model2(std::string("assets/model/ramen/source/ramen shop/ramen shop/ShoWaHouse01.FBX"));
-    // static Mesh model3(std::string("assets/model/sidewalk/source/SIDEWALK.fbx"));
-    // static Mesh model4(std::string("assets/model/2b.fbx"));
+    static Mesh model(std::string("assets/model/female/female.glb"));
+    static Sprite sprite("floor", "shaders/sprite_fs.glsl","shaders/sprite_vs.glsl", "img/grass.png");
     objectTransform transform;
-    transform.SetWorldPos(0.0, 0.0, 0.0);
-    transform.SetRotate(-90.0, 0.0, 0.0);
-    float scale = 5;
-    transform.MultiplyScale(Vector3<GLfloat>(scale, scale, scale));
 
+    float scale = 5;
     static bool flag = true;
     if (flag) {
-        model1.set_transform(transform);
+        transform.SetWorldPos(0.0, -10.0, -10.0);
+        transform.SetRotate(0.0, 0.0, 0.0);
+        transform.MultiplyScale(glm::vec3(scale, scale, scale));
+
+        model.set_transform(transform);
+        
+        transform.MultiplyScale(glm::vec3(1/scale, 1/scale, 1/scale));
         flag = !flag;
     }
 
-    objectTransform transform_ramen;
-    transform_ramen.SetWorldPos(-60.0, 15.9, 25.0);
-    transform_ramen.SetRotate(-90.0, -90.0, 0.0);
-    transform_ramen.MultiplyScale(Vector3<GLfloat>(6.1, 6.1, 6.1));
+    scale = 10;
+    transform.SetWorldPos(0.0, -10.0, -10.0);
+    transform.SetRotate(90.0, 0.0, 0.0);
+    transform.MultiplyScale(glm::vec3(scale, scale, scale));
 
-    objectTransform transform_road;
-    transform_road.SetWorldPos(-20.0, -11.0, -45.0);
-    transform_road.SetRotate(0.0, -90.0, 0.0);
-    transform_road.MultiplyScale(Vector3<GLfloat>(3.1, 3.1, 3.1));
 
     if (sprites.empty()) {
         if (endTicks == false) {
             endWorkTime = std::chrono::high_resolution_clock::now();
             idleDuration += endWorkTime - startWorkTime;
-            std::this_thread::sleep_for(std::chrono::milliseconds(THREADS_SLEEP_TIME_MS * THREAD_RENDER * 10));
+            // std::this_thread::sleep_for(std::chrono::milliseconds(THREADS_SLEEP_TIME_MS * THREAD_RENDER * 1));
             return;
         }
 
         GameManager::render->clearRender();
-        model1.Render((transform));
-        // model2.Render(GameManager::render->pipeline.GetTransform(transform_ramen));
-        // model3.Render(GameManager::render->pipeline.GetTransform(transform_road));
+        model.Render((transform));
         GameManager::render->clearRender();
+
+        GameManager::render->PushGeometry(sprite.GetGeometry());
+        GameManager::render->drawObject(GameManager::render->pipeline.GetTransform(transform), &sprite);
 
         endTicks = false;
         *sceneEndTickPtr = true;
@@ -66,7 +64,7 @@ void RenderThread::callback() {
     } else {
         startWorkTime = std::chrono::high_resolution_clock::now();
         mutex.lock();
-        std::pair<Matrix4f<GLfloat>, Sprite*> sprite = sprites.top();
+        std::pair<Matrix4f, Sprite*> sprite = sprites.top();
         sprites.pop();
         mutex.unlock();
         GameManager::render->drawObject(sprite.first, sprite.second);
@@ -82,7 +80,7 @@ void RenderThread::swapBuffer() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void RenderThread::pushSprite(const std::pair<Matrix4f<GLfloat>, Sprite*>& componentSprite) {
+void RenderThread::pushSprite(const std::pair<Matrix4f, Sprite*>& componentSprite) {
     std::lock_guard<std::mutex> lock(mutex);
     sprites.push(componentSprite);
 }
@@ -107,7 +105,7 @@ void ComponentsThread::callback() {
             endTick = false;
             renderThread.setEnd();
         } else {
-            // std::this_thread::sleep_for(std::chrono::milliseconds(THREADS_SLEEP_TIME_MS * THREAD_COMPONENTS));
+            // std::this_thread::sleep_for(std::chrono::milliseconds(THREADS_SLEEP_TIME_MS * THREAD_COMPONENTS * 20));
         }
     } else {
         startWorkTime = std::chrono::high_resolution_clock::now();
@@ -118,7 +116,7 @@ void ComponentsThread::callback() {
         mutex.unlock();
         for (auto& it : actor->getActorComponents()) {
             renderThread.pushSprite(
-                std::pair<Matrix4f<GLfloat>, Sprite *>(
+                std::pair<Matrix4f, Sprite *>(
                     GameManager::render->pipeline.GetTransform(it->transform), it->sprite
                 )
             );
@@ -164,12 +162,11 @@ void SceneThread::job() {
 }
 
 
-bool isVisible(Camera *camera, Actor *object) {
-    Vector3<GLfloat> cameraDirection = camera->Params.Target.Normalize();
-    Vector3<GLfloat> cameraToObject = (object->GetTransform()->GetWorldPos() - camera->Params.WorldPos).Normalize();
-
-    return cameraDirection.VDot(cameraToObject) > 0;
-}
+// bool isVisible(Camera *camera, Actor *object) {
+//     glm::vec3 cameraDirection = gml::normalize(camera->Params.Target);
+//     glm::vec3 cameraToObject = (object->GetTransform()->GetWorldPos() - camera->Params.WorldPos).Normalize();
+//     return cameraDirection.VDot(cameraToObject) > 0;
+// }
 
 void SceneThread::callback() {
     startWorkTime = std::chrono::high_resolution_clock::now();
@@ -187,14 +184,14 @@ void SceneThread::callback() {
     static int frame = 0;
     static std::size_t index = 0; 
 
-    GameManager::UpdateCamera();
-
     for (auto& it : scene->actors) {
         (reinterpret_cast<Pawn*>(it))->MoveForward();
-        it->updateAnimation(it->GetAnimation(GameManager::Time.GetCurrentTime()));
-
-        componentsThread.pushActor(it);
+        (reinterpret_cast<Pawn*>(it))->SetYaw(it->GetTransform()->GetRotateTowards(glm::vec3(0.0f, 0.0f, -10.0f)));
+        // (reinterpret_cast<Pawn*>(it))->MoveTowards();
+        // it->updateAnimation(it->GetAnimation(GameManager::Time.GetCurrentTime()));
+        // componentsThread.pushActor(it);
     }
+    GameManager::UpdateCamera();
 
     componentsThread.setEnd();
 
@@ -205,11 +202,13 @@ void SceneThread::callback() {
 
     while (!endTick) {
         if (GameManager::IsEnd) return;
+            // std::this_thread::sleep_for(std::chrono::milliseconds(THREADS_SLEEP_TIME_MS * THREAD_RENDER * 1));
     }
     endWorkTime = std::chrono::high_resolution_clock::now();
     idleDuration += endWorkTime - startWorkTime;
 
     endTick = false;
+    [](){ return true; };
 
     frame++;
     if ((time(0) - prev) > 3) {

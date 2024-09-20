@@ -17,14 +17,14 @@ float randomFloat(float min, float max) {
     return dis(gen);
 }
 
-Vector3<GLfloat> generateRandomPoint() {
+glm::vec3 generateRandomPoint() {
     float MIN_X = -30.0, MAX_X = 30.0;
     float MIN_Y = -3.0, MAX_Y = 3.0;
     float MIN_Z = -64.0, MAX_Z = 2.0;
     float x = randomFloat(MIN_X, MAX_X);
     float y = randomFloat(MIN_Y, MAX_Y);
     float z = randomFloat(MIN_Z, MAX_Z);
-    return Vector3<GLfloat>(x, y, z);
+    return glm::vec3(x, y, z);
 }
 
 Scene *createScene()
@@ -37,6 +37,7 @@ Scene *createScene()
 
     Sphere<10>::initializeGeometry();
     Cube::initializeGeometry();
+    Sprite::initializeGeometry();
 
     GameManager::PushPlayer(character);
     GameManager::render->pipeline.camera->OwnerTransformPtr = character->GetTransform();

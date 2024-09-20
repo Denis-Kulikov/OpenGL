@@ -41,7 +41,7 @@ void Render::PushGeometry(struct GeometryInfo *geometry)
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, geometry->EBO);
 }
 
-void Render::drawObject(Matrix4f<GLfloat>& matrix, Sprite *sprite)
+void Render::drawObject(Matrix4f& matrix, Sprite *sprite)
 {
     if ((pipeline.camera == nullptr) || (sprite == nullptr)) {
         std::cout << "Error Render.drawObject(): " << std::endl;
@@ -88,7 +88,7 @@ void Render::drawSkybox(Cube &skybox)
 
     objectTransform skybox_transform;
     skybox_transform.SetWorldPos(pipeline.camera->GetPosition());
-    skybox_transform.SetRotate(Vector3<GLfloat>(0.0, 90.0, 180));
+    skybox_transform.SetRotate(glm::vec3(0.0, 90.0, 180));
     
     glDepthMask(GL_FALSE);
     drawObject(pipeline.GetTransform(skybox_transform), &skybox);

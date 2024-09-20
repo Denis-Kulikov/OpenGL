@@ -18,8 +18,8 @@ public:
     virtual struct GeometryInfo *GetGeometry();
 
     std::string name;
-    Vector3<GLfloat> Scale;
-    Vector3<GLfloat> color = Vector3<GLfloat>(1.0, 1.0, 1.0);
+    glm::vec3 Scale;
+    glm::vec3 color = glm::vec3(1.0, 1.0, 1.0);
 
     GLuint texture = 0;
     GLuint shader  = 0;

@@ -83,35 +83,35 @@ public:
         return Vector3<T>(-x, -y, -z);
     }
 
-    Vector3<T> operator+(const Vector3<T> &v) {
+    Vector3<T> operator+(const Vector3<T> &v) const {
         return Vector3(x + v.x, y + v.y, z + v.z);
     }
 
-    Vector3<T> operator+(const T s) {
+    Vector3<T> operator+(const T s) const {
         return Vector3(x, y, z) + Vector3(s, s, s);
     }
 
-    Vector3<T> operator-(const Vector3<T> &v) {
+    Vector3<T> operator-(const Vector3<T> &v) const {
         return Vector3(x - v.x, y - v.y, z - v.z);
     }
     
-    Vector3<T> operator-(const T s) {
+    Vector3<T> operator-(const T s) const {
         return Vector3(x, y, z) - Vector3(s, s, s);
     }
 
-    Vector3<T> operator*(const Vector3<T> &v) {
+    Vector3<T> operator*(const Vector3<T> &v) const {
         return Vector3(x * v.x, y * v.y, z * v.z);
     }
 
-    Vector3<T> operator*(const T s) {
+    Vector3<T> operator*(const T s) const {
         return Vector3(x, y, z) * Vector3(s, s, s);
     }
 
-    Vector3<T> operator/(const Vector3<T> &v) {
+    Vector3<T> operator/(const Vector3<T> &v) const {
         return Vector3(x / v.x, y / v.y, z / v.z);
     }
 
-    Vector3<T> operator/(const T s) {
+    Vector3<T> operator/(const T s) const {
         return Vector3(x, y, z) / Vector3(s, s, s);
     }
 

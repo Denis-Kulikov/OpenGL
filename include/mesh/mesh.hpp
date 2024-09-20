@@ -23,16 +23,6 @@ struct Texture {
     GLuint texture;
 };
 
-// struct Vertex_vector {
-//     Vertex_vector() {}
-//     // Vertex_vector(const glm::vec3& pos, const glm::vec3& normal, const glm::vec3& Tangent, const glm::vec2& tex) 
-//     //     : m_pos(pos), m_tex(tex), m_normal(normal), m_tangent(Tangent)
-//     // {}
-
-//     std::vector<glm::vec3> m_pos;
-//     std::vector<glm::vec3> m_normal;
-//     std::vector<glm::vec2> m_tex;
-// };
 
 class Mesh
 {
@@ -45,13 +35,13 @@ public:
     void Render(objectTransform &trans);
 
 #define INVALID_MATERIAL 0xFFFFFFFF
-#define NUM_BONES_PER_VEREX 8
+#define NUM_BONES_PER_VEREX 4
 
 #define POSITION_LOCATION    0
 #define TEX_COORD_LOCATION   2
 #define NORMAL_LOCATION      1
 #define BONE_ID_LOCATION     3
-#define BONE_WEIGHT_LOCATION 5
+#define BONE_WEIGHT_LOCATION 4
 
 enum VB_TYPES {
     INDEX_BUFFER,
@@ -59,7 +49,7 @@ enum VB_TYPES {
     NORMAL_VB,
     TEXCOORD_VB,
     BONE_VB,
-    NUM_VBs = BONE_VB + 2          
+    NUM_VBs
 };
 
     struct MeshEntry {
@@ -97,7 +87,8 @@ enum VB_TYPES {
     };
 
     struct VertexBoneData {
-        void Mesh::VertexBoneData::AddBoneData(unsigned int BoneID, float Weight);
+        void AddBoneData(unsigned int BoneID, float Weight);
+        void normalize();
         static const int size = NUM_BONES_PER_VEREX;
         unsigned int IDs[size];
         float Weights[size];
@@ -129,6 +120,7 @@ private:
 
     void ReadNodeHeirarchy(float AnimationTime, const aiNode* pNode, const aiMatrix4x4& ParentTransform);
     void BoneTransform(float TimeInSeconds, std::vector<aiMatrix4x4>& Transforms);
+    
     void LoadBones(unsigned int MeshIndex, const aiMesh* pMesh, std::vector<VertexBoneData>& Bones);
     GLuint loadShader(const std::string &shaderPath, GLuint type);
     void compileShaders(const std::string &FS, const std::string &VS);
@@ -152,6 +144,12 @@ private:
     GLuint gProjection;
     GLuint gView;
     GLuint gModel;
+
+    GLuint gObjectLocation;
+    GLuint gCameraParamsLocation;
+    GLuint gPersProjParamsLocation;
+    
+    GLuint gWVP;
 
     GLuint shaderProgram;
     GLuint gEyeWorldPosLocation;

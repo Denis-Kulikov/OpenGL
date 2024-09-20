@@ -40,7 +40,7 @@ struct GeometryInfo *cube_bone::GetGeometry()
 }
 
 
-cube_bone::cube_bone(const std::string &_name, const objectTransform &_trans, const Vector3<GLfloat> _color)
+cube_bone::cube_bone(const std::string &_name, const objectTransform &_trans, const glm::vec3 _color)
     : line (_name, _trans, _color)
 {
 }

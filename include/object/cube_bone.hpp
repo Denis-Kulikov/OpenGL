@@ -4,7 +4,7 @@
 class cube_bone : public line
 {
 public:
-    cube_bone(const std::string &_name, const objectTransform &_trans, const Vector3<GLfloat> _color);
+    cube_bone(const std::string &_name, const objectTransform &_trans, const glm::vec3 _color);
     static void initializeGeometry();
     struct GeometryInfo *GetGeometry() override;
 

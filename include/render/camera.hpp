@@ -6,9 +6,9 @@ class Camera
 public:
     Camera()
     {
-        Params.WorldPos    = Vector3<GLfloat>(0.0f, 0.0f, 0.0f);
-        Params.Target      = Vector3<GLfloat>(0.0f, 0.0f, 1.0f);
-        Params.Up          = Vector3<GLfloat>(0.0f, 1.0f, 0.0f);
+        Params.WorldPos    = glm::vec3(0.0f, 0.0f, 0.0f);
+        Params.Target      = glm::vec3(0.0f, 0.0f, 1.0f);
+        Params.Up          = glm::vec3(0.0f, 1.0f, 0.0f);
     }
 
     void attachOwnerTransform(const objectTransform* TransformPtr)
@@ -16,7 +16,7 @@ public:
         OwnerTransformPtr = TransformPtr;
     }
 
-    Vector3<GLfloat> GetPosition()
+    glm::vec3 GetPosition()
     {
         return OwnerTransformPtr == nullptr ? Params.WorldPos : Params.WorldPos + OwnerTransformPtr->GetWorldPos();
     }
@@ -39,7 +39,7 @@ public:
         PersProj.zFar   = _camera.PersProj.zFar;
     }
 
-    void SetCamera(const Vector3<GLfloat>& WorldPos, const Vector3<GLfloat>& Target, const Vector3<GLfloat>& Up)
+    void SetCamera(const glm::vec3& WorldPos, const glm::vec3& Target, const glm::vec3& Up)
     {
         Params.WorldPos = WorldPos;
         Params.Target   = Target;
@@ -52,13 +52,13 @@ public:
         SetPerspectiveProj(_camera.PersProj.FOV, _camera.PersProj.Width, _camera.PersProj.Height, _camera.PersProj.zNear, _camera.PersProj.zFar);
     }
 
-    struct {
-        Vector3<GLfloat> WorldPos;
-        Vector3<GLfloat> Target;
-        Vector3<GLfloat> Up;
+    struct struct_Params {
+        glm::vec3 WorldPos;
+        glm::vec3 Target;
+        glm::vec3 Up;
     } Params;
 
-    struct {
+    struct struct_PersProj {
         GLfloat FOV;
         GLfloat Width;
         GLfloat Height;

@@ -2,9 +2,9 @@
 
 struct GeometryInfo line::geometryInfo = {0, 0, 0, 0, 0};
 
-void line::setPoints(const Vector3<GLfloat> &_start, const Vector3<GLfloat> &_end)
+void line::setPoints(const glm::vec3 &_start, const glm::vec3 &_end)
 {
-    Vector3<GLfloat> d(_end.x - _start.x, _end.y - _start.y, _end.z - _start.z);
+    glm::vec3 d(_end.x - _start.x, _end.y - _start.y, _end.z - _start.z);
     this->trans.SetWorldPos(_start.x + d.x / 2, _start.y + d.y / 2, _start.z + d.z / 2);
 
     GLfloat distance = sqrt(pow(d.x, 2) + pow(d.y, 2) + pow(d.z, 2));
@@ -39,7 +39,7 @@ void line::initializeGeometry() {
     glBindVertexArray(0);
 }
 
-line::line(const std::string &_name, const objectTransform &_trans, const Vector3<GLfloat> _color)
+line::line(const std::string &_name, const objectTransform &_trans, const glm::vec3 _color)
     : Sprite(_name, "shaders/bone_fs.glsl", "shaders/base_vs.glsl", nullptr)
 {
     color.x = _color.x;
@@ -54,7 +54,7 @@ struct GeometryInfo *line::GetGeometry()
     return &geometryInfo;
 }
 
-line::line(const std::string &_name, const Vector3<GLfloat> _color)
+line::line(const std::string &_name, const glm::vec3 _color)
     : line(_name, objectTransform(), _color)
 {
 }

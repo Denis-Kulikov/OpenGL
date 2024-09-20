@@ -27,9 +27,9 @@ public:
     };
 
 
-    Vector3<GLfloat> GetScaleRecursive(size_t &i, const std::vector<rule> *curRuleScale) const
+    glm::vec3 GetScaleRecursive(size_t &i, const std::vector<rule> *curRuleScale) const
     {
-        Vector3<GLfloat> res(1.0);
+        glm::vec3 res(1.0);
         const std::vector<rule> &Rule = *curRuleScale;
         if (Rule.empty()) return res;
 
@@ -48,16 +48,16 @@ public:
         return res;
     }
 
-    Vector3<GLfloat> GetScale(const float timeStart, float duration) const
+    glm::vec3 GetScale(const float timeStart, float duration) const
     {
-        if (ruleScale.empty()) return Vector3<GLfloat>(1.0);
+        if (ruleScale.empty()) return glm::vec3(1.0);
         
         timeSpan = std::fmod((currentTime - timeStart) / 1e9, duration);
         size_t j = 0;
         const std::vector<rule> *curRuleScale = &ruleScale[j].second;
         while (ruleScale[j].first <= timeSpan) {
             j++;
-            if (j >= ruleScale.size()) return Vector3<GLfloat>(1.0);
+            if (j >= ruleScale.size()) return glm::vec3(1.0);
             curRuleScale = &ruleScale[j].second;
         }
 
@@ -66,9 +66,9 @@ public:
     }
 
 
-    Vector3<GLfloat> GetOffsetRecursive(size_t &i, const std::vector<rule> *curRuleOffset) const
+    glm::vec3 GetOffsetRecursive(size_t &i, const std::vector<rule> *curRuleOffset) const
     {
-        Vector3<GLfloat> res(0.0);
+        glm::vec3 res(0.0);
         const std::vector<rule> &Rule = *curRuleOffset;
         if (Rule.empty()) return res;
 
@@ -86,7 +86,7 @@ public:
         return res;
     }
 
-    Vector3<GLfloat> GetOffset(const float timeStart, float duration) const
+    glm::vec3 GetOffset(const float timeStart, float duration) const
     {
         if (ruleOffset.empty()) return 0.0;
         

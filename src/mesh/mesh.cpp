@@ -7,6 +7,17 @@
 #include <object/cube.hpp>
 
 
+void Mesh::VertexBoneData::normalize ()
+{
+    float   sum = Weights [0];
+    
+    for ( int i = 1; i < size; i++ )
+        sum += Weights [i];
+        
+    for ( int i = 0; i < size; i++ )
+        Weights [i] /= sum;
+}
+
 void Mesh::VertexBoneData::AddBoneData(unsigned int BoneID, float Weight)
 {
     for (unsigned int i = 0 ; i < size ; i++) {
@@ -79,7 +90,7 @@ Mesh::MeshEntry::~MeshEntry() {}
 Mesh::Mesh(const std::string& Filename)
 {
     LoadMesh(Filename);
-    compileShaders("assets\\model\\2b\\shaders\\model_fs.glsl", "assets\\model\\2b\\shaders\\model_vs.glsl");
+    compileShaders("assets\\model\\shaders\\model_fs.glsl", "assets\\model\\shaders\\model_vs.glsl");
 }
 
 Mesh::~Mesh() {}
@@ -220,7 +231,6 @@ void Mesh::ReadNodeHeirarchy(float AnimationTime, const aiNode* pNode, const aiM
     const aiNodeAnim* pNodeAnim = FindNodeAnim(pAnimation, NodeName);
 
     if (pNodeAnim) {
-        // Interpolating position, rotation and scaling.
         aiVector3D Scaling;
         CalcInterpolatedScaling(Scaling, AnimationTime, pNodeAnim);
         aiMatrix4x4 ScalingM;
@@ -242,12 +252,14 @@ void Mesh::ReadNodeHeirarchy(float AnimationTime, const aiNode* pNode, const aiM
 
     if (m_BoneMapping.find(NodeName) != m_BoneMapping.end()) {
         unsigned int BoneIndex = m_BoneMapping[NodeName];
-        m_BoneInfo[BoneIndex].FinalTransformation = m_GlobalInverseTransform * GlobalTransformation * m_BoneInfo[BoneIndex].BoneOffset;
+        m_BoneInfo[BoneIndex].FinalTransformation = GlobalTransformation * m_BoneInfo[BoneIndex].BoneOffset;
     }
 
     for (unsigned int i = 0; i < pNode->mNumChildren; i++) {
         ReadNodeHeirarchy(AnimationTime, pNode->mChildren[i], GlobalTransformation);
     }
+
+
 }
 
 void Mesh::BoneTransform(float TimeInSeconds, std::vector<aiMatrix4x4>& Transforms)
@@ -291,8 +303,17 @@ void Mesh::LoadBones(unsigned int MeshIndex, const aiMesh* pMesh, std::vector<Ve
             Bones[VertexID].AddBoneData(BoneIndex, Weight);
         }
     }
+    for (unsigned int i = 0; i < pMesh->mNumBones; i++)
+        Bones[i].normalize();
 }
 
+void recursive_search(aiNode *node, int deep) {
+    for (int i = 0; i < deep; i++)
+        std::cout << "  ";
+    std::cout << node->mName.C_Str() << std::endl;
+    for (int i = 0; i < node->mNumChildren; i++)
+        recursive_search(node->mChildren[i], deep + 1);
+}
 
 bool Mesh::LoadMesh(const std::string& Filename)
 {
@@ -306,25 +327,19 @@ bool Mesh::LoadMesh(const std::string& Filename)
     m_pScene = Importer.ReadFile(Filename.c_str(), aiProcess_Triangulate | aiProcess_GenSmoothNormals| aiProcess_FlipUVs);
 
     if (m_pScene) {
-        m_GlobalInverseTransform = m_pScene->mRootNode->mTransformation;
-        m_GlobalInverseTransform.Inverse();
-
         InitFromScene(m_pScene, Filename);
     } else {
         printf("Error parsing '%s': '%s'\n", Filename.c_str(), Importer.GetErrorString());
         return false;
     }
 
-    // if (m_pScene->HasAnimations()) {
-    //     std::cout << "Found " << m_pScene->mNumAnimations << " animations:\n";
-    //     for (unsigned int i = 0; i < m_pScene->mNumAnimations; i++) {
-    //         const aiAnimation* animation = m_pScene->mAnimations[i];
-    //         std::cout << " - Animation " << i + 1 << ": " << animation->mName.C_Str() << std::endl;
-    //     }
-    // } else 
-    //     std::cout << "No animations found in the model.\n";
-
     glBindVertexArray(0);	
+
+    // std::cout << m_pScene->mRootNode->mName.C_Str();
+    // for (int i = 0; i < m_pScene->mRootNode->mNumChildren; i++)
+    //     recursive_search(m_pScene->mRootNode->mChildren[i], 1);
+
+    assert(m_pScene->HasAnimations());
 
     return false;
 }
@@ -415,41 +430,19 @@ void Mesh::compileShaders(const std::string &FS, const std::string &VS)
     gModel           = glGetUniformLocation(shaderProgram, "Model");
 
 
-    for (unsigned int i = 0 ; i < 1 ; i++) {
-        m_material[i]->Color               = glGetUniformLocation(shaderProgram, std::string(("gPointLights[") + std::string("0" + i) + std::string("].Color"           )).c_str());
-        m_material[i]->AmbientIntensity    = glGetUniformLocation(shaderProgram, std::string(("gPointLights[") + std::string("0" + i) + std::string("].AmbientIntensity")).c_str());
-        m_material[i]->DiffuseIntensity    = glGetUniformLocation(shaderProgram, std::string(("gPointLights[") + std::string("0" + i) + std::string("].DiffuseIntensity")).c_str());
-        m_material[i]->Position            = glGetUniformLocation(shaderProgram, std::string(("gPointLights[") + std::string("0" + i) + std::string("].Position"        )).c_str());
-        m_material[i]->Atten.Constant      = glGetUniformLocation(shaderProgram, std::string(("gPointLights[") + std::string("0" + i) + std::string("].Constant"  )).c_str());
-        m_material[i]->Atten.Linear        = glGetUniformLocation(shaderProgram, std::string(("gPointLights[") + std::string("0" + i) + std::string("].Linear"    )).c_str());
-        m_material[i]->Atten.Exp           = glGetUniformLocation(shaderProgram, std::string(("gPointLights[") + std::string("0" + i) + std::string("].Exp"       )).c_str());
-    }
+    // assert(gBones               != 0xFFFFFFFF);
+    // assert(gProjection          != 0xFFFFFFFF);
+    // assert(gView                != 0xFFFFFFFF);
 
-    assert(gBones                != 0xFFFFFFFF);
-    assert(gProjection                != 0xFFFFFFFF);
-    assert(gView                != 0xFFFFFFFF);
-    // assert(gModel                != 0xFFFFFFFF);
-
-    // assert(gWorldLocation                != 0xFFFFFFFF);
-    assert(gTextureSamplerLocation       != 0xFFFFFFFF);
-    assert(gNormalMapLocation            != 0xFFFFFFFF);
-    assert(gEyeWorldPosLocation          != 0xFFFFFFFF);
-    assert(gColorLocation                != 0xFFFFFFFF);
-    assert(gDirectionLocation            != 0xFFFFFFFF);
-    assert(gAmbientIntensityLocation     != 0xFFFFFFFF);
-    assert(gDiffuseIntensityLocation     != 0xFFFFFFFF);
-    assert(gMatSpecularIntensityLocation != 0xFFFFFFFF);
-    assert(gSpecularPowerLocation        != 0xFFFFFFFF);
-
-    for (unsigned int i = 0 ; i < 1 ; i++) {
-        assert(m_material[i]->Color            != 0xFFFFFFFF);
-        assert(m_material[i]->AmbientIntensity != 0xFFFFFFFF);
-        assert(m_material[i]->DiffuseIntensity != 0xFFFFFFFF);
-        assert(m_material[i]->Position         != 0xFFFFFFFF);
-        assert(m_material[i]->Atten.Constant   != 0xFFFFFFFF);
-        assert(m_material[i]->Atten.Linear     != 0xFFFFFFFF);
-        assert(m_material[i]->Atten.Exp        != 0xFFFFFFFF);
-    }
+    // assert(gTextureSamplerLocation       != 0xFFFFFFFF);
+    // assert(gNormalMapLocation            != 0xFFFFFFFF);
+    // assert(gEyeWorldPosLocation          != 0xFFFFFFFF);
+    // assert(gColorLocation                != 0xFFFFFFFF);
+    // assert(gDirectionLocation            != 0xFFFFFFFF);
+    // assert(gAmbientIntensityLocation     != 0xFFFFFFFF);
+    // assert(gDiffuseIntensityLocation     != 0xFFFFFFFF);
+    // assert(gMatSpecularIntensityLocation != 0xFFFFFFFF);
+    // assert(gSpecularPowerLocation        != 0xFFFFFFFF);
 }
 
 
@@ -467,7 +460,6 @@ bool Mesh::InitFromScene(const aiScene* m_pScene, const std::string& Filename)
     unsigned int NumVertices = 0;
     unsigned int NumIndices = 0;
     
-    // Count the number of vertices and indices
     for (unsigned int i = 0 ; i < m_Entries.size() ; i++) {
         m_Entries[i].MaterialIndex = m_pScene->mMeshes[i]->mMaterialIndex;        
         m_Entries[i].NumIndices    = m_pScene->mMeshes[i]->mNumFaces * 3;
@@ -510,22 +502,14 @@ bool Mesh::InitFromScene(const aiScene* m_pScene, const std::string& Filename)
     glEnableVertexAttribArray(TEX_COORD_LOCATION);
     glVertexAttribPointer(TEX_COORD_LOCATION, 2, GL_FLOAT, GL_FALSE, 0, 0);
 
-   	glBindBuffer(GL_ARRAY_BUFFER, m_Buffers[BONE_VB]);
+    glBindBuffer(GL_ARRAY_BUFFER, m_Buffers[BONE_VB]);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(Bones[0]) * Bones.size(), &Bones[0], GL_STATIC_DRAW);
-    // glEnableVertexAttribArray(BONE_ID_LOCATION);
-    // glVertexAttribIPointer(BONE_ID_LOCATION, 4, GL_INT, sizeof(VertexBoneData), (const GLvoid*)0);
-    // glEnableVertexAttribArray(BONE_WEIGHT_LOCATION);    
-    // glVertexAttribPointer(BONE_WEIGHT_LOCATION, 4, GL_FLOAT, GL_FALSE, sizeof(VertexBoneData), (const GLvoid*)16);
 
     glEnableVertexAttribArray(BONE_ID_LOCATION);
     glVertexAttribIPointer(BONE_ID_LOCATION, 4, GL_INT, sizeof(VertexBoneData), (const GLvoid*)0);
-    glEnableVertexAttribArray(BONE_ID_LOCATION + 1);
-    glVertexAttribIPointer(BONE_ID_LOCATION + 1, 4, GL_INT, sizeof(VertexBoneData), (const GLvoid*)(4 * sizeof(unsigned int)));
 
-    glEnableVertexAttribArray(BONE_WEIGHT_LOCATION);
-    glVertexAttribPointer(BONE_WEIGHT_LOCATION, 4, GL_FLOAT, GL_FALSE, sizeof(VertexBoneData), (const GLvoid*)(4 * sizeof(unsigned int) + 4 * sizeof(float)));
-    glEnableVertexAttribArray(BONE_WEIGHT_LOCATION + 1);  // Для остальных 4 Weights
-    glVertexAttribPointer(BONE_WEIGHT_LOCATION + 1, 4, GL_FLOAT, GL_FALSE, sizeof(VertexBoneData), (const GLvoid*)(4 * sizeof(unsigned int) + 8 * sizeof(float)));
+    glEnableVertexAttribArray(BONE_WEIGHT_LOCATION);    
+    glVertexAttribPointer(BONE_WEIGHT_LOCATION, 4, GL_FLOAT, GL_FALSE, sizeof(VertexBoneData), (const GLvoid*)16);
 
     
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Buffers[INDEX_BUFFER]);
@@ -538,12 +522,9 @@ bool Mesh::InitFromScene(const aiScene* m_pScene, const std::string& Filename)
     return true;
 }
 
-void Mesh::InitMesh(unsigned int MeshIndex,
-                    const aiMesh* paiMesh,
-                    std::vector<glm::vec3>& Positions,
-                    std::vector<glm::vec3>& Normals,
-                    std::vector<glm::vec2>& TexCoords,
-                    std::vector<VertexBoneData>& Bones,
+void Mesh::InitMesh(unsigned int MeshIndex, const aiMesh* paiMesh,
+                    std::vector<glm::vec3>& Positions, std::vector<glm::vec3>& Normals,
+                    std::vector<glm::vec2>& TexCoords, std::vector<VertexBoneData>& Bones,
                     std::vector<unsigned int>& Indices)
 {
     const aiVector3D Zero3D(0.0f, 0.0f, 0.0f);
@@ -581,50 +562,67 @@ bool Mesh::InitMaterials(const aiScene* m_pScene, const std::string& Filename)
     else
         Dir = Filename.substr(0, SlashIndex);
 
-    struct textures_names {
-        textures_names() {};
-        textures_names(std::string dif_, std::string nrm_, std::string spc_, std::string lmp_)
-            : dif(dif_), nrm(nrm_), spc(spc_), lmp(lmp_) {};
-        std::string dif;
-        std::string nrm;
-        std::string spc;
-        std::string lmp;
-    };
-    std::unordered_map<std::string, textures_names> textureMap;
-    std::ifstream file(Dir + "/texture.txt");
+    // struct textures_names {
+    //     textures_names() {};
+    //     textures_names(std::string dif_, std::string nrm_, std::string spc_, std::string lmp_)
+    //         : dif(dif_), nrm(nrm_), spc(spc_), lmp(lmp_) {};
+    //     std::string dif;
+    //     std::string nrm;
+    //     std::string spc;
+    //     std::string lmp;
+    // };
+    // std::unordered_map<std::string, textures_names> textureMap;
+    // std::ifstream file(Dir + "/texture.txt");
 
-    if (!file.is_open()) {
-        std::cerr << "Не удалось открыть файл: " << Dir << "/texture.txt" << std::endl;
-        return 1;
-    }
+    // if (!file.is_open()) {
+    //    std::cerr << "Не удалось открыть файл: " << Dir << "/texture.txt" << std::endl;
+    // }
 
-    std::string key, value, dif, nrm, spc, lmp;
-    while (file >> key >> dif >> nrm >> spc >> lmp) {
-        textureMap[key] = textures_names(dif, nrm, spc, lmp);
-    }
+    //     std::cout << std::endl;
+    // std::string key, value, dif, nrm, spc, lmp;
+    // while (file >> key >> dif >> nrm >> spc >> lmp) {
+    //    textureMap[key + "-mesh"] = textures_names(dif, nrm, spc, lmp);
 
-    file.close();
+    //     std::cout << key << std::endl;
+
+    // }
+    //     std::cout << std::endl;
+
+    // file.close();
+
+    // std::unordered_map<std::string, std::string> map = {{"skirt-mesh",      "suit.png"},
+    //                                                     {"hairpin-mesh",    "suit.png"},
+    //                                                     {"patch-mesh",      "suit.png"},
+    //                                                     {"clothes-mesh",    "suit.png"},
+    //                                                     {"teeth-mesh",      "head.png"},
+    //                                                     {"face-mesh",       "head.png"},
+    //                                                     {"body-mesh",       ""},
+    //                                                     {"hair_1-mesh",     "suit.png"},
+    //                                                     {"hair_2-mesh",     ""},
+    //                                                     {"hair_3-mesh",     ""}
+    //                                                     };
+
     
-
     bool Ret = true;
 
     for (unsigned int i = 0; i< m_pScene->mNumMaterials; i++){
         const aiMaterial* pMaterial = m_pScene->mMaterials[i];
 
-        std::cout << m_pScene->mMeshes[i]->mName.C_Str() << " " << textureMap[m_pScene->mMeshes[i]->mName.C_Str()].dif << std::endl;
-        stb_img dif(Dir + "/texture/" + textureMap[m_pScene->mMeshes[i]->mName.C_Str()].dif);
-        if (dif.img != nullptr) {
-            m_Textures[i].dif = new Texture(dif, textureMap[m_pScene->mMeshes[i]->mName.C_Str()].dif);
-        } else {
-            stb_img dif_white("assets/img/white.png");
-            m_Textures[i].dif = new Texture(dif_white);
-        }
+        // std::cout << m_pScene->mMeshes[i]->mName.C_Str() << " " << textureMap[m_pScene->mMeshes[i]->mName.C_Str()].dif  << '|' << std::endl;
+        // stb_img dif(Dir + "/texture/" + map[m_pScene->mMeshes[i]->mName.C_Str()]);
+        // if (dif.img != nullptr) {
+        //    m_Textures[i].dif = new Texture(dif, textureMap[m_pScene->mMeshes[i]->mName.C_Str()].dif);
+        // } else {
+
+            // stb_img dif_white("assets/img/white.png");
+            stb_img dif_white("assets/img/Image_0.png");
+            m_Textures[i].dif = new Texture(dif_white, "Image_0.png");
+        // // }
 
         // if (dif.img != nullptr) {
         //     stb_img nrm(Dir + "/texture/" + textureMap[m_pScene->mMeshes[i]->mName.C_Str()].nrm);
         //     stb_img spc(Dir + "/texture/" + textureMap[m_pScene->mMeshes[i]->mName.C_Str()].spc);
         //     stb_img lmp(Dir + "/texture/" + textureMap[m_pScene->mMeshes[i]->mName.C_Str()].lmp);
-
         //     if (nrm.img != nullptr) m_Textures[i].nrm = new Texture(nrm);
         //     if (spc.img != nullptr) m_Textures[i].spc = new Texture(spc);
         //     if (lmp.img != nullptr) m_Textures[i].lmp = new Texture(lmp);
@@ -632,7 +630,6 @@ bool Mesh::InitMaterials(const aiScene* m_pScene, const std::string& Filename)
 
         // if (pMaterial->GetTextureCount(aiTextureType_DIFFUSE) > 0){
         //     aiString Path;
-
         //     if (pMaterial->GetTexture(aiTextureType_DIFFUSE, 0, &Path, NULL, NULL, NULL, NULL, NULL) == AI_SUCCESS){
         //         std::cout << "Path: " << Path.C_Str() << std::endl;
         //         std::string FullPath = Dir + "/" + Path.data;
@@ -659,10 +656,9 @@ void Mesh::push_uniforms(objectTransform &trans) {
     GLfloat DiffuseIntensity = 0.35;
     GLfloat SpecularPower = 0.25;
     GLfloat MatSpecularIntensity = 0.25;
-    Vector3<GLfloat> EyesPos = GameManager::callbackData.camera->GetPosition();
+    glm::vec3 EyesPos = GameManager::callbackData.camera->GetPosition();
 
     glUseProgram(shaderProgram);
-    // glUniformMatrix4fv(gWorldLocation, 1, GL_TRUE, &mtx_transform);
     glUniform3f(gColorLocation, color[0], color[1], color[2]);
     glUniform3f(gDirectionLocation, direction[0], direction[1], direction[2]);
     glUniform3f(gEyeWorldPosLocation, EyesPos[0], EyesPos[1], EyesPos[2]);
@@ -673,8 +669,8 @@ void Mesh::push_uniforms(objectTransform &trans) {
 
     for (unsigned int i = 0 ; i < 1 ; i++) {
         struct {
-            Vector3<GLfloat> Position = {-20.0, 0.0, 15.0};
-            Vector3<GLfloat> Color = {1.0, 0.0, 0.9};
+            glm::vec3 Position = {-20.0, 0.0, 15.0};
+            glm::vec3 Color = {1.0, 0.0, 0.9};
             GLfloat AmbientIntensity = 50.0;
             GLfloat DiffuseIntensity = 0.8;
             struct
@@ -687,7 +683,7 @@ void Mesh::push_uniforms(objectTransform &trans) {
 
         objectTransform sphere_transform;
         pLights[i].Position = sphere_transform.GetWorldPos();
-        pLights[i].Color = Vector3<GLfloat>(0.0, 0.0, 0.0); // !
+        pLights[i].Color = glm::vec3(0.0, 0.0, 0.0); // !
 
         glUniform3f(m_material[i]->Color, pLights[i].Color.x, pLights[i].Color.y, pLights[i].Color.z);
         glUniform1f(m_material[i]->AmbientIntensity, pLights[i].AmbientIntensity);
@@ -718,33 +714,61 @@ void Mesh::set_transform(const objectTransform &transform) {
     m_pScene->mRootNode->mTransformation = TranslationMatrix * RotationMatrixZ * RotationMatrixY * RotationMatrixX * scaleMatrix * m_pScene->mRootNode->mTransformation;
 }
 
+glm::mat4 CalculateBoneTransform(const std::vector<glm::mat4>& gBones, const glm::ivec4& BoneIDs, const glm::vec4& Weights) {
+    glm::mat4 BoneTransform = gBones[BoneIDs[0]] * Weights[0];
+    BoneTransform += gBones[BoneIDs[1]] * Weights[1];
+    BoneTransform += gBones[BoneIDs[2]] * Weights[2];
+    BoneTransform += gBones[BoneIDs[3]] * Weights[3];
+
+    return BoneTransform;
+}
+
 
 void Mesh::Render(objectTransform &trans)
 {
     glBindVertexArray(m_VAO);
     push_uniforms(trans);
 
-    Matrix4f<GLfloat> CameraTranslationTrans, CameraRotateTrans, PersProjTrans;
-    Matrix4f<GLfloat> ScaleTrans, RotateTrans, TranslationTrans;
-
+    Matrix4f CameraTranslationTrans, CameraRotateTrans, PersProjTrans;
     CameraTranslationTrans.InitTranslationTransform(-GameManager::render->pipeline.camera->GetPosition().x, -GameManager::render->pipeline.camera->GetPosition().y, -GameManager::render->pipeline.camera->GetPosition().z);
     CameraRotateTrans.InitCameraTransform(GameManager::render->pipeline.camera->Params.Target, GameManager::render->pipeline.camera->Params.Up);
     PersProjTrans.InitPersProjTransform(GameManager::render->pipeline.camera->PersProj.FOV, GameManager::render->pipeline.camera->PersProj.Width, GameManager::render->pipeline.camera->PersProj.Height, GameManager::render->pipeline.camera->PersProj.zNear, GameManager::render->pipeline.camera->PersProj.zFar);
-
-    ScaleTrans.InitScaleTransform(trans.Scale.x, trans.Scale.y, trans.Scale.z);
-    RotateTrans.InitRotateTransform(trans.Rotate.x, trans.Rotate.y, trans.Rotate.z);
-    TranslationTrans.InitTranslationTransform(trans.WorldPos.x, trans.WorldPos.y, trans.WorldPos.z);
-
-    Matrix4f<GLfloat> &Projection = PersProjTrans;
-    Matrix4f<GLfloat> View = CameraRotateTrans * CameraTranslationTrans;
-    Matrix4f<GLfloat> Model = TranslationTrans * RotateTrans * ScaleTrans;
-
-    glUniformMatrix4fv(gModel, 1, GL_TRUE, &Model);
-
+    Matrix4f &Projection = PersProjTrans;
+    Matrix4f View = CameraRotateTrans * CameraTranslationTrans;
     glUniformMatrix4fv(gProjection, 1, GL_TRUE, &Projection);
     glUniformMatrix4fv(gView, 1, GL_TRUE, &View);
 
+    // Matrix4f ScaleTrans, RotateTrans, TranslationTrans;
+    // ScaleTrans.InitScaleTransform(trans.Scale.x, trans.Scale.y, trans.Scale.z);
+    // RotateTrans.InitRotateTransform(trans.Rotate.x, trans.Rotate.y, trans.Rotate.z);
+    // TranslationTrans.InitTranslationTransform(trans.WorldPos.x, trans.WorldPos.y, trans.WorldPos.z);
+    // Matrix4f Model = TranslationTrans * RotateTrans * ScaleTrans;
+    // Model = PersProjTrans * View * Model;
+    // glUniformMatrix4fv(gModel, 1, GL_TRUE, &Model);
+
+
+    // aiMatrix4x4 TranslationMatrix;
+    // aiMatrix4x4 RotationMatrixX, RotationMatrixY, RotationMatrixZ;
+    // aiMatrix4x4 scaleMatrix;
+
+    // aiMatrix4x4::Translation(aiVector3D(trans.WorldPos.x, trans.WorldPos.y, trans.WorldPos.z), TranslationMatrix);
+
+    // aiMatrix4x4::RotationX(ToRadian(trans.Rotate.x), RotationMatrixX);
+    // aiMatrix4x4::RotationY(ToRadian(trans.Rotate.y), RotationMatrixY);
+    // aiMatrix4x4::RotationZ(ToRadian(trans.Rotate.z), RotationMatrixZ);
+
+    // aiMatrix4x4::Scaling(aiVector3D(trans.GetScale().x, trans.GetScale().y, trans.GetScale().z), scaleMatrix);
+
+    // Matrix4f gWorld (TranslationMatrix * RotationMatrixZ * RotationMatrixY * RotationMatrixX * scaleMatrix);
+    // glUniformMatrix4fv(gModel, 1, GL_TRUE, &gWorld);
+
     std::vector<aiMatrix4x4> Transforms;
+    bool first = true;
+    static std::chrono::steady_clock::time_point m_currentTime;
+    if (first) {
+        m_currentTime = std::chrono::steady_clock::now();
+        first = !first;
+    }
     BoneTransform(GameManager::Time.GetCurrentTime(), Transforms);
 
     for (unsigned int i = 0; i < m_NumBones; i++) 

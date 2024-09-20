@@ -11,11 +11,11 @@
 #define SCALE 2
 #define UP 2
 
-uniform mat4 gWorld;
-
 uniform vec3 object[3];
 uniform vec3 cameraParams[3];
 uniform float PersProjParams[5];
+
+uniform mat4 gWorld;
 
 layout (location = 0) in vec3 aPosition;
 layout (location = 1) in vec2 aTexCoord;

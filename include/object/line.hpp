@@ -4,10 +4,10 @@
 class line : public Sprite
 {
 public:
-    line(const std::string &_name, const objectTransform &_trans, const Vector3<GLfloat> _color);
-    line(const std::string &_name, const Vector3<GLfloat> _color);
+    line(const std::string &_name, const objectTransform &_trans, const glm::vec3 _color);
+    line(const std::string &_name, const glm::vec3 _color);
 
-    void setPoints(const Vector3<GLfloat> &_start, const Vector3<GLfloat> &_end);
+    void setPoints(const glm::vec3 &_start, const glm::vec3 &_end);
     static void initializeGeometry();
     struct GeometryInfo *GetGeometry() override;
 

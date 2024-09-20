@@ -4,16 +4,16 @@ Actor::Actor(const std::string &path, const size_t SkeletSize)
     : animationInfo(SkeletSize)
 {
     loadActor(path);
-    transform.Rotate = Vector3<GLfloat>(0.0, 0.0, 180);
+    transform.Rotate = glm::vec3(0.0, 0.0, 180);
 
     #if MY_ACTOR_TEST
-    spherePos = new Vector3<GLfloat>[SkeletSize]();
+    spherePos = new glm::vec3[SkeletSize]();
 
     mySphere = sphere<10>(std::string("mySphere"), "shaders/sphere_fs.glsl", "shaders/sphere_vs.glsl", nullptr);
-    sphereTransform.Rotate = Vector3<GLfloat>(0.0, 0.0, 0.0);
-    sphereTransform.Scale = Vector3<GLfloat>(0.1, 0.2, 0.1);
+    sphereTransform.Rotate = glm::vec3(0.0, 0.0, 0.0);
+    sphereTransform.Scale = glm::vec3(0.1, 0.2, 0.1);
     
-    myLine = line(std::string("myLine"), Vector3<GLfloat>(1.0, 0.0, 0.0));
+    myLine = line(std::string("myLine"), glm::vec3(1.0, 0.0, 0.0));
     #endif
 }
 
@@ -55,10 +55,10 @@ std::vector<Component*> Actor::getActorComponents(const Bone &_parent, size_t &n
 
         animationInfo.components[n].transform = component_Num;
 
-        Vector3<GLfloat> direction = Vector3<GLfloat>(cos(ToRadian(parentFlipAngle)), sin(ToRadian(parentFlipAngle)), 0.0f); // размещение в координатах родительского спрайта
+        glm::vec3 direction = glm::vec3(cos(ToRadian(parentFlipAngle)), sin(ToRadian(parentFlipAngle)), 0.0f); // размещение в координатах родительского спрайта
         animationInfo.components[n].transform.Move(component.WorldPos.x * ParentSprite.Scale.x, direction);
         parentFlipAngle += 90;
-        direction = Vector3<GLfloat>(cos(ToRadian(parentFlipAngle)), sin(ToRadian(parentFlipAngle)), 0.0f);
+        direction = glm::vec3(cos(ToRadian(parentFlipAngle)), sin(ToRadian(parentFlipAngle)), 0.0f);
         animationInfo.components[n].transform.Move(component.WorldPos.y * ParentSprite.Scale.y, direction);
 
         #if MY_ACTOR_TEST
@@ -73,10 +73,10 @@ std::vector<Component*> Actor::getActorComponents(const Bone &_parent, size_t &n
         render->PushGeometry(Sprite().GetGeometry());
         #endif
 
-        direction = Vector3<GLfloat>(cos(ToRadian(flipAngle)), sin(ToRadian(flipAngle)), 0.0f); // трансформация относительно anchor
+        direction = glm::vec3(cos(ToRadian(flipAngle)), sin(ToRadian(flipAngle)), 0.0f); // трансформация относительно anchor
         animationInfo.components[n].transform.Move(-animation_Num.anchorPoint.x * globalScaleX, direction);
         flipAngle += 90;
-        direction = Vector3<GLfloat>(cos(ToRadian(flipAngle)), sin(ToRadian(flipAngle)), 0.0f);
+        direction = glm::vec3(cos(ToRadian(flipAngle)), sin(ToRadian(flipAngle)), 0.0f);
         animationInfo.components[n].transform.Move(-animation_Num.anchorPoint.y * globalScaleY, direction);
 
         ActorComponents.push_back(&animationInfo.components[n]);
@@ -147,7 +147,7 @@ void Actor::parseNodeAnimation(pugi::xml_node &nodeAnimation, const std::string 
     }
 
     objectTransform _transform;
-    Vector3<GLfloat> v;
+    glm::vec3 v;
 
     v.x = std::stof(nodeAnimation.attribute("x").value());
     v.y = std::stof(nodeAnimation.attribute("y").value());
@@ -184,7 +184,7 @@ bool Actor::loadActor(const std::string &path)
         return false;
     }
 
-    Vector3<GLfloat> v;
+    glm::vec3 v;
 
     v.x = std::stof(doc.child("character").child("objectTransform").child("worldPos").attribute("x").value());
     v.y = std::stof(doc.child("character").child("objectTransform").child("worldPos").attribute("y").value());
@@ -207,22 +207,22 @@ objectTransform *Actor::GetTransform()
     return &transform;
 }
 
-Vector3<GLfloat> Actor::GetDirection() const
+glm::vec3 Actor::GetDirection() const
 {
     return direction;
 }
 
-void Actor::SetDirection(const Vector3<GLfloat> &_direction)
+void Actor::SetDirection(const glm::vec3 &_direction)
 {
     direction = _direction;
 }
 
-//Vector3<GLfloat> Actor::GetTarget() const
+//glm::vec3 Actor::GetTarget() const
 //{
 //    return target;
 //}
 //
-//void Actor::SetTarget(const Vector3<GLfloat> &_target)
+//void Actor::SetTarget(const glm::vec3 &_target)
 //{
 //    target = _target;
 //}
@@ -241,13 +241,13 @@ std::string Actor::GetAnimation(const float CurrentTime)
 {
     switch (state) {
     case STATE::STAND:
-        if (direction.Length() != 0) {
+        if (glm::length(direction) != 0) {
             SetState(STATE::GO, CurrentTime);
         }
         return std::string("stand");
 
     case STATE::GO: 
-        if (direction.Length() == 0) {
+        if (glm::length(direction) == 0) {
             SetState(STATE::STAND, CurrentTime);
         }
         // return std::string("stand_2");

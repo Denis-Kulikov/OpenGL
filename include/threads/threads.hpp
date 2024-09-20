@@ -11,7 +11,7 @@
 class RenderThread {
 public:
     RenderThread(std::atomic<bool>* endTickPtr);
-    void pushSprite(const std::pair<Matrix4f<GLfloat>, Sprite*>& ComponentSprite);
+    void pushSprite(const std::pair<Matrix4f, Sprite*>& ComponentSprite);
     void job();
     void setEnd();
 
@@ -20,7 +20,7 @@ private:
     void popActor();
     void swapBuffer();
 
-    std::stack<std::pair<Matrix4f<GLfloat>, Sprite*>> sprites;
+    std::stack<std::pair<Matrix4f, Sprite*>> sprites;
     std::mutex mutex;
     std::atomic<bool> endTicks;
     std::atomic<bool>* sceneEndTickPtr = nullptr;

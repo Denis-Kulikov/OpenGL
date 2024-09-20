@@ -29,9 +29,9 @@ Camera *GameManager::createCamera()
         exit(EXIT_FAILURE);
     }
 
-    Vector3<GLfloat> CameraPos(0.0f, 0.0f, 0.0f);
-    Vector3<GLfloat> CameraTarget(0.0f, 0.0f, 1.0f);
-    Vector3<GLfloat> CameraUp(0.0f, 1.0f, 0.0f);
+    glm::vec3 CameraPos(0.0f, 0.0f, 0.0f);
+    glm::vec3 CameraTarget(0.0f, 0.0f, 1.0f);
+    glm::vec3 CameraUp(0.0f, 1.0f, 0.0f);
 
     camera->SetCamera(CameraPos, CameraTarget, CameraUp);
     camera->SetPerspectiveProj(70.0f, width, height, 0.5f, 1000.0f);
@@ -87,7 +87,7 @@ void GameManager::KeyboardCB(GLFWwindow* window, int key, int scancode, int acti
         GameManager::IsEnd = true;
     }
 
-    player->SetDirection(Vector3<GLfloat>(
+    player->SetDirection(glm::vec3(
         keys[GLFW_KEY_D] - keys[GLFW_KEY_A], 
         keys[GLFW_KEY_SPACE] - keys[GLFW_KEY_LEFT_CONTROL],
         keys[GLFW_KEY_S] - keys[GLFW_KEY_W]
@@ -104,13 +104,9 @@ void GameManager::UpdateCamera()
     Character& player = *callbackData.player;
     Camera& camera = *callbackData.camera;
 
-    // player.SetYaw(player.GetYaw() + yaw_speed * buttons.yaw * Time.GetDeltaTime());
-    // player.SetPitch(player.GetPitch() + pitch_speed * buttons.pitch * Time.GetDeltaTime());
-    // if (fabs(player.GetPitch()) > pitch_limit) player.SetPitch(std::copysign(pitch_limit - 1e-3, player.GetPitch()));
-
-    camera.Params.Target.x = -cos(ToRadian(player.GetYaw()));
-    camera.Params.Target.z = -sin(ToRadian(player.GetYaw()));
-    camera.Params.Target.y = tan(ToRadian(player.GetPitch()));
+    camera.Params.Target.x = -cos(glm::radians(player.GetYaw()));
+    camera.Params.Target.z = -sin(glm::radians(player.GetYaw()));
+    camera.Params.Target.y = tan(glm::radians(player.GetPitch()));
     camera.PersProj.FOV = pitch_limit - fabs(player.GetPitch());
 }
 

@@ -8,22 +8,21 @@ class Pawn : public Actor
 public:
     Pawn(const std::string &path, const size_t SkeletSize);
 
-    void Teleport(const Vector3<GLfloat> newPosition);
-    void Move(const Vector3<GLfloat> offset);
-    void Move(const GLfloat distance, const Vector3<GLfloat> direction);
+    void Teleport(const glm::vec3 newPosition);
+    void Move(const glm::vec3 offset);
+    void Move(const GLfloat distance, const glm::vec3 direction);
     void MoveForward(const GLfloat distance);
     void MoveForward();
-    
-    template<typename T>
-    void MoveTowards(T* targetPawn, GLfloat speed) {
-        Vector3<GLfloat> direction = targetPawn->GetTransform()->WorldPos - this->trans.WorldPos;
-        Move(speed, direction);
+    void MoveTowards(const glm::vec3 target_pos, GLfloat speed) {
+        // glm::vec3 direction = target_pos - this->GetTransform()->WorldPos;
+        // direction.Normalize();
+        // Move(speed, direction);
     }
 
-    void Rotate(const Vector3<GLfloat> _rotate);
-    void AddRotate(const Vector3<GLfloat> _rotate);
-    void SetScale(const Vector3<GLfloat> _scale);
-    void MultiplyScale(const Vector3<GLfloat> _scale);
+    void Rotate(const glm::vec3 _rotate);
+    void AddRotate(const glm::vec3 _rotate);
+    void SetScale(const glm::vec3 _scale);
+    void MultiplyScale(const glm::vec3 _scale);
     GLfloat GetSpeed() const;
     GLfloat GetYaw() const;
     GLfloat GetPitch() const;

@@ -13,7 +13,7 @@ public:
     void SetCamera(Camera *_camera);
     void clearRender();
     void PushGeometry(struct GeometryInfo *geometry);
-    void drawObject(Matrix4f<GLfloat>& matrix, Sprite *sprite);
+    void drawObject(Matrix4f& matrix, Sprite *sprite);
     void drawSkybox(Cube &skybox);
 
     Pipeline pipeline;

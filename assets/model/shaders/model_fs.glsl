@@ -14,17 +14,7 @@ struct DirectionalLight {
     float DiffuseIntensity;
 };
 
-struct PointLight {
-    vec3 Position;
-    vec3 Color;
-    float AmbientIntensity;
-    float DiffuseIntensity;
-    float Constant;
-    float Linear;
-    float Exp;
-};
 
-uniform PointLight gPointLights[1];
 uniform DirectionalLight gDirectionalLight;
 uniform vec3 gEyeWorldPos;
 uniform sampler2D gTextureSampler;
@@ -53,19 +43,6 @@ vec4 CalcLightInternal(vec3 Color, float AmbientIntensity, float DiffuseIntensit
     return (AmbientColor + DiffuseColor + SpecularColor);
 }
 
-vec4 CalcPointLight(int Index, vec3 Normal) {
-    vec3 LightDirection = WorldPos0 - gPointLights[Index].Position;
-    float Distance = length(LightDirection);
-    LightDirection = normalize(LightDirection);
- 
-    vec4 Color = CalcLightInternal(gPointLights[Index].Color, gPointLights[Index].AmbientIntensity, gPointLights[Index].DiffuseIntensity, LightDirection, Normal);
-    float Attenuation =  gPointLights[Index].Constant +
-                         gPointLights[Index].Linear * Distance +
-                         gPointLights[Index].Exp * Distance * Distance;
- 
-    return Color / Attenuation;
-}
-
 vec4 CalcDirectionalLight(vec3 Normal) {
     return CalcLightInternal(gDirectionalLight.Color, gDirectionalLight.AmbientIntensity, gDirectionalLight.DiffuseIntensity, gDirectionalLight.Direction, Normal);
 }
@@ -88,13 +65,10 @@ vec3 CalcBumpedNormal()
 
 
 void main() {
-    int gNumPointLights = 1;
     vec3 Normal = CalcBumpedNormal();
     Normal = normalize(Normal0);
     vec4 TotalLight = CalcDirectionalLight(Normal);
-    for (int i = 0; i < gNumPointLights; i++) {
-        TotalLight += CalcPointLight(i, Normal);
-    }
+
 
     FragColor = texture(gTextureSampler, TexCoord0.xy) * TotalLight;
 }
