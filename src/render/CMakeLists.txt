@@ -13,11 +13,9 @@ if(WIN32)
         glew32
         opengl32
 	assimp-vc143-mtd
-	pugixml
         lib-threads
+	lib-mobs
         lib-playable
-        lib-mobs
-        lib-decor
     )
 else()
     target_link_libraries(${target}
@@ -25,10 +23,8 @@ else()
         glfw
         GL
         GLEW
-	pugixml
         lib-threads
+	lib-mobs
         lib-playable
-        lib-mobs
-        lib-decor
     )
 endif()

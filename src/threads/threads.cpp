@@ -2,6 +2,7 @@
 #include <game/gameManager.hpp> 
 #include <mesh/mesh.hpp> 
 
+#include <entities/templates/mobs/Female.hpp>
 
 RenderThread::RenderThread(std::atomic<bool>* endTickPtr)
     : sceneEndTickPtr(endTickPtr)
@@ -15,8 +16,8 @@ void RenderThread::job() {
 
 void RenderThread::callback() {
     static Cube cube("img/skybox.png");
-    static Mesh model(std::string("assets/model/female/female.glb"));
     static Sprite sprite("floor", "shaders/sprite_fs.glsl","shaders/sprite_vs.glsl", "img/grass.png");
+    static Female female;
     objectTransform transform;
 
     float scale = 5;
@@ -26,7 +27,7 @@ void RenderThread::callback() {
         transform.SetRotate(0.0, 0.0, 0.0);
         transform.MultiplyScale(glm::vec3(scale, scale, scale));
 
-        model.set_transform(transform);
+        female.GetMesh()->set_transform(transform);
         
         transform.MultiplyScale(glm::vec3(1/scale, 1/scale, 1/scale));
         flag = !flag;
@@ -46,12 +47,14 @@ void RenderThread::callback() {
             return;
         }
 
+        std::vector<aiMatrix4x4> *Transforms = new std::vector<aiMatrix4x4>;
+        female.GetMesh()->BoneTransform(GameManager::Time.GetCurrentTime(), *Transforms);
         GameManager::render->clearRender();
-        model.Render((transform));
+        Actor::Actor_rdata data = {Transforms, female.GetMesh()};
+        female.Render(&data);
         GameManager::render->clearRender();
 
-        GameManager::render->PushGeometry(sprite.GetGeometry());
-        GameManager::render->drawObject(GameManager::render->pipeline.GetTransform(transform), &sprite);
+        // sprite.Render(&GameManager::render->pipeline.GetTransform(transform));
 
         endTicks = false;
         *sceneEndTickPtr = true;
@@ -67,7 +70,6 @@ void RenderThread::callback() {
         std::pair<Matrix4f, Sprite*> sprite = sprites.top();
         sprites.pop();
         mutex.unlock();
-        GameManager::render->drawObject(sprite.first, sprite.second);
 
         endWorkTime = std::chrono::high_resolution_clock::now();
         workDuration += endWorkTime - startWorkTime;
@@ -114,13 +116,13 @@ void ComponentsThread::callback() {
         Actor* actor = actors.top();
         actors.pop();
         mutex.unlock();
-        for (auto& it : actor->getActorComponents()) {
-            renderThread.pushSprite(
-                std::pair<Matrix4f, Sprite *>(
-                    GameManager::render->pipeline.GetTransform(it->transform), it->sprite
-                )
-            );
-        }
+        //for (auto& it : actor->getActorComponents()) {
+        //    renderThread.pushSprite(
+        //        std::pair<Matrix4f, Sprite *>(
+        //            GameManager::render->pipeline.GetTransform(it->transform), it->sprite
+        //        )
+        //    );
+        //}
 
         endWorkTime = std::chrono::high_resolution_clock::now();
         workDuration += endWorkTime - startWorkTime;
@@ -178,7 +180,7 @@ void SceneThread::callback() {
     std::this_thread::sleep_until(frameStart + frameDuration);
     frameStart = std::chrono::steady_clock::now();
     GameManager::Time.Update();
-    Actor::PushTime(GameManager::Time.GetCurrentTime());
+    GameManager::render->GetPV();
 
     static time_t prev = time(0);
     static int frame = 0;
@@ -186,9 +188,6 @@ void SceneThread::callback() {
 
     for (auto& it : scene->actors) {
         (reinterpret_cast<Pawn*>(it))->MoveForward();
-        // (reinterpret_cast<Pawn*>(it))->SetYaw(it->GetTransform()->GetRotateTowards(glm::vec3(0.0f, 0.0f, -10.0f)));
-        // (reinterpret_cast<Pawn*>(it))->MoveTowards();
-        // it->updateAnimation(it->GetAnimation(GameManager::Time.GetCurrentTime()));
         // componentsThread.pushActor(it);
     }
     GameManager::UpdateCamera();

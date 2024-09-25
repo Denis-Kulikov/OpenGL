@@ -4,7 +4,6 @@
 #include "circle.hpp"
 #include "line.hpp"
 #include "cube_bone.hpp"
-#include "../entities/components/component.hpp"
 #include "../entities/actor.hpp"
 
 class Scene 
@@ -14,6 +13,10 @@ public:
     ~Scene() {
         for (auto& it : actors) delete it;
     };
-    void pushActor(Actor* actor) { actors.push_back(actor); };
+    void pushObject(Actor* actor) { actors.push_back(actor); };
+    void pushObject(Sprite* sprite) { sprites.push_back(sprite); };
+    
     std::vector<Actor*> actors;
+    std::vector<Sprite*> sprites;
+    Cube *skybox;
 };

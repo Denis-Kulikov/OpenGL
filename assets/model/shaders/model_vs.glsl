@@ -14,7 +14,6 @@ out vec3 Tangent0;
 uniform mat4 gBones[128];
 uniform mat4 Projection;
 uniform mat4 View;
-uniform mat4 Model;
 
 void main()
 {

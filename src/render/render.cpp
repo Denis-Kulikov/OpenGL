@@ -97,3 +97,12 @@ void Render::drawSkybox(Cube &skybox)
     glCullFace(OldCullFaceMode);
     glDepthFunc(OldDepthFuncMode);
 }
+
+void Render::GetPV() {
+    Matrix4f CameraTranslationTrans, CameraRotateTrans;
+    CameraTranslationTrans.InitTranslationTransform(-pipeline.camera->GetPosition().x, -pipeline.camera->GetPosition().y, -pipeline.camera->GetPosition().z);
+    CameraRotateTrans.InitCameraTransform(pipeline.camera->Params.Target, pipeline.camera->Params.Up);
+    View = CameraRotateTrans * CameraTranslationTrans;
+
+    PersProjTrans.InitPersProjTransform(pipeline.camera->PersProj.FOV, pipeline.camera->PersProj.Width, pipeline.camera->PersProj.Height, pipeline.camera->PersProj.zNear, pipeline.camera->PersProj.zFar);
+}

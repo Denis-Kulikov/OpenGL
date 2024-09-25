@@ -15,9 +15,13 @@ public:
     void PushGeometry(struct GeometryInfo *geometry);
     void drawObject(Matrix4f& matrix, Sprite *sprite);
     void drawSkybox(Cube &skybox);
+    void GetPV();
 
     Pipeline pipeline;
 
     GLuint shader = 0;
     GLuint texture = 0;
+
+    Matrix4f PersProjTrans;
+    Matrix4f View;
 };

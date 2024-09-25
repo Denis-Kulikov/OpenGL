@@ -1,5 +1,6 @@
 #pragma once
 #include "objectTransform.hpp"
+#include "../object/renderableObject.hpp"
 
 struct GeometryInfo {
     GLuint VAO = 0;
@@ -10,12 +11,18 @@ struct GeometryInfo {
     GLint numIndices = 0;
 };
 
-class Sprite
+class Sprite : public RenderableObject
 {
 public:
     Sprite(const std::string &_name, const char *FS, const char *VS, const char *texturePath);
     static void initializeGeometry();
     virtual struct GeometryInfo *GetGeometry();
+
+    struct Sprite_rdata {
+        Matrix4f matrix;
+    };
+
+    virtual void Render(void *RenderData) const override;
 
     std::string name;
     glm::vec3 Scale;
