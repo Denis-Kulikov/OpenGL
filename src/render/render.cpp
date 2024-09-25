@@ -91,7 +91,8 @@ void Render::drawSkybox(Cube &skybox)
     skybox_transform.SetRotate(glm::vec3(0.0, 90.0, 180));
     
     glDepthMask(GL_FALSE);
-    drawObject(pipeline.GetTransform(skybox_transform), &skybox);
+    auto mat4x4 = pipeline.GetTransform(skybox_transform);
+    drawObject(mat4x4, &skybox);
     glDepthMask(GL_TRUE);
 
     glCullFace(OldCullFaceMode);
