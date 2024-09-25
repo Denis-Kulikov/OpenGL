@@ -132,7 +132,7 @@ Mesh::MeshEntry::~MeshEntry() {}
 Mesh::Mesh(const std::string& Filename)
 {
     LoadMesh(Filename);
-    compileShaders("assets\\model\\shaders\\model_fs.glsl", "assets\\model\\shaders\\model_vs.glsl");
+    compileShaders("assets/model/shaders/model_fs.glsl", "assets/model/shaders/model_vs.glsl");
 }
 
 Mesh::~Mesh() {}

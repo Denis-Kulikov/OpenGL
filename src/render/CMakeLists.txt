@@ -23,6 +23,7 @@ else()
         glfw
         GL
         GLEW
+        assimp
         lib-threads
 	lib-mobs
         lib-playable

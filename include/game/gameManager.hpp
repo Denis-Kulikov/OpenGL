@@ -41,10 +41,11 @@ public:
 
         float lastX = 400, lastY = 300;
 
+        bool cursor_disable = true;
         bool firstMouse = true;
     };
 
-    inline static Buttons buttons = {0, 0, 400, 300, true};
+    inline static Buttons buttons = {0, 0, 400, 300, true, true};
     inline static GameTime Time;
     inline static SceneThread* threads = nullptr;
     inline static Render* render = nullptr;

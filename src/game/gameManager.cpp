@@ -56,6 +56,8 @@ void GameManager::MouseCB(GLFWwindow* window, double xpos, double ypos) {
     buttons.lastX = xpos;
     buttons.lastY = ypos;
 
+    if (!buttons.cursor_disable) return;
+
     xOffset *= sensitivity * Time.GetDeltaTime();
     yOffset *= sensitivity * Time.GetDeltaTime();
 
@@ -85,6 +87,14 @@ void GameManager::KeyboardCB(GLFWwindow* window, int key, int scancode, int acti
     if (keys[GLFW_KEY_F]) {
         glfwSetWindowShouldClose(window, GLFW_TRUE);
         GameManager::IsEnd = true;
+    }
+
+    if ((keys[GLFW_KEY_LEFT_ALT] || keys[GLFW_KEY_RIGHT_ALT]) && buttons.cursor_disable) {
+        buttons.cursor_disable = !buttons.cursor_disable;
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+    } else if (!buttons.cursor_disable) {
+        buttons.cursor_disable = !buttons.cursor_disable;
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     }
 
     player->SetDirection(glm::vec3(
@@ -122,6 +132,8 @@ void GameManager::InitializeGLFW(int _width, int _height)
         exit(EXIT_FAILURE);
     }
 
+
+    glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
