@@ -21,19 +21,19 @@ public:
     glm::vec3 GetRotate() const;
     glm::vec3 GetScale() const;
 
-    void SetWorldPos(const GLfloat &WorldPosX, const GLfloat &WorldPosY, const GLfloat &WorldPosZ);
+    void SetWorldPos(const GLfloat X, const GLfloat Y, const GLfloat Z);
     void SetWorldPos(const glm::vec3 &v_WorldPos);
 
     float GetRotateTowards(const glm::vec3 &target_pos);
-    void SetRotate(const GLfloat &RotateX, const GLfloat &RotateY, const GLfloat &RotateZ);
+    void SetRotate(const GLfloat X, const GLfloat Y, const GLfloat Z);
     void SetRotate(const glm::vec3 &v_Rotate);
     
-    void SetScale(const GLfloat &ScaleX, const GLfloat &ScaleY, const GLfloat &ScaleZ);
+    void SetScale(const GLfloat X, const GLfloat Y, const GLfloat Z);
     void SetScale(const glm::vec3 &v_Scale);
 
     void SetTransform(const objectTransform &trans);
 
-    void Move(const GLfloat &X, const GLfloat &Y, const GLfloat &Z);
+    void Move(const GLfloat X, const GLfloat Y, const GLfloat Z);
     void Move(const glm::vec3 offset);
     void Move(const GLfloat distance, const glm::vec3 direction);
     void MoveForward(const GLfloat distance, const enum AXES axis);

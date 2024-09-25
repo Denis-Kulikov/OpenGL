@@ -91,9 +91,19 @@ void Render::drawSkybox(Cube &skybox)
     skybox_transform.SetRotate(glm::vec3(0.0, 90.0, 180));
     
     glDepthMask(GL_FALSE);
-    drawObject(pipeline.GetTransform(skybox_transform), &skybox);
+    auto mat4x4 = pipeline.GetTransform(skybox_transform);
+    drawObject(mat4x4, &skybox);
     glDepthMask(GL_TRUE);
 
     glCullFace(OldCullFaceMode);
     glDepthFunc(OldDepthFuncMode);
+}
+
+void Render::GetPV() {
+    Matrix4f CameraTranslationTrans, CameraRotateTrans;
+    CameraTranslationTrans.InitTranslationTransform(-pipeline.camera->GetPosition().x, -pipeline.camera->GetPosition().y, -pipeline.camera->GetPosition().z);
+    CameraRotateTrans.InitCameraTransform(pipeline.camera->Params.Target, pipeline.camera->Params.Up);
+    View = CameraRotateTrans * CameraTranslationTrans;
+
+    PersProjTrans.InitPersProjTransform(pipeline.camera->PersProj.FOV, pipeline.camera->PersProj.Width, pipeline.camera->PersProj.Height, pipeline.camera->PersProj.zNear, pipeline.camera->PersProj.zFar);
 }

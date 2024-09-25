@@ -16,11 +16,11 @@ glm::vec3 objectTransform::GetRotate() const
 }
 
 
-void objectTransform::SetScale(const GLfloat &ScaleX, const GLfloat &ScaleY, const GLfloat &ScaleZ)
+void objectTransform::SetScale(const GLfloat X, const GLfloat Y, const GLfloat Z)
 {
-    Scale.x = ScaleX;
-    Scale.y = ScaleY;
-    Scale.z = ScaleZ;
+    Scale.x = X;
+    Scale.y = Y;
+    Scale.z = Z;
 }
 
 void objectTransform::SetScale(const glm::vec3 &v_Scale)
@@ -31,11 +31,11 @@ void objectTransform::SetScale(const glm::vec3 &v_Scale)
 }
 
 
-void objectTransform::SetWorldPos(const GLfloat &WorldPosX, const GLfloat &WorldPosY, const GLfloat &WorldPosZ)
+void objectTransform::SetWorldPos(const GLfloat X, const GLfloat Y, const GLfloat Z)
 {
-    WorldPos.x = WorldPosX;
-    WorldPos.y = WorldPosY;
-    WorldPos.z = WorldPosZ;
+    WorldPos.x = X;
+    WorldPos.y = Y;
+    WorldPos.z = Z;
 }
 
 void objectTransform::SetWorldPos(const glm::vec3 &v_WorldPos)
@@ -53,17 +53,16 @@ float objectTransform::GetRotateTowards(const glm::vec3 &target_pos)
     direction.z = WorldPos.z - target_pos.z;
 
     direction = glm::normalize(direction);
-    // glm::vec3 forward = glm::vec3(1.0f, 0.0f, 0.0f);
     float angle = glm::degrees(atan2(direction.z, direction.x));
 
     return angle;
 }
 
-void objectTransform::SetRotate(const GLfloat &RotateX, const GLfloat &RotateY, const GLfloat &RotateZ)
+void objectTransform::SetRotate(const GLfloat X, const GLfloat Y, const GLfloat Z)
 {
-    Rotate.x = RotateX;
-    Rotate.y = RotateY;
-    Rotate.z = RotateZ;
+    Rotate.x = X;
+    Rotate.y = Y;
+    Rotate.z = Z;
 }
 
 void objectTransform::SetRotate(const glm::vec3 &v_Rotate)
@@ -81,7 +80,7 @@ void objectTransform::SetTransform(const objectTransform &trans)
     SetWorldPos(trans.GetWorldPos());
 }
 
-void objectTransform::Move(const GLfloat &X, const GLfloat &Y, const GLfloat &Z)
+void objectTransform::Move(const GLfloat X, const GLfloat Y, const GLfloat Z)
 {
     SetWorldPos(WorldPos.x + X, WorldPos.y + Y, WorldPos.z + Z);
 }
@@ -92,9 +91,9 @@ void objectTransform::Move(const glm::vec3 offset) {
 
 void objectTransform::Move(const GLfloat distance, const glm::vec3 direction) {
     glm::vec3 offset = direction;
-    if (glm::length(offset) != 0) {
-        glm::normalize(offset);
-    }
+    if (glm::length(offset) != 0) 
+        offset = glm::normalize(offset);
+
     offset *= distance;
     Move(offset);
 }

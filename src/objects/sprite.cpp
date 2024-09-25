@@ -1,3 +1,4 @@
+#include <game/gameManager.hpp>
 #include <object/sprite.hpp>
 
 #include <stb_image.h>
@@ -29,6 +30,26 @@ Sprite::Sprite(const std::string &_name, const char *FS, const char *VS, const c
         texturesMap[std::string(texturePath)] = texture;
     }
 }
+
+void Sprite::Render(void *RenderData) const {
+    if (GameManager::render->pipeline.camera == nullptr) {
+        std::cout << "Error Render: not found camera" << std::endl;
+        return;
+    }
+
+    GameManager::render->PushGeometry(&geometryInfo);
+
+    glUseProgram(shader);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glUniform1i(gTextureSamplerLocation, 0);
+
+    if (gColorLocation != 0xFFFFFFFF) glUniform3f(gColorLocation, color.x, color.y, color.z);
+    glUniformMatrix4fv(gWorldLocation, 1, GL_TRUE, &static_cast<Sprite_rdata*>(RenderData)->matrix);
+
+    glDrawElements(GL_TRIANGLES, geometryInfo.numIndices, GL_UNSIGNED_INT, 0);
+}
+
 
 struct GeometryInfo *Sprite::GetGeometry()
 {

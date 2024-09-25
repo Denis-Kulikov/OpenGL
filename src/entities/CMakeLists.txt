@@ -1,4 +1,3 @@
-add_subdirectory(components)
 add_subdirectory(templates)
 
 set(target lib-entities)
@@ -13,5 +12,5 @@ add_library(${target} STATIC
 target_link_libraries(
   ${target}
   PRIVATE	
-	lib-components
+	lib-mesh
 )

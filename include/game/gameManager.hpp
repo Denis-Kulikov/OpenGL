@@ -39,11 +39,13 @@ public:
         int yaw = 0;
         int pitch = 0;
 
-        bool firstMouse = true;
         float lastX = 400, lastY = 300;
+
+        bool cursor_disable = true;
+        bool firstMouse = true;
     };
 
-    inline static Buttons buttons;
+    inline static Buttons buttons = {0, 0, 400, 300, true, true};
     inline static GameTime Time;
     inline static SceneThread* threads = nullptr;
     inline static Render* render = nullptr;

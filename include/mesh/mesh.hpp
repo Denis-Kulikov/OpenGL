@@ -16,6 +16,10 @@ typedef struct stb_img_struct {
 } stb_img;
 
 struct Texture {
+    Texture(const GLuint id, const std::string &n)
+        : texture(id), name(n) {}
+    Texture(const GLuint id)
+        : texture(id) {}
     Texture(const stb_img& img, const std::string &n);
     Texture(const stb_img& img);
 
@@ -30,9 +34,10 @@ public:
     Mesh(const std::string& Filename);
     ~Mesh();
  
+    void BoneTransform(float TimeInSeconds, std::vector<aiMatrix4x4>& Transforms);
     void set_transform(const objectTransform &transform);
     bool LoadMesh(const std::string& Filename);
-    void Render(objectTransform &trans);
+    void Render(std::vector<aiMatrix4x4> *Transforms);
 
 #define INVALID_MATERIAL 0xFFFFFFFF
 #define NUM_BONES_PER_VEREX 4
@@ -72,19 +77,6 @@ enum VB_TYPES {
         Texture *spc;
         Texture *lmp;
     };
- 
-    struct MaterialUniforms {
-        GLuint Color;
-        GLuint AmbientIntensity;
-        GLuint DiffuseIntensity;
-        GLuint Position;
-        struct
-        {
-            GLuint Constant;
-            GLuint Linear;
-            GLuint Exp;
-        } Atten;
-    };
 
     struct VertexBoneData {
         void AddBoneData(unsigned int BoneID, float Weight);
@@ -106,7 +98,7 @@ enum VB_TYPES {
 
 
 private:
-    void push_uniforms(objectTransform &trans);
+    void push_uniforms();
 
     unsigned int FindPosition(float AnimationTime, const aiNodeAnim* pNodeAnim);
     unsigned int FindRotation(float AnimationTime, const aiNodeAnim* pNodeAnim);
@@ -119,7 +111,6 @@ private:
     const aiNodeAnim* FindNodeAnim(const aiAnimation* pAnimation, const std::string NodeName);
 
     void ReadNodeHeirarchy(float AnimationTime, const aiNode* pNode, const aiMatrix4x4& ParentTransform);
-    void BoneTransform(float TimeInSeconds, std::vector<aiMatrix4x4>& Transforms);
     
     void LoadBones(unsigned int MeshIndex, const aiMesh* pMesh, std::vector<VertexBoneData>& Bones);
     GLuint loadShader(const std::string &shaderPath, GLuint type);
@@ -140,31 +131,31 @@ private:
     const aiScene* m_pScene;
     aiMatrix4x4 m_GlobalInverseTransform;
 
-    GLuint gBones;
-    GLuint gProjection;
-    GLuint gView;
-    GLuint gModel;
+    GLuint gBones = 0;
+    GLuint gProjection = 0;
+    GLuint gView = 0;
+    GLuint gModel = 0;
 
-    GLuint gObjectLocation;
-    GLuint gCameraParamsLocation;
-    GLuint gPersProjParamsLocation;
-    
-    GLuint gWVP;
+    GLuint gObjectLocation = 0;
+    GLuint gCameraParamsLocation = 0;
+    GLuint gPersProjParamsLocation = 0;
 
-    GLuint shaderProgram;
-    GLuint gEyeWorldPosLocation;
-    GLuint gTextureSamplerLocation;
-    GLuint gNormalMapLocation;
-    GLuint gWorldLocation;
-    GLuint gColorLocation;
-    GLuint gDirectionLocation;
-    GLuint gAmbientIntensityLocation;
-    GLuint gDiffuseIntensityLocation;
-    GLuint gMatSpecularIntensityLocation;
-    GLuint gSpecularPowerLocation;
+    GLuint shaderProgram = 0 ;
+    GLuint gEyeWorldPosLocation = 0;
+    GLuint gTextureSamplerLocation = 0;
+    GLuint gNormalMapLocation = 0;
+    GLuint gWorldLocation = 0;
+    GLuint gColorLocation = 0;
+    GLuint gDirectionLocation = 0;
+    GLuint gAmbientIntensityLocation = 0;
+    GLuint gDiffuseIntensityLocation = 0;
+    GLuint gMatSpecularIntensityLocation = 0;
+    GLuint gSpecularPowerLocation = 0;
 
-    GLuint m_VAO;
-    GLuint m_Buffers[NUM_VBs];
+    GLuint gWVP = 0;
+
+    GLuint m_VAO = 0;
+    GLuint m_Buffers[NUM_VBs] = {0};
 
     std::vector<MeshEntry> m_Entries;
     std::vector<textures_names> m_Textures;
@@ -172,5 +163,5 @@ private:
     std::unordered_map<std::string, unsigned int> m_BoneMapping;
     std::vector<BoneInfo> m_BoneInfo;
     std::vector<VertexBoneData> Bones;
-    std::vector<MaterialUniforms*> m_material;
+    // std::vector<MaterialUniforms*> m_material;
 };

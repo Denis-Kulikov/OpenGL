@@ -1,6 +1,24 @@
+#include <game/gameManager.hpp>
 #include <object/line.hpp>
 
 struct GeometryInfo line::geometryInfo = {0, 0, 0, 0, 0};
+
+void line::Render(void *RenderData) const {
+    if (GameManager::render->pipeline.camera == nullptr) {
+        std::cout << "Error Render: not found camera" << std::endl;
+        return;
+    }
+
+    glUseProgram(shader);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glUniform1i(gTextureSamplerLocation, 0);
+
+    if (gColorLocation != 0xFFFFFFFF) glUniform3f(gColorLocation, color.x, color.y, color.z);
+    glUniformMatrix4fv(gWorldLocation, 1, GL_TRUE, &static_cast<Sprite_rdata*>(RenderData)->matrix);
+
+    glDrawArrays(GL_LINE_STRIP, 0, geometryInfo.numVertices);
+}
 
 void line::setPoints(const glm::vec3 &_start, const glm::vec3 &_end)
 {
