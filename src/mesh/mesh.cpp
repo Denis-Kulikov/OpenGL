@@ -681,6 +681,7 @@ void Mesh::Render(std::vector<aiMatrix4x4> *Transforms)
     for (unsigned int i = 0; i < m_NumBones; i++) 
         glUniformMatrix4fv(gBones + i, 1, GL_TRUE, &(*Transforms)[i][0][0]);
 
+// glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     for (unsigned int i = 0 ; i < m_Entries.size() ; i++) {
         const unsigned int MaterialIndex = m_Entries[i].MaterialIndex;
 
@@ -696,5 +697,7 @@ void Mesh::Render(std::vector<aiMatrix4x4> *Transforms)
                                  (void*)(sizeof(unsigned int) * m_Entries[i].BaseIndex), 
                                  m_Entries[i].BaseVertex);
     }
+// glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
     glBindVertexArray(0);
 }

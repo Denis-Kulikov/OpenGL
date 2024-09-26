@@ -66,6 +66,10 @@ vec3 CalcBumpedNormal()
 
 void main() {
     vec3 Normal = CalcBumpedNormal();
+
+    vec3 ToCamera = normalize(gEyeWorldPos - WorldPos0);
+    if (dot(Normal0, ToCamera) <= 0.0) discard;
+
     Normal = normalize(Normal0);
     vec4 TotalLight = CalcDirectionalLight(Normal);
 
