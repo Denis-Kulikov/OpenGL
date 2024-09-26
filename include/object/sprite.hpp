@@ -14,7 +14,7 @@ struct GeometryInfo {
 class Sprite : public RenderableObject
 {
 public:
-    Sprite(const std::string &_name, const char *FS, const char *VS, const char *texturePath);
+    Sprite(const std::string &_name, const std::string &FS, const std::string &VS, const std::string &texturePath);
     static void initializeGeometry();
     virtual struct GeometryInfo *GetGeometry();
 
@@ -28,17 +28,15 @@ public:
     glm::vec3 Scale;
     glm::vec3 color = glm::vec3(1.0, 1.0, 1.0);
 
+    Shader shader;
     GLuint texture = 0;
-    GLuint shader  = 0;
     
     GLuint gWorldLocation;
     GLuint gColorLocation;
     GLuint gTextureSamplerLocation;
 
 protected:
-    void compileShaders(const char *FS, const char *VS);
-    GLuint loadShader(const char *shaderPath, GLuint type);
-    void loadTextures(const char *texturePath);
+    void loadTextures(const std::string &texturePath);
 
     inline static struct GeometryInfo geometryInfo = {0, 0, 0, 0, 0};
 

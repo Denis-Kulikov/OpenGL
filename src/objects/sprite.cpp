@@ -5,22 +5,16 @@
 #include <stb_image_resize.h>
 
 
-Sprite::Sprite(const std::string &_name, const char *FS, const char *VS, const char *texturePath)
-    : name(_name)
+Sprite::Sprite(const std::string &_name, const std::string &FS, const std::string &VS, const std::string &texturePath)
+    : name(_name), shader(FS, VS)
 {
-    if (FS == nullptr || VS == nullptr) return;
-    auto sdr = shadersMap.find(std::string(FS) + std::string(VS));
-    if (sdr != shadersMap.end()) {
-        shader                  = sdr->second[0];
-        gWorldLocation          = sdr->second[1];
-        gColorLocation          = sdr->second[2];
-        gTextureSamplerLocation = sdr->second[3];
-    } else {
-        compileShaders(FS, VS);
-        shadersMap[std::string(FS) + std::string(VS)] = std::array<GLuint, 4>{shader, gWorldLocation, gColorLocation, gTextureSamplerLocation};
-    }
+    std::cout << shader << std::endl;
+    gWorldLocation = glGetUniformLocation(shader, "gWorld");
+    assert(gWorldLocation != 0xFFFFFFFF);
 
-    if (texturePath == nullptr) return;
+    gColorLocation = glGetUniformLocation(shader, "gColor");
+    gTextureSamplerLocation = glGetUniformLocation(shader, "textureSampler");
+
 
     auto txr = texturesMap.find(std::string(texturePath));
     if (txr != texturesMap.end()) {
@@ -56,94 +50,8 @@ struct GeometryInfo *Sprite::GetGeometry()
     return &geometryInfo;
 }
 
-void Sprite::compileShaders(const char *FS, const char *VS)
+void Sprite::loadTextures(const std::string &texturePath)
 {
-    if (shader == 0) 
-        shader = glCreateProgram();
-
-    GLuint fragmentShader;
-    GLuint vertexShader;
-
-    if (FS != nullptr) {
-        fragmentShader = loadShader(FS, GL_FRAGMENT_SHADER);
-        glAttachShader(shader, fragmentShader);
-        if (VS == nullptr) return;
-    }
-    if (VS != nullptr) {
-        vertexShader = loadShader(VS, GL_VERTEX_SHADER);
-        glAttachShader(shader, vertexShader);
-    }
-
-    glLinkProgram(shader);
-
-    GLint ok;
-    GLchar log[2000];
-    glGetProgramiv(shader, GL_LINK_STATUS, &ok);
-    if (!ok) {
-        glGetProgramInfoLog(shader, 2000, NULL, log);
-        std::cout << "Shader " << name << " compilation Log:\n" << log << std::endl;
-    
-        if (FS != nullptr) {
-            GLint infoLogLength;
-            glGetShaderiv(fragmentShader, GL_INFO_LOG_LENGTH, &infoLogLength);
-            GLchar *infoLog = new GLchar[infoLogLength + 1];
-            glGetShaderInfoLog(fragmentShader, infoLogLength, NULL, infoLog);
-            std::cout << "Shader fragmentShader Log:\n" << infoLog << std::endl;
-            delete[] infoLog;
-        }
-        if (VS != nullptr) {
-            GLint infoLogLength;
-            glGetShaderiv(vertexShader, GL_INFO_LOG_LENGTH, &infoLogLength);
-            GLchar *infoLog = new GLchar[infoLogLength + 1];
-            glGetShaderInfoLog(vertexShader, infoLogLength, NULL, infoLog);
-            std::cout << "Shader vertexShader Log:\n" << infoLog << std::endl;
-            delete[] infoLog;
-        }
-        std::cout << std::endl;
-    }
-
-    gWorldLocation = glGetUniformLocation(shader, "gWorld");
-    gColorLocation = glGetUniformLocation(shader, "gColor");
-    gTextureSamplerLocation = glGetUniformLocation(shader, "textureSampler");
-
-    assert(gWorldLocation != 0xFFFFFFFF);
-}
-
-GLuint Sprite::loadShader(const char *shaderPath, GLuint type)
-{
-    std::ifstream shaderFile(shaderPath);
-    if (!shaderFile.is_open()) {
-        std::cerr << "Error: Could not open shader file '" << shaderPath << "'" << std::endl;
-        return 0;
-    }
-
-    std::stringstream shaderStream;
-    shaderStream << shaderFile.rdbuf();
-    shaderFile.close();
-
-    std::string shaderCode = shaderStream.str();
-    const GLchar* shaderCodePtr = shaderCode.c_str();
-
-    GLuint shader = glCreateShader(type);
-    glShaderSource(shader, 1, &shaderCodePtr, NULL);
-    glCompileShader(shader);
-
-    GLint ok;
-    GLchar log[2000];
-    glGetShaderiv(shader, GL_COMPILE_STATUS, &ok);
-    if (!ok) {
-        glGetShaderInfoLog(shader, 2000, NULL, log);
-        printf("Shader(%s): %s\n", shaderPath, log);
-        std::cout << shaderCode << std::endl;
-    }
-
-    return shader;
-}
-
-void Sprite::loadTextures(const char *texturePath)
-{
-    if (texturePath == nullptr) return;
-
     int x, y, n;
     std::string path = std::string("assets/") + texturePath;
     unsigned char *img = stbi_load(path.c_str(), &x, &y, &n, 0);
@@ -152,7 +60,7 @@ void Sprite::loadTextures(const char *texturePath)
     int new_x = 1 << (int)std::ceil(std::log2(x));
     int new_y = 1 << (int)std::ceil(std::log2(y));
 
-    unsigned char *resized_img = (unsigned char*)malloc(new_x * new_y * n);
+    unsigned char*resized_img = (unsigned char*)malloc(new_x * new_y * n);
     if (resized_img == nullptr) {
         std::cerr << "Failed to allocate memory for resized texture" << std::endl;
         stbi_image_free(img);

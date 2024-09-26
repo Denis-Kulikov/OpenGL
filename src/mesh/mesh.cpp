@@ -132,7 +132,8 @@ Mesh::MeshEntry::~MeshEntry() {}
 Mesh::Mesh(const std::string& Filename)
 {
     LoadMesh(Filename);
-    compileShaders("assets/model/shaders/model_fs.glsl", "assets/model/shaders/model_vs.glsl");
+    shaderProgram = Shader("assets/model/shaders/model_fs.glsl", "assets/model/shaders/model_vs.glsl");
+    BindingUniforms();
 }
 
 Mesh::~Mesh() {}
@@ -386,73 +387,8 @@ bool Mesh::LoadMesh(const std::string& Filename)
     return false;
 }
 
-GLuint Mesh::loadShader(const std::string &shaderPath, GLuint type)
+void Mesh::BindingUniforms()
 {
-    std::ifstream shaderFile(shaderPath);
-    if (!shaderFile.is_open()) {
-        std::cerr << "Error: Could not open shader file '" << shaderPath << "'" << std::endl;
-        return 0;
-    }
-
-    std::stringstream shaderStream;
-    shaderStream << shaderFile.rdbuf();
-    shaderFile.close();
-
-    std::string shaderCode = shaderStream.str();
-    const GLchar* shaderCodePtr = shaderCode.c_str();
-
-    GLuint shader = glCreateShader(type);
-    glShaderSource(shader, 1, &shaderCodePtr, NULL);
-    glCompileShader(shader);
-
-    GLint ok;
-    GLchar log[2000];
-    glGetShaderiv(shader, GL_COMPILE_STATUS, &ok);
-    if (!ok) {
-        glGetShaderInfoLog(shader, 2000, NULL, log);
-        std::cout << "Shader(" << shaderPath << "): " << log << '\n' << shaderCode << std::endl;
-    }
-
-    return shader;
-}
-
-void Mesh::compileShaders(const std::string &FS, const std::string &VS)
-{
-    if (shaderProgram == 0) shaderProgram = glCreateProgram();
-
-    GLuint fragmentShader;
-    GLuint vertexShader;
-
-    fragmentShader = loadShader(FS, GL_FRAGMENT_SHADER);
-    vertexShader = loadShader(VS, GL_VERTEX_SHADER);
-    glAttachShader(shaderProgram, fragmentShader);
-    glAttachShader(shaderProgram, vertexShader);
-    glLinkProgram(shaderProgram);
-
-    GLint ok;
-    GLchar log[2000];
-    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &ok);
-    if (!ok) {
-        glGetProgramInfoLog(shaderProgram, 2000, NULL, log);
-        std::cout << "Shader " << shaderProgram << " compilation Log:\n" << log << std::endl;
-    
-        GLint infoLogLength;
-        GLchar *infoLog;
-        glGetShaderiv(fragmentShader, GL_INFO_LOG_LENGTH, &infoLogLength);
-        infoLog = new GLchar[infoLogLength + 1];
-        glGetShaderInfoLog(fragmentShader, infoLogLength, NULL, infoLog);
-        std::cout << "Shader fragmentShader Log:\n" << infoLog << std::endl;
-        delete[] infoLog;
-
-        glGetShaderiv(vertexShader, GL_INFO_LOG_LENGTH, &infoLogLength);
-        infoLog = new GLchar[infoLogLength + 1];
-        glGetShaderInfoLog(vertexShader, infoLogLength, NULL, infoLog);
-        std::cout << "Shader vertexShader Log:\n" << infoLog << std::endl;
-        delete[] infoLog;
-
-        std::cout << std::endl;
-    }
-
     gWorldLocation                = glGetUniformLocation(shaderProgram, "gWorld");
     gTextureSamplerLocation       = glGetUniformLocation(shaderProgram, "gTextureSampler");
     gNormalMapLocation            = glGetUniformLocation(shaderProgram, "gNormalMap");

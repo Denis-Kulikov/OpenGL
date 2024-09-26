@@ -1,10 +1,12 @@
 #pragma once
 
 #include "lib-project/lib.hpp"
-#include "math/Matrix4f.hpp"
 #include <assimp/scene.h>
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
+#include "math/Matrix4f.hpp"
+#include "../object/shader/shader.hpp"
+
 
 
 typedef struct stb_img_struct {
@@ -113,8 +115,7 @@ private:
     void ReadNodeHeirarchy(float AnimationTime, const aiNode* pNode, const aiMatrix4x4& ParentTransform);
     
     void LoadBones(unsigned int MeshIndex, const aiMesh* pMesh, std::vector<VertexBoneData>& Bones);
-    GLuint loadShader(const std::string &shaderPath, GLuint type);
-    void compileShaders(const std::string &FS, const std::string &VS);
+    void BindingUniforms();
     bool InitFromScene(const aiScene* pScene, const std::string& Filename);
     bool LoadEmbeddedTexture(const aiScene* scene, const std::string& fileName, int materialIndex);
     void InitMesh(unsigned int MeshIndex,
@@ -140,7 +141,7 @@ private:
     GLuint gCameraParamsLocation = 0;
     GLuint gPersProjParamsLocation = 0;
 
-    GLuint shaderProgram = 0 ;
+    Shader shaderProgram;
     GLuint gEyeWorldPosLocation = 0;
     GLuint gTextureSamplerLocation = 0;
     GLuint gNormalMapLocation = 0;
