@@ -22,6 +22,9 @@ public:
     GLuint shader = 0;
     GLuint texture = 0;
 
+    GLfloat LineWidth = -1;
+
     Matrix4f PersProjTrans;
     Matrix4f View;
+    Matrix4f PV;
 };

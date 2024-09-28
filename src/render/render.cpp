@@ -63,7 +63,6 @@ void Render::drawObject(Matrix4f& matrix, Sprite *sprite)
         glUniform1i(sprite->gTextureSamplerLocation, 0);
     }
 
-    if (sprite->gColorLocation != 0xFFFFFFFF) glUniform3f(sprite->gColorLocation, sprite->color.x, sprite->color.y, sprite->color.z);
     glUniformMatrix4fv(sprite->gWorldLocation, 1, GL_TRUE, &matrix);
 
     if (sprite->GetGeometry()->EBO != 0) {
@@ -88,7 +87,8 @@ void Render::drawSkybox(Cube &skybox)
 
     objectTransform skybox_transform;
     skybox_transform.SetWorldPos(pipeline.camera->GetPosition());
-    skybox_transform.SetRotate(glm::vec3(0.0, 90.0, 180));
+    skybox_transform.SetRotate(glm::vec3(0.0, 0.0, 180));
+    skybox_transform.SetScale(glm::vec3(2, 2, 2));
     
     glDepthMask(GL_FALSE);
     auto mat4x4 = pipeline.GetTransform(skybox_transform);
@@ -104,6 +104,6 @@ void Render::GetPV() {
     CameraTranslationTrans.InitTranslationTransform(-pipeline.camera->GetPosition().x, -pipeline.camera->GetPosition().y, -pipeline.camera->GetPosition().z);
     CameraRotateTrans.InitCameraTransform(pipeline.camera->Params.Target, pipeline.camera->Params.Up);
     View = CameraRotateTrans * CameraTranslationTrans;
-
     PersProjTrans.InitPersProjTransform(pipeline.camera->PersProj.FOV, pipeline.camera->PersProj.Width, pipeline.camera->PersProj.Height, pipeline.camera->PersProj.zNear, pipeline.camera->PersProj.zFar);
+    PV = PersProjTrans * View;
 }

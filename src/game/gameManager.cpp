@@ -172,10 +172,4 @@ void GameManager::InitializeGLFW(int _width, int _height)
         std::cerr << "Error: " << "Failed to allocate memory to the renderer" << std::endl;
         exit(EXIT_FAILURE);
     }
-
-    threads = new SceneThread();
-    if (threads == nullptr) {
-        std::cerr << "Error: " << "Failed to allocate memory to the threads" << std::endl;
-        exit(EXIT_FAILURE);
-    }
 }

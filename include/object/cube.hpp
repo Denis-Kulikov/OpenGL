@@ -8,6 +8,7 @@ public:
     Cube();
     static void initializeGeometry();
     struct GeometryInfo *GetGeometry() override;
+    virtual void Render(void *RenderData) const override;
 
 private:
     static struct GeometryInfo geometryInfo;

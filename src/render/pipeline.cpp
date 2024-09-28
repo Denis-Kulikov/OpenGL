@@ -14,3 +14,14 @@ Matrix4f Pipeline::GetTransform(const objectTransform& transform) const
 
     return PersProjTrans * CameraRotateTrans * CameraTranslationTrans * TranslationTrans * RotateTrans * ScaleTrans;
 }
+
+Matrix4f Pipeline::GetWorld(const objectTransform& transform) const
+{
+    Matrix4f ScaleTrans, RotateTrans, TranslationTrans;
+
+    ScaleTrans.InitScaleTransform(transform.Scale.x, transform.Scale.y, transform.Scale.z);
+    RotateTrans.InitRotateTransform(transform.Rotate.x, transform.Rotate.y, transform.Rotate.z);
+    TranslationTrans.InitTranslationTransform(transform.WorldPos.x, transform.WorldPos.y, transform.WorldPos.z);
+
+    return TranslationTrans * RotateTrans * ScaleTrans;
+}

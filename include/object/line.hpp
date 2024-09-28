@@ -1,19 +1,26 @@
 #pragma once
 #include "sprite.hpp"
 
-class line : public Sprite
+class Line : public Sprite
 {
 public:
-    line(const std::string &_name, const objectTransform &_trans, const glm::vec3 _color);
-    line(const std::string &_name, const glm::vec3 _color);
+    Line(const std::string &_name, const glm::vec3 _color);
+    Line();
 
     virtual void Render(void *RenderData) const override;
-    void setPoints(const glm::vec3 &_start, const glm::vec3 &_end);
+    objectTransform setPoints(const glm::vec3 &_start, const glm::vec3 &_end);
     static void initializeGeometry();
     struct GeometryInfo *GetGeometry() override;
+    void SetColor(glm::vec3 _color) {
+        color = _color;
+    }
+    void SetWidth(GLfloat _width) {
+        width = _width;
+    }
 
-    GLfloat lineWidth;
-    objectTransform trans;
-private:
+protected:
+    GLuint gColorLocation;
+    GLfloat width = 2.0f;
+    glm::vec3 color = glm::vec3(1.0f, 1.0f, 1.0f);
     static struct GeometryInfo geometryInfo;
 };

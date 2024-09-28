@@ -6,13 +6,42 @@ class Sphere : public Sprite
 {
 public:
     Sphere(const std::string &_name, const char *FS, const char *VS, const char *texturePath)
-        : Sprite(_name, FS, VS, texturePath) {}
+        : Sprite(_name, FS, VS, texturePath)
+    {
+        gColorLocation = glGetUniformLocation(shader, "gColor");
+    }
 
     Sphere()
-        : Sphere(std::string("None"), "shaders/sphere_fs.glsl", "shaders/sphere_vs.glsl", nullptr) {}
+        : Sphere(std::string("None"), "shaders/sphere_fs.glsl", "shaders/sphere_vs.glsl", "")
+    {
+        gColorLocation = glGetUniformLocation(shader, "gColor");
+    }
 
     struct GeometryInfo *GetGeometry() override {
         return &geometryInfo;
+    }
+
+    void SetColor(glm::vec3 _color) {
+        color = _color;
+    }
+
+    void Render(void *RenderData) const {
+        if (GameManager::render->pipeline.camera == nullptr) {
+            std::cout << "Error Render: not found camera" << std::endl;
+            return;
+        }
+
+        GameManager::render->PushGeometry(&geometryInfo);
+
+        glUseProgram(shader);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, texture);
+        glUniform1i(gTextureSamplerLocation, 0);
+
+        glUniform3f(gColorLocation, color.x, color.y, color.z);
+        glUniformMatrix4fv(gWorldLocation, 1, GL_TRUE, &static_cast<Sprite_rdata*>(RenderData)->matrix);
+
+        glDrawElements(GL_TRIANGLES, geometryInfo.numIndices, GL_UNSIGNED_INT, 0);
     }
 
     static void initializeGeometry() {
@@ -30,9 +59,9 @@ public:
                 double sinPhi = sin(phi);
                 double cosPhi = cos(phi);
 
-                float x = static_cast<float>(cosPhi * sinTheta);
-                float y = static_cast<float>(cosTheta);
-                float z = static_cast<float>(sinPhi * sinTheta);
+                float x = static_cast<float>(cosPhi * sinTheta) / 2;
+                float y = static_cast<float>(cosTheta) / 2;
+                float z = static_cast<float>(sinPhi * sinTheta) / 2;
 
                 vertices.push_back(x);
                 vertices.push_back(y);
@@ -77,4 +106,6 @@ public:
 
 private:
     inline static struct GeometryInfo geometryInfo = {0, 0, 0, 0, 0};
+    GLuint gColorLocation;
+    glm::vec3 color = glm::vec3(1.0f, 1.0f, 1.0f);
 };

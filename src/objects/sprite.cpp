@@ -8,20 +8,17 @@
 Sprite::Sprite(const std::string &_name, const std::string &FS, const std::string &VS, const std::string &texturePath)
     : name(_name), shader(FS, VS)
 {
-    std::cout << shader << std::endl;
     gWorldLocation = glGetUniformLocation(shader, "gWorld");
+    gTextureSamplerLocation = glGetUniformLocation(shader, "textureSampler");
     assert(gWorldLocation != 0xFFFFFFFF);
 
-    gColorLocation = glGetUniformLocation(shader, "gColor");
-    gTextureSamplerLocation = glGetUniformLocation(shader, "textureSampler");
-
-
-    auto txr = texturesMap.find(std::string(texturePath));
+    if (texturePath.empty()) return;
+    auto txr = texturesMap.find(texturePath);
     if (txr != texturesMap.end()) {
         texture = txr->second;
     } else {
         loadTextures(texturePath);
-        texturesMap[std::string(texturePath)] = texture;
+        texturesMap[texturePath] = texture;
     }
 }
 
@@ -38,7 +35,6 @@ void Sprite::Render(void *RenderData) const {
     glBindTexture(GL_TEXTURE_2D, texture);
     glUniform1i(gTextureSamplerLocation, 0);
 
-    if (gColorLocation != 0xFFFFFFFF) glUniform3f(gColorLocation, color.x, color.y, color.z);
     glUniformMatrix4fv(gWorldLocation, 1, GL_TRUE, &static_cast<Sprite_rdata*>(RenderData)->matrix);
 
     glDrawElements(GL_TRIANGLES, geometryInfo.numIndices, GL_UNSIGNED_INT, 0);
@@ -100,10 +96,10 @@ void Sprite::loadTextures(const std::string &texturePath)
 void Sprite::initializeGeometry()
 {
     std::vector<GLfloat> vertices = {
-        -1.0f, -1.0f, 0.0f,  0.0f, 0.0f,
-        -1.0f,  1.0f, 0.0f,  0.0f, 1.0f,
-        1.0f,  1.0f, 0.0f,  1.0f, 1.0f,
-        1.0f, -1.0f, 0.0f,  1.0f, 0.0f
+        -0.5f, -0.5f, 0.0f, 0.0f, 0.0f,
+        -0.5f,  0.5f, 0.0f, 0.0f, 1.0f,
+        0.5f,  0.5f, 0.0f,  1.0f, 1.0f,
+        0.5f, -0.5f, 0.0f,  1.0f, 0.0f
     };
 
     std::vector<GLuint> indices = {

@@ -1,44 +1,52 @@
 #include <game/gameManager.hpp>
-#include <object/line.hpp>
+#include <object/Line.hpp>
 
-struct GeometryInfo line::geometryInfo = {0, 0, 0, 0, 0};
+struct GeometryInfo Line::geometryInfo = {0, 0, 0, 0, 0};
 
-void line::Render(void *RenderData) const {
+void Line::Render(void *RenderData) const {
     if (GameManager::render->pipeline.camera == nullptr) {
         std::cout << "Error Render: not found camera" << std::endl;
         return;
     }
+
+    GameManager::render->PushGeometry(&geometryInfo);
 
     glUseProgram(shader);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, texture);
     glUniform1i(gTextureSamplerLocation, 0);
 
-    if (gColorLocation != 0xFFFFFFFF) glUniform3f(gColorLocation, color.x, color.y, color.z);
+    glUniform3f(gColorLocation, color.x, color.y, color.z);
     glUniformMatrix4fv(gWorldLocation, 1, GL_TRUE, &static_cast<Sprite_rdata*>(RenderData)->matrix);
 
+    if (GameManager::render->LineWidth != width) {
+        GameManager::render->LineWidth = width;
+        glLineWidth(GameManager::render->LineWidth);
+    }
+    
     glDrawArrays(GL_LINE_STRIP, 0, geometryInfo.numVertices);
 }
 
-void line::setPoints(const glm::vec3 &_start, const glm::vec3 &_end)
+objectTransform Line::setPoints(const glm::vec3 &_start, const glm::vec3 &_end)
 {
-    glm::vec3 d(_end.x - _start.x, _end.y - _start.y, _end.z - _start.z);
-    this->trans.SetWorldPos(_start.x + d.x / 2, _start.y + d.y / 2, _start.z + d.z / 2);
-
-    GLfloat distance = sqrt(pow(d.x, 2) + pow(d.y, 2) + pow(d.z, 2));
-    this->trans.SetScale(distance, trans.GetScale().y, 0.0);
-
+    objectTransform transform;
+    glm::vec3 d = _end - _start;
+    GLfloat distance = glm::length(d);
     GLfloat angleZ = atan2(d.y, d.x) * 180.0 / M_PI;
-    GLfloat angleY = atan2(d.z, sqrt(d.x * d.x + d.y * d.y)) * 180.0 / M_PI;
+    GLfloat angleY = atan2(d.z, glm::length(glm::vec2(d.x, d.y))) * 180.0 / M_PI;
 
-    this->trans.SetRotate(0.0, angleY, angleZ); 
+    transform.SetWorldPos(_start.x + d.x, _start.y + d.y, _start.z + d.z);
+    transform.SetScale(distance, 0.0, 0.0);
+    transform.SetRotate(0.0, angleY, angleZ); 
+
+    return transform;
 }
 
 
-void line::initializeGeometry() {
+void Line::initializeGeometry() {
     std::vector<GLfloat> vertices = {
-        -0.5, 0, 0,
-         0.5, 0, 0
+        0, 0, 0,
+        -1, 0, 0
     };
 
     geometryInfo.numVertices = 2;
@@ -57,22 +65,23 @@ void line::initializeGeometry() {
     glBindVertexArray(0);
 }
 
-line::line(const std::string &_name, const objectTransform &_trans, const glm::vec3 _color)
-    : Sprite(_name, "shaders/bone_fs.glsl", "shaders/base_vs.glsl", nullptr)
+struct GeometryInfo *Line::GetGeometry()
+{
+    return &geometryInfo;
+}
+
+Line::Line(const std::string &_name, const glm::vec3 _color)
+    : Sprite(_name, "shaders/wire_fs.glsl", "shaders/base_vs.glsl", "")
 {
     color.x = _color.x;
     color.y = _color.y;
     color.z = _color.z;
 
-    trans = _trans;
+    gColorLocation = glGetUniformLocation(shader, "gColor");
 }
 
-struct GeometryInfo *line::GetGeometry()
+Line::Line()
+    : Sprite("", "shaders/wire_fs.glsl", "shaders/base_vs.glsl", "")
 {
-    return &geometryInfo;
-}
-
-line::line(const std::string &_name, const glm::vec3 _color)
-    : line(_name, objectTransform(), _color)
-{
+    gColorLocation = glGetUniformLocation(shader, "gColor");
 }

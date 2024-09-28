@@ -3,10 +3,12 @@
 #include <game/gameManager.hpp>
 #include <object/sphere.hpp>
 #include <object/cube.hpp>
+#include <object/sphere_wire.hpp>
 
 #include <threads/threads.hpp>
 #include <game/gameManager.hpp> 
 #include <mesh/mesh.hpp> 
+#include <mesh/primitive_mesh.hpp>
 
 #include <entities/templates/mobs/Female.hpp>
 
@@ -46,12 +48,9 @@ void callback(Scene *scene) {
             GameManager::render->clearRender();
         }
     }
-
-    // for (auto& it : scene->sprites) {
-    //     it->Render(&GameManager::render->pipeline.GetTransform(it. ->GetTransform()));
-    // }
-
-
+    for (auto& it : scene->primitives) {
+        it->Render();
+    }
     swapBuffer();
 
     frame++;
@@ -64,15 +63,35 @@ void callback(Scene *scene) {
 
 Scene *createScene()
 {
+    const std::size_t sphere_lvl = 6;
+    const std::size_t sphere_wire_lvl = 4;
+
     Sphere<10>::initializeGeometry();
     Cube::initializeGeometry();
     Sprite::initializeGeometry();
+    Line::initializeGeometry();
+    Cube_wire::initializeGeometry();
+    Sphere<sphere_lvl>::initializeGeometry();
+    Sphere_wire<sphere_wire_lvl>::initializeGeometry();
     Female::Initialize();
 
     auto *scene = new Scene();
     Cube* cube = new Cube("img/skybox.png");
     Ghost *character = new Ghost();
+
     Sprite* sprite = new Sprite("floor", "shaders/sprite_fs.glsl","shaders/sprite_vs.glsl", "img/grass.png");
+    Cube* box = new Cube("img/box.jpg");
+    Sphere<sphere_lvl>* sph = new Sphere<sphere_lvl>();
+    Line* line = new Line();
+    Sphere_wire<sphere_wire_lvl>* sph_w = new Sphere_wire<sphere_wire_lvl>();
+    Cube_wire* bone_box = new Cube_wire();
+
+    Primitive_mesh* primitive = new Primitive_mesh(sprite);
+    Primitive_mesh* primitive_cube = new Primitive_mesh(box);
+    Primitive_mesh* primitive_sph = new Primitive_mesh(sph);
+    Primitive_mesh* primitive_bbox = new Primitive_mesh(bone_box);
+    Primitive_mesh* primitive_sph_w = new Primitive_mesh(sph_w);
+    Primitive_mesh* primitive_line = new Primitive_mesh(line);
     Female* female1 = new Female;
     Female* female2 = new Female;
 
@@ -80,7 +99,12 @@ Scene *createScene()
     scene->pushObject(character);
     scene->pushObject(female1);
     scene->pushObject(female2);
-    scene->pushObject(sprite);
+    scene->pushObject(primitive);
+    scene->pushObject(primitive_cube);
+    scene->pushObject(primitive_sph);
+    scene->pushObject(primitive_bbox);
+    scene->pushObject(primitive_sph_w);
+    scene->pushObject(primitive_line);
 
     objectTransform transform;
     float scale = 5;
@@ -92,10 +116,41 @@ Scene *createScene()
     transform.SetWorldPos(5.0, -10.0, -10.0);
     *female2->GetTransform() = transform;
         
-    scale = 10;
-    transform.SetWorldPos(0.0, -10.0, -10.0);
+    scale = 15;
+    transform.SetWorldPos(5.0, -10.0, -10.0);
     transform.SetRotate(90.0, 0.0, 0.0);
-    transform.MultiplyScale(glm::vec3(scale, scale, scale));
+    transform.SetScale(glm::vec3(scale, scale, scale));
+    *primitive->GetTransform() = transform;
+    
+    transform.SetRotate(0.0, 0.0, 0.0);
+
+
+    scale = 1;
+    transform.SetWorldPos(8.0, -10.0 + scale / 2, -10.0);
+    transform.SetScale(glm::vec3(scale, scale, scale));
+    *primitive_cube->GetTransform() = transform;
+
+    scale = 1;
+    transform.SetWorldPos(9.0, -10.0 + scale / 2, -10.0);
+    transform.SetScale(glm::vec3(scale, scale, scale));
+    *primitive_sph->GetTransform() = transform;
+    sph->SetColor(glm::vec3(1, 0, 1));
+
+    scale = 1;
+    transform.SetWorldPos(10.0, -10.0 + scale / 2, -10.0);
+    transform.SetScale(glm::vec3(scale, scale, scale));
+    *primitive_bbox->GetTransform() = transform;
+    bone_box->SetColor(glm::vec3(1, 0, 0));
+
+    scale = 1;
+    transform.SetWorldPos(11.0, -10.0 + scale / 2, -10.0);
+    transform.SetScale(glm::vec3(scale, scale, scale));
+    *primitive_sph_w->GetTransform() = transform;
+    sph_w->SetColor(glm::vec3(0, 0, 1));
+
+    *primitive_line->GetTransform() = line->setPoints(glm::vec3(8.0, -10.0 + scale / 2, -9.0), glm::vec3(11.0, -10.0 + scale / 2, -9.0));
+    line->SetColor(glm::vec3(0, 1, 0));
+    line->SetWidth(3);
 
     GameManager::PushPlayer(character);
     GameManager::render->pipeline.camera->OwnerTransformPtr = character->GetTransform();
@@ -111,8 +166,6 @@ int main(int argc, char** argv)
     GameManager::InitializeObjects();
 
     std::unique_ptr<Scene> scene(createScene());
-    // GameManager::threads->setScene(scene.get());
-    // GameManager::threads->start();
 
     while (!GameManager::IsEnd) {
         callback(scene.get());

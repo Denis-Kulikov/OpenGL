@@ -26,13 +26,11 @@ public:
 
     std::string name;
     glm::vec3 Scale;
-    glm::vec3 color = glm::vec3(1.0, 1.0, 1.0);
 
     Shader shader;
     GLuint texture = 0;
     
     GLuint gWorldLocation;
-    GLuint gColorLocation;
     GLuint gTextureSamplerLocation;
 
 protected:
