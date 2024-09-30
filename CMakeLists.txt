@@ -4,13 +4,17 @@ project(openGL VERSION 1.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_BUILD_TYPE Release)
 
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -pthread")
 
 link_directories(lib)
 
 include_directories(include)
-include_directories(assimp/include)
+if(WIN32)
+	include_directories(assimp/include)
+	include_directories(bullet3-master/src)
+endif()
 
 include_directories(build/_deps/stb_image-src)
 include_directories(build/_deps/pugixml-src/src)

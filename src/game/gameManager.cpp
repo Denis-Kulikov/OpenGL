@@ -172,4 +172,10 @@ void GameManager::InitializeGLFW(int _width, int _height)
         std::cerr << "Error: " << "Failed to allocate memory to the renderer" << std::endl;
         exit(EXIT_FAILURE);
     }
+
+    bullet = new BulletManager();
+    if (bullet == nullptr) {
+        std::cerr << "Error: " << "Failed to allocate memory to the bullet" << std::endl;
+        exit(EXIT_FAILURE);
+    }
 }

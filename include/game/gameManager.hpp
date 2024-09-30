@@ -1,6 +1,7 @@
 #pragma once
 
 #include "gameTime.hpp"
+#include "bulletManager.hpp"
 #include "../render/render.hpp"
 #include "../object/sprite.hpp"
 #include "../entities/character.hpp"
@@ -51,6 +52,7 @@ public:
     inline static Render* render = nullptr;
     inline static CallbackData callbackData = {nullptr, nullptr};
     inline static GLFWwindow* window = nullptr;
+    inline static BulletManager* bullet = nullptr;
     inline static int width = 640;
     inline static int height = 480;
     inline static bool IsEnd = false;
