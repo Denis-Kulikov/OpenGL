@@ -93,7 +93,7 @@ GLuint Shader::loadShader(const std::string &shaderPath, GLuint type)
     glGetShaderiv(shader, GL_COMPILE_STATUS, &ok);
     if (!ok) {
         glGetShaderInfoLog(shader, 2000, NULL, log);
-        printf("Shader(%s): %s\n", shaderPath, log);
+        printf("Shader(%s): %s\n", shaderPath.c_str(), log);
         std::cout << shaderCode << std::endl;
     }
 
@@ -103,7 +103,7 @@ GLuint Shader::loadShader(const std::string &shaderPath, GLuint type)
 Shader Shader::shader_find(const std::string &name)
 {
     auto programm = ShaderID::shadersMap.find(name);
-    return programm == ShaderID::shadersMap.end() ? 0 : programm->second;
+    return programm == ShaderID::shadersMap.end() ? Shader(0) : programm->second;
 }
 
 void Shader::shader_push(const std::string &name, Shader shaderProgramm)

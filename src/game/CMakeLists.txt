@@ -5,8 +5,16 @@ add_library(${target} STATIC
 	bulletManager.cpp
 )
 
+find_package(Bullet REQUIRED)
+include_directories(${BULLET_INCLUDE_DIRS})
+
+
 target_link_libraries(
   ${target}
   PRIVATE
 	lib-object
+	
+	BulletCollision
+	BulletDynamics
+	LinearMath
 )

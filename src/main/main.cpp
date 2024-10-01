@@ -32,9 +32,9 @@ void callback(Scene *scene) {
     frameStart = std::chrono::steady_clock::now();
 
     GameManager::Time.Update();
-    GameManager::render->GetPV();
+    GameManager::render.GetPV();
     GameManager::UpdateCamera();
-    GameManager::render->drawSkybox(*scene->skybox);
+    GameManager::render.drawSkybox(*scene->skybox);
 
     for (auto& it : scene->actors) {
         (reinterpret_cast<Pawn*>(it))->MoveForward();
@@ -42,10 +42,10 @@ void callback(Scene *scene) {
             it->GetMesh()->set_transform(*it->GetTransform());
             std::vector<aiMatrix4x4> *Transforms = new std::vector<aiMatrix4x4>;
             it->GetMesh()->BoneTransform(GameManager::Time.GetCurrentTime(), *Transforms);
-            GameManager::render->clearRender();
+            GameManager::render.clearRender();
             Actor::Actor_rdata data = {Transforms, it->GetMesh()};
             it->Render(&data);
-            GameManager::render->clearRender();
+            GameManager::render.clearRender();
         }
     }
     for (auto& it : scene->primitives) {
@@ -64,9 +64,8 @@ void callback(Scene *scene) {
 Scene *createScene()
 {
     const std::size_t sphere_lvl = 6;
-    const std::size_t sphere_wire_lvl = 4;
+    const std::size_t sphere_wire_lvl = 2;
 
-    Sphere<10>::initializeGeometry();
     Cube::initializeGeometry();
     Sprite::initializeGeometry();
     Line::initializeGeometry();
@@ -153,7 +152,7 @@ Scene *createScene()
     line->SetWidth(3);
 
     GameManager::PushPlayer(character);
-    GameManager::render->pipeline.camera->OwnerTransformPtr = character->GetTransform();
+    GameManager::render.pipeline.camera.OwnerTransformPtr = character->GetTransform();
 
     return scene;
 }

@@ -3,22 +3,20 @@
 #include <chrono>
 extern std::chrono::milliseconds totalTime;
 
-Render::Render(Pipeline &_pipeline)
+Render::Render(const Pipeline &_pipeline)
 {
     pipeline.camera = _pipeline.camera;
 }
 
-Render::Render(Camera *_camera)
+Render::Render(const Camera &_camera)
 {
-    SetCamera(_camera);
+    pipeline.camera = _camera;
 }
 
 Render::Render()
-{
-    SetCamera(nullptr);
-}
+{}
 
-void Render::SetCamera(Camera *_camera)
+void Render::SetCamera(const Camera &_camera)
 {
     pipeline.camera = _camera;
 }
@@ -34,6 +32,14 @@ void Render::clearRender() {
     texture = 0;
 }
 
+void Render::PushLineWidth(GLfloat _LineWidth)
+{
+    if (LineWidth != _LineWidth) {
+        LineWidth = _LineWidth;
+        glLineWidth(_LineWidth);
+    }
+}
+
 void Render::PushGeometry(struct GeometryInfo *geometry)
 {
     glBindVertexArray(geometry->VAO);
@@ -43,11 +49,8 @@ void Render::PushGeometry(struct GeometryInfo *geometry)
 
 void Render::drawObject(Matrix4f& matrix, Sprite *sprite)
 {
-    if ((pipeline.camera == nullptr) || (sprite == nullptr)) {
-        std::cout << "Error Render.drawObject(): " << std::endl;
-        if (pipeline.camera == nullptr) std::cout << "Not found Camera ";
-        if (sprite == nullptr)          std::cout << "Not found Sprite ";
-        std::cout << std::endl;
+    if (sprite == nullptr) {
+        std::cout << "Error Render.drawObject(): Sprite == nullptr" << std::endl;
         return;
     }
 
@@ -66,7 +69,6 @@ void Render::drawObject(Matrix4f& matrix, Sprite *sprite)
     glUniformMatrix4fv(sprite->gWorldLocation, 1, GL_TRUE, &matrix);
 
     if (sprite->GetGeometry()->EBO != 0) {
-        // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, geometry->EBO);
         glDrawElements(GL_TRIANGLES, sprite->GetGeometry()->numIndices, GL_UNSIGNED_INT, 0);
     } else {
         glDrawArrays(GL_LINE_STRIP, 0, sprite->GetGeometry()->numVertices);
@@ -86,7 +88,7 @@ void Render::drawSkybox(Cube &skybox)
     PushGeometry(skybox.GetGeometry());
 
     objectTransform skybox_transform;
-    skybox_transform.SetWorldPos(pipeline.camera->GetPosition());
+    skybox_transform.SetWorldPos(pipeline.camera.GetPosition());
     skybox_transform.SetRotate(glm::vec3(0.0, 0.0, 180));
     skybox_transform.SetScale(glm::vec3(2, 2, 2));
     
@@ -101,9 +103,9 @@ void Render::drawSkybox(Cube &skybox)
 
 void Render::GetPV() {
     Matrix4f CameraTranslationTrans, CameraRotateTrans;
-    CameraTranslationTrans.InitTranslationTransform(-pipeline.camera->GetPosition().x, -pipeline.camera->GetPosition().y, -pipeline.camera->GetPosition().z);
-    CameraRotateTrans.InitCameraTransform(pipeline.camera->Params.Target, pipeline.camera->Params.Up);
+    CameraTranslationTrans.InitTranslationTransform(-pipeline.camera.GetPosition().x, -pipeline.camera.GetPosition().y, -pipeline.camera.GetPosition().z);
+    CameraRotateTrans.InitCameraTransform(pipeline.camera.Params.Target, pipeline.camera.Params.Up);
     View = CameraRotateTrans * CameraTranslationTrans;
-    PersProjTrans.InitPersProjTransform(pipeline.camera->PersProj.FOV, pipeline.camera->PersProj.Width, pipeline.camera->PersProj.Height, pipeline.camera->PersProj.zNear, pipeline.camera->PersProj.zFar);
+    PersProjTrans.InitPersProjTransform(pipeline.camera.PersProj.FOV, pipeline.camera.PersProj.Width, pipeline.camera.PersProj.Height, pipeline.camera.PersProj.zNear, pipeline.camera.PersProj.zFar);
     PV = PersProjTrans * View;
 }

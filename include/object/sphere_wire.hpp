@@ -1,5 +1,6 @@
 #pragma once
 #include "line.hpp"
+#include "../game/gameManager.hpp"
 
 template<std::size_t N>
 class Sphere_wire : public Line
@@ -20,12 +21,7 @@ public:
     }
 
     void Render(void *RenderData) const {
-        if (GameManager::render->pipeline.camera == nullptr) {
-            std::cout << "Error Render: not found camera" << std::endl;
-            return;
-        }
-
-        GameManager::render->PushGeometry(&geometryInfo);
+        GameManager::render.PushGeometry(&geometryInfo);
 
         glUseProgram(shader);
         glActiveTexture(GL_TEXTURE0);
@@ -35,11 +31,8 @@ public:
         glUniform3f(gColorLocation, color.x, color.y, color.z);
         glUniformMatrix4fv(gWorldLocation, 1, GL_TRUE, &static_cast<Sprite_rdata*>(RenderData)->matrix);
 
-        if (GameManager::render->LineWidth != width) {
-            GameManager::render->LineWidth = width;
-            glLineWidth(GameManager::render->LineWidth);
-        }
-        
+        GameManager::render.PushLineWidth(width);
+
         glDrawArrays(GL_LINE_STRIP, 0, geometryInfo.numVertices);
     }
 

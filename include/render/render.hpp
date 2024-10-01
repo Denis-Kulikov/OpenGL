@@ -6,12 +6,13 @@
 class Render
 {
 public:
-    Render(Pipeline &_pipeline);
-    Render(Camera *_camera);
+    Render(const Pipeline &_pipeline);
+    Render(const Camera &_camera);
     Render();
     
-    void SetCamera(Camera *_camera);
+    void SetCamera(const Camera &_camera);
     void clearRender();
+    void PushLineWidth(GLfloat _LineWidth);
     void PushGeometry(struct GeometryInfo *geometry);
     void drawObject(Matrix4f& matrix, Sprite *sprite);
     void drawSkybox(Cube &skybox);

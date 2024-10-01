@@ -4,6 +4,20 @@
 class Camera
 {
 public:
+    Camera(const Camera &camera) 
+    {
+        Params.WorldPos = camera.Params.WorldPos;
+        Params.Target   = camera.Params.Target;
+        Params.Up       = camera.Params.Up;
+
+        PersProj.FOV    = camera.PersProj.FOV;
+        PersProj.Width  = camera.PersProj.Width;
+        PersProj.Height = camera.PersProj.Height;
+        PersProj.zNear  = camera.PersProj.zNear;
+        PersProj.zFar   = camera.PersProj.zFar;
+
+        OwnerTransformPtr = camera.OwnerTransformPtr;
+    }
     Camera()
     {
         Params.WorldPos    = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -16,7 +30,7 @@ public:
         OwnerTransformPtr = TransformPtr;
     }
 
-    glm::vec3 GetPosition()
+    glm::vec3 GetPosition() const
     {
         return OwnerTransformPtr == nullptr ? Params.WorldPos : Params.WorldPos + OwnerTransformPtr->GetWorldPos();
     }

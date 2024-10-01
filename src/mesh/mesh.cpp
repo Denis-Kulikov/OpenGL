@@ -575,7 +575,7 @@ void Mesh::push_uniforms() {
     GLfloat DiffuseIntensity = 0.35;
     GLfloat SpecularPower = 0.25;
     GLfloat MatSpecularIntensity = 0.25;
-    glm::vec3 EyesPos = GameManager::callbackData.camera->GetPosition();
+    glm::vec3 EyesPos = GameManager::render.pipeline.camera.GetPosition();
 
     glUniform3f(gColorLocation, color[0], color[1], color[2]);
     glUniform3f(gDirectionLocation, direction[0], direction[1], direction[2]);
@@ -611,8 +611,8 @@ void Mesh::Render(std::vector<aiMatrix4x4> *Transforms)
     glUseProgram(shaderProgram);
     push_uniforms();
 
-    glUniformMatrix4fv(gProjection, 1, GL_TRUE, &GameManager::render->PersProjTrans);
-    glUniformMatrix4fv(gView, 1, GL_TRUE, &GameManager::render->View);
+    glUniformMatrix4fv(gProjection, 1, GL_TRUE, &GameManager::render.PersProjTrans);
+    glUniformMatrix4fv(gView, 1, GL_TRUE, &GameManager::render.View);
 
     for (unsigned int i = 0; i < m_NumBones; i++) 
         glUniformMatrix4fv(gBones + i, 1, GL_TRUE, &(*Transforms)[i][0][0]);

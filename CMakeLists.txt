@@ -14,6 +14,8 @@ include_directories(include)
 if(WIN32)
 	include_directories(assimp/include)
 	include_directories(bullet3-master/src)
+else()
+	include_directories(/usr/include/bullet)
 endif()
 
 include_directories(build/_deps/stb_image-src)

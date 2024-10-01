@@ -97,6 +97,8 @@ void Skybox::Load() {
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 }
 
+void Skybox::Render(void *RenderData) const {}
+
 void Skybox::Render() {
     glDepthFunc(GL_LEQUAL);
     glBindVertexArray(skyboxVAO);

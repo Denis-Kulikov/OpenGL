@@ -13,7 +13,6 @@ if(WIN32)
         glew32
         opengl32
 	assimp-vc143-mtd
-        lib-threads
 	lib-mobs
         lib-playable
     )
@@ -24,7 +23,6 @@ else()
         GL
         GLEW
         assimp
-        lib-threads
 	lib-mobs
         lib-playable
     )

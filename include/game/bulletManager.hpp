@@ -2,7 +2,8 @@
 
 class BulletManager {
 public:
-    BulletManager ();
+    BulletManager();
+    ~BulletManager();
 
 private:
     btBroadphaseInterface* broadphase = nullptr;

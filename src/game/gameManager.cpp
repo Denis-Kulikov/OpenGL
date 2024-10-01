@@ -4,39 +4,17 @@ GameManager::GameManager() {};
 
 GameManager::~GameManager()
 {
-    delete render;
-    delete threads;
-    delete callbackData.camera;
-
     glfwDestroyWindow(window);
 }
 
-void GameManager::PushCamera(Camera *_camera)
+void GameManager::PushCamera(const Camera &_camera)
 {
-    callbackData.camera = _camera;
+    render.pipeline.camera = _camera;
 }
 
 void GameManager::PushPlayer(Character *_player)
 {
     callbackData.player = _player;
-}
-
-Camera *GameManager::createCamera()
-{
-    auto camera = new Camera();
-    if (camera == nullptr) {
-        std::cerr << "Error: " << "Failed to allocate memory to the camera" << std::endl;
-        exit(EXIT_FAILURE);
-    }
-
-    glm::vec3 CameraPos(0.0f, 0.0f, 0.0f);
-    glm::vec3 CameraTarget(0.0f, 0.0f, 1.0f);
-    glm::vec3 CameraUp(0.0f, 1.0f, 0.0f);
-
-    camera->SetCamera(CameraPos, CameraTarget, CameraUp);
-    camera->SetPerspectiveProj(70.0f, width, height, 0.5f, 1000.0f);
-
-    return camera;
 }
 
 void GameManager::MouseCB(GLFWwindow* window, double xpos, double ypos) {
@@ -73,6 +51,20 @@ void GameManager::MouseCB(GLFWwindow* window, double xpos, double ypos) {
     player->SetPitch(pitch);
 }
 
+void GameManager::UpdateCamera()
+{
+    const float yaw_speed = 120.0;
+    const float pitch_speed = 100.0;
+    const float pitch_limit = 90.0;
+
+    Character& player = *callbackData.player;
+
+    render.pipeline.camera.Params.Target.x = -cos(glm::radians(player.GetYaw()));
+    render.pipeline.camera.Params.Target.z = -sin(glm::radians(player.GetYaw()));
+    render.pipeline.camera.Params.Target.y = tan(glm::radians(player.GetPitch()));
+    render.pipeline.camera.PersProj.FOV = pitch_limit - fabs(player.GetPitch());
+}
+
 void GameManager::KeyboardCB(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
     static bool keys[GLFW_KEY_LAST] = {false};
@@ -104,22 +96,6 @@ void GameManager::KeyboardCB(GLFWwindow* window, int key, int scancode, int acti
     ));
 }
 
-
-void GameManager::UpdateCamera()
-{
-    const float yaw_speed = 120.0;
-    const float pitch_speed = 100.0;
-    const float pitch_limit = 90.0;
-
-    Character& player = *callbackData.player;
-    Camera& camera = *callbackData.camera;
-
-    camera.Params.Target.x = -cos(glm::radians(player.GetYaw()));
-    camera.Params.Target.z = -sin(glm::radians(player.GetYaw()));
-    camera.Params.Target.y = tan(glm::radians(player.GetPitch()));
-    camera.PersProj.FOV = pitch_limit - fabs(player.GetPitch());
-}
-
 void GameManager::InitializeObjects()
 {
     Sprite::initializeGeometry();
@@ -132,7 +108,6 @@ void GameManager::InitializeGLFW(int _width, int _height)
         exit(EXIT_FAILURE);
     }
 
-
     glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -140,7 +115,6 @@ void GameManager::InitializeGLFW(int _width, int _height)
 
     width = _width;
     height = _height;
-
     window = glfwCreateWindow(width, height, "Game", NULL, NULL);
     if (!window) {
         glfwTerminate();
@@ -165,17 +139,5 @@ void GameManager::InitializeGLFW(int _width, int _height)
     glEnable(GL_DEPTH_TEST);
     glClearColor(0.12f, 0.12f, 0.12f, 0.0f);
 
-    PushCamera(createCamera());
-
-    render = new Render(callbackData.camera);
-    if (render == nullptr) {
-        std::cerr << "Error: " << "Failed to allocate memory to the renderer" << std::endl;
-        exit(EXIT_FAILURE);
-    }
-
-    bullet = new BulletManager();
-    if (bullet == nullptr) {
-        std::cerr << "Error: " << "Failed to allocate memory to the bullet" << std::endl;
-        exit(EXIT_FAILURE);
-    }
+    render.pipeline.camera.SetPerspectiveProj(70.0f, width, height, 0.5f, 1000.0f);
 }

@@ -13,6 +13,6 @@ add_library(${target} STATIC
 
 target_link_libraries(${target}
     PRIVATE
-	lib-skybox
+	#lib-skybox
 	lib-shader
 )

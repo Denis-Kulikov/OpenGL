@@ -4,12 +4,7 @@
 struct GeometryInfo Cube::geometryInfo = {0, 0, 0, 0, 0};
 
 void Cube::Render(void *RenderData) const {
-    if (GameManager::render->pipeline.camera == nullptr) {
-        std::cout << "Error Render: not found camera" << std::endl;
-        return;
-    }
-
-    GameManager::render->PushGeometry(&geometryInfo);
+    GameManager::render.PushGeometry(&geometryInfo);
 
     glUseProgram(shader);
     glActiveTexture(GL_TEXTURE0);

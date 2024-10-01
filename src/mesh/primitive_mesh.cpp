@@ -19,6 +19,6 @@ Primitive_mesh::~Primitive_mesh()
 
 void Primitive_mesh::Render() const
 {
-    auto mat4x4 = GameManager::render->PV * GameManager::render->pipeline.GetWorld(transform);
+    auto mat4x4 = GameManager::render.PV * GameManager::render.pipeline.GetWorld(transform);
     return object->Render(&mat4x4);
 }
