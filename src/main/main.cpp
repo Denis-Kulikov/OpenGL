@@ -116,6 +116,85 @@ void callback(Scene *scene) {
     }
 }
 
+void generateMobiusStrip(int size, std::vector<bool> &data, float width, float radius) {
+    int centerX = size / 2;
+    int centerY = size / 2;
+    int centerZ = size / 2;
+
+    for (int x = 0; x < size; ++x) {
+        for (int y = 0; y < size; ++y) {
+            for (int z = 0; z < size; ++z) {
+                float u = ((float)x / size) * 2.0f * M_PI;  // Параметр u
+                float v = ((float)y / size) * 2.0f - 1.0f;  // Параметр v (от -1 до 1)
+
+                // Параметрическое уравнение Мёбиусова кольца
+                float X = (radius + v * cos(u / 2)) * cos(u);
+                float Y = (radius + v * cos(u / 2)) * sin(u);
+                float Z = v * sin(u / 2);
+
+                // Преобразование координат в систему с центром в центре куба
+                float dx = X + centerX - x;
+                float dy = Y + centerY - y;
+                float dz = Z + centerZ - z;
+
+                // Если расстояние до точки меньше допустимого, заполняем воксель
+                if (sqrt(dx * dx + dy * dy + dz * dz) < width) {
+                    data[x + y * size + z * size * size] = 1;
+                } else {
+                    data[x + y * size + z * size * size] = 0;
+                }
+            }
+        }
+    }
+}
+
+void generateTorus(int size, std::vector<bool> &data, float R, float r) {
+    int centerX = size / 2;
+    int centerY = size / 2;
+    int centerZ = size / 2;
+
+    for (int x = 0; x < size; ++x) {
+        for (int y = 0; y < size; ++y) {
+            for (int z = 0; z < size; ++z) {
+                // Преобразование координат в систему с центром в центре куба
+                float dx = x - centerX;
+                float dy = y - centerY;
+                float dz = z - centerZ;
+
+                // Вычисление расстояний
+                float distanceFromAxis = sqrt(dx * dx + dy * dy);
+                float torusEquation = pow((distanceFromAxis - R), 2) + dz * dz - r * r;
+
+                // Если точка удовлетворяет уравнению тора, заполняем воксель
+                if (torusEquation <= 0.0f) {
+                    data[x + y * size + z * size * size] = 1;
+                } else {
+                    data[x + y * size + z * size * size] = 0;
+                }
+            }
+        }
+    }
+}
+
+void generateSphere(int size, std::vector<bool> &data, float radius) {
+    int centerX = size / 2;
+    int centerY = size / 2;
+    int centerZ = size / 2;
+
+    for (int x = 0; x < size; ++x) {
+        for (int y = 0; y < size; ++y) {
+            for (int z = 0; z < size; ++z) {
+                float dist = sqrt(pow(x - centerX, 2) + pow(y - centerY, 2) + pow(z - centerZ, 2));
+                if (dist <= radius) {
+                    data[x + y * size + z * size * size] = 1; // Воксель внутри сферы
+                } else {
+                    data[x + y * size + z * size * size] = 0; // Пустое пространство
+                }
+            }
+        }
+    }
+}
+
 Scene *createScene()
 {
     Cube::initializeGeometry();
@@ -127,19 +206,22 @@ Scene *createScene()
     Ghost *character = new Ghost();
     // Sprite* sprite = new Sprite("floor", "shaders/sprite_fs.glsl","shaders/sprite_vs.glsl", "img/grass.png");
 
-    const std::size_t SIZE = 3072;
+    const std::size_t SIZE = 256;
     vec3i size(SIZE, SIZE, SIZE);
     std::vector<bool> vec(SIZE * SIZE * SIZE);
     //int* vec = new int[SIZE * SIZE * SIZE];
 
+    generateSphere(SIZE, vec, SIZE / 4);
+    // generateTorus(SIZE, vec, 300.0f, 100.0f);
+    // generateMobiusStrip(SIZE, vec, 50.0f, 300.0f);
 
-    for (int x = 0; x < size.x; ++x) {
-        for (int y = 0; y < size.y; ++y) {
-            for (int z = 0; z < size.z; ++z) {
-                vec[z + y * size.z + x * size.z * size.y] = x / 2 == 0;
-            }
-        }
-    }
+    // for (int x = 0; x < size.x; ++x) {
+    //     for (int y = 0; y < size.y; ++y) {
+    //         for (int z = 0; z < size.z; ++z) {
+    //             vec[z + y * size.z + x * size.z * size.y] = (z / 2) == 0;
+    //         }
+    //     }
+    // }
 
     CustomMesh *cmesh = new CustomMesh(size, vec);
     Primitive_mesh *obj = new Primitive_mesh(cmesh);
@@ -148,8 +230,8 @@ Scene *createScene()
     scene->pushObject(obj);
 
     objectTransform transform;
-    float scale = 4 / SIZE;
-    transform.SetWorldPos(0.0, -5.0, -10.0);
+    float scale = 4.0 ;
+    transform.SetWorldPos(0.0, -5.0, -0.0);
     transform.SetRotate(0.0, 0.0, 0.0);
     transform.SetScale(glm::vec3(scale, scale, scale));
     *obj->GetTransform() = transform;

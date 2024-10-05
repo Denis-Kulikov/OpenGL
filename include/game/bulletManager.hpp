@@ -3,12 +3,12 @@
 class BulletManager {
 public:
     BulletManager();
-    ~BulletManager();
+    ~BulletManager() = default;
 
 private:
-    btBroadphaseInterface* broadphase = nullptr;
-    btDefaultCollisionConfiguration* collisionConfiguration = nullptr;
-    btCollisionDispatcher* dispatcher = nullptr;
-    btSequentialImpulseConstraintSolver* solver = nullptr;
-    btDiscreteDynamicsWorld* dynamicsWorld = nullptr;
+    btDbvtBroadphase broadphase;
+    btDefaultCollisionConfiguration collisionConfiguration;
+    btCollisionDispatcher dispatcher;
+    btSequentialImpulseConstraintSolver solver;
+    btDiscreteDynamicsWorld dynamicsWorld;
 };

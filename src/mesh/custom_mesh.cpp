@@ -11,7 +11,7 @@ CustomMesh::CustomMesh(vec3i size, std::vector<bool> &data)
 
 void CustomMesh::initializeGeometry(vec3i size, std::vector<bool> &data) {
     struct face {
-        int f[6]; // is face?
+        bool f[6]; // is face?
     };
     std::vector<face> faces(size.x * size.y * size.z);
     
@@ -23,35 +23,21 @@ void CustomMesh::initializeGeometry(vec3i size, std::vector<bool> &data) {
                 #define CELL(TARGET, X, Y, Z) TARGET[X + Y * size.x + Z * size.x * size.y]
                 #define CUR(TARGET) CELL(TARGET, x, y, z)
                 if (CUR(data)) {
-                    CUR(faces).f[Face::LEFT]    = x == 0 || !CELL(data, x - 1, y, z);
+                    CUR(faces).f[Face::LEFT]    = x == 0 || !CELL(data, (x - 1), y, z);
                     CUR(faces).f[Face::RIGHT]   = x == size.x - 1 || !CELL(data, (x + 1), y, z);
                     CUR(faces).f[Face::TOP]     = y == size.y - 1 || !CELL(data, x, (y + 1), z);
                     CUR(faces).f[Face::BOTTOM]  = y == 0 || !CELL(data, x, (y - 1), z);
-                    CUR(faces).f[Face::FRONT]   = z == size.z - 1 || !CELL(data, x, y, (z + 1));
-                    CUR(faces).f[Face::BACK]    = z == 0 || !CELL(data, x, y, (z - 1));
+                    CUR(faces).f[Face::BACK]   = z == size.z - 1 || !CELL(data, x, y, (z + 1));
+                    CUR(faces).f[Face::FRONT]    = z == 0 || !CELL(data, x, y, (z - 1));
                 } else {
                     std::fill(std::begin(CUR(faces).f), std::end(CUR(faces).f), 0);
                 }
-
-                std::cout << "At " << x << ", " << y << ", " << z << " | " << 
-                    CUR(faces).f[Face::LEFT]   << " " <<
-                    CUR(faces).f[Face::RIGHT]  << " " <<
-                    CUR(faces).f[Face::TOP]    << " " <<
-                    CUR(faces).f[Face::BOTTOM] << " " <<
-                    CUR(faces).f[Face::FRONT]  << " " <<
-                    CUR(faces).f[Face::BACK]   << std::endl;
-                if (x == 0 && y == 1 && z == 1) {
-                    std::cout << CUR(faces).f[Face::TOP] << " " << CUR(faces).f[Face::BACK] <<  " "
-                    << CELL(data, x, (y + 1), z) << " " << CELL(data, x, y, (z - 1)) << std::endl;
-                }
-
             }
         }
     }
 
     std::vector<float> vertices;
     std::vector<unsigned int> indices;
-        std::vector<float> normals;
 
     for (int x = 0; x < size.x; ++x) {
         for (int y = 0; y < size.y; ++y) {
