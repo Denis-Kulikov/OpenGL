@@ -40,7 +40,7 @@ void Render::PushLineWidth(GLfloat _LineWidth)
     }
 }
 
-void Render::PushGeometry(struct GeometryInfo *geometry)
+void Render::PushGeometry(const struct GeometryInfo *geometry)
 {
     glBindVertexArray(geometry->VAO);
     glBindBuffer(GL_ARRAY_BUFFER, geometry->VBO);

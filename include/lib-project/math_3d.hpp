@@ -6,3 +6,12 @@
 #define ToDegree(x) ((x) * 180.0f / M_PI)
 
 #include "../include/math/Matrix4f.hpp"
+
+struct vec3i {
+    vec3i(int x, int y, int z)
+        : x(x), y(y), z(z) {}
+        
+    int x;
+    int y;
+    int z;
+};

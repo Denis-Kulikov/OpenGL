@@ -39,6 +39,5 @@ protected:
     inline static struct GeometryInfo geometryInfo = {0, 0, 0, 0, 0};
 
 private:
-    inline static std::map<std::string, std::array<GLuint, 4>> shadersMap;
     inline static std::map<std::string, GLuint> texturesMap;
 };

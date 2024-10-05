@@ -2,6 +2,7 @@ set(target lib-mesh)
 
 add_library(${target} STATIC
 	mesh.cpp
+	custom_mesh.cpp
 	primitive_mesh.cpp
 )
 

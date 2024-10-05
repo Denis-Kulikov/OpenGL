@@ -13,7 +13,7 @@ public:
     void SetCamera(const Camera &_camera);
     void clearRender();
     void PushLineWidth(GLfloat _LineWidth);
-    void PushGeometry(struct GeometryInfo *geometry);
+    void PushGeometry(const struct GeometryInfo *geometry);
     void drawObject(Matrix4f& matrix, Sprite *sprite);
     void drawSkybox(Cube &skybox);
     void GetPV();
