@@ -14,7 +14,7 @@ Primitive_mesh::Primitive_mesh(Sprite *_object)
 
 Primitive_mesh::~Primitive_mesh()
 {
-    delete object;
+    // delete object;
 }
 
 void Primitive_mesh::Render() const

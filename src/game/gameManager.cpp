@@ -126,7 +126,7 @@ void GameManager::InitializeGLFW(int _width, int _height)
     glfwSetCursorPosCallback(window, GameManager::MouseCB);
     glfwSetKeyCallback(window, GameManager::KeyboardCB);
     glfwSetWindowUserPointer(window, &callbackData);
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    // glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
     glfwSetWindowPos(window, 320, 75);
 

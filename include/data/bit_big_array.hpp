@@ -2,7 +2,7 @@
 #include "../lib-project/lib.hpp"
 #include <vector>
 #include <cstddef>
-#include <cstdint>
+#include <cstdbool>
 #include <stdexcept>
 
 class BitBigArray {

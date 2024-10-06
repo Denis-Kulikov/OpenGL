@@ -3,6 +3,16 @@
 #include "../object/renderableObject.hpp"
 
 struct GeometryInfo {
+    ~GeometryInfo() {
+        if (VAO != 0) 
+            glDeleteVertexArrays(1, &VAO);
+
+        if (VBO != 0) 
+            glDeleteBuffers(1, &VBO);
+            
+        if (EBO != 0) 
+            glDeleteBuffers(1, &EBO);
+    }
     GLuint VAO = 0;
     GLuint VBO = 0;
     GLuint EBO = 0;

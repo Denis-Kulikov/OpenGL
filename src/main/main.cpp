@@ -21,8 +21,9 @@ std::chrono::milliseconds totalTime(0);
 
 
 
-const std::size_t PART = 4;
-const std::size_t SIZE = 128;
+const float SCALE = 8;
+const std::size_t PART = 4096;
+const std::size_t SIZE = 2048;
 vec3i size(SIZE, SIZE, SIZE);
 BitBigArray vec(SIZE * SIZE * SIZE, PART);
 
@@ -45,35 +46,51 @@ void callback(Scene *scene) {
 
     GameManager::Time.Update();
     GameManager::render.GetPV();
-    GameManager::UpdateCamera();
+    // GameManager::UpdateCamera();
 
+    std::cout << "Start (" << frame << "): " << GameManager::Time.GetCurrentTime() << std::endl;
     // static CubeSimple cube;
     // GameManager::render.drawSkybox(*scene->skybox);
 
     for (auto& it : scene->actors) {
         (reinterpret_cast<Pawn*>(it))->MoveForward();
-        if (it->GetMesh() != nullptr) {
-            it->GetMesh()->set_transform(*it->GetTransform());
-            std::vector<aiMatrix4x4> *Transforms = new std::vector<aiMatrix4x4>;
-            it->GetMesh()->BoneTransform(GameManager::Time.GetCurrentTime(), *Transforms);
-            GameManager::render.clearRender();
-            Actor::Actor_rdata data = {Transforms, it->GetMesh()};
-            it->Render(&data);
-            GameManager::render.clearRender();
+        // if (it->GetMesh() != nullptr) {
+        //     it->GetMesh()->set_transform(*it->GetTransform());
+        //     std::vector<aiMatrix4x4> *Transforms = new std::vector<aiMatrix4x4>;
+        //     it->GetMesh()->BoneTransform(GameManager::Time.GetCurrentTime(), *Transforms);
+        //     GameManager::render.clearRender();
+        //     Actor::Actor_rdata data = {Transforms, it->GetMesh()};
+        //     it->Render(&data);
+        //     GameManager::render.clearRender();
+        // }
+    }
+
+    objectTransform transform;
+    float scale = SCALE / SIZE;
+    transform.SetWorldPos(-(SCALE / 2), -(SCALE / 2), SCALE);
+    transform.SetRotate(0.0, 0.0, 0.0);
+    transform.SetScale(glm::vec3(scale, scale, scale));
+
+    for (int i = 0; i < PART; ++i) {
+        CustomMesh cmesh(size, vec, i);
+        Primitive_mesh obj(&cmesh);
+
+        *obj.GetTransform() = transform;
+        GLenum err;
+        while ((err = glGetError()) != GL_NO_ERROR) {
+            std::cout << "OpenGL error: " << err << std::endl;
         }
+        obj.Render();
     }
 
-    // CubeSimple::CubeSimple_rdata data = {
-    //     SIZE,
-    //     GameManager::render.pipeline.GetTransform(objectTransform()),
-    //     &vec
-    // };
 
-    // cube.Render(&data);
 
-    for (auto& it : scene->primitives) {
-        it->Render();
-    }
+    std::cout << "End (" << frame << "): " << GameManager::Time.GetCurrentTime() << std::endl;
+
+
+    // for (auto& it : scene->primitives) {
+    //     it->Render();
+    // }
 
 //     static time_t prev_rotate = time(0);
 //     if ((time(0) - prev_rotate) > 0.75) {
@@ -191,14 +208,14 @@ void generateTorus(int size, std::vector<bool> &data, float R, float r) {
     }
 }
 
-void generateSphere(int size, BitBigArray &data, float radius) {
-    int centerX = size / 2;
-    int centerY = size / 2;
-    int centerZ = size / 2;
+void generateSphere(long long int size, BitBigArray &data, float radius) {
+    long long int centerX = size / 2;
+    long long int centerY = size / 2;
+    long long int centerZ = size / 2;
 
-    for (int x = 0; x < size; ++x) {
-        for (int y = 0; y < size; ++y) {
-            for (int z = 0; z < size; ++z) {
+    for (long long int x = 0; x < size; ++x) {
+        for (long long int y = 0; y < size; ++y) {
+            for (long long int z = 0; z < size; ++z) {
                 float dist = sqrt(pow(x - centerX, 2) + pow(y - centerY, 2) + pow(z - centerZ, 2));
                 if (dist <= radius) {
                     data.setBit(x + y * size + z * size * size, 1);
@@ -229,8 +246,9 @@ Scene *createScene()
     // for (int i = 0; i < 24; ++i) {
     //     bigVec[i] = new bool[3072 * 3072 * (3072 / 24)];
     // }
-
+    std::cout << "Start (" << "generateSphere" << "): " << GameManager::Time.GetCurrentTime() << std::endl;
     generateSphere(SIZE, vec, SIZE / 4);
+    std::cout << "End (" << "generateSphere" << "): " << GameManager::Time.GetCurrentTime() << std::endl;
     // generateTorus(SIZE, vec, 300.0f, 100.0f);
     // generateMobiusStrip(SIZE, vec, 50.0f, 300.0f);
     // for (int x = 0; x < size.x; ++x) {
@@ -242,18 +260,7 @@ Scene *createScene()
     // }
 
     scene->pushObject(character);
-    for (int i = 0; i < PART; ++i) {
-        CustomMesh *cmesh = new CustomMesh(size, vec, i);
-        Primitive_mesh *obj = new Primitive_mesh(cmesh);
-        scene->pushObject(obj);
 
-        objectTransform transform;
-        float scale = 8.0 / SIZE;
-        transform.SetWorldPos(0.0, -5.0, -0.0);
-        transform.SetRotate(0.0, 0.0, 0.0);
-        transform.SetScale(glm::vec3(scale, scale, scale));
-        *obj->GetTransform() = transform;
-    }
 
     GameManager::PushPlayer(character);
     GameManager::render.pipeline.camera.OwnerTransformPtr = character->GetTransform();
