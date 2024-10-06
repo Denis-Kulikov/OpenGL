@@ -7,8 +7,9 @@
 class CustomMesh : public Sprite
 {
 public:
-    CustomMesh(vec3i size, BitBigArray &data);
-    void initializeGeometry(vec3i size, BitBigArray &data);
+    CustomMesh(vec3i size, BitBigArray &data, int partIndex);
+    ~CustomMesh();
+    void initializeGeometry(vec3i size, BitBigArray &data, int partIndex);
     struct GeometryInfo *GetGeometry() override;
 
     void Render(void *RenderData) const override;

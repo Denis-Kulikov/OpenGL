@@ -37,3 +37,5 @@
 #define INVALID_OGL_VALUE 0
 
 #pragma comment (lib, "opengl32.lib" )
+
+using ull_I = unsigned long long;

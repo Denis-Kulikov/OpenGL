@@ -15,6 +15,7 @@ class Sprite : public RenderableObject
 {
 public:
     Sprite(const std::string &_name, const std::string &FS, const std::string &VS, const std::string &texturePath);
+    ~Sprite();
     static void initializeGeometry();
     virtual struct GeometryInfo *GetGeometry();
 
@@ -30,8 +31,8 @@ public:
     Shader shader;
     GLuint texture = 0;
     
-    GLuint gWorldLocation;
-    GLuint gTextureSamplerLocation;
+    GLuint gWorldLocation = 0;
+    GLuint gTextureSamplerLocation = 0;
 
 protected:
     void loadTextures(const std::string &texturePath);

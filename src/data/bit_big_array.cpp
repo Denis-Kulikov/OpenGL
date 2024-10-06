@@ -2,7 +2,7 @@
 #include <data/bit_big_array.hpp>
 
 
-BitBigArray::BitBigArray(unsigned long long totalSize, std::size_t numParts)
+BitBigArray::BitBigArray(ull_I totalSize, std::size_t numParts)
     : totalSize(totalSize), numParts(numParts), partSize(totalSize / numParts)
 {
     parts = new bool*[numParts];
@@ -18,18 +18,18 @@ BitBigArray::~BitBigArray() {
     delete[] parts;
 }
 
-void BitBigArray::setBit(std::size_t index, bool value) {
+void BitBigArray::setBit(ull_I index, bool value) {
     std::size_t partIndex = index / partSize;
     std::size_t localIndex = index % partSize;
     parts[partIndex][localIndex] = value;
 }
 
-bool BitBigArray::getBit(std::size_t index) const {
+bool BitBigArray::getBit(ull_I index) const {
     std::size_t partIndex = index / partSize;
     std::size_t localIndex = index % partSize;
     return parts[partIndex][localIndex];
 }
 
-std::size_t BitBigArray::size() const {
+ull_I BitBigArray::size() const {
     return totalSize;
 }

@@ -22,6 +22,23 @@ Sprite::Sprite(const std::string &_name, const std::string &FS, const std::strin
     }
 }
 
+Sprite::~Sprite() {
+    if (texture != 0) {
+        glDeleteTextures(1, &texture);
+    }
+
+    if (geometryInfo.VAO != 0) {
+        glDeleteVertexArrays(1, &geometryInfo.VAO);
+    }
+    if (geometryInfo.VBO != 0) {
+        glDeleteBuffers(1, &geometryInfo.VBO);
+    }
+    if (geometryInfo.EBO != 0) {
+        glDeleteBuffers(1, &geometryInfo.EBO);
+    }
+}
+
+
 void Sprite::Render(void *RenderData) const {
     GameManager::render.PushGeometry(&geometryInfo);
 

@@ -21,9 +21,10 @@ std::chrono::milliseconds totalTime(0);
 
 
 
-const std::size_t SIZE = 512;
+const std::size_t PART = 4;
+const std::size_t SIZE = 128;
 vec3i size(SIZE, SIZE, SIZE);
-BitBigArray vec(SIZE * SIZE * SIZE, 2);
+BitBigArray vec(SIZE * SIZE * SIZE, PART);
 
 
 void swapBuffer() {
@@ -221,8 +222,8 @@ Scene *createScene()
     Ghost *character = new Ghost();
     // Sprite* sprite = new Sprite("floor", "shaders/sprite_fs.glsl","shaders/sprite_vs.glsl", "img/grass.png");
 
-    unsigned long long s = 3072ull * 3072ull * 3072ull;
-    BitBigArray array(s, 24);
+    // ull_I s = 3072ull * 3072ull * 3072ull;
+    // BitBigArray array(s, 24);
     // bool* vecb = new bool[3072 * 3072 * (3072 / 24)];
     // bool *bigVec[24];
     // for (int i = 0; i < 24; ++i) {
@@ -240,18 +241,19 @@ Scene *createScene()
     //     }
     // }
 
-    CustomMesh *cmesh = new CustomMesh(size, vec);
-    Primitive_mesh *obj = new Primitive_mesh(cmesh);
-
     scene->pushObject(character);
-    scene->pushObject(obj);
+    for (int i = 0; i < PART; ++i) {
+        CustomMesh *cmesh = new CustomMesh(size, vec, i);
+        Primitive_mesh *obj = new Primitive_mesh(cmesh);
+        scene->pushObject(obj);
 
-    objectTransform transform;
-    float scale = 8.0 / SIZE;
-    transform.SetWorldPos(0.0, -5.0, -0.0);
-    transform.SetRotate(0.0, 0.0, 0.0);
-    transform.SetScale(glm::vec3(scale, scale, scale));
-    *obj->GetTransform() = transform;
+        objectTransform transform;
+        float scale = 8.0 / SIZE;
+        transform.SetWorldPos(0.0, -5.0, -0.0);
+        transform.SetRotate(0.0, 0.0, 0.0);
+        transform.SetScale(glm::vec3(scale, scale, scale));
+        *obj->GetTransform() = transform;
+    }
 
     GameManager::PushPlayer(character);
     GameManager::render.pipeline.camera.OwnerTransformPtr = character->GetTransform();

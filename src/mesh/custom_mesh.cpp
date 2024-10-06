@@ -2,83 +2,102 @@
 #include <mesh/custom_mesh.hpp>
 
 
-CustomMesh::CustomMesh(vec3i size, BitBigArray &data)
+CustomMesh::CustomMesh(vec3i size, BitBigArray &data, int partIndex)
     : Sprite("", "shaders/base_fs.glsl", "shaders/base_vs.glsl", "")
 {
     gColorLocation = glGetUniformLocation(shader, "gColor");
-    initializeGeometry(size, data);
+    initializeGeometry(size, data, partIndex);
+}
+
+CustomMesh::~CustomMesh() {
+    if (geometryInfo.VAO != 0) {
+        glDeleteVertexArrays(1, &geometryInfo.VAO);
+    }
+    if (geometryInfo.VBO != 0) {
+        glDeleteBuffers(1, &geometryInfo.VBO);
+    }
+    if (geometryInfo.EBO != 0) {
+        glDeleteBuffers(1, &geometryInfo.EBO);
+    }
 }
 
 
-void CustomMesh::initializeGeometry(vec3i size, BitBigArray &data) {
+void CustomMesh::initializeGeometry(vec3i size, BitBigArray &data, int partIndex) {
     struct face {
-        bool f[6]; // is face?
+        face()
+            : f(6)
+        {}
+        BitArray f; // is face?
     };
-    std::vector<face> faces(size.x * size.y * size.z);
+    std::vector<face> faces(size.x * size.y * (size.z / data.numParts));
     
     if (size.x < 2 || size.y < 2 || size.z < 2) assert(false && "Wrong size");
 
-    for (int z = 0; z < size.z; ++z) {          // FRONT BACK
+    int offset = partIndex * size.x * size.y * (size.z / data.numParts);
+    std::cout << "offset " << offset << std::endl;
+    // int count = 0;
+
+    for (int z = 0; z < (size.z / data.numParts); ++z) {          // FRONT BACK
         for (int y = 0; y < size.y; ++y) {      // BOTTOM TOP
             for (int x = 0; x < size.x; ++x) {  // LEFT RIGHT
-                #define CELL(TARGET, X, Y, Z) TARGET[X + Y * size.x + Z * size.x * size.y]
-                #define CUR(TARGET) CELL(TARGET, x, y, z)
-                if (data.getBit(x + y * size.x + z * size.x * size.y)) {
-                    // CUR(faces).f[Face::LEFT]    = x == 0 || !CELL(data, (x - 1), y, z);
-                    CUR(faces).f[Face::LEFT]    = x == 0 || !data.getBit(x - 1 + y * size.x + z * size.x * size.y);
-                    // CUR(faces).f[Face::LEFT]    = x == 0 || !data.getBit(x + y * size.x + z * size.x * size.y);
-                    CUR(faces).f[Face::RIGHT]   = x == size.x - 1 || !data.getBit(x + 1 + y * size.x + z * size.x * size.y);
-                    // CUR(faces).f[Face::RIGHT]   = x == size.x - 1 || !CELL(data, (x + 1), y, z);
-                    CUR(faces).f[Face::TOP]     = y == size.y - 1 || !data.getBit(x + (y + 1) * size.x + z * size.x * size.y);
-                    // CUR(faces).f[Face::TOP]     = y == size.y - 1 || !CELL(data, x, (y + 1), z);
-                    CUR(faces).f[Face::BOTTOM]  = y == 0 || !data.getBit(x + (y - 1) * size.x + z * size.x * size.y);
-                    // CUR(faces).f[Face::BOTTOM]  = y == 0 || !CELL(data, x, (y - 1), z);
-                    CUR(faces).f[Face::BACK]   = z == size.z - 1 || !data.getBit(x + y * size.x + (z + 1) * size.x * size.y);
-                    // CUR(faces).f[Face::BACK]   = z == size.z - 1 || !CELL(data, x, y, (z + 1));
-                    CUR(faces).f[Face::FRONT]    = z == 0 || !data.getBit(x + y * size.x + (z - 1) * size.x * size.y);
-                    // CUR(faces).f[Face::FRONT]    = z == 0 || !CELL(data, x, y, (z - 1));
+                ull_I index = x + y * size.x + z * size.x * size.y;
+                ull_I indexOffset = x + y * size.x + z * size.x * size.y + offset;
+                // if (indexOffset < data.totalSize) std::cout << "T: " << x << " " << y << " " << z << std::endl;;
+                if (data.getBit(indexOffset)) {
+                    faces[index].f.setBit(Face::LEFT,     x == 0 || !data.getBit(indexOffset - 1));
+                    faces[index].f.setBit(Face::RIGHT,    x == size.x - 1 || !data.getBit(indexOffset + 1));
+                    faces[index].f.setBit(Face::TOP,      y == size.y - 1 || !data.getBit(indexOffset + size.x));
+                    faces[index].f.setBit(Face::BOTTOM,   y == 0 || !data.getBit(indexOffset - size.x));
+                    faces[index].f.setBit(Face::BACK,     z == size.z - 1 || !data.getBit(indexOffset + size.x * size.y));
+                    faces[index].f.setBit(Face::FRONT,    z == 0 || !data.getBit(indexOffset - size.x * size.y));
                 } else {
-                    std::fill(std::begin(CUR(faces).f), std::end(CUR(faces).f), 0);
+                    // if (partIndex) ++count;
+                    for (int i = Face::LEFT; i <= Face::FRONT; ++i) 
+                        faces[index].f.setBit(i, false);
                 }
             }
         }
     }
 
+    // std::cout << "count " << count << std::endl;
+
     std::vector<float> vertices;
     std::vector<unsigned int> indices;
 
-    for (int x = 0; x < size.x; ++x) {
+    for (int z = 0; z < (size.z / data.numParts); ++z) {
         for (int y = 0; y < size.y; ++y) {
-            for (int z = 0; z < size.z; ++z) {
+            for (int x = 0; x < size.x; ++x) {
                 // Проверяем, есть ли кубик на этой позиции
-                if (data.getBit(x + y * size.x + z * size.x * size.y)) {
+                ull_I index = x + y * size.x + z * size.x * size.y;
+                ull_I indexOffset = x + y * size.x + z * size.x * size.y + offset;
+                if (data.getBit(indexOffset)) {
                     // Задний план
-                    glm::vec3 v0 = glm::vec3(x, y, z);          // Левая нижняя
-                    glm::vec3 v1 = glm::vec3(x + 1, y, z);      // правая нижняя
-                    glm::vec3 v2 = glm::vec3(x + 1, y + 1, z);  // правая верхняя
-                    glm::vec3 v3 = glm::vec3(x, y + 1, z);      // Левая верхняя
+                    glm::vec3 v0 = glm::vec3(x, y, z + (size.z / data.numParts * partIndex));          // Левая нижняя
+                    glm::vec3 v1 = glm::vec3(x + 1, y, z + (size.z / data.numParts * partIndex));      // правая нижняя
+                    glm::vec3 v2 = glm::vec3(x + 1, y + 1, z + (size.z / data.numParts * partIndex));  // правая верхняя
+                    glm::vec3 v3 = glm::vec3(x, y + 1, z + (size.z / data.numParts * partIndex));      // Левая верхняя
                     // Передний план
-                    glm::vec3 v4 = glm::vec3(x, y, z + 1);           // Левая нижняя
-                    glm::vec3 v5 = glm::vec3(x + 1, y, z + 1);       // правая нижняя
-                    glm::vec3 v6 = glm::vec3(x + 1, y + 1, z + 1);   // правая верхняя
-                    glm::vec3 v7 = glm::vec3(x, y + 1, z + 1);       // Левая верхняя
+                    glm::vec3 v4 = glm::vec3(x, y, z + 1 + (size.z / data.numParts * partIndex));           // Левая нижняя
+                    glm::vec3 v5 = glm::vec3(x + 1, y, z + 1 + (size.z / data.numParts * partIndex));       // правая нижняя
+                    glm::vec3 v6 = glm::vec3(x + 1, y + 1, z + 1 + (size.z / data.numParts * partIndex));   // правая верхняя
+                    glm::vec3 v7 = glm::vec3(x, y + 1, z + 1 + (size.z / data.numParts * partIndex));       // Левая верхняя
 
-                    if (CUR(faces).f[Face::LEFT]) 
+                    if (faces[index].f.getBit(Face::LEFT)) 
                         addFace(vertices, indices, v0, v3, v7, v4); // Левая грань
                     
-                    if (CUR(faces).f[Face::RIGHT]) 
+                    if (faces[index].f.getBit(Face::RIGHT)) 
                         addFace(vertices, indices, v1, v5, v6, v2); // Правая грань
                     
-                    if (CUR(faces).f[Face::BOTTOM]) 
+                    if (faces[index].f.getBit(Face::BOTTOM)) 
                         addFace(vertices, indices, v0, v1, v5, v4); // Нижняя грань
                     
-                    if (CUR(faces).f[Face::TOP]) 
+                    if (faces[index].f.getBit(Face::TOP)) 
                         addFace(vertices, indices, v3, v2, v6, v7); // Верхняя грань
                     
-                    if (CUR(faces).f[Face::FRONT]) 
+                    if (faces[index].f.getBit(Face::FRONT)) 
                         addFace(vertices, indices, v0, v1, v2, v3); // Передняя грань
                     
-                    if (CUR(faces).f[Face::BACK]) 
+                    if (faces[index].f.getBit(Face::BACK)) 
                         addFace(vertices, indices, v4, v5, v6, v7); // Задняя грань
                 }
             }
