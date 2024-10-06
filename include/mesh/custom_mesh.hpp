@@ -25,6 +25,9 @@ protected:
         BACK,
         FRONT
     };
+
+    std::vector<float> vertices;
+    std::vector<unsigned int> indices;
     
     GLuint gColorLocation = 0;
     glm::vec3 color = {1.0f, 1.0f, 1.0f};

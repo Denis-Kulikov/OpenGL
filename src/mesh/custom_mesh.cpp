@@ -6,7 +6,14 @@ CustomMesh::CustomMesh(vec3i size, BitBigArray &data, int partIndex)
     : Sprite("", "shaders/base_fs.glsl", "shaders/base_vs.glsl", "")
 {
     gColorLocation = glGetUniformLocation(shader, "gColor");
+
+    vertices.reserve(8 / 2 * 3 * (size.z / data.numParts));
+    indices.reserve(6 / 2 * 6 * (size.z / data.numParts));
+    
     initializeGeometry(size, data, partIndex);
+
+    vertices.clear();
+    indices.clear();
 }
 
 CustomMesh::~CustomMesh() {}
@@ -47,8 +54,6 @@ void CustomMesh::initializeGeometry(vec3i size, BitBigArray &data, int partIndex
     //     }
     // }
 
-    std::vector<float> vertices(8 / 2 * 3 * (size.z / data.numParts));
-    std::vector<unsigned int> indices(6 / 2 * 6 * (size.z / data.numParts));
 
     for (int z = 0; z < (size.z / data.numParts); ++z) {
         for (int y = 0; y < size.y; ++y) {

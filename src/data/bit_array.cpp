@@ -4,6 +4,8 @@
 BitArray::BitArray(std::size_t sizeInBits)
     : vec((sizeInBits + 7) / 8) {} 
 
+BitArray::BitArray() {} 
+
 void BitArray::setBit(std::size_t index, bool value) {
     if (index >= (vec.size() * 8)) {
         throw std::out_of_range("Index out of bounds");

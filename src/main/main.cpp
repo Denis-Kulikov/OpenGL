@@ -22,8 +22,8 @@ std::chrono::milliseconds totalTime(0);
 
 
 const float SCALE = 8;
-const std::size_t PART = 4096;
-const std::size_t SIZE = 2048;
+const std::size_t PART = 16;
+const std::size_t SIZE = 1024;
 vec3i size(SIZE, SIZE, SIZE);
 BitBigArray vec(SIZE * SIZE * SIZE, PART);
 
@@ -70,17 +70,25 @@ void callback(Scene *scene) {
     transform.SetWorldPos(-(SCALE / 2), -(SCALE / 2), SCALE);
     transform.SetRotate(0.0, 0.0, 0.0);
     transform.SetScale(glm::vec3(scale, scale, scale));
+        
+    static bool flag = true;
 
     for (int i = 0; i < PART; ++i) {
         CustomMesh cmesh(size, vec, i);
         Primitive_mesh obj(&cmesh);
-
         *obj.GetTransform() = transform;
         GLenum err;
         while ((err = glGetError()) != GL_NO_ERROR) {
             std::cout << "OpenGL error: " << err << std::endl;
         }
+        if (flag) {
+            char ch = getchar();
+            if (ch == '1')
+                flag = !flag;
+        }
+        std::cout << "Render: " << GameManager::Time.GetCurrentTime() << std::endl;
         obj.Render();
+        std::cout << "End (" << "Render" << "): " << GameManager::Time.GetCurrentTime() << std::endl;
     }
 
 
@@ -185,9 +193,9 @@ void generateTorus(int size, std::vector<bool> &data, float R, float r) {
     int centerY = size / 2;
     int centerZ = size / 2;
 
-    for (int x = 0; x < size; ++x) {
+    for (int z = 0; z < size; ++z) {
         for (int y = 0; y < size; ++y) {
-            for (int z = 0; z < size; ++z) {
+            for (int x = 0; x < size; ++x) {
                 // Преобразование координат в систему с центром в центре куба
                 float dx = x - centerX;
                 float dy = y - centerY;
@@ -213,9 +221,10 @@ void generateSphere(long long int size, BitBigArray &data, float radius) {
     long long int centerY = size / 2;
     long long int centerZ = size / 2;
 
-    for (long long int x = 0; x < size; ++x) {
+    for (long long int z = 0; z < size; ++z) {
+        if ((z % (size / 10)) == 0) std::cout << (z / (size / 10)) << "0%" << std::endl;
         for (long long int y = 0; y < size; ++y) {
-            for (long long int z = 0; z < size; ++z) {
+            for (long long int x = 0; x < size; ++x) {
                 float dist = sqrt(pow(x - centerX, 2) + pow(y - centerY, 2) + pow(z - centerZ, 2));
                 if (dist <= radius) {
                     data.setBit(x + y * size + z * size * size, 1);
