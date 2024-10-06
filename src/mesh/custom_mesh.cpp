@@ -1,7 +1,8 @@
 #include <game/gameManager.hpp>
 #include <mesh/custom_mesh.hpp>
 
-CustomMesh::CustomMesh(vec3i size, std::vector<bool> &data)
+
+CustomMesh::CustomMesh(vec3i size, BitBigArray &data)
     : Sprite("", "shaders/base_fs.glsl", "shaders/base_vs.glsl", "")
 {
     gColorLocation = glGetUniformLocation(shader, "gColor");
@@ -9,7 +10,7 @@ CustomMesh::CustomMesh(vec3i size, std::vector<bool> &data)
 }
 
 
-void CustomMesh::initializeGeometry(vec3i size, std::vector<bool> &data) {
+void CustomMesh::initializeGeometry(vec3i size, BitBigArray &data) {
     struct face {
         bool f[6]; // is face?
     };
@@ -22,13 +23,20 @@ void CustomMesh::initializeGeometry(vec3i size, std::vector<bool> &data) {
             for (int x = 0; x < size.x; ++x) {  // LEFT RIGHT
                 #define CELL(TARGET, X, Y, Z) TARGET[X + Y * size.x + Z * size.x * size.y]
                 #define CUR(TARGET) CELL(TARGET, x, y, z)
-                if (CUR(data)) {
-                    CUR(faces).f[Face::LEFT]    = x == 0 || !CELL(data, (x - 1), y, z);
-                    CUR(faces).f[Face::RIGHT]   = x == size.x - 1 || !CELL(data, (x + 1), y, z);
-                    CUR(faces).f[Face::TOP]     = y == size.y - 1 || !CELL(data, x, (y + 1), z);
-                    CUR(faces).f[Face::BOTTOM]  = y == 0 || !CELL(data, x, (y - 1), z);
-                    CUR(faces).f[Face::BACK]   = z == size.z - 1 || !CELL(data, x, y, (z + 1));
-                    CUR(faces).f[Face::FRONT]    = z == 0 || !CELL(data, x, y, (z - 1));
+                if (data.getBit(x + y * size.x + z * size.x * size.y)) {
+                    // CUR(faces).f[Face::LEFT]    = x == 0 || !CELL(data, (x - 1), y, z);
+                    CUR(faces).f[Face::LEFT]    = x == 0 || !data.getBit(x - 1 + y * size.x + z * size.x * size.y);
+                    // CUR(faces).f[Face::LEFT]    = x == 0 || !data.getBit(x + y * size.x + z * size.x * size.y);
+                    CUR(faces).f[Face::RIGHT]   = x == size.x - 1 || !data.getBit(x + 1 + y * size.x + z * size.x * size.y);
+                    // CUR(faces).f[Face::RIGHT]   = x == size.x - 1 || !CELL(data, (x + 1), y, z);
+                    CUR(faces).f[Face::TOP]     = y == size.y - 1 || !data.getBit(x + (y + 1) * size.x + z * size.x * size.y);
+                    // CUR(faces).f[Face::TOP]     = y == size.y - 1 || !CELL(data, x, (y + 1), z);
+                    CUR(faces).f[Face::BOTTOM]  = y == 0 || !data.getBit(x + (y - 1) * size.x + z * size.x * size.y);
+                    // CUR(faces).f[Face::BOTTOM]  = y == 0 || !CELL(data, x, (y - 1), z);
+                    CUR(faces).f[Face::BACK]   = z == size.z - 1 || !data.getBit(x + y * size.x + (z + 1) * size.x * size.y);
+                    // CUR(faces).f[Face::BACK]   = z == size.z - 1 || !CELL(data, x, y, (z + 1));
+                    CUR(faces).f[Face::FRONT]    = z == 0 || !data.getBit(x + y * size.x + (z - 1) * size.x * size.y);
+                    // CUR(faces).f[Face::FRONT]    = z == 0 || !CELL(data, x, y, (z - 1));
                 } else {
                     std::fill(std::begin(CUR(faces).f), std::end(CUR(faces).f), 0);
                 }
@@ -43,7 +51,7 @@ void CustomMesh::initializeGeometry(vec3i size, std::vector<bool> &data) {
         for (int y = 0; y < size.y; ++y) {
             for (int z = 0; z < size.z; ++z) {
                 // Проверяем, есть ли кубик на этой позиции
-                if (CELL(data, x, y, z)) {
+                if (data.getBit(x + y * size.x + z * size.x * size.y)) {
                     // Задний план
                     glm::vec3 v0 = glm::vec3(x, y, z);          // Левая нижняя
                     glm::vec3 v1 = glm::vec3(x + 1, y, z);      // правая нижняя
@@ -122,7 +130,6 @@ struct GeometryInfo *CustomMesh::GetGeometry() {
 void CustomMesh::Render(void *RenderData) const {
     GameManager::render.PushGeometry(&geometryInfo);
     glUseProgram(shader);
-    glActiveTexture(GL_TEXTURE0);
     glUniform3f(gColorLocation, color.x, color.y, color.z);
     glUniformMatrix4fv(gWorldLocation, 1, GL_TRUE, &static_cast<Sprite::Sprite_rdata*>(RenderData)->matrix);
     glDrawElements(GL_TRIANGLES, geometryInfo.numIndices, GL_UNSIGNED_INT, 0);

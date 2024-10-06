@@ -3,6 +3,7 @@
 #include <game/gameManager.hpp>
 #include <object/sphere.hpp>
 #include <object/cube.hpp>
+#include <object/cube_simple.hpp>
 
 #include <threads/threads.hpp>
 #include <game/gameManager.hpp> 
@@ -13,7 +14,17 @@
 #include <stb_image.h>
 #include <stb_image_write.h>
 
+#include <data/bit_array.hpp>
+#include <data/bit_big_array.hpp>
+
 std::chrono::milliseconds totalTime(0);
+
+
+
+const std::size_t SIZE = 512;
+vec3i size(SIZE, SIZE, SIZE);
+BitBigArray vec(SIZE * SIZE * SIZE, 2);
+
 
 void swapBuffer() {
     glfwSwapBuffers(GameManager::window);
@@ -34,6 +45,8 @@ void callback(Scene *scene) {
     GameManager::Time.Update();
     GameManager::render.GetPV();
     GameManager::UpdateCamera();
+
+    // static CubeSimple cube;
     // GameManager::render.drawSkybox(*scene->skybox);
 
     for (auto& it : scene->actors) {
@@ -49,15 +62,16 @@ void callback(Scene *scene) {
         }
     }
 
+    // CubeSimple::CubeSimple_rdata data = {
+    //     SIZE,
+    //     GameManager::render.pipeline.GetTransform(objectTransform()),
+    //     &vec
+    // };
+
+    // cube.Render(&data);
+
     for (auto& it : scene->primitives) {
         it->Render();
-            // it->GetMesh()->set_transform(*it->GetTransform());
-            // std::vector<aiMatrix4x4> *Transforms = new std::vector<aiMatrix4x4>;
-            // it->GetMesh()->BoneTransform(GameManager::Time.GetCurrentTime(), *Transforms);
-            // GameManager::render.clearRender();
-            // Actor::Actor_rdata data = {Transforms, it->GetMesh()};
-            // it->Render(&data);
-            // GameManager::render.clearRender();
     }
 
 //     static time_t prev_rotate = time(0);
@@ -176,7 +190,7 @@ void generateTorus(int size, std::vector<bool> &data, float R, float r) {
     }
 }
 
-void generateSphere(int size, std::vector<bool> &data, float radius) {
+void generateSphere(int size, BitBigArray &data, float radius) {
     int centerX = size / 2;
     int centerY = size / 2;
     int centerZ = size / 2;
@@ -186,9 +200,9 @@ void generateSphere(int size, std::vector<bool> &data, float radius) {
             for (int z = 0; z < size; ++z) {
                 float dist = sqrt(pow(x - centerX, 2) + pow(y - centerY, 2) + pow(z - centerZ, 2));
                 if (dist <= radius) {
-                    data[x + y * size + z * size * size] = 1; // Воксель внутри сферы
+                    data.setBit(x + y * size + z * size * size, 1);
                 } else {
-                    data[x + y * size + z * size * size] = 0; // Пустое пространство
+                    data.setBit(x + y * size + z * size * size, 0);
                 }
             }
         }
@@ -197,24 +211,27 @@ void generateSphere(int size, std::vector<bool> &data, float radius) {
 
 Scene *createScene()
 {
-    Cube::initializeGeometry();
-    Sprite::initializeGeometry();
-    Female::Initialize();
+    // Cube::initializeGeometry();
+    // CubeSimple::initializeGeometry();
+    // Sprite::initializeGeometry();
+    // Female::Initialize();
 
     auto *scene = new Scene();
     // Cube* cube = new Cube("img/skybox.png");
     Ghost *character = new Ghost();
     // Sprite* sprite = new Sprite("floor", "shaders/sprite_fs.glsl","shaders/sprite_vs.glsl", "img/grass.png");
 
-    const std::size_t SIZE = 256;
-    vec3i size(SIZE, SIZE, SIZE);
-    std::vector<bool> vec(SIZE * SIZE * SIZE);
-    //int* vec = new int[SIZE * SIZE * SIZE];
+    unsigned long long s = 3072ull * 3072ull * 3072ull;
+    BitBigArray array(s, 24);
+    // bool* vecb = new bool[3072 * 3072 * (3072 / 24)];
+    // bool *bigVec[24];
+    // for (int i = 0; i < 24; ++i) {
+    //     bigVec[i] = new bool[3072 * 3072 * (3072 / 24)];
+    // }
 
     generateSphere(SIZE, vec, SIZE / 4);
     // generateTorus(SIZE, vec, 300.0f, 100.0f);
     // generateMobiusStrip(SIZE, vec, 50.0f, 300.0f);
-
     // for (int x = 0; x < size.x; ++x) {
     //     for (int y = 0; y < size.y; ++y) {
     //         for (int z = 0; z < size.z; ++z) {
@@ -230,7 +247,7 @@ Scene *createScene()
     scene->pushObject(obj);
 
     objectTransform transform;
-    float scale = 4.0 ;
+    float scale = 8.0 / SIZE;
     transform.SetWorldPos(0.0, -5.0, -0.0);
     transform.SetRotate(0.0, 0.0, 0.0);
     transform.SetScale(glm::vec3(scale, scale, scale));

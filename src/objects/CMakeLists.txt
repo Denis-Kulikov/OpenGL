@@ -7,8 +7,9 @@ add_library(${target} STATIC
 	objectTransform.cpp
 	sprite.cpp
 	line.cpp
-	cube_wire.cpp
 	cube.cpp
+	cube_wire.cpp
+	cube_simple.cpp
 )
 
 target_link_libraries(${target}

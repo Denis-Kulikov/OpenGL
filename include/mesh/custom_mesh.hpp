@@ -1,12 +1,14 @@
 #pragma once
 #include "../object/sprite.hpp"
+#include "../data/bit_array.hpp"
+#include "../data/bit_big_array.hpp"
 
 
 class CustomMesh : public Sprite
 {
 public:
-    CustomMesh(vec3i size, std::vector<bool> &data);
-    void initializeGeometry(vec3i size, std::vector<bool> &data);
+    CustomMesh(vec3i size, BitBigArray &data);
+    void initializeGeometry(vec3i size, BitBigArray &data);
     struct GeometryInfo *GetGeometry() override;
 
     void Render(void *RenderData) const override;
