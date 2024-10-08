@@ -8,10 +8,10 @@ CustomMesh::CustomMesh(vec3i size, BitBigArray &data, int partIndex)
 {
     gColorLocation = glGetUniformLocation(shader, "gColor");
 
-    for (int i = 0; i < NUM_TREADS; ++i) {
-        vertices[i].reserve((8 * 3 * (size.z / data.numParts)) / NUM_TREADS);
-        indices[i].reserve((6 * 6 * (size.z / data.numParts)) / NUM_TREADS);
-    }
+    // for (int i = 0; i < NUM_TREADS; ++i) {
+    //     vertices[i].reserve((8 * 3 * (size.z / data.numParts)) / NUM_TREADS);
+    //     indices[i].reserve((6 * 6 * (size.z / data.numParts)) / NUM_TREADS);
+    // }
     
     initializeGeometry(size, data, partIndex);
 

@@ -30,9 +30,9 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include <assimp/scene.h>
-#include <assimp/Importer.hpp>
-#include <assimp/postprocess.h>
+// #include <assimp/scene.h>
+// #include <assimp/Importer.hpp>
+// #include <assimp/postprocess.h>
 
 #define INVALID_OGL_VALUE 0
 

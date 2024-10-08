@@ -8,8 +8,8 @@ Actor::~Actor() {};
 
 
 void Actor::Render(void *RenderData) const {
-    static_cast<Actor_rdata*>(RenderData)->mesh->Render(static_cast<Actor_rdata*>(RenderData)->BonesTransforms);
-    delete static_cast<Actor_rdata*>(RenderData)->BonesTransforms;
+    // static_cast<Actor_rdata*>(RenderData)->mesh->Render(static_cast<Actor_rdata*>(RenderData)->BonesTransforms);
+    // delete static_cast<Actor_rdata*>(RenderData)->BonesTransforms;
 }
 
 

@@ -11,14 +11,14 @@ void Female::Initialize()
 {
     Female::name = "Female";
     std::string path("assets/model/female/female.glb");
-    Female::mesh = new Mesh(path);
+    // Female::mesh = new Mesh(path);
 }
 
 std::string Female::GetName() const {
     return Female::name;
 }
 
-Mesh *Female::GetMesh() const {
-    return Female::mesh;
-}
+// Mesh *Female::GetMesh() const {
+//     return Female::mesh;
+// }
 

@@ -37,6 +37,8 @@ public:
         bool firstMouse = true;
     };
 
+    inline static GLuint framebuffer, texture, depthbuffer;
+
     inline static Buttons buttons = {0, 0, 400, 300, true, true};
     inline static GameTime Time;
     // inline static SceneThread* threads = nullptr;

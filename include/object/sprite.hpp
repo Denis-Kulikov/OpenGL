@@ -2,6 +2,15 @@
 #include "objectTransform.hpp"
 #include "../object/renderableObject.hpp"
 
+
+typedef struct stb_img_struct {
+    stb_img_struct(const std::string& Filename);
+    ~stb_img_struct();
+
+    int x, y, n;
+    unsigned char *img = nullptr;
+} stb_img;
+
 struct GeometryInfo {
     ~GeometryInfo() {
         if (VAO != 0) 

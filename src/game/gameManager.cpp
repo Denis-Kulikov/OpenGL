@@ -115,29 +115,66 @@ void GameManager::InitializeGLFW(int _width, int _height)
 
     width = _width;
     height = _height;
-    window = glfwCreateWindow(width, height, "Game", NULL, NULL);
-    if (!window) {
+    // window = glfwCreateWindow(width, height, "Game", NULL, NULL);
+    // if (!window) {
+    //     glfwTerminate();
+    //     std::cerr << "Error: " << "Failed to create GLFW window" << std::endl;
+    //     exit(EXIT_FAILURE);
+    // }
+
+    // glfwMakeContextCurrent(window);
+    // glfwSetCursorPosCallback(window, GameManager::MouseCB);
+    // glfwSetKeyCallback(window, GameManager::KeyboardCB);
+    // glfwSetWindowUserPointer(window, &callbackData);
+    // glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    // glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
+    // glfwSetWindowPos(window, 320, 75);
+
+    GLFWwindow* offscreen_context = glfwCreateWindow(1, 1, "", NULL, NULL); // Контекст без окна
+    if (!offscreen_context) {
+        std::cerr << "Error: Failed to create offscreen OpenGL context" << std::endl;
         glfwTerminate();
-        std::cerr << "Error: " << "Failed to create GLFW window" << std::endl;
         exit(EXIT_FAILURE);
     }
 
-    glfwMakeContextCurrent(window);
-    glfwSetCursorPosCallback(window, GameManager::MouseCB);
-    glfwSetKeyCallback(window, GameManager::KeyboardCB);
-    glfwSetWindowUserPointer(window, &callbackData);
-    // glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-    glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
-    glfwSetWindowPos(window, 320, 75);
+    glfwMakeContextCurrent(offscreen_context); // Устанавливаем контекст как текущий
 
+    glewExperimental = GL_TRUE;
     GLenum err = glewInit();
     if (err != GLEW_OK) {
-        std::cerr << "Error: " << "Failed to initialize glew" << std::endl;
+        std::cerr << "Error: Failed to initialize GLEW" << std::endl;
+        exit(EXIT_FAILURE);
+    }
+
+    glGenFramebuffers(1, &framebuffer);
+    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+
+    // Создание текстуры для рендеринга
+    glGenTextures(1, &texture);
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _width, _height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+    // Присоединение текстуры к framebuffer
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
+
+    // Создание depth буфера
+    glGenRenderbuffers(1, &depthbuffer);
+    glBindRenderbuffer(GL_RENDERBUFFER, depthbuffer);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, _width, _height);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthbuffer);
+
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+        std::cerr << "Error: Framebuffer is not complete" << std::endl;
         exit(EXIT_FAILURE);
     }
 
     glEnable(GL_DEPTH_TEST);
     glClearColor(0.12f, 0.12f, 0.12f, 0.0f);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+    glViewport(0, 0, _width, _height);
 
     render.pipeline.camera.SetPerspectiveProj(70.0f, width, height, 0.5f, 1000.0f);
 }

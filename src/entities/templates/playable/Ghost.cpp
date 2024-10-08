@@ -18,6 +18,6 @@ std::string Ghost::GetName() const {
     return name;
 }
 
-Mesh *Ghost::GetMesh() const {
-    return nullptr;
-}
+// Mesh *Ghost::GetMesh() const {
+//     return nullptr;
+// }

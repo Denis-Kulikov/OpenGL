@@ -5,6 +5,17 @@
 #include <stb_image_resize.h>
 
 
+stb_img_struct::stb_img_struct(const std::string& Filename) {
+    img = stbi_load(Filename.c_str(), &x, &y, &n, 0);
+    if (img == nullptr)
+        std::cerr << "Failed to load img: " << Filename << std::endl;
+    
+}
+stb_img_struct::~stb_img_struct() {
+    if (img != nullptr)
+        stbi_image_free(img);
+}
+
 Sprite::Sprite(const std::string &_name, const std::string &FS, const std::string &VS, const std::string &texturePath)
     : name(_name), shader(FS, VS)
 {

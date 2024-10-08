@@ -12,8 +12,8 @@ if(WIN32)
         glfw3
         glew32
         opengl32
-	assimp-vc143-mtd
-	lib-mobs
+	#assimp-vc143-mtd
+	#lib-mobs
         lib-playable
     )
 else()
@@ -22,8 +22,8 @@ else()
         glfw
         GL
         GLEW
-        assimp
-	lib-mobs
+        #assimp
+	#lib-mobs
         lib-playable
     )
 endif()

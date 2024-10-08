@@ -12,7 +12,7 @@ public:
     static void SetMotion();
 
     virtual std::string GetName() const override;
-    Mesh *GetMesh() const override;
+    // Mesh *GetMesh() const override;
     
 protected:
     inline static std::string name;

@@ -4,7 +4,7 @@
 #include "../lib-project/lib.hpp"
 #include "../object/objectTransform.hpp"
 #include "../object/renderableObject.hpp"
-#include "../mesh/mesh.hpp"
+// #include "../mesh/mesh.hpp"
 
 class Actor : public RenderableObject
 {
@@ -13,12 +13,12 @@ public:
     ~Actor();
 
     struct Actor_rdata {
-        std::vector<aiMatrix4x4> *BonesTransforms;
-        Mesh *mesh;
+        // std::vector<aiMatrix4x4> *BonesTransforms;
+        // Mesh *mesh;
     };
 
     virtual std::string GetName() const = 0;
-    virtual Mesh *GetMesh() const = 0;
+    // virtual Mesh *GetMesh() const = 0;
 
     void Render(void *RenderData) const override;
     void updateAnimation();
@@ -34,6 +34,6 @@ protected:
     glm::vec3 direction = {0, 0, 0};
     objectTransform transform;
 
-    inline static Mesh *mesh = nullptr;
+    // inline static Mesh *mesh = nullptr;
     inline static std::string name = "NONE";
 };

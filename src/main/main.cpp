@@ -1,13 +1,13 @@
 #include <entities/templates/playable/Ghost.hpp>
 #include <entities/templates/mobs/Female.hpp>
 #include <game/gameManager.hpp>
-#include <object/sphere.hpp>
-#include <object/cube.hpp>
-#include <object/cube_simple.hpp>
+// #include <object/sphere.hpp>
+// #include <object/cube.hpp>
+// #include <object/cube_simple.hpp>
 
 #include <threads/threads.hpp>
 #include <game/gameManager.hpp> 
-#include <mesh/mesh.hpp> 
+// #include <mesh/mesh.hpp> 
 #include <mesh/custom_mesh.hpp> 
 
 #include <entities/templates/mobs/Female.hpp>
@@ -23,15 +23,15 @@
 std::chrono::milliseconds totalTime(0);
 
 const float SCALE = 8;
-const std::size_t PART = 128;
-const ull_I SIZE = 3072;
+const std::size_t PART = 16;
+const ull_I SIZE = 256;
 vec3i size(SIZE, SIZE, SIZE);
 BitBigArray vec(SIZE * SIZE * SIZE, PART);
 
 
 void swapBuffer() {
-    glfwSwapBuffers(GameManager::window);
-    glfwPollEvents();
+    // glfwSwapBuffers(GameManager::window);
+    // glfwPollEvents();
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
@@ -59,7 +59,7 @@ void callback(Scene *scene) {
     objectTransform transform;
     float scale = SCALE / SIZE;
     transform.SetWorldPos(0, 0, SCALE);
-    transform.SetRotate(0.0, 3.0 * frame, 0.0);
+    transform.SetRotate(0.0, 20.0 * frame, 0.0);
     transform.SetScale(glm::vec3(scale, scale, scale));
         
     for (int i = 0; i < PART; ++i) {
@@ -79,50 +79,49 @@ void callback(Scene *scene) {
     glReadPixels(0, 0, GameManager::width, GameManager::height, GL_DEPTH_COMPONENT, GL_FLOAT, depthBuffer.data());
     glReadPixels(0, 0, GameManager::width, GameManager::height, GL_RGB, GL_UNSIGNED_BYTE, pixels.data());
 
-                // swapBuffer();
-#pragma omp parallel
-{
-    #pragma omp single
+    #pragma omp parallel
     {
-        std::string dir_name("data");
-        // Task 1: swapBuffer(), должен выполняться родительским потоком
-        #pragma omp task
+        #pragma omp single
         {
-            if (omp_get_thread_num() == 0) {
-                swapBuffer();
-            }
-        }
-
-        // Task 2: запись данных в файл
-        #pragma omp task
-        {
-            if (frame < 10) {
-                std::string file_name(dir_name + "/data_" + std::to_string(frame) + ".txt");
-                std::ofstream out(file_name, std::ios::app);
-                for (int i = 0; i < GameManager::width; i++) {
-                    for (int j = 0; j < GameManager::height; j++) {
-                        if (depthBuffer[j * GameManager::width + i] < 1.f) {
-                            out << "#"; // Пустой пиксель
-                        } else {
-                            out << " "; // Пиксель с объектом
-                        }
-                    }
-                    out << std::endl;
+            std::string dir_name("data");
+            // Task 1: swapBuffer(), должен выполняться родительским потоком
+            #pragma omp task
+            {
+                if (omp_get_thread_num() == 0) {
+                    swapBuffer();
                 }
-                out.close();
             }
-        }
 
-        // Task 3: сохранение скриншота
-        #pragma omp task
-        {
-            if (frame < 10) {
-            std::string file_name(dir_name + "/screenshot_" + std::to_string(frame) + ".png");
-            stbi_write_png(file_name.c_str(), GameManager::width, GameManager::height, 3, pixels.data(), GameManager::width * 3);
+            // Task 2: запись данных в файл
+            #pragma omp task
+            {
+                if (frame < 1000) {
+                    std::string file_name(dir_name + "/data_" + std::to_string(frame) + ".txt");
+                    std::ofstream out(file_name, std::ios::app);
+                    for (int i = 0; i < GameManager::width; i++) {
+                        for (int j = 0; j < GameManager::height; j++) {
+                            if (depthBuffer[j * GameManager::width + i] < 1.f) {
+                                out << " "; // Пустой пиксель
+                            } else {
+                                out << "#"; // Пиксель с объектом
+                            }
+                        }
+                        out << std::endl;
+                    }
+                    out.close();
+                }
+            }
+
+            // Task 3: сохранение скриншота
+            #pragma omp task
+            {
+                if (frame < 1000) {
+                    std::string file_name(dir_name + "/screenshot_" + std::to_string(frame) + ".png");
+                    stbi_write_png(file_name.c_str(), GameManager::width, GameManager::height, 3, pixels.data(), GameManager::width * 3);
+                }
             }
         }
     }
-}
 
     GameManager::Time.Update();
     std::cout << "End (" << frame << "): " << GameManager::Time.GetCurrentTime() << std::endl;
@@ -159,31 +158,26 @@ void generateMobiusStrip(long long int size, BitBigArray &data, float width, flo
     }
 }
 
-void generateTorus(long long int size, BitBigArray &data, float R, float r) {
+void generateTorus(long long int size, BitBigArray &data) {
     long long int centerX = size / 2;
     long long int centerY = size / 2;
     long long int centerZ = size / 2;
 
+    float R = 0.6f * size;
+    float r = 0.2f * size;
+
     for (long long int z = 0; z < size; ++z) {
         for (long long int y = 0; y < size; ++y) {
             for (long long int x = 0; x < size; ++x) {
-                // Преобразование координат в систему с центром в центре куба
                 float dx = x - centerX;
                 float dy = y - centerY;
                 float dz = z - centerZ;
 
-                // Вычисление расстояний
                 float distanceFromAxis = sqrt(dx * dx + dy * dy);
                 float torusEquation = pow((distanceFromAxis - R), 2) + dz * dz - r * r;
 
-                // Если точка удовлетворяет уравнению тора, заполняем воксель
                 if (torusEquation <= 0.0f)
                     data.set(x + y * size + z * size * size, 1);
-
-                // if (z == 0 || z == (size - 1) ||
-                //     y == 0 || y == (size - 1) ||
-                //     x == 0 || x == (size - 1))
-                //     data.set(x + y * size + z * size * size, 1);
             }
         }
     }
@@ -214,9 +208,11 @@ Scene *createScene()
     GameManager::PushPlayer(character);
     GameManager::render.pipeline.camera.OwnerTransformPtr = character->GetTransform();
 
+    swapBuffer();
+
     std::cout << "Start (" << "generate" << "): " << GameManager::Time.GetCurrentTime() << std::endl;
     // generateSphere(SIZE, vec, SIZE / 2);
-    generateTorus(SIZE, vec, 1000.0f, 300.0f);
+    generateTorus(SIZE, vec);
     std::cout << "End (" << "generateSphere" << "): " << GameManager::Time.GetCurrentTime() << std::endl;
 
     return scene;
@@ -225,7 +221,7 @@ Scene *createScene()
 
 int main(int argc, char** argv)
 {
-    const int width = 3072, height = 3072;
+    const int width = SIZE, height = SIZE;
     GameManager::InitializeGLFW(width, height);
     GameManager::InitializeObjects();
 
