@@ -8,10 +8,10 @@
 #include "../include/math/Matrix4f.hpp"
 
 struct vec3i {
-    vec3i(int x, int y, int z)
+    vec3i(ull_I x, ull_I y, ull_I z)
         : x(x), y(y), z(z) {}
         
-    int x;
-    int y;
-    int z;
+    ull_I x;
+    ull_I y;
+    ull_I z;
 };

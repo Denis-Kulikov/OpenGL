@@ -10,11 +10,13 @@ public:
     Shader(const std::string &FS, const std::string &VS);
     Shader(const std::size_t id);
     Shader();
+    ~Shader();
 
 private:
     class ShaderID {
     public:
-        ShaderID(const std::size_t id);
+        ShaderID(Shader id);
+        ShaderID(GLuint id);
         ShaderID();
         ~ShaderID();
         operator GLuint() const { return shaderID; }

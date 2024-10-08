@@ -1,7 +1,10 @@
 #include <object/shader/shader.hpp>
 
 
-Shader::ShaderID::ShaderID(const std::size_t id)
+Shader::ShaderID::ShaderID(Shader id)
+    : shaderID(id)
+{}
+Shader::ShaderID::ShaderID(GLuint id)
     : shaderID(id)
 {}
 Shader::ShaderID::ShaderID()
@@ -10,8 +13,10 @@ Shader::ShaderID::ShaderID()
 
 
 Shader::ShaderID::~ShaderID() {
-    if (shaderID) 
-        glDeleteProgram(shaderID);
+    // std::cout << "Delete shader" << std::endl;
+    // getchar();
+    // if (shaderID) 
+    //     glDeleteProgram(shaderID);
 }
 
 
@@ -23,13 +28,19 @@ Shader::Shader()
     : Shader(0)
 {}
 
+Shader::~Shader() {
+    if (shaderProgramm) 
+        glDeleteProgram(shaderProgramm);
+}
+
+
 Shader::Shader(const std::string &FS, const std::string &VS)
 {
-    auto shader = Shader::shader_find(std::string(FS) + std::string(VS));
-    if (shader != 0) {
-        shaderProgramm = shader;
-        return;
-    }
+    // auto shader = Shader::shader_find(std::string(FS) + std::string(VS));
+    // if (shader != 0) {
+    //     shaderProgramm = shader;
+    //     return;
+    // }
 
     shaderProgramm = glCreateProgram();
 
@@ -67,6 +78,8 @@ Shader::Shader(const std::string &FS, const std::string &VS)
         
         std::cout << std::endl;
     }
+
+    // shader_push(std::string(FS) + std::string(VS), shaderProgramm);
 }
 
 GLuint Shader::loadShader(const std::string &shaderPath, GLuint type)
@@ -103,7 +116,7 @@ GLuint Shader::loadShader(const std::string &shaderPath, GLuint type)
 Shader Shader::shader_find(const std::string &name)
 {
     auto programm = ShaderID::shadersMap.find(name);
-    return programm == ShaderID::shadersMap.end() ? Shader(0) : programm->second;
+    return programm == ShaderID::shadersMap.end() ? Shader(0) : Shader(programm->second);
 }
 
 void Shader::shader_push(const std::string &name, Shader shaderProgramm)
@@ -112,5 +125,7 @@ void Shader::shader_push(const std::string &name, Shader shaderProgramm)
     if (programm != ShaderID::shadersMap.end())
         glDeleteProgram(programm->second);
 
-    ShaderID::shadersMap[name] = *shaderProgramm;
+    ShaderID::shadersMap[name] = shaderProgramm;
+    // std::cout << "Exit shader_push" << std::endl;
+    // getchar();
 }

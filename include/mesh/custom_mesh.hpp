@@ -11,7 +11,6 @@ public:
     CustomMesh(vec3i size, BitBigArray &data, int partIndex);
     ~CustomMesh();
     void initializeGeometry(vec3i size, BitBigArray &data, int partIndex);
-    struct GeometryInfo *GetGeometry() override;
 
     void Render(void *RenderData) const override;
 
@@ -26,8 +25,9 @@ protected:
         FRONT
     };
 
-    std::vector<float> vertices;
-    std::vector<unsigned int> indices;
+    inline static const std::size_t NUM_TREADS = 16; 
+    std::vector<float> vertices[NUM_TREADS];
+    std::vector<unsigned int> indices[NUM_TREADS];
     
     GLuint gColorLocation = 0;
     glm::vec3 color = {1.0f, 1.0f, 1.0f};
@@ -35,5 +35,5 @@ protected:
     void addCube(std::vector<float>& vertices, std::vector<unsigned int>& indices, glm::vec3 pos);
     void addFace(std::vector<float>& vertices, std::vector<unsigned int>& indices,
                     glm::vec3 v0, glm::vec3 v1, glm::vec3 v2, glm::vec3 v3);
-    struct GeometryInfo geometryInfo = {0, 0, 0, 0, 0};
+    struct GeometryInfo geometryInfo[NUM_TREADS] = {0, 0, 0, 0, 0};
 };

@@ -27,7 +27,7 @@ void CubeSimple::Render(void *RenderData) const {
     for (int z = 0; z < size; ++z) {
         for (int y = 0; y < size; ++y) {
             for (int x = 0; x < size; ++x) {
-                if (data->getBit(x + y * size + z * size * size)) {
+                if (data->get(x + y * size + z * size * size)) {
                     cubes.emplace_back(glm::vec3(x, y, z));
                 }
             }

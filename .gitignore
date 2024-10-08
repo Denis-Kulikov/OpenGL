@@ -5,6 +5,7 @@ build
 assimp
 bullet3-master
 lib
+data
 
 callgrind.*
 

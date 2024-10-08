@@ -11,13 +11,15 @@ class BitBigArray {
 public:
     BitBigArray(ull_I totalSize, std::size_t numParts);
     ~BitBigArray();
-    void setBit(ull_I index, bool value);
-    bool getBit(ull_I index) const;
+    void set(ull_I index, bool value);
+    bool get(ull_I index) const;
+    uint8_t getByte(ull_I index) const;
+    void zero();
     ull_I size() const;
 
 // private:
     ull_I totalSize;    // Общий размер
     std::size_t numParts;     // Количество частей
     std::size_t partSize;     // Размер каждой части
-    BitArray* parts;          // Массив частей BitArray
+    std::vector<BitArray> parts;          // Массив частей BitArray
 };

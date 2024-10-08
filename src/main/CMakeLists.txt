@@ -10,10 +10,13 @@ target_sources(
     main.cpp
 )
 
+find_package(OpenMP REQUIRED)
+
 target_link_libraries(
   ${target}
   PRIVATE
 	lib-render
 	lib-game
 	lib-data
+	OpenMP::OpenMP_CXX
 )

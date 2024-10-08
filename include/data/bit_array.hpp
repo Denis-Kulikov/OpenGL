@@ -8,8 +8,11 @@ class BitArray {
 public:
     BitArray(std::size_t sizeInBits);
     BitArray();
-    void setBit(std::size_t index, bool value);
-    bool getBit(std::size_t index) const;
+    void set(std::size_t index, bool value);
+    bool get(std::size_t index) const;
+    uint8_t getByte(std::size_t index) const;
+    static bool getBit(uint8_t data, std::size_t bitIndex);
+    void zero();
     int getSize() const;
 
 private:

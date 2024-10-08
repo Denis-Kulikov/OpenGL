@@ -3,26 +3,39 @@
 BitBigArray::BitBigArray(ull_I totalSize, std::size_t numParts)
     : totalSize(totalSize), numParts(numParts), partSize(totalSize / numParts)
 {
-    parts = new BitArray[numParts];
-    for (std::size_t i = 0; i < numParts; ++i) {
-        parts[i] = BitArray(partSize);
+    std::cout << partSize << std::endl;
+    for (std::size_t i = 0; i < numParts; ++i)
+        parts.emplace_back(BitArray(partSize));
+}
+
+BitBigArray::~BitBigArray() {}
+
+void BitBigArray::set(ull_I index, bool value) {
+    std::size_t partIndex = index / partSize;
+    std::size_t localIndex = index % partSize;
+    parts[partIndex].set(localIndex, value);
+}
+
+bool BitBigArray::get(ull_I index) const {
+    std::size_t partIndex = index / partSize;
+    if (partIndex >= parts.size()) {
+        std::cout << "index " << index << " partIndex " << partIndex << std::endl;
+        throw std::out_of_range("Part index out of bounds");
     }
+    std::size_t localIndex = index % partSize;
+    return parts[partIndex].get(localIndex);
 }
 
-BitBigArray::~BitBigArray() {
-    delete[] parts; 
-}
-
-void BitBigArray::setBit(ull_I index, bool value) {
+uint8_t BitBigArray::getByte(ull_I index) const {
     std::size_t partIndex = index / partSize;
     std::size_t localIndex = index % partSize;
-    parts[partIndex].setBit(localIndex, value);
+    return parts[partIndex].getByte(localIndex);
 }
 
-bool BitBigArray::getBit(ull_I index) const {
-    std::size_t partIndex = index / partSize;
-    std::size_t localIndex = index % partSize;
-    return parts[partIndex].getBit(localIndex);
+
+void BitBigArray::zero() {
+    for (auto &it : parts)
+        it.zero();
 }
 
 ull_I BitBigArray::size() const {
