@@ -24,13 +24,13 @@ public:
         delete[] parts;
     }
 
-    void setV(ull_I index, T value) {
+    void set(ull_I index, T value) {
         std::size_t partIndex = index / partSize;
         std::size_t localIndex = index % partSize;
         parts[partIndex][localIndex] = value;
     }
 
-    T getV(ull_I index) const {
+    T get(ull_I index) const {
         std::size_t partIndex = index / partSize;
         std::size_t localIndex = index % partSize;
         return parts[partIndex][localIndex];

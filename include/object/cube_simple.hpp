@@ -1,6 +1,7 @@
 #pragma once
 #include "sprite.hpp"
 #include "../data/bit_big_array.hpp"
+#include "../data/big_array.hpp"
 
 class CubeSimple : public RenderableObject
 {
@@ -9,12 +10,13 @@ public:
     static void initializeGeometry();
     struct GeometryInfo *GetGeometry();
     void Render(void *RenderData) const override;
+    void Drow(ull_I size, Matrix4f &Matrix, BitBigArray &data, int arrayIndex);
+    void Drow(ull_I size, Matrix4f &Matrix, BigArray<bool> &data, int arrayIndex, int parts);
 
     struct CubeSimple_rdata {
-        std::size_t size;
         Matrix4f Matrix;
-        BitBigArray *cubes;
-        int partIndex;
+        GLuint instanceVBO;
+        std::size_t size;
     };
 
 

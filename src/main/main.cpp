@@ -16,6 +16,7 @@
 
 #include <data/bit_array.hpp>
 #include <data/bit_big_array.hpp>
+#include <data/big_array.hpp>
 
 #include <omp.h>
 
@@ -23,10 +24,11 @@
 std::chrono::milliseconds totalTime(0);
 
 const float SCALE = 8;
-const std::size_t PART = 32;
+const std::size_t PART = 2;
 const ull_I SIZE = 512;
 vec3i size(SIZE, SIZE, SIZE);
-BitBigArray vec(SIZE * SIZE * SIZE, PART);
+// BitBigArray vec(SIZE * SIZE * SIZE, PART);
+BigArray<bool> vec(SIZE * SIZE * SIZE, PART);
 
 
 void swapBuffer() {
@@ -38,14 +40,7 @@ void swapBuffer() {
 }
 
 void callback(Scene *scene) {
-    static time_t prev = time(0);
     static int frame = 0;
-    static const int targetFPS = 144;
-    static const std::chrono::milliseconds frameDuration(1000 / targetFPS);
-    static std::chrono::steady_clock::time_point frameStart;
-    std::chrono::steady_clock::time_point frameEnd = std::chrono::steady_clock::now();
-    std::this_thread::sleep_until(frameStart + frameDuration);
-    frameStart = std::chrono::steady_clock::now();
 
     GameManager::Time.Update();
     GameManager::render.GetPV();
@@ -54,42 +49,18 @@ void callback(Scene *scene) {
     GameManager::Time.Update();
     std::cout << "Start (" << frame << "): " << GameManager::Time.GetCurrentTime() << std::endl;
 
-    for (auto& it : scene->actors) {
-        (reinterpret_cast<Pawn*>(it))->MoveForward();
-    }
-
     objectTransform transform;
     float scale = SCALE / SIZE;
-    // transform.SetWorldPos(0, 0, 10 * SCALE);
-    // transform.SetRotate(0.0, 20.0 * frame, 0.0);
-    // transform.SetScale(glm::vec3(scale, scale, scale));
-        
-    // for (int i = 0; i < PART; ++i) {
-    //     CustomMesh cmesh(size, vec, i);
-    //     Primitive_mesh obj(&cmesh);
-    //     *obj.GetTransform() = transform;
-    //     obj.Render();
-    // }
-
-    scale = SCALE / SIZE;
     transform.SetWorldPos(0, 0, SCALE * 1.5);
     transform.SetRotate(0.0, -20.0 * frame, 0.0);
     transform.SetScale(glm::vec3(scale, scale, scale));
     for (int i = 0; i < PART; ++i) {
         CubeSimple cube;
-        CubeSimple::CubeSimple_rdata data = {
-            SIZE,
-            GameManager::render.pipeline.GetTransform(transform),
-            &vec,
-            i
-        };
-        cube.Render(&data);
+        // CubeSimple::CubeSimple_rdata data = { SIZE, GameManager::render.pipeline.GetTransform(transform), &vec, i};
+        // cube.Render(&data);
+        Matrix4f mat4x4 = GameManager::render.pipeline.GetTransform(transform);
+        cube.Drow(SIZE, mat4x4, vec, i, 16);
     }
-
-
-    GameManager::Time.Update();
-    std::cout << "Write (" << frame << "): " << GameManager::Time.GetCurrentTime() << std::endl;
-
 
     std::vector<float> depthBuffer(GameManager::width * GameManager::height);
     std::vector<unsigned char> pixels(GameManager::width * GameManager::height * 3);
@@ -104,6 +75,7 @@ void callback(Scene *scene) {
     {
         #pragma omp single
         {
+            int MAX_FRAME = 10;
             std::string dir_name("data");
             // Task 1: swapBuffer(), должен выполняться родительским потоком
             #pragma omp task
@@ -116,7 +88,7 @@ void callback(Scene *scene) {
             // Task 2: запись данных в файл
             #pragma omp task
             {
-                if (frame < 1000) {
+                if (frame < MAX_FRAME) {
                     std::string file_name(dir_name + "/data_" + std::to_string(frame) + ".txt");
                     std::ofstream out(file_name, std::ios::app);
                     for (int i = 0; i < GameManager::width; i++) {
@@ -136,16 +108,13 @@ void callback(Scene *scene) {
             // Task 3: сохранение скриншота
             #pragma omp task
             {
-                if (frame < 1000) {
+                if (frame < MAX_FRAME) {
                     std::string file_name(dir_name + "/screenshot_" + std::to_string(frame) + ".png");
                     stbi_write_png(file_name.c_str(), GameManager::width, GameManager::height, 3, pixels.data(), GameManager::width * 3);
                 }
             }
         }
     }
-
-    GameManager::Time.Update();
-    std::cout << "End (" << frame << "): " << GameManager::Time.GetCurrentTime() << std::endl;
 
     ++frame;
 }
@@ -179,6 +148,32 @@ void generateMobiusStrip(long long int size, BitBigArray &data, float width, flo
     }
 }
 
+void generateTorus(long long int size, BigArray<bool> &data) {
+    long long int centerX = size / 2;
+    long long int centerY = size / 2;
+    long long int centerZ = size / 2;
+
+    float R = 0.6f * size;
+    float r = 0.2f * size;
+
+    #pragma omp parallel for collapse(3)
+    for (long long int z = 0; z < size; ++z) {
+        for (long long int y = 0; y < size; ++y) {
+            for (long long int x = 0; x < size; ++x) {
+                float dx = x - centerX;
+                float dy = y - centerY;
+                float dz = z - centerZ;
+
+                float distanceFromAxis = sqrt(dx * dx + dy * dy);
+                float torusEquation = pow((distanceFromAxis - R), 2) + dz * dz - r * r;
+
+                if (torusEquation <= 0.0f)
+                    data.set(x + y * size + z * size * size, 1);
+            }
+        }
+    }
+}
+
 void generateTorus(long long int size, BitBigArray &data) {
     long long int centerX = size / 2;
     long long int centerY = size / 2;
@@ -187,6 +182,7 @@ void generateTorus(long long int size, BitBigArray &data) {
     float R = 0.6f * size;
     float r = 0.2f * size;
 
+    #pragma omp parallel for collapse(3)
     for (long long int z = 0; z < size; ++z) {
         for (long long int y = 0; y < size; ++y) {
             for (long long int x = 0; x < size; ++x) {
@@ -209,7 +205,7 @@ void generateSphere(long long int size, BitBigArray &data, float radius) {
     long long int centerY = size / 2;
     long long int centerZ = size / 2;
 
-    #pragma omp parallel for collapse(2)
+    #pragma omp parallel for collapse(3)
     for (long long int z = 0; z < size; ++z) {
         for (long long int y = 0; y < size; ++y) {
             for (long long int x = 0; x < size; ++x) {
@@ -241,11 +237,31 @@ Scene *createScene()
     return scene;
 }
 
+// bool check_size() {
+//     GLint maxVertexAttribs;
+//     glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &maxVertexAttribs);
+//         std::cout << "Max vertex attributes: " << maxVertexAttribs << std::endl;
+//     if (vec.partSize * 3 >= maxVertexAttribs) {
+
+//     }
+
+//     return true;
+// }
 
 int main(int argc, char** argv)
 {
+//     assert(check_size() && "Слишком большой размер подмассивов.");
+
     const int width = SIZE, height = SIZE;
     GameManager::InitializeGLFW(width, height);
+
+//     GLint maxVertexAttribs;
+//     glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &maxVertexAttribs);
+//         std::cout << "Max vertex attributes: " << maxVertexAttribs << std::endl;
+
+// GLint maxAttribStride;
+// glGetIntegerv(GL_MAX_VERTEX_ATTRIB_STRIDE, &maxAttribStride);
+// std::cout << "Max vertex attribute stride: " << maxAttribStride << " bytes" << std::endl;
 
     std::unique_ptr<Scene> scene(createScene());
 

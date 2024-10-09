@@ -14,20 +14,90 @@ CubeSimple::CubeSimple()
 }
 
 void CubeSimple::Render(void *RenderData) const {
-    std::size_t size = static_cast<CubeSimple_rdata*>(RenderData)->size;
-    BitBigArray *data = static_cast<CubeSimple_rdata*>(RenderData)->cubes;
-    int partIndex = static_cast<CubeSimple_rdata*>(RenderData)->partIndex;
-    ull_I offset = partIndex * size * size * size / data->numParts;
+    CubeSimple_rdata *rdata = static_cast<CubeSimple_rdata*>(RenderData);
+
+    glUseProgram(shader);
+    glUniform3f(gColorLocation, color.x, color.y, color.z);
+    glUniformMatrix4fv(gCommonMatrix, 1, GL_TRUE, &rdata->Matrix);
+
+    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
+    glVertexAttribDivisor(2, 1);
+
+    glDrawElementsInstanced(GL_TRIANGLES, geometryInfo.numIndices, GL_UNSIGNED_INT, 0, rdata->size);
+
+    glDeleteBuffers(1, &rdata->instanceVBO);
+
+    glBindVertexArray(0);
+}
+
+void CubeSimple::Drow(ull_I size, Matrix4f &Matrix, BigArray<bool> &data, int arrayIndex, int parts) {
+    static std::vector<glm::vec3> cubes[NUM_TREADS];
+    cubes[0].clear();
+    float half = size / 2;
+    ull_I arrayOffset = static_cast<ull_I>(size) * static_cast<ull_I>(size) * static_cast<ull_I>(size) / data.numParts;
+    ull_I array_indexOffset = arrayOffset * arrayIndex;
+    ull_I arrayZOffset = size / data.numParts * arrayIndex;
+
+    if (arrayIndex % 2 == 0) std::cout << "Array " << arrayIndex << std::endl;
+    for (ull_I partIndex = 0; partIndex < parts; ++partIndex) {
+        if ((partIndex % 64 == 0) && (arrayIndex % 2 == 0)) std::cout << "  Part " << partIndex << std::endl;
+
+        ull_I partOffset = arrayOffset / parts;
+        ull_I zOffset = arrayOffset * arrayIndex;
+        ull_I part_indexZOffset = partOffset * partIndex;
+        ull_I sizePart = size / data.numParts / parts;
+        ull_I partZOffset = size / data.numParts / parts * partIndex;
+
+        #pragma omp parallel for num_threads(NUM_TREADS) schedule(static)
+        for (ull_I z = 0; z < (size / data.numParts / parts); ++z) {
+            int threadId = omp_get_thread_num();
+            ull_I z_size = z * size * size; 
+            for (ull_I y = 0; y < size; ++y) {
+                ull_I y_size = y * size;
+                for (ull_I x = 0; x < size; ++x) {
+                    ull_I indexOffset = x + y_size + z_size + array_indexOffset +  part_indexZOffset;
+
+                    if (data.get(indexOffset)) {
+                        cubes[threadId].emplace_back(glm::vec3(
+                            x - half,
+                            y - half,
+                            z - half + arrayZOffset + partZOffset
+                        ));
+                    }
+                }
+            }
+        }
+    
+        glFinish();
+
+        for (int i = 0; i < NUM_TREADS; ++i) {
+            GameManager::render.PushGeometry(&geometryInfo);
+
+            GLuint instanceVBO;
+            glGenBuffers(1, &instanceVBO);
+            glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
+            glBufferData(GL_ARRAY_BUFFER, cubes[i].size() * sizeof(glm::vec3), cubes[i].data(), GL_STATIC_DRAW);
+            CubeSimple_rdata rdata = {Matrix, instanceVBO, cubes[i].size()};
+
+            Render(&rdata);
+        }
+    }
+}
+
+
+void CubeSimple::Drow(ull_I size, Matrix4f &Matrix, BitBigArray &data, int arrayIndex) {
+    ull_I offset = static_cast<ull_I>(size) * static_cast<ull_I>(size) * static_cast<ull_I>(size) *
+                   static_cast<ull_I>(arrayIndex) / data.numParts;
     static std::vector<glm::vec3> cubes[NUM_TREADS];
 
-    if (partIndex % 32 == 0) std::cout << "Part " << partIndex << std::endl;
+    if (arrayIndex % 32 == 0) std::cout << "Part " << arrayIndex << std::endl;
 
-    // glm::vec3 half(size / 2, size / 2, size / 2);
     float half = size / 2;
 
     cubes[0].clear();
     #pragma omp parallel for num_threads(NUM_TREADS) schedule(static)
-    for (int z = 0; z < (size / data->numParts); ++z) {
+    for (int z = 0; z < (size / data.numParts); ++z) {
         int threadId = omp_get_thread_num();
         uint8_t byte;
         for (int y = 0; y < size; ++y) {
@@ -37,17 +107,12 @@ void CubeSimple::Render(void *RenderData) const {
                                     static_cast<ull_I>(z) * size * size + 
                                     offset;
 
-                // if (data->get(indexOffset)) 
-                //     cubes[threadId].emplace_back(glm::vec3(x - half, y - 0, z - 0));
-
-
-                if (!(byte = data->getByte(indexOffset))) 
+                if (!(byte = data.getByte(indexOffset))) 
                     continue;
                 
                 for (int i = 0; i < 8; ++i) {
                     if (BitArray::getBit(byte, i))
-                        cubes[threadId].emplace_back(glm::vec3(x + i - half, y - half, z - half + (size / data->numParts * partIndex)));
-                        // addCube(vertices[threadId], indices[threadId], glm::vec3(x + i, y, z + (size.z / data.numParts * partIndex)));
+                        cubes[threadId].emplace_back(glm::vec3(x + i - half, y - half, z - half + (size / data.numParts * arrayIndex)));
                 }
             }
         }
@@ -56,30 +121,15 @@ void CubeSimple::Render(void *RenderData) const {
     glFinish(); // Защита от переполнения памяти
 
     for (int i = 0; i < NUM_TREADS; ++i) {
-    // int i = 0;
-    // std::cout << "Render" << std::endl;
-        GameManager::render.clearRender();
         GameManager::render.PushGeometry(&geometryInfo);
-        glUseProgram(shader);
-        glUniform3f(gColorLocation, color.x, color.y, color.z);
-        glUniformMatrix4fv(gCommonMatrix, 1, GL_TRUE, &static_cast<CubeSimple_rdata*>(RenderData)->Matrix);
 
         GLuint instanceVBO;
         glGenBuffers(1, &instanceVBO);
         glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
         glBufferData(GL_ARRAY_BUFFER, cubes[i].size() * sizeof(glm::vec3), cubes[i].data(), GL_STATIC_DRAW);
+        CubeSimple_rdata rdata = {Matrix, instanceVBO, cubes[i].size()};
 
-        glBindVertexArray(geometryInfo.VAO);
-
-        glEnableVertexAttribArray(2);
-        glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
-        glVertexAttribDivisor(2, 1);
-
-        glDrawElementsInstanced(GL_TRIANGLES, geometryInfo.numIndices, GL_UNSIGNED_INT, 0, cubes[i].size());
-
-        glDeleteBuffers(1, &instanceVBO);
-
-        glBindVertexArray(0);
+        Render(&rdata);
     }
 }
 
