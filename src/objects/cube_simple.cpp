@@ -1,5 +1,6 @@
 #include <object/cube_simple.hpp>
 #include <game/gameManager.hpp>
+#include <omp.h>
 
 struct GeometryInfo CubeSimple::geometryInfo = {0, 0, 0, 0, 0};
 
@@ -8,48 +9,78 @@ CubeSimple::CubeSimple()
 {
     gCommonMatrix = glGetUniformLocation(shader, "commonMatrix");;
     gColorLocation = glGetUniformLocation(shader, "gColor");
+    assert(gCommonMatrix  != 0xFFFFFFFF);
+    assert(gColorLocation != 0xFFFFFFFF);
 }
 
 void CubeSimple::Render(void *RenderData) const {
-    // GameManager::render.PushGeometry(&geometryInfo);
-    // glUseProgram(shader);
-    // glUniform3f(gColorLocation, color.x, color.y, color.z);
-    // glUniformMatrix4fv(gCommonMatrix, 1, GL_TRUE, &static_cast<CubeSimple_rdata*>(RenderData)->Matrix);
-    // glDrawElements(GL_TRIANGLES, geometryInfo.numIndices, GL_UNSIGNED_INT, 0);
-
-    glUseProgram(shader);
-    glUniform3f(gColorLocation, color.x, color.y, color.z);
-    glUniformMatrix4fv(gCommonMatrix, 1, GL_TRUE, &static_cast<CubeSimple_rdata*>(RenderData)->Matrix);
-
     std::size_t size = static_cast<CubeSimple_rdata*>(RenderData)->size;
-    BitArray *data = static_cast<CubeSimple_rdata*>(RenderData)->cubes;
-    std::vector<glm::vec3> cubes;
-    for (int z = 0; z < size; ++z) {
+    BitBigArray *data = static_cast<CubeSimple_rdata*>(RenderData)->cubes;
+    int partIndex = static_cast<CubeSimple_rdata*>(RenderData)->partIndex;
+    ull_I offset = partIndex * size * size * size / data->numParts;
+    static std::vector<glm::vec3> cubes[NUM_TREADS];
+
+    if (partIndex % 32 == 0) std::cout << "Part " << partIndex << std::endl;
+
+    // glm::vec3 half(size / 2, size / 2, size / 2);
+    float half = size / 2;
+
+    cubes[0].clear();
+    #pragma omp parallel for num_threads(NUM_TREADS) schedule(static)
+    for (int z = 0; z < (size / data->numParts); ++z) {
+        int threadId = omp_get_thread_num();
+        uint8_t byte;
         for (int y = 0; y < size; ++y) {
-            for (int x = 0; x < size; ++x) {
-                if (data->get(x + y * size + z * size * size)) {
-                    cubes.emplace_back(glm::vec3(x, y, z));
+            for (int x = 0; x < size; x += 8) {
+                ull_I indexOffset = static_cast<ull_I>(x) + 
+                                    static_cast<ull_I>(y) * size + 
+                                    static_cast<ull_I>(z) * size * size + 
+                                    offset;
+
+                // if (data->get(indexOffset)) 
+                //     cubes[threadId].emplace_back(glm::vec3(x - half, y - 0, z - 0));
+
+
+                if (!(byte = data->getByte(indexOffset))) 
+                    continue;
+                
+                for (int i = 0; i < 8; ++i) {
+                    if (BitArray::getBit(byte, i))
+                        cubes[threadId].emplace_back(glm::vec3(x + i - half, y - half, z - half + (size / data->numParts * partIndex)));
+                        // addCube(vertices[threadId], indices[threadId], glm::vec3(x + i, y, z + (size.z / data.numParts * partIndex)));
                 }
             }
         }
     }
 
-    GLuint instanceVBO;
-    glGenBuffers(1, &instanceVBO);
-    glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
-    glBufferData(GL_ARRAY_BUFFER, cubes.size() * sizeof(glm::vec3), cubes.data(), GL_STATIC_DRAW);
+    glFinish(); // Защита от переполнения памяти
 
-    glBindVertexArray(geometryInfo.VAO);
+    for (int i = 0; i < NUM_TREADS; ++i) {
+    // int i = 0;
+    // std::cout << "Render" << std::endl;
+        GameManager::render.clearRender();
+        GameManager::render.PushGeometry(&geometryInfo);
+        glUseProgram(shader);
+        glUniform3f(gColorLocation, color.x, color.y, color.z);
+        glUniformMatrix4fv(gCommonMatrix, 1, GL_TRUE, &static_cast<CubeSimple_rdata*>(RenderData)->Matrix);
 
-    glEnableVertexAttribArray(2);
-    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
-    glVertexAttribDivisor(2, 1);
+        GLuint instanceVBO;
+        glGenBuffers(1, &instanceVBO);
+        glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
+        glBufferData(GL_ARRAY_BUFFER, cubes[i].size() * sizeof(glm::vec3), cubes[i].data(), GL_STATIC_DRAW);
 
-    glDrawElementsInstanced(GL_TRIANGLES, geometryInfo.numIndices, GL_UNSIGNED_INT, 0, cubes.size());
+        glBindVertexArray(geometryInfo.VAO);
 
-    glDeleteBuffers(1, &instanceVBO);
+        glEnableVertexAttribArray(2);
+        glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
+        glVertexAttribDivisor(2, 1);
 
-    glBindVertexArray(0);
+        glDrawElementsInstanced(GL_TRIANGLES, geometryInfo.numIndices, GL_UNSIGNED_INT, 0, cubes[i].size());
+
+        glDeleteBuffers(1, &instanceVBO);
+
+        glBindVertexArray(0);
+    }
 }
 
 void CubeSimple::initializeGeometry()

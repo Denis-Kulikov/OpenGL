@@ -3,7 +3,7 @@
 #include <game/gameManager.hpp>
 // #include <object/sphere.hpp>
 // #include <object/cube.hpp>
-// #include <object/cube_simple.hpp>
+#include <object/cube_simple.hpp>
 
 #include <threads/threads.hpp>
 #include <game/gameManager.hpp> 
@@ -23,8 +23,8 @@
 std::chrono::milliseconds totalTime(0);
 
 const float SCALE = 8;
-const std::size_t PART = 16;
-const ull_I SIZE = 256;
+const std::size_t PART = 32;
+const ull_I SIZE = 512;
 vec3i size(SIZE, SIZE, SIZE);
 BitBigArray vec(SIZE * SIZE * SIZE, PART);
 
@@ -32,7 +32,9 @@ BitBigArray vec(SIZE * SIZE * SIZE, PART);
 void swapBuffer() {
     // glfwSwapBuffers(GameManager::window);
     // glfwPollEvents();
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+
+    // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 void callback(Scene *scene) {
@@ -58,16 +60,32 @@ void callback(Scene *scene) {
 
     objectTransform transform;
     float scale = SCALE / SIZE;
-    transform.SetWorldPos(0, 0, SCALE);
-    transform.SetRotate(0.0, 20.0 * frame, 0.0);
-    transform.SetScale(glm::vec3(scale, scale, scale));
+    // transform.SetWorldPos(0, 0, 10 * SCALE);
+    // transform.SetRotate(0.0, 20.0 * frame, 0.0);
+    // transform.SetScale(glm::vec3(scale, scale, scale));
         
+    // for (int i = 0; i < PART; ++i) {
+    //     CustomMesh cmesh(size, vec, i);
+    //     Primitive_mesh obj(&cmesh);
+    //     *obj.GetTransform() = transform;
+    //     obj.Render();
+    // }
+
+    scale = SCALE / SIZE;
+    transform.SetWorldPos(0, 0, SCALE * 1.5);
+    transform.SetRotate(0.0, -20.0 * frame, 0.0);
+    transform.SetScale(glm::vec3(scale, scale, scale));
     for (int i = 0; i < PART; ++i) {
-        CustomMesh cmesh(size, vec, i);
-        Primitive_mesh obj(&cmesh);
-        *obj.GetTransform() = transform;
-        obj.Render();
+        CubeSimple cube;
+        CubeSimple::CubeSimple_rdata data = {
+            SIZE,
+            GameManager::render.pipeline.GetTransform(transform),
+            &vec,
+            i
+        };
+        cube.Render(&data);
     }
+
 
     GameManager::Time.Update();
     std::cout << "Write (" << frame << "): " << GameManager::Time.GetCurrentTime() << std::endl;
@@ -75,6 +93,9 @@ void callback(Scene *scene) {
 
     std::vector<float> depthBuffer(GameManager::width * GameManager::height);
     std::vector<unsigned char> pixels(GameManager::width * GameManager::height * 3);
+
+
+    glFinish(); // Ожидание конца рендеринга
 
     glReadPixels(0, 0, GameManager::width, GameManager::height, GL_DEPTH_COMPONENT, GL_FLOAT, depthBuffer.data());
     glReadPixels(0, 0, GameManager::width, GameManager::height, GL_RGB, GL_UNSIGNED_BYTE, pixels.data());
@@ -202,6 +223,8 @@ void generateSphere(long long int size, BitBigArray &data, float radius) {
 
 Scene *createScene()
 {
+    CubeSimple::initializeGeometry();
+
     auto *scene = new Scene();
     Ghost *character = new Ghost();
     scene->pushObject(character);
@@ -223,7 +246,6 @@ int main(int argc, char** argv)
 {
     const int width = SIZE, height = SIZE;
     GameManager::InitializeGLFW(width, height);
-    GameManager::InitializeObjects();
 
     std::unique_ptr<Scene> scene(createScene());
 

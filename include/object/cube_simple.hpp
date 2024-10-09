@@ -1,6 +1,6 @@
 #pragma once
 #include "sprite.hpp"
-#include "../data/bit_array.hpp"
+#include "../data/bit_big_array.hpp"
 
 class CubeSimple : public RenderableObject
 {
@@ -13,11 +13,14 @@ public:
     struct CubeSimple_rdata {
         std::size_t size;
         Matrix4f Matrix;
-        BitArray *cubes;
+        BitBigArray *cubes;
+        int partIndex;
     };
 
 
 private:
+    inline static const std::size_t NUM_TREADS = 8; 
+
     Shader shader;
     GLuint gCommonMatrix;
     GLuint gColorLocation = 0;

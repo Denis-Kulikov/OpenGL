@@ -115,20 +115,33 @@ void GameManager::InitializeGLFW(int _width, int _height)
 
     width = _width;
     height = _height;
-    // window = glfwCreateWindow(width, height, "Game", NULL, NULL);
-    // if (!window) {
-    //     glfwTerminate();
-    //     std::cerr << "Error: " << "Failed to create GLFW window" << std::endl;
+
+    const bool win = false; 
+    #if win
+
+    window = glfwCreateWindow(width, height, "Game", NULL, NULL);
+    if (!window) {
+        glfwTerminate();
+        std::cerr << "Error: " << "Failed to create GLFW window" << std::endl;
+        exit(EXIT_FAILURE);
+    }
+
+
+    glfwMakeContextCurrent(window);
+    glfwSetCursorPosCallback(window, GameManager::MouseCB);
+    glfwSetKeyCallback(window, GameManager::KeyboardCB);
+    glfwSetWindowUserPointer(window, &callbackData);
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
+    glfwSetWindowPos(window, 320, 75);
+
+
+    // if (glewInit() != GLEW_OK) {
+    //     std::cerr << "Error: " << "Failed to initialize GLEW" << std::endl;
     //     exit(EXIT_FAILURE);
     // }
 
-    // glfwMakeContextCurrent(window);
-    // glfwSetCursorPosCallback(window, GameManager::MouseCB);
-    // glfwSetKeyCallback(window, GameManager::KeyboardCB);
-    // glfwSetWindowUserPointer(window, &callbackData);
-    // glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-    // glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
-    // glfwSetWindowPos(window, 320, 75);
+    #else
 
     GLFWwindow* offscreen_context = glfwCreateWindow(1, 1, "", NULL, NULL); // Контекст без окна
     if (!offscreen_context) {
@@ -170,11 +183,13 @@ void GameManager::InitializeGLFW(int _width, int _height)
         exit(EXIT_FAILURE);
     }
 
-    glEnable(GL_DEPTH_TEST);
-    glClearColor(0.12f, 0.12f, 0.12f, 0.0f);
-
     glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
     glViewport(0, 0, _width, _height);
+
+    #endif
+
+    glEnable(GL_DEPTH_TEST);
+    glClearColor(0.12f, 0.12f, 0.12f, 0.0f);
 
     render.pipeline.camera.SetPerspectiveProj(70.0f, width, height, 0.5f, 1000.0f);
 }
