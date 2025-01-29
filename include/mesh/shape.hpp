@@ -2,12 +2,12 @@
 #include "../object/objectTransform.hpp"
 #include "../object/sprite.hpp"
 
-class Primitive_mesh
+class Shape
 {
 public:
-    Primitive_mesh(Sprite *_object, const objectTransform &_transform);
-    Primitive_mesh(Sprite *_object);
-    ~Primitive_mesh();
+    Shape(Sprite *_object, const objectTransform &_transform);
+    Shape(Sprite *_object);
+    ~Shape();
     void Render() const;
     objectTransform *GetTransform() { return &transform; }
 

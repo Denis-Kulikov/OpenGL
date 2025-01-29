@@ -1,11 +1,12 @@
 #pragma once
 
 #include "../../character.hpp"
+#include <object/transform/rigid_transform.hpp>
 
 class Female : public Character
 {
 public:
-    Female();
+    Female(BulletManager *btManagere);
     ~Female();
     
     static void Initialize();

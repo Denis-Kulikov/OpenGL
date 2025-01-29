@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.18.4)
+cmake_minimum_required(VERSION 3.20)
 
 project(openGL VERSION 1.0 LANGUAGES CXX)
 
@@ -13,7 +13,8 @@ link_directories(lib)
 include_directories(include)
 if(WIN32)
 	include_directories(assimp/include)
-	include_directories(bullet3-master/src)
+	include_directories(build/_deps/bullet-src/src)
+	link_directories(build/_deps/bullet-src/build/lib/Debug)
 else()
 	include_directories(/usr/include/bullet)
 endif()

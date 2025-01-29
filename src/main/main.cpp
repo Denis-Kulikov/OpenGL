@@ -2,12 +2,15 @@
 #include <entities/templates/mobs/Female.hpp>
 #include <game/gameManager.hpp>
 #include <object/sphere.hpp>
+#include <object/sphere_wire.hpp>
 #include <object/cube.hpp>
 
 #include <threads/threads.hpp>
 #include <game/gameManager.hpp> 
 #include <mesh/mesh.hpp> 
 #include <mesh/custom_mesh.hpp> 
+
+#include <entities/templates/decor/wooden_box.hpp>
 
 #include <entities/templates/mobs/Female.hpp>
 #include <stb_image.h>
@@ -34,77 +37,31 @@ void callback(Scene *scene) {
     GameManager::Time.Update();
     GameManager::render.GetPV();
     GameManager::UpdateCamera();
-    // GameManager::render.drawSkybox(*scene->skybox);
+    GameManager::render.drawSkybox(*scene->skybox);
 
-    for (auto& it : scene->actors) {
-        (reinterpret_cast<Pawn*>(it))->MoveForward();
-        if (it->GetMesh() != nullptr) {
+    for (auto& it : scene->pawns) {
+        it->MoveForward();
+        if (it->rootComponent != nullptr) {
+            it->rootComponent->Move(glm::vec3(0, 0, -GameManager::Time.GetCurrentTime() / 10));
+        }
+        if (it->GetMesh() != nullptr) { // pawn - использует сетку со скелетной анимацией
             it->GetMesh()->set_transform(*it->GetTransform());
-            std::vector<aiMatrix4x4> *Transforms = new std::vector<aiMatrix4x4>;
-            it->GetMesh()->BoneTransform(GameManager::Time.GetCurrentTime(), *Transforms);
+            std::vector<aiMatrix4x4> Transforms;
+            it->GetMesh()->BoneTransform(GameManager::Time.GetCurrentTime(), Transforms);
+            Actor::Actor_rdata data = {&Transforms, it->GetMesh()};
             GameManager::render.clearRender();
-            Actor::Actor_rdata data = {Transforms, it->GetMesh()};
+            // if (it->rootComponent != nullptr)
+            //     (*it->rootComponent->GetTransform())->SetPosition(it->GetTransform()->GetWorldPos());
             it->Render(&data);
-            GameManager::render.clearRender();
+        } else {
+            it->Render(nullptr);
         }
     }
-
-    for (auto& it : scene->primitives) {
+    for (auto& it : scene->shapes) {
         it->Render();
-            // it->GetMesh()->set_transform(*it->GetTransform());
-            // std::vector<aiMatrix4x4> *Transforms = new std::vector<aiMatrix4x4>;
-            // it->GetMesh()->BoneTransform(GameManager::Time.GetCurrentTime(), *Transforms);
-            // GameManager::render.clearRender();
-            // Actor::Actor_rdata data = {Transforms, it->GetMesh()};
-            // it->Render(&data);
-            // GameManager::render.clearRender();
     }
 
-//     static time_t prev_rotate = time(0);
-//     if ((time(0) - prev_rotate) > 0.75) {
-//         scene->actors[1]->GetTransform()->AddRotate(glm::vec3(0, 20, 0));
-
-//     std::vector<float> depthBuffer(GameManager::width * GameManager::height);
-//     std::vector<unsigned char> pixels(GameManager::width * GameManager::height * 4); // RGBA формат
-// glReadPixels(0, 0, GameManager::width, GameManager::height, GL_RGBA, GL_UNSIGNED_BYTE, pixels.data());
-// stbi_write_png("screenshot_with_alpha.png", GameManager::width, GameManager::height, 4, pixels.data(), GameManager::width * 4);
-
-//     glReadPixels(0, 0, GameManager::width, GameManager::height, GL_DEPTH_COMPONENT, GL_FLOAT, depthBuffer.data());
-// std::ofstream out("data.txt", std::ios::app);
-//     for (int i = 0; i < GameManager::width; i++) {
-//         for (int j = 0; j < GameManager::height; j++) {
-//             if (depthBuffer[j * GameManager::width + i] < 1.f) {
-//                 out << "1 "; // Пустой пиксель
-//             } else {
-//                 out << "0 "; // Пиксель с объектом
-//             }
-//             // out  << depthBuffer[j * GameManager::width + i] << " "; // Значение глубины для каждого пикселя
-//         }
-//         out << std::endl; // Перенос строки после каждого ряда
-//     }
-// out.close();   
-//         prev_rotate = time(0);
-//     }
-
-    // for (auto& it : scene->sprites) {
-    //     it->Render(&GameManager::render.pipeline.GetTransform(it. ->GetTransform()));
-    // }
-
-
-    // std::vector<unsigned char> pixels(GameManager::width * GameManager::height * 3);
-
-    // glReadPixels(0, 0, GameManager::width, GameManager::height, GL_RGB, GL_UNSIGNED_BYTE, pixels.data());
-    // stbi_write_png("screenshot.png", GameManager::width, GameManager::height, 3, pixels.data(), GameManager::width * 3);
-
-// Перевернем изображение по вертикали
-// for (int y = 0; y < GameManager::height / 2; ++y) {
-//     for (int x = 0; x < GameManager::width * 3; ++x) {
-//         std::swap(pixels[y * GameManager::width * 3 + x], pixels[(GameManager::width - 1 - y) * GameManager::width * 3 + x]);
-//     }
-// }
-
-
-     
+    scene->btManager.StepSimulation(GameManager::Time.GetDeltaTime());
 
     swapBuffer();
 
@@ -118,41 +75,109 @@ void callback(Scene *scene) {
 
 Scene *createScene()
 {
+    const std::size_t sphere_lvl = 20;
+    const std::size_t sphere_wire_lvl = 10;
+
+    Sphere<10>::initializeGeometry();
     Cube::initializeGeometry();
     Sprite::initializeGeometry();
-    Female::Initialize();
+    Line::initializeGeometry();
+    Cube_wire::initializeGeometry();
+    Sphere<sphere_lvl>::initializeGeometry();
+    Sphere_wire<sphere_wire_lvl>::initializeGeometry();
+    // Female::Initialize();
+    WoodenBox::Initialize();
 
     auto *scene = new Scene();
-    // Cube* cube = new Cube("img/skybox.png");
+    Cube* cube = new Cube("img/skybox.png");
     Ghost *character = new Ghost();
-    // Sprite* sprite = new Sprite("floor", "shaders/sprite_fs.glsl","shaders/sprite_vs.glsl", "img/grass.png");
 
-    const std::size_t SIZE = 3072;
-    vec3i size(SIZE, SIZE, SIZE);
-    std::vector<bool> vec(SIZE * SIZE * SIZE);
-    //int* vec = new int[SIZE * SIZE * SIZE];
+    Sprite* sprite = new Sprite("floor", "shaders/sprite_fs.glsl","shaders/sprite_vs.glsl", "img/grass.png");
+    Cube* box = new Cube("img/box.jpg");
+    Sphere<sphere_lvl>* sph = new Sphere<sphere_lvl>("img/brick_wall_10_diff_1k.jpg");
+    Line* line = new Line();
+    Sphere_wire<sphere_wire_lvl>* sph_w = new Sphere_wire<sphere_wire_lvl>();
+    Cube_wire* bone_box = new Cube_wire();
 
+    Shape* primitive = new Shape(sprite);
+    Shape* primitive_cube = new Shape(box);
+    Shape* primitive_sph = new Shape(sph);
+    Shape* primitive_bbox = new Shape(bone_box);
+    Shape* primitive_sph_w = new Shape(sph_w);
+    Shape* primitive_line = new Shape(line);
+    // Female* female1 = new Female(&scene->btManager);
+    // Female* female2 = new Female(&scene->btManager);
 
-    for (int x = 0; x < size.x; ++x) {
-        for (int y = 0; y < size.y; ++y) {
-            for (int z = 0; z < size.z; ++z) {
-                vec[z + y * size.z + x * size.z * size.y] = x / 2 == 0;
-            }
-        }
-    }
+    WoodenBox* woodenBox = new WoodenBox(&scene->btManager);
 
-    CustomMesh *cmesh = new CustomMesh(size, vec);
-    Primitive_mesh *obj = new Primitive_mesh(cmesh);
-
+    scene->skybox = cube;
     scene->pushObject(character);
-    scene->pushObject(obj);
+    //scene->pushObject(female1);
+    //scene->pushObject(female2);
+    scene->pushObject(woodenBox);
+    scene->pushObject(primitive);
+    scene->pushObject(primitive_cube);
+    scene->pushObject(primitive_sph);
+    scene->pushObject(primitive_bbox);
+    scene->pushObject(primitive_sph_w);
+    scene->pushObject(primitive_line);
 
     objectTransform transform;
-    float scale = 4 / SIZE;
-    transform.SetWorldPos(0.0, -5.0, -10.0);
-    transform.SetRotate(0.0, 0.0, 0.0);
+    float scale = 5;
+    // transform.SetWorldPos(0.0, -10.0, -10.0);
+    // transform.SetRotate(-90.0, 0.0, 0.0);
+    // transform.SetScale(glm::vec3(scale, scale, scale));
+    // *female1->GetTransform() = transform;
+
+    // *woodenBox->GetTransform() = transform;
+
+    // transform.SetWorldPos(5.0, -10.0, -10.0);
+    // *female2->GetTransform() = transform;
+        
+    scale = 15;
+    transform.SetWorldPos(5.0, -10.0, -10.0);
+    transform.SetRotate(90.0, 0.0, 0.0);
     transform.SetScale(glm::vec3(scale, scale, scale));
-    *obj->GetTransform() = transform;
+    *primitive->GetTransform() = transform;
+    
+    transform.SetRotate(0.0, 0.0, 0.0);
+
+
+    scale = 1;
+    transform.SetWorldPos(8.0, -10.0 + scale / 2, -10.0);
+    transform.SetScale(glm::vec3(scale, scale, scale));
+    *primitive_cube->GetTransform() = transform;
+
+    scale = 5;
+    transform.SetWorldPos(9.0, 0.0 + scale / 2, -10.0);
+    transform.SetScale(glm::vec3(scale, scale, scale));
+    *primitive_sph->GetTransform() = transform;
+    sph->SetColor(glm::vec3(1, 0, 1));
+
+    scale = 1;
+    transform.SetWorldPos(10.0, -10.0 + scale / 2, -10.0);
+    transform.SetScale(glm::vec3(scale, scale, scale));
+    *primitive_bbox->GetTransform() = transform;
+    bone_box->SetColor(glm::vec3(1, 0, 0));
+
+    scale = 1;
+    transform.SetWorldPos(11.0, -10.0 + scale / 2, -10.0);
+    transform.SetScale(glm::vec3(scale, scale, scale));
+    *primitive_sph_w->GetTransform() = transform;
+    sph_w->SetColor(glm::vec3(0, 0, 1));
+
+    *primitive_line->GetTransform() = line->setPoints(glm::vec3(8.0, -10.0 + scale / 2, -9.0), glm::vec3(11.0, -10.0 + scale / 2, -9.0));
+    line->SetColor(glm::vec3(0, 1, 0));
+    line->SetWidth(3);
+
+    //female1->rootComponent->GetLocalTransform()->SetPosition(female1->GetTransform()->GetWorldPos());
+    //female2->rootComponent->GetLocalTransform()->SetPosition(female2->GetTransform()->GetWorldPos());
+    
+    glm::vec3 pos(0, 0, 0);
+    Transform transformSpawn;
+    transformSpawn.SetPosition(pos);
+    // woodenBox->rootComponent->GetLocalTransform()->SetPosition(pos);
+    woodenBox->Spawn(&transformSpawn);
 
     GameManager::PushPlayer(character);
     GameManager::render.pipeline.camera.OwnerTransformPtr = character->GetTransform();
@@ -168,8 +193,6 @@ int main(int argc, char** argv)
     GameManager::InitializeObjects();
 
     std::unique_ptr<Scene> scene(createScene());
-    // GameManager::threads->setScene(scene.get());
-    // GameManager::threads->start();
 
     while (!GameManager::IsEnd) {
         callback(scene.get());

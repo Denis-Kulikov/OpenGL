@@ -6,6 +6,8 @@
 #include "../object/renderableObject.hpp"
 #include "../mesh/mesh.hpp"
 
+#include "../object/component/component.hpp"
+
 class Actor : public RenderableObject
 {
 public:
@@ -23,11 +25,13 @@ public:
     void Render(void *RenderData) const override;
     void updateAnimation();
 
+    void Spawn(const Transform *startTransform);
     objectTransform *GetTransform();
-    glm::vec3 GetDirection() const;
+    glm::vec3 GetDirection() const; // направление объекта не зависимо от направления модели
     void SetDirection(const glm::vec3 &_direction);
 
 
+    Component *rootComponent = nullptr;
 protected:
     bool loadActor(const std::string &path);
 

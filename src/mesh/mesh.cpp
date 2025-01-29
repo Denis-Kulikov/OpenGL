@@ -301,8 +301,6 @@ void Mesh::ReadNodeHeirarchy(float AnimationTime, const aiNode* pNode, const aiM
     for (unsigned int i = 0; i < pNode->mNumChildren; i++) {
         ReadNodeHeirarchy(AnimationTime, pNode->mChildren[i], GlobalTransformation);
     }
-
-
 }
 
 void Mesh::BoneTransform(float TimeInSeconds, std::vector<aiMatrix4x4>& Transforms)
@@ -603,6 +601,12 @@ void Mesh::set_transform(const objectTransform &transform) {
     aiMatrix4x4::Scaling(aiVector3D(transform.GetScale().x, transform.GetScale().y, transform.GetScale().z), scaleMatrix);
 
     m_pScene->mRootNode->mTransformation = TranslationMatrix * RotationMatrixZ * RotationMatrixY * RotationMatrixX * scaleMatrix;
+    // m_pScene->mRootNode->mTransformation = TranslationMatrix * scaleMatrix * RotationMatrixZ * RotationMatrixY * RotationMatrixX;
+}
+
+void Mesh::set_transform(const glm::mat4x4 &matrix) {
+    // m_pScene->mRootNode->mTransformation = *reinterpret_cast<const aiMatrix4x4*>(&glm::transpose(matrix));
+    m_pScene->mRootNode->mTransformation = *reinterpret_cast<const aiMatrix4x4*>(&matrix);
 }
 
 void Mesh::Render(std::vector<aiMatrix4x4> *Transforms)

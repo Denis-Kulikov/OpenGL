@@ -38,6 +38,7 @@ public:
  
     void BoneTransform(float TimeInSeconds, std::vector<aiMatrix4x4>& Transforms);
     void set_transform(const objectTransform &transform);
+    void set_transform(const glm::mat4x4 &matrix);
     bool LoadMesh(const std::string& Filename);
     void Render(std::vector<aiMatrix4x4> *Transforms);
 
@@ -89,13 +90,9 @@ enum VB_TYPES {
     };
 
     struct BoneInfo {
+        BoneInfo() : BoneOffset(), FinalTransformation() {}
         aiMatrix4x4 BoneOffset;
         aiMatrix4x4 FinalTransformation;
-
-        BoneInfo() {
-            BoneOffset = aiMatrix4x4();
-            FinalTransformation = aiMatrix4x4();
-        }
     };
 
 
