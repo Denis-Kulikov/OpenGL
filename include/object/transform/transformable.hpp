@@ -5,7 +5,11 @@ class Transformable {
 public:
     const glm::mat4 &GetMatrix() const { return matrix; };
     virtual void UpdateMatrix() = 0;
-    virtual void SetMatrix(const glm::mat4x4 &matrix_) = 0;
+    virtual void UpdateTransform() = 0;
+    virtual void SetMatrix(const glm::mat4x4 &matrix_) {
+        matrix = matrix_;
+        UpdateTransform();
+    }
 
     virtual bool isMoving() const = 0;
 
@@ -27,8 +31,5 @@ public:
     virtual glm::vec3 GetRightVector() const = 0;
 
 protected:
-    virtual void UpdateTransform() = 0;
     glm::mat4x4 matrix;
-    glm::mat4x4 matrixPosition;
-    glm::mat4x4 matrixScale;
 };

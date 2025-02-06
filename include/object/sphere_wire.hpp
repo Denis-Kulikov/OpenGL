@@ -59,9 +59,9 @@ public:
                 float z = sinPhi * sinTheta;
 
                 // Добавление вершин
-                vertices.push_back(x / 2); // делим на 2 для радиуса 0.5
-                vertices.push_back(y / 2);
-                vertices.push_back(z / 2);
+                vertices.push_back(x);
+                vertices.push_back(y);
+                vertices.push_back(z);
             }
         }
 

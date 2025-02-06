@@ -1,13 +1,13 @@
 #pragma once
 
-#include "../../character.hpp"
+#include "../../pawn.hpp"
 #include <object/transform/rigid_transform.hpp>
 
-class Female : public Character
+class Floor : public Pawn
 {
 public:
-    Female(BulletManager *btManager);
-    ~Female();
+    Floor(BulletManager *btManagere);
+    ~Floor();
     
     static void Initialize();
 

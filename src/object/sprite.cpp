@@ -22,6 +22,11 @@ Sprite::Sprite(const std::string &_name, const std::string &FS, const std::strin
     }
 }
 
+Sprite::Sprite(const std::string &texturePath)
+    : Sprite("", "shaders/sprite_fs.glsl", "shaders/sprite_vs.glsl", texturePath)
+{}
+
+
 void Sprite::Render(void *RenderData) const {
     GameManager::render.PushGeometry(&geometryInfo);
 
@@ -90,11 +95,13 @@ void Sprite::loadTextures(const std::string &texturePath)
 
 void Sprite::initializeGeometry()
 {
+    // |2|3|
+    // |1|4|
     std::vector<GLfloat> vertices = {
-        -0.5f, -0.5f, 0.0f, 0.0f, 0.0f,
-        -0.5f,  0.5f, 0.0f, 0.0f, 1.0f,
-        0.5f,  0.5f, 0.0f,  1.0f, 1.0f,
-        0.5f, -0.5f, 0.0f,  1.0f, 0.0f
+        -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+        -1.0f,  1.0f, 0.0f, 0.0f, 1.0f,
+        1.0f,  1.0f, 0.0f,  1.0f, 1.0f,
+        1.0f, -1.0f, 0.0f,  1.0f, 0.0f
     };
 
     std::vector<GLuint> indices = {

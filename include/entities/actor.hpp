@@ -25,7 +25,7 @@ public:
     void Render(void *RenderData) const override;
     void updateAnimation();
 
-    void Spawn(const Transform *startTransform);
+    void Spawn(Transform &startTransform);
     objectTransform *GetTransform();
     glm::vec3 GetDirection() const; // направление объекта не зависимо от направления модели
     void SetDirection(const glm::vec3 &_direction);

@@ -11,11 +11,11 @@ public:
     ~ColliderTransform();
 
     void UpdateMatrix() override;
-    void SetMatrix(const glm::mat4x4 &matrix_) override;
+    void UpdateTransform() override;
+    // void SetMatrix(const glm::mat4x4 &matrix_) override;
     bool isMoving() const override { return false; };
 
 private:
-    void UpdateTransform() override;
     BulletManager *btManager;
     btCollisionObject *collisionObject;
 };

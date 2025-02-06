@@ -1,10 +1,10 @@
 #include <object/transform/transform.hpp>
 
-Transform::Transform(const Transform *transform)
-    : Position(transform->GetPosition()), Rotation(transform->GetRotation()), Scale(transform->GetScale())
+Transform::Transform(const Transform &transform)
+    : Position(transform.GetPosition()), Rotation(transform.GetRotation()), Scale(transform.GetScale())
 {}
 
-Transform::Transform() : Position(0.0f), Rotation(glm::quat()), Scale(1.0f) {}
+Transform::Transform() : Position(0.0f), Rotation(glm::quat(1, 0, 0, 0)), Scale(1.0f) {}
 
 void Transform::UpdateTransform() {
     Transform::SetPosition(glm::vec3(matrix[3]));
@@ -15,21 +15,11 @@ void Transform::UpdateTransform() {
 }
 
 void Transform::UpdateMatrix() {
-    // glm::mat4 translate = glm::translate(glm::mat4(1.0f), Transform::GetPosition());
-    // glm::mat4 rotate = glm::mat4_cast(Transform::GetRotation());
-    // glm::mat4 scale = glm::scale(glm::mat4(1.0f), Transform::GetScale());
-    // matrix = translate * rotate * scale;
-
-    matrixPosition = glm::translate(glm::mat4(1.0f), Transform::GetPosition()) * glm::mat4_cast(Transform::GetRotation());
-    matrixScale = glm::scale(glm::mat4(1.0f), Transform::GetScale());
-    matrix = matrixPosition * matrixScale;
+    glm::mat4 translate = glm::translate(glm::mat4(1.0f), Transform::GetPosition());
+    glm::mat4 rotate = glm::mat4_cast(Transform::GetRotation());
+    glm::mat4 scale = glm::scale(glm::mat4(1.0f), Transform::GetScale());
+    matrix = translate * rotate * scale;
 }
-
-void Transform::SetMatrix(const glm::mat4x4 &matrix_) {
-    matrix = matrix_;
-    UpdateTransform();
-}
-
 
 glm::vec3 Transform::GetPosition() const { return Position; }
 glm::quat Transform::GetRotation() const { return Rotation; }

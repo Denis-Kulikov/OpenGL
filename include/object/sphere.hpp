@@ -75,9 +75,9 @@ public:
 
                 // Добавление вершин
                 glm::vec3 position;
-                position.x = x / 2; // делим на 2 для радиуса 0.5
-                position.y = y / 2;
-                position.z = z / 2;
+                position.x = x;
+                position.y = y;
+                position.z = z;
 
 
                 // Текстурные координаты

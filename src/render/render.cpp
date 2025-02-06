@@ -77,6 +77,8 @@ void Render::drawObject(Matrix4f& matrix, Sprite *sprite)
 
 void Render::drawSkybox(Cube &skybox)
 {
+    clearRender();
+
     GLint OldCullFaceMode;
     glGetIntegerv(GL_CULL_FACE_MODE, &OldCullFaceMode);
     GLint OldDepthFuncMode;

@@ -37,7 +37,7 @@ objectTransform Line::setPoints(const glm::vec3 &_start, const glm::vec3 &_end)
 
 void Line::initializeGeometry() {
     std::vector<GLfloat> vertices = {
-        0, 0, 0,
+        1, 0, 0,
         -1, 0, 0
     };
 

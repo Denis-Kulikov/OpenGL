@@ -9,21 +9,89 @@ RigidTransform::RigidTransform(BulletManager *btManager, btCollisionShape *colli
         colliderShape->calculateLocalInertia(mass, localInertia);
     }
 
-    btRigidBody::btRigidBodyConstructionInfo rigidBodyCI(
-        mass, nullptr, colliderShape, localInertia);
-    rigidBody = new btRigidBody(rigidBodyCI);
+    btTransform initialTransform;
+    initialTransform.setIdentity();
+    btMotionState *motionState = new btDefaultMotionState(initialTransform);
 
-    btMotionState *motionState = rigidBody->getMotionState();
-    if (!motionState) {
-        btTransform initialTransform;
-        initialTransform.setIdentity();
-        motionState = new btDefaultMotionState(initialTransform);
-        rigidBody->setMotionState(motionState);
-    }
+    btRigidBody::btRigidBodyConstructionInfo rigidBodyCI(
+        mass, motionState, colliderShape, localInertia);
+    rigidBody = new btRigidBody(rigidBodyCI);
 
     btManager->AddRigidBody(rigidBody);
 }
 
+RigidTransform::RigidTransform(BulletManager *btManager, btRigidBody* rigidBody)
+    : btManager(btManager), rigidBody(rigidBody), Scale(1)
+{
+    btManager->AddRigidBody(rigidBody);
+}
+
+RigidTransform::RigidTransform(const RigidTransform &other)
+    : btManager(other.btManager), Scale(other.Scale) {
+    if (other.rigidBody) {
+        btCollisionShape *shape = other.rigidBody->getCollisionShape();
+        btScalar mass = 1.0f / other.rigidBody->getInvMass();
+
+        btVector3 localInertia(0, 0, 0);
+        if (mass > 0.0f) {
+            shape->calculateLocalInertia(mass, localInertia);
+        }
+
+        btTransform initialTransform;
+        other.rigidBody->getMotionState()->getWorldTransform(initialTransform);
+        btMotionState *motionState = new btDefaultMotionState(initialTransform);
+
+        btRigidBody::btRigidBodyConstructionInfo rigidBodyCI(
+            mass, motionState, shape, localInertia);
+        rigidBody = new btRigidBody(rigidBodyCI);
+
+        btManager->AddRigidBody(rigidBody);
+    }
+}
+
+RigidTransform &RigidTransform::operator=(const RigidTransform &other) {
+    if (this == &other) return *this;
+
+    if (btManager && rigidBody) {
+        btManager->RemoveRigidBody(rigidBody);
+        delete rigidBody->getMotionState();
+        delete rigidBody;
+    }
+
+    btManager = other.btManager;
+    Scale = other.Scale;
+
+    if (other.rigidBody) {
+        btCollisionShape *shape = other.rigidBody->getCollisionShape();
+        btScalar mass = 1.0f / other.rigidBody->getInvMass(); 
+
+        btVector3 localInertia(0, 0, 0);
+        if (mass > 0.0f) {
+            shape->calculateLocalInertia(mass, localInertia);
+        }
+
+        btTransform initialTransform;
+        other.rigidBody->getMotionState()->getWorldTransform(initialTransform);
+        btMotionState *motionState = new btDefaultMotionState(initialTransform);
+
+        btRigidBody::btRigidBodyConstructionInfo rigidBodyCI(
+            mass, motionState, shape, localInertia);
+        rigidBody = new btRigidBody(rigidBodyCI);
+
+        btManager->AddRigidBody(rigidBody);
+    }
+
+    return *this;
+}
+
+RigidTransform::~RigidTransform()
+{
+    if (btManager != nullptr) {
+        btManager->RemoveRigidBody(rigidBody);
+        delete rigidBody->getMotionState(); 
+        delete rigidBody;
+    }
+}
 
 void RigidTransform::UpdateTransform() {
     RigidTransform::SetPosition(glm::vec3(matrix[3]));
@@ -31,8 +99,6 @@ void RigidTransform::UpdateTransform() {
     RigidTransform::SetScale(glm::vec3(glm::length(matrix[0]),
                         glm::length(matrix[1]),
                         glm::length(matrix[2])));
-
-    // обноление тела
 }
 
 void RigidTransform::UpdateMatrix() {
@@ -42,24 +108,6 @@ void RigidTransform::UpdateMatrix() {
     matrix = translate * rotate * scale;
 }
 
-void RigidTransform::SetMatrix(const glm::mat4x4 &matrix_) {
-    matrix = matrix_;
-    UpdateTransform();
-}
-
-RigidTransform::RigidTransform(BulletManager *btManager, btRigidBody* rigidBody)
-    : btManager(btManager), rigidBody(rigidBody), Scale(1)
-{
-    btManager->AddRigidBody(rigidBody);
-}
-
-RigidTransform::~RigidTransform()
-{
-    if (btManager != nullptr) {
-        btManager->RemoveRigidBody(rigidBody);
-        delete rigidBody;
-    }
-}
 
 glm::vec3 RigidTransform::GetPosition() const
 {

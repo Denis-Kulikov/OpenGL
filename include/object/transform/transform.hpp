@@ -6,11 +6,12 @@
 class Transform  : public Transformable
 {
 public:
-    Transform(const Transform *transform);
+    Transform(const Transform &transform);
     Transform();
 
     void UpdateMatrix() override;
-    void SetMatrix(const glm::mat4x4 &matrix_) override;
+    void UpdateTransform() override;
+    // void SetMatrix(const glm::mat4x4 &matrix_) override;
     bool isMoving() const override { return false; };
 
     glm::vec3 GetPosition() const override;
@@ -31,7 +32,6 @@ public:
     glm::vec3 GetRightVector() const override;
 
 private:
-    void UpdateTransform() override;
     glm::vec3 Position;
     glm::quat Rotation;
     glm::vec3 Scale;

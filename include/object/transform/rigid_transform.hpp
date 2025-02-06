@@ -9,10 +9,13 @@ class RigidTransform : public Transformable
 public:
     RigidTransform(BulletManager *btManager, btCollisionShape *colliderShape, btScalar mass);
     RigidTransform(BulletManager *btManager, btRigidBody *rigidBody);
+    RigidTransform(const RigidTransform &other);
+    RigidTransform &operator=(const RigidTransform &other);
     ~RigidTransform();
 
     void UpdateMatrix() override;
-    void SetMatrix(const glm::mat4x4 &matrix_) override;
+    void UpdateTransform() override;
+    // void SetMatrix(const glm::mat4x4 &matrix_) override;
     bool isMoving() const override { return true; };
 
     glm::vec3 GetPosition() const override;
@@ -38,7 +41,6 @@ public:
     void ApplyTorque(const glm::vec3& torque);
 
 // protected:
-    void UpdateTransform() override;
     glm::vec3 Scale;
     btRigidBody *rigidBody = nullptr;
     BulletManager *btManager = nullptr;

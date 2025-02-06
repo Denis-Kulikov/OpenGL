@@ -7,19 +7,18 @@
 
 class ComponentMesh : public Component {
 public:
-    ComponentMesh(Component *parent, const Transform *localTransform_, Transformable *globalTransform)
-        : Component(parent, localTransform_, globalTransform) {}
-    ComponentMesh(Component *parent, Transformable *globalTransform)
-        : Component(parent, globalTransform) {}
+    ComponentMesh(Component *parent, Transform *transform)
+        : Component(parent, transform) {}
+    ComponentMesh(Component *parent, RigidTransform *transform)
+        : Component(parent, transform) {}
+
+    // ComponentMesh(Component *parent, const Transform *localTransform_, Transformable *globalTransform)
+    //     : Component(parent, localTransform_, globalTransform) {}
+    // ComponentMesh(Component *parent, Transformable *globalTransform)
+    //     : Component(parent, globalTransform) {}
 
     void Render() const override {
-        mesh->set_transform(GetMatrix());
-        objectTransform t;
-        t.SetWorldPos(globalTransform->GetPosition());
-        glm::vec3 eulerAngles = glm::eulerAngles(globalTransform->GetRotation());
-        t.SetRotate(glm::degrees(eulerAngles)); // Преобразование в градусы, если требуется
-        // t.SetRotate(transform->GetRotation());
-        t.SetScale(globalTransform->GetScale());
+        glm::mat4x4 t = glm::transpose(GetMatrix());
         mesh->set_transform(t);
         std::vector<aiMatrix4x4> Transforms;
         mesh->BoneTransform(GameManager::Time.GetCurrentTime(), Transforms);

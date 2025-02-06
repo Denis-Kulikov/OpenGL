@@ -27,7 +27,7 @@ bool Actor::loadActor(const std::string &path)
     return true;
 }
 
-void Actor::Spawn(const Transform *startTransform)
+void Actor::Spawn(Transform& startTransform)
 {
     if (rootComponent == nullptr) return;
     rootComponent->Spawn(startTransform);

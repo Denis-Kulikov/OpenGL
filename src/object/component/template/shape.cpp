@@ -2,6 +2,7 @@
 #include <object/component/template/shape.hpp>
 
 void ComponentShape::Render() const {
+    // glm::mat4x4 m = glm::transpose(transform.GetGlobalTransform()->GetMatrix());
     glm::mat4x4 m = glm::transpose(globalTransform->GetMatrix());
     Sprite::Sprite_rdata rdata = { GameManager::render.PV * Matrix4f(
         m[0][0], m[0][1], m[0][2], m[0][3],

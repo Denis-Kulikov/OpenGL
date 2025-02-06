@@ -27,6 +27,10 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
+// #include "glm/ext.hpp"
+// #include "glm/gtx/string_cast.hpp"
+
+
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
@@ -41,3 +45,5 @@
 #define INVALID_OGL_VALUE 0
 
 #pragma comment (lib, "opengl32.lib" )
+
+glm::vec3 QuatToEuler(glm::quat q);

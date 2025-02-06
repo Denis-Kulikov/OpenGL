@@ -15,6 +15,7 @@ class Sprite : public RenderableObject
 {
 public:
     Sprite(const std::string &_name, const std::string &FS, const std::string &VS, const std::string &texturePath);
+    Sprite(const std::string &texturePath);
     static void initializeGeometry();
     virtual struct GeometryInfo *GetGeometry();
 
