@@ -9,10 +9,9 @@ public:
     ~Ghost();
     
     static void Initialize();
-    static void SetMotion();
 
-    virtual std::string GetName() const override;
-    // Mesh *GetMesh() const override;
+    std::string GetName() const override;
+    Mesh *GetMesh() const override;
     
 protected:
     inline static std::string name;

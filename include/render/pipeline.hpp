@@ -1,5 +1,6 @@
 #pragma once
 #include "camera.hpp"
+#include "math/Matrix4f.hpp"
 
 class Pipeline
 {

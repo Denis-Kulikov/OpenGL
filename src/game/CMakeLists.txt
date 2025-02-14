@@ -2,15 +2,14 @@ set(target lib-game)
 
 add_library(${target} STATIC
 	gameManager.cpp
-	#bulletManager.cpp
+	bulletManager.cpp
 )
-
-#find_package(Bullet REQUIRED)
-#include_directories(${BULLET_INCLUDE_DIRS})
-
 
 target_link_libraries(
   ${target}
   PRIVATE
 	lib-object
+	BulletCollision_Debug
+	BulletDynamics_Debug
+	LinearMath_Debug
 )

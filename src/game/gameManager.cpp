@@ -20,7 +20,7 @@ void GameManager::PushPlayer(Character *_player)
 void GameManager::MouseCB(GLFWwindow* window, double xpos, double ypos) {
     static float yaw = 90.0f;
     static float pitch = 0.0f;
-    const float sensitivity = 4.0f;
+    const float sensitivity = 10.0f;
 
     if (buttons.firstMouse) {
         buttons.lastX = xpos;
@@ -116,7 +116,7 @@ void GameManager::InitializeGLFW(int _width, int _height)
     width = _width;
     height = _height;
 
-    const bool win = false; 
+    #define win true 
     #if win
 
     window = glfwCreateWindow(width, height, "Game", NULL, NULL);
@@ -133,13 +133,13 @@ void GameManager::InitializeGLFW(int _width, int _height)
     glfwSetWindowUserPointer(window, &callbackData);
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
-    glfwSetWindowPos(window, 320, 75);
+    glfwSetWindowPos(window, 150, 75);
 
 
-    // if (glewInit() != GLEW_OK) {
-    //     std::cerr << "Error: " << "Failed to initialize GLEW" << std::endl;
-    //     exit(EXIT_FAILURE);
-    // }
+    if (glewInit() != GLEW_OK) {
+        std::cerr << "Error: " << "Failed to initialize GLEW" << std::endl;
+        exit(EXIT_FAILURE);
+    }
 
     #else
 

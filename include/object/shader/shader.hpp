@@ -2,9 +2,6 @@
 #include "lib-project/lib.hpp"
 #include <stb_image.h>
 
-
-
-
 class Shader {
 public:
     Shader(const std::string &FS, const std::string &VS);

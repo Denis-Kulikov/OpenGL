@@ -49,19 +49,19 @@ void RenderThread::callback() {
 
         std::vector<aiMatrix4x4> *Transforms = new std::vector<aiMatrix4x4>;
         female.GetMesh()->BoneTransform(GameManager::Time.GetCurrentTime(), *Transforms);
-        GameManager::render->clearRender();
+        GameManager::render.clearRender();
         Actor::Actor_rdata data = {Transforms, female.GetMesh()};
         female.Render(&data);
-        GameManager::render->clearRender();
+        GameManager::render.clearRender();
 
-        // sprite.Render(&GameManager::render->pipeline.GetTransform(transform));
+        // sprite.Render(&GameManager::render.pipeline.GetTransform(transform));
 
         endTicks = false;
         *sceneEndTickPtr = true;
 
         startWorkTime = std::chrono::high_resolution_clock::now();
         swapBuffer();
-        GameManager::render->drawSkybox(cube);
+        GameManager::render.drawSkybox(cube);
         endWorkTime = std::chrono::high_resolution_clock::now();
         swapDuration += endWorkTime - startWorkTime;
     } else {
@@ -119,7 +119,7 @@ void ComponentsThread::callback() {
         //for (auto& it : actor->getActorComponents()) {
         //    renderThread.pushSprite(
         //        std::pair<Matrix4f, Sprite *>(
-        //            GameManager::render->pipeline.GetTransform(it->transform), it->sprite
+        //            GameManager::render.pipeline.GetTransform(it->transform), it->sprite
         //        )
         //    );
         //}
@@ -180,7 +180,7 @@ void SceneThread::callback() {
     std::this_thread::sleep_until(frameStart + frameDuration);
     frameStart = std::chrono::steady_clock::now();
     GameManager::Time.Update();
-    GameManager::render->GetPV();
+    GameManager::render.GetPV();
 
     static time_t prev = time(0);
     static int frame = 0;

@@ -4,6 +4,8 @@
 class Cube : public Sprite
 {
 public:
+    Cube(const std::string &name_, const std::string &fs_shader, const std::string &vs_shader, const std::string &texture_path);
+    Cube(const std::string &fs_shader, const std::string &vs_shader, const std::string &texture_path);
     Cube(const std::string &texture_path);
     Cube();
     static void initializeGeometry();

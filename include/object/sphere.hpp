@@ -11,11 +11,14 @@ public:
         gColorLocation = glGetUniformLocation(shader, "gColor");
     }
 
+    Sphere(const char *texturePath)
+        : Sphere(std::string("None"), "shaders/sphere_fs.glsl", "shaders/sphere_vs.glsl", texturePath) {}
+
+    Sphere(const char *FS, const char *VS, const char *texturePath)
+        : Sphere(std::string("None"), FS, VS, texturePath) {}
+
     Sphere()
-        : Sphere(std::string("None"), "shaders/sphere_fs.glsl", "shaders/sphere_vs.glsl", "")
-    {
-        gColorLocation = glGetUniformLocation(shader, "gColor");
-    }
+        : Sphere(std::string("None"), "shaders/sphere_fs.glsl", "shaders/sphere_vs.glsl", "") {}
 
     struct GeometryInfo *GetGeometry() override {
         return &geometryInfo;
@@ -33,69 +36,94 @@ public:
         glBindTexture(GL_TEXTURE_2D, texture);
         glUniform1i(gTextureSamplerLocation, 0);
 
-        glUniform3f(gColorLocation, color.x, color.y, color.z);
         glUniformMatrix4fv(gWorldLocation, 1, GL_TRUE, &static_cast<Sprite_rdata*>(RenderData)->matrix);
 
         glDrawElements(GL_TRIANGLES, geometryInfo.numIndices, GL_UNSIGNED_INT, 0);
     }
 
     static void initializeGeometry() {
-        std::vector<GLfloat> vertices;
+        struct Vertex {
+            Vertex(glm::vec3 position, glm::vec2 texCoord)
+                : position(position), texCoord(texCoord) {}
+            glm::vec3 position;
+            glm::vec2 texCoord;
+        };
+        std::vector<Vertex> vertices;
         std::vector<GLuint> indices;
         geometryInfo.numVertices = N;
 
-        for (int lat = 0; lat <= (geometryInfo.numVertices * 3); ++lat) {
-            double theta = lat * M_PI / (geometryInfo.numVertices * 3);
-            double sinTheta = sin(theta);
-            double cosTheta = cos(theta);
+        int numLat = N; // количество широт
+        int numLon = N; // количество долгот
 
-            for (int lon = 0; lon <= (geometryInfo.numVertices * 3); ++lon) {
-                double phi = lon * 2 * M_PI / (geometryInfo.numVertices * 3);
-                double sinPhi = sin(phi);
-                double cosPhi = cos(phi);
+        for (int lat = 0; lat <= numLat; ++lat) {
+            float theta = lat * M_PI / numLat; // угол широты
+            float sinTheta = sin(theta);
+            float cosTheta = cos(theta);
 
-                float x = static_cast<float>(cosPhi * sinTheta) / 2;
-                float y = static_cast<float>(cosTheta) / 2;
-                float z = static_cast<float>(sinPhi * sinTheta) / 2;
+            for (int lon = 0; lon <= numLon; ++lon) {
+                float phi = lon * 2 * M_PI / numLon; // угол долготы
+                float sinPhi = sin(phi);
+                float cosPhi = cos(phi);
 
-                vertices.push_back(x);
-                vertices.push_back(y);
-                vertices.push_back(z);
+                // Координаты вершины
+                float x = cosPhi * sinTheta;
+                float y = cosTheta;
+                float z = sinPhi * sinTheta;
+
+                // Добавление вершин
+                glm::vec3 position;
+                position.x = x;
+                position.y = y;
+                position.z = z;
+
+
+                // Текстурные координаты
+                glm::vec2 texCoord;
+                float u = static_cast<float>(lon) / numLon;
+                float v = static_cast<float>(lat) / numLat;
+                texCoord.x = u;
+                texCoord.y = v;
+
+                vertices.emplace_back(position, texCoord);
             }
         }
 
-        for (int lat = 0; lat < (geometryInfo.numVertices * 3); ++lat) {
-            for (int lon = 0; lon < (geometryInfo.numVertices * 3); ++lon) {
-                int current = lat * ((geometryInfo.numVertices * 3) + 1) + lon;
-                int next = current + (geometryInfo.numVertices * 3) + 1;
+        // Генерация индексов
+        for (int lat = 0; lat < numLat; ++lat) {
+            for (int lon = 0; lon < numLon; ++lon) {
+                int first = lat * (numLon + 1) + lon;
+                int second = first + numLon + 1;
 
-                indices.push_back(current);
-                indices.push_back(next);
-                indices.push_back(current + 1);
+                indices.push_back(first);
+                indices.push_back(second);
+                indices.push_back(first + 1);
 
-                indices.push_back(current + 1);
-                indices.push_back(next);
-                indices.push_back(next + 1);
+                indices.push_back(second);
+                indices.push_back(second + 1);
+                indices.push_back(first + 1);
             }
         }
 
-        geometryInfo.numIndices = static_cast<int>(indices.size());
+        geometryInfo.numVertices = vertices.size();
+        geometryInfo.numIndices = indices.size();
 
         glGenVertexArrays(1, &geometryInfo.VAO);
         glBindVertexArray(geometryInfo.VAO);
 
         glGenBuffers(1, &geometryInfo.VBO);
         glBindBuffer(GL_ARRAY_BUFFER, geometryInfo.VBO);
-        glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(GLfloat), vertices.data(), GL_STATIC_DRAW);
-
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
-        glEnableVertexAttribArray(0);
+        glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), vertices.data(), GL_STATIC_DRAW);
 
         glGenBuffers(1, &geometryInfo.EBO);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, geometryInfo.EBO);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), indices.data(), GL_STATIC_DRAW);
 
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, position));
+
+        glEnableVertexAttribArray(1);
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, texCoord));
+
         glBindVertexArray(0);
     }
 

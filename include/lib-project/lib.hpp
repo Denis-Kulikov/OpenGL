@@ -27,15 +27,20 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
+// #include "glm/ext.hpp"
+// #include "glm/gtx/string_cast.hpp"
+
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-// #include <assimp/scene.h>
-// #include <assimp/Importer.hpp>
-// #include <assimp/postprocess.h>
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/component_wise.hpp>
+#include <glm/gtx/quaternion.hpp>
+
+#include <assimp/scene.h>
+#include <assimp/Importer.hpp>
+#include <assimp/postprocess.h>
 
 #define INVALID_OGL_VALUE 0
 
 #pragma comment (lib, "opengl32.lib" )
-
-using ull_I = unsigned long long;

@@ -3,6 +3,7 @@
 #include "../renderableObject.hpp"
 #include "../objectTransform.hpp"
 #include "math/Vector3.hpp"
+#include "math/Matrix4f.hpp"
 #include <stb_image.h>
 
 class Skybox : public RenderableObject

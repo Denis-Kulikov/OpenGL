@@ -40,25 +40,31 @@ public:
         std::vector<GLfloat> vertices;
         geometryInfo.numVertices = N;
 
-        for (int lat = 0; lat <= (geometryInfo.numVertices * 3); ++lat) {
-            double theta = lat * M_PI / (geometryInfo.numVertices * 3);
-            double sinTheta = sin(theta);
-            double cosTheta = cos(theta);
+        int numLat = N; // количество широт
+        int numLon = N; // количество долгот
 
-            for (int lon = 0; lon <= (geometryInfo.numVertices * 3); ++lon) {
-                double phi = lon * 2 * M_PI / (geometryInfo.numVertices * 3);
-                double sinPhi = sin(phi);
-                double cosPhi = cos(phi);
+        for (int lat = 0; lat <= numLat; ++lat) {
+            float theta = lat * M_PI / numLat; // угол широты
+            float sinTheta = sin(theta);
+            float cosTheta = cos(theta);
 
-                float x = static_cast<float>(cosPhi * sinTheta) / 2;
-                float y = static_cast<float>(cosTheta) / 2;
-                float z = static_cast<float>(sinPhi * sinTheta) / 2;
+            for (int lon = 0; lon <= numLon; ++lon) {
+                float phi = lon * 2 * M_PI / numLon; // угол долготы
+                float sinPhi = sin(phi);
+                float cosPhi = cos(phi);
 
+                // Координаты вершины
+                float x = cosPhi * sinTheta;
+                float y = cosTheta;
+                float z = sinPhi * sinTheta;
+
+                // Добавление вершин
                 vertices.push_back(x);
                 vertices.push_back(y);
                 vertices.push_back(z);
             }
         }
+
 
         geometryInfo.numVertices = static_cast<int>(vertices.size()) / 3;
 

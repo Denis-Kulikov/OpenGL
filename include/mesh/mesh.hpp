@@ -9,13 +9,13 @@
 
 
 
-typedef struct stb_img_struct {
-    stb_img_struct(const std::string& Filename);
-    ~stb_img_struct();
+struct stb_img {
+    stb_img(const std::string& Filename);
+    ~stb_img();
 
     int x, y, n;
     unsigned char *img = nullptr;
-} stb_img;
+};
 
 struct Texture {
     Texture(const GLuint id, const std::string &n)
@@ -38,6 +38,7 @@ public:
  
     void BoneTransform(float TimeInSeconds, std::vector<aiMatrix4x4>& Transforms);
     void set_transform(const objectTransform &transform);
+    void set_transform(const glm::mat4x4 &matrix);
     bool LoadMesh(const std::string& Filename);
     void Render(std::vector<aiMatrix4x4> *Transforms);
 
@@ -89,13 +90,9 @@ enum VB_TYPES {
     };
 
     struct BoneInfo {
+        BoneInfo() : BoneOffset(), FinalTransformation() {}
         aiMatrix4x4 BoneOffset;
         aiMatrix4x4 FinalTransformation;
-
-        BoneInfo() {
-            BoneOffset = aiMatrix4x4();
-            FinalTransformation = aiMatrix4x4();
-        }
     };
 
 

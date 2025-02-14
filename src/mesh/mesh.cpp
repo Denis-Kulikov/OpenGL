@@ -4,6 +4,51 @@
 #include <object/cube.hpp>
 #include <stb_image.h>
 
+stb_img::stb_img(const std::string& Filename) {
+    img = stbi_load(Filename.c_str(), &x, &y, &n, 0);
+    if (img == nullptr)
+        std::cerr << "Failed to load img: " << Filename << std::endl;
+
+}
+stb_img::~stb_img() {
+    if (img != nullptr)
+        stbi_image_free(img);
+}
+
+
+Texture::Texture(const stb_img& img)
+{
+    if (img.img == nullptr)
+        std::cerr << "Failed to create texture" << std::endl;
+
+    glGenTextures(1, &texture);
+    glBindTexture(GL_TEXTURE_2D, texture);
+
+    GLenum format = (img.n == 4) ? GL_RGBA : GL_RGB;
+
+    glTexImage2D(GL_TEXTURE_2D, 0, format, img.x, img.y, 0, format, GL_UNSIGNED_BYTE, img.img);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    glGenerateMipmap(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    GLenum error = glGetError();
+    if (error != GL_NO_ERROR) {
+        std::cerr << "OpenGL error: " << error << std::endl;
+    }
+}
+
+Texture::Texture(const stb_img& img, const std::string& n)
+    : Texture(img)
+{
+    name = n;
+}
+
+
 GLuint CreateTextureFromCompressedPng(const aiTexture* texture) {
     // Декодирование PNG данных, которые хранятся в памяти
     int width, height, channels;
@@ -73,51 +118,6 @@ void Mesh::VertexBoneData::AddBoneData(unsigned int BoneID, float Weight)
     std::cout << "Костей больше, чем мы рассчитывалось." << std::endl;
     assert(0);
 }
-
-stb_img_struct::stb_img_struct(const std::string& Filename) {
-    img = stbi_load(Filename.c_str(), &x, &y, &n, 0);
-    if (img == nullptr)
-        std::cerr << "Failed to load img: " << Filename << std::endl;
-    
-}
-stb_img_struct::~stb_img_struct() {
-    if (img != nullptr)
-        stbi_image_free(img);
-}
-
-
-Texture::Texture(const stb_img& img)
-{
-    if (img.img == nullptr)
-        std::cerr << "Failed to create texture" << std::endl;
-
-    glGenTextures(1, &texture);
-    glBindTexture(GL_TEXTURE_2D, texture);
-
-    GLenum format = (img.n == 4) ? GL_RGBA : GL_RGB;
-
-    glTexImage2D(GL_TEXTURE_2D, 0, format, img.x, img.y, 0, format, GL_UNSIGNED_BYTE, img.img);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    glGenerateMipmap(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, 0);
-
-    GLenum error = glGetError();
-    if (error != GL_NO_ERROR) {
-        std::cerr << "OpenGL error: " << error << std::endl;
-    }
-}
-
-Texture::Texture(const stb_img& img, const std::string &n)
-    : Texture(img)
-{
-    name = n;
-}
-
 
 Mesh::MeshEntry::MeshEntry()
 {
@@ -301,8 +301,6 @@ void Mesh::ReadNodeHeirarchy(float AnimationTime, const aiNode* pNode, const aiM
     for (unsigned int i = 0; i < pNode->mNumChildren; i++) {
         ReadNodeHeirarchy(AnimationTime, pNode->mChildren[i], GlobalTransformation);
     }
-
-
 }
 
 void Mesh::BoneTransform(float TimeInSeconds, std::vector<aiMatrix4x4>& Transforms)
@@ -603,6 +601,12 @@ void Mesh::set_transform(const objectTransform &transform) {
     aiMatrix4x4::Scaling(aiVector3D(transform.GetScale().x, transform.GetScale().y, transform.GetScale().z), scaleMatrix);
 
     m_pScene->mRootNode->mTransformation = TranslationMatrix * RotationMatrixZ * RotationMatrixY * RotationMatrixX * scaleMatrix;
+    // m_pScene->mRootNode->mTransformation = TranslationMatrix * scaleMatrix * RotationMatrixZ * RotationMatrixY * RotationMatrixX;
+}
+
+void Mesh::set_transform(const glm::mat4x4 &matrix) {
+    // m_pScene->mRootNode->mTransformation = *reinterpret_cast<const aiMatrix4x4*>(&glm::transpose(matrix));
+    m_pScene->mRootNode->mTransformation = *reinterpret_cast<const aiMatrix4x4*>(&matrix);
 }
 
 void Mesh::Render(std::vector<aiMatrix4x4> *Transforms)

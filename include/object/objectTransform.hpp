@@ -1,6 +1,5 @@
 #pragma once
 #include "../lib-project/lib.hpp"
-#include "../lib-project/math_3d.hpp"
 
 enum AXES {
     X,

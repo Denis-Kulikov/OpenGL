@@ -1,14 +1,23 @@
+#pragma once
 #include <btBulletDynamicsCommon.h>
 
 class BulletManager {
 public:
     BulletManager();
-    ~BulletManager() = default;
+    ~BulletManager();
 
-private:
-    btDbvtBroadphase broadphase;
-    btDefaultCollisionConfiguration collisionConfiguration;
-    btCollisionDispatcher dispatcher;
-    btSequentialImpulseConstraintSolver solver;
-    btDiscreteDynamicsWorld dynamicsWorld;
+    void AddRigidBody(btRigidBody* body);
+    void RemoveRigidBody(btRigidBody* body);
+
+    void AddCollisionObject(btCollisionObject* collisionObject);
+    void RemoveCollisionObject(btCollisionObject* collisionObject);
+    
+    void StepSimulation(float deltaTime);
+
+// private:
+    btBroadphaseInterface* broadphase = nullptr;
+    btDefaultCollisionConfiguration* collisionConfiguration = nullptr;
+    btCollisionDispatcher* dispatcher = nullptr;
+    btSequentialImpulseConstraintSolver* solver = nullptr;
+    btDiscreteDynamicsWorld* dynamicsWorld = nullptr;
 };
