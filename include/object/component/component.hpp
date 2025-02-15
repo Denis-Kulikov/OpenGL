@@ -1,16 +1,12 @@
 #pragma once
-#include <lib-project/lib.hpp>
-#include <object/transform/transformable.hpp>
 #include <object/transform/transform.hpp>
-#include <object/transform/rigid_transform.hpp>
-#include <btBulletDynamicsCommon.h>
 
 
 class Component {
 public:
     // Component(Component *parent, const Transform *localTransform_, Transformable *globalTransform);
     Component(Transform *transform);
-    Component(RigidTransform *transform);
+    // Component(RigidTransform *transform);
     ~Component();
 
     void UpdateInverseTransform();

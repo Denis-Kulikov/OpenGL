@@ -3,9 +3,10 @@
 #include <object/cube.hpp>
 #include <object/sphere.hpp>
 
-Floor::Floor(BulletManager *btManager)
+Floor::Floor()
     : Pawn(std::string("Floor"))
 {
+    /*
     auto *floor = new Sprite("img/floor.jpg");
 
     glm::quat rotation = glm::angleAxis(glm::radians(90.0f), glm::vec3(1, 0, 0));
@@ -27,6 +28,7 @@ Floor::Floor(BulletManager *btManager)
 
     rootComponent = shape;
     rootComponent->isMoved = true;
+    */
 
     // ============
 

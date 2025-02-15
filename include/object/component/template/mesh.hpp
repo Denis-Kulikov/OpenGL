@@ -1,5 +1,4 @@
 #pragma once
-#include <btBulletDynamicsCommon.h>
 #include <lib-project/lib.hpp>
 #include <game/gameManager.hpp>
 #include <mesh/mesh.hpp>
@@ -9,8 +8,8 @@ class ComponentMesh : public Component {
 public:
     ComponentMesh(Transform *transform)
         : Component(transform) {}
-    ComponentMesh(RigidTransform *transform)
-        : Component(transform) {}
+    // ComponentMesh(RigidTransform *transform)
+    //     : Component(transform) {}
 
     // ComponentMesh(Component *parent, const Transform *localTransform_, Transformable *globalTransform)
     //     : Component(parent, localTransform_, globalTransform) {}

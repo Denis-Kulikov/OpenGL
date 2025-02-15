@@ -5,7 +5,7 @@
 #include "cube_wire.hpp"
 #include "../entities/actor.hpp"
 #include "../mesh/shape.hpp"
-#include <game/bulletManager.hpp>
+// #include <game/bulletManager.hpp>
 
 class Scene 
 {
@@ -19,6 +19,6 @@ public:
     
     std::vector<Pawn*> pawns;
     std::vector<Shape*> shapes;
-    BulletManager btManager;
+    // BulletManager btManager;
     Cube *skybox;
 };

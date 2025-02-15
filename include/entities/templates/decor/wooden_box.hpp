@@ -2,13 +2,13 @@
 
 #include "../../pawn.hpp"
 #include <object/cube.hpp>
-#include <object/transform/rigid_transform.hpp>
 #include <object/component/template/shape.hpp>
 
 class WoodenBox : public Pawn
 {
 public:
-    WoodenBox(BulletManager *btManagere);
+    // WoodenBox(BulletManager *btManagere);
+    WoodenBox();
     ~WoodenBox();
     
     static void Initialize();

@@ -6,8 +6,6 @@ add_library(${target} STATIC
 	physics_shape.cpp
 )
 
-find_package(OpenMP REQUIRED)
-
 target_link_libraries(${target}
     PRIVATE
 	lib-render

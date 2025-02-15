@@ -7,10 +7,10 @@ Component::Component(Transform *transform)
     UpdateInverseTransform();
 }
 
-Component::Component(RigidTransform *transform)
-    : localTransform(transform), globalTransform(transform) {
-    UpdateInverseTransform();
-}
+// Component::Component(RigidTransform *transform)
+//     : localTransform(transform), globalTransform(transform) {
+//     UpdateInverseTransform();
+// }
 
 
 Component::~Component() {

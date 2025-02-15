@@ -1,12 +1,11 @@
 #pragma once
 
 #include "../../pawn.hpp"
-#include <object/transform/rigid_transform.hpp>
 
 class Floor : public Pawn
 {
 public:
-    Floor(BulletManager *btManagere);
+    Floor();
     ~Floor();
     
     static void Initialize();

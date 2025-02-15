@@ -26,7 +26,7 @@ void WoodenBox::BuildSpiral(ComponentShape *parent, int step, int maxSteps) {
     BuildSpiral(shape, step + 1, maxSteps);
 }
 
-WoodenBox::WoodenBox(BulletManager *btManagere)
+WoodenBox::WoodenBox()
     : Pawn(std::string(""))
     {
         float angle = glm::radians(10.f); // Поворачиваем каждый виток

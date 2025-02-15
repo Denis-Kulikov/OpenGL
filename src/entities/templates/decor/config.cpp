@@ -8,6 +8,7 @@ Config::Config()
 {
     Transform *transform = new Transform();
     rootComponent = CreateComponent<ComponentPoint>(transform);
+    rootComponent->SetPosition(glm::vec3(-50.f * 15 / 2, 250.f, -50.f * 15 / 2));
     // rootComponent = CreateComponent<ComponentShape>(transform);
     // dynamic_cast<ComponentShape*>(rootComponent)->shape = new Cube("img/box.jpg");
 }
@@ -49,7 +50,7 @@ Mesh *Config::GetMesh() const { return nullptr; }
 using namespace glm;
 
 Config::ConfigScene::ConfigScene() {
-    int gridSize = 50;     // Размер сетки (10x10)
+    int gridSize = 50;     // Размер сетки
     float spacing = 15.0f;  // Расстояние между спиралями
 
     fun(BuildSpiral, int step, int maxSteps, cube parent) {

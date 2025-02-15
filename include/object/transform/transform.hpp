@@ -1,6 +1,4 @@
 #pragma once
-#include <lib-project/lib.hpp>
-#include <btBulletDynamicsCommon.h>
 #include "transformable.hpp"
 
 class Transform  : public Transformable

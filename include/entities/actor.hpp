@@ -1,7 +1,6 @@
 #pragma once
 
 #include <filesystem>
-#include "../lib-project/lib.hpp"
 #include "../object/objectTransform.hpp"
 #include "../mesh/mesh.hpp"
 

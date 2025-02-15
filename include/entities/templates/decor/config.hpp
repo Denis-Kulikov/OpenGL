@@ -3,7 +3,6 @@
 #include "../../pawn.hpp"
 #include <object/cube.hpp>
 #include <object/sphere.hpp>
-#include <object/transform/rigid_transform.hpp>
 #include <object/component/template/shape.hpp>
 #include <object/component/template/mesh.hpp>
 
@@ -85,7 +84,8 @@ protected:
         GLsizei vec4Size = sizeof(glm::vec4);
         for (int i = 0; i < 4; i++) {
             glEnableVertexAttribArray(3 + i); // Аттрибуты 3, 4, 5, 6 (четыре vec4, составляющие mat4)
-            glVertexAttribPointer(3 + i, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(i * vec4Size));
+            // glVertexAttribPointer(3 + i, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(i * vec4Size));
+            glVertexAttribPointer(3 + i, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(intptr_t)(i * vec4Size));
             glVertexAttribDivisor(3 + i, 1); // Один аттрибут на экземпляр
         }
 

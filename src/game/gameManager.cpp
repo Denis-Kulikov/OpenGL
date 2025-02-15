@@ -63,6 +63,8 @@ void GameManager::UpdateCamera()
     render.pipeline.camera.Params.Target.z = -sin(glm::radians(player.GetYaw()));
     render.pipeline.camera.Params.Target.y = tan(glm::radians(player.GetPitch()));
     render.pipeline.camera.PersProj.FOV = pitch_limit - fabs(player.GetPitch());
+
+    // std::cout << "pitch: " << player.GetPitch() << " | " << "yaw: " << player.GetYaw() << std::endl;
 }
 
 void GameManager::KeyboardCB(GLFWwindow* window, int key, int scancode, int action, int mods)
@@ -116,7 +118,7 @@ void GameManager::InitializeGLFW(int _width, int _height)
     width = _width;
     height = _height;
 
-    #define win true 
+    #define win false 
     #if win
 
     window = glfwCreateWindow(width, height, "Game", NULL, NULL);
@@ -191,5 +193,5 @@ void GameManager::InitializeGLFW(int _width, int _height)
     glEnable(GL_DEPTH_TEST);
     glClearColor(0.12f, 0.12f, 0.12f, 0.0f);
 
-    render.pipeline.camera.SetPerspectiveProj(70.0f, width, height, 0.5f, 1000.0f);
+    render.pipeline.camera.SetPerspectiveProj(70.0f, width, height, 0.5f, 7000.0f);
 }

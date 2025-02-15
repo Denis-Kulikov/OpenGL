@@ -1,15 +1,15 @@
 #include <entities/templates/mobs/Female.hpp>
 #include <object/component/template/shape.hpp>
 #include <object/component/template/mesh.hpp>
-#include <object/component/physics/physic.hpp>
 #include <object/transform/transform.hpp>
 #include <object/sphere.hpp>
 
 
-Female::Female(BulletManager *btManager)
+Female::Female()
     : Character(std::string(""))
 {
     // ComponentCollaider *collider = CreateComponent<ComponentCollaider>();
+    /*
     glm::vec3 scale(1);
     btSphereShape *colliderShape = new btSphereShape(scale.x);
     RigidTransform *rigidShape = new RigidTransform(btManager, colliderShape, 0.5);
@@ -42,6 +42,7 @@ Female::Female(BulletManager *btManager)
     cmesh->mesh = Female::mesh;
 
     rootComponent->AddChild(cmesh);
+    */
 }
 
 Female::~Female()

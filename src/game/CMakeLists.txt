@@ -2,9 +2,10 @@ set(target lib-game)
 
 add_library(${target} STATIC
 	gameManager.cpp
-	bulletManager.cpp
+	#bulletManager.cpp
 )
 
+if(WIN32)
 target_link_libraries(
   ${target}
   PRIVATE
@@ -13,3 +14,6 @@ target_link_libraries(
 	BulletDynamics_Debug
 	LinearMath_Debug
 )
+else()
+target_link_libraries(${target} PRIVATE lib-object)
+endif()
