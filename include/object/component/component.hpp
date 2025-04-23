@@ -22,6 +22,11 @@ public:
     glm::quat GetRotation() const;
     glm::vec3 GetScale() const;
 
+    glm::vec3 GetGlobalPosition() const;
+    glm::quat GetGlobalRotation() const;
+    glm::vec3 GetGlobalScale() const;
+
+
     void SetPosition(const glm::vec3& position);
     void SetRotation(const glm::quat& rotation);
     void SetScale(const glm::vec3& scale);

@@ -33,6 +33,47 @@ void Config::Deinitialization() {
 std::string Config::GetName() const { return Config::name; }
 Mesh *Config::GetMesh() const { return nullptr; }
 
+void Config::DestroyBuffers() {
+
+}
+
+void Config::CreateBuffers(GLfloat width, GLfloat height) {
+    GameManager::render.pipeline.camera.PersProj.Width  = scene.width;
+    GameManager::render.pipeline.camera.PersProj.Height = scene.height;
+
+    GameManager::width  = scene.width;
+    GameManager::height = scene.height;
+
+    glBindFramebuffer(GL_FRAMEBUFFER, GameManager::framebuffer);
+
+    // Создание текстуры для рендеринга
+    glBindTexture(GL_TEXTURE_2D, GameManager::texture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, GameManager::texture, 0);
+
+    // Создание depth буфера
+    glBindRenderbuffer(GL_RENDERBUFFER, GameManager::depthbuffer);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, width, height);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, GameManager::depthbuffer);
+
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+        std::cerr << "Error: Framebuffer is not complete" << std::endl;
+        exit(EXIT_FAILURE);
+    }
+
+    glViewport(0, 0, width, height);
+}
+
+void Config::UpdateCanvas() {
+    if (scene.width != lastWidth || scene.height != lastHeight) {
+        DestroyBuffers(); // удалить предыдущие ресурсы
+        CreateBuffers(scene.width, scene.height); // создать новые
+        lastWidth = scene.width;
+        lastHeight = scene.height;
+    }
+}
+
+
 // ### ### ###
 #define new_sprite     new sprite_obj()
 #define new_cube       new cube_obj()
@@ -50,38 +91,64 @@ Mesh *Config::GetMesh() const { return nullptr; }
 using namespace glm;
 
 Config::ConfigScene::ConfigScene() {
-    int gridSize = 50;     // Размер сетки
-    float spacing = 15.0f;  // Расстояние между спиралями
+    height = 3000;
+    width = 3000;
+    num_frames = 6;
+    int gridSize = 20;     // Размер сетки
+    float spacing = 25.0f;  // Расстояние между спиралями
 
-    fun(BuildSpiral, int step, int maxSteps, cube parent) {
-        if (step >= maxSteps) return;
+    cube Cube1;
+    Cube1.SetPosition(vec3(0, 0, 0));
+    Cube1.SetScale(vec3(500, 500, 500));
+    // Cube1.SetPosition(vec3(0, 1000, 0));
+    // Cube1.SetScale(vec3(1000, 10, 10));
 
-        float angle = glm::radians(step * 30.0f);
-        float radius = 2.0f;
-        float heightStep = 2.0f;
+    // cube Cube2;
+    // Cube2.SetPosition(vec3(0, -1000, 0));
+    // Cube2.SetScale(vec3(1000, 10, 10));
 
-        cube childCube;
-        glm::vec3 position(radius * cos(angle), step * heightStep, radius * sin(angle));
-        childCube.SetPosition(position);
+    // cube Cube3;
+    // Cube3.SetPosition(vec3(500, 0, 0));
+    // Cube3.SetScale(vec3(10, 1000, 10));
 
-        glm::quat rotation = glm::angleAxis(-angle, glm::vec3(0, 1, 0));
-        childCube.SetRotation(rotation);
+    // cube Cube4;
+    // Cube4.SetPosition(vec3(-500, 0, 0));
+    // Cube4.SetScale(vec3(10, 1000, 10));
 
-        childCube.attach(parent);
-        add(childCube);
+    add(Cube1);
+    // add(Cube2);
+    // add(Cube3);
+    // add(Cube4);
 
-        BuildSpiral(step + 1, maxSteps, childCube);
-    };
+    // fun(BuildSpiral, int step, int maxSteps, cube parent) {
+    //     if (step >= maxSteps) return;
 
-    for (int x = 0; x < gridSize; x++) {
-        for (int y = 0; y < gridSize; y++) {
-            cube rootCube;
-            rootCube.SetPosition(vec3(x * spacing, 0.0f, y * spacing));
-            add(rootCube);
+    //     float angle = glm::radians(step * 30.0f);
+    //     float radius = 2.0f;
+    //     float heightStep = 2.0f;
 
-            BuildSpiral(0, 100, rootCube);
-        }
-    }
+    //     cube childCube;
+    //     glm::vec3 position(radius * cos(angle), step * heightStep, radius * sin(angle));
+    //     childCube.SetPosition(position);
+
+    //     glm::quat rotation = glm::angleAxis(-angle, glm::vec3(0, 1, 0));
+    //     childCube.SetRotation(rotation);
+
+    //     childCube.attach(parent);
+    //     add(childCube);
+
+    //     BuildSpiral(step + 1, maxSteps, childCube);
+    // };
+
+    // for (int x = 0; x < gridSize; x++) {
+    //     for (int y = 0; y < gridSize; y++) {
+    //         cube rootCube;
+    //         rootCube.SetPosition(vec3(x * spacing, 0.0f, y * spacing));
+    //         add(rootCube);
+
+    //         BuildSpiral(0, 100, rootCube);
+    //     }
+    // }
 }
 
 // Config::ConfigScene::ConfigScene() {

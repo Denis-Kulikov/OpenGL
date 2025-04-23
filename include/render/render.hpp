@@ -19,6 +19,9 @@ public:
     void drawSkybox(Cube &skybox);
     void GetPV();
 
+    glm::mat4 GetPV_Perspective();
+    glm::mat4 GetPV_Orthographic();
+
     Pipeline pipeline;
 
     GLuint shader = 0;

@@ -112,3 +112,43 @@ void Render::GetPV() {
     PersProjTrans.InitPersProjTransform(pipeline.camera.PersProj.FOV, pipeline.camera.PersProj.Width, pipeline.camera.PersProj.Height, pipeline.camera.PersProj.zNear, pipeline.camera.PersProj.zFar);
     PV = PersProjTrans * View;
 }
+
+glm::mat4 Render::GetPV_Perspective() {
+    const auto& cam = pipeline.camera;
+
+    glm::mat4 view = glm::lookAt(
+        cam.GetPosition(),
+        cam.GetPosition() + cam.Params.Target, // направление взгляда
+        cam.Params.Up
+    );
+
+    glm::mat4 projection = glm::perspective(
+        glm::radians(cam.PersProj.FOV),
+        static_cast<float>(cam.PersProj.Width) / cam.PersProj.Height,
+        cam.PersProj.zNear,
+        cam.PersProj.zFar
+    );
+
+    return projection * view;
+}
+
+glm::mat4 Render::GetPV_Orthographic() {
+    const auto& cam = pipeline.camera;
+
+    glm::mat4 view = glm::lookAt(
+        cam.GetPosition(),
+        cam.GetPosition() + cam.Params.Target,
+        cam.Params.Up
+    );
+
+    float halfW = cam.PersProj.Width / 2.0f;
+    float halfH = cam.PersProj.Height / 2.0f;
+
+    glm::mat4 projection = glm::ortho(
+        -halfW, halfW,
+        -halfH, halfH,
+        cam.PersProj.zNear, cam.PersProj.zFar
+    );
+
+    return projection * view;
+}

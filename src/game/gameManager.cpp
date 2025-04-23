@@ -53,16 +53,21 @@ void GameManager::MouseCB(GLFWwindow* window, double xpos, double ypos) {
 
 void GameManager::UpdateCamera()
 {
-    const float yaw_speed = 120.0;
-    const float pitch_speed = 100.0;
-    const float pitch_limit = 90.0;
+    const float pitch_limit = 89.0f;
 
     Character& player = *callbackData.player;
 
-    render.pipeline.camera.Params.Target.x = -cos(glm::radians(player.GetYaw()));
-    render.pipeline.camera.Params.Target.z = -sin(glm::radians(player.GetYaw()));
-    render.pipeline.camera.Params.Target.y = tan(glm::radians(player.GetPitch()));
-    render.pipeline.camera.PersProj.FOV = pitch_limit - fabs(player.GetPitch());
+    float yaw = glm::radians(player.GetYaw());
+    float pitch = glm::radians(glm::clamp(player.GetPitch(), -pitch_limit, pitch_limit));
+
+    // Вычисляем направление взгляда камеры
+    glm::vec3 front;
+    front.x = cos(pitch) * sin(yaw);
+    front.y = sin(pitch);
+    front.z = cos(pitch) * cos(yaw);
+    render.pipeline.camera.Params.Target = glm::normalize(front);
+
+    render.pipeline.camera.PersProj.FOV = 80.0f;
 
     // std::cout << "pitch: " << player.GetPitch() << " | " << "yaw: " << player.GetYaw() << std::endl;
 }
@@ -111,6 +116,7 @@ void GameManager::InitializeGLFW(int _width, int _height)
     }
 
     glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
+    glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
@@ -145,7 +151,7 @@ void GameManager::InitializeGLFW(int _width, int _height)
 
     #else
 
-    GLFWwindow* offscreen_context = glfwCreateWindow(1, 1, "", NULL, NULL); // Контекст без окна
+    offscreen_context = glfwCreateWindow(1, 1, "", NULL, NULL); // Контекст без окна
     if (!offscreen_context) {
         std::cerr << "Error: Failed to create offscreen OpenGL context" << std::endl;
         glfwTerminate();
@@ -162,31 +168,8 @@ void GameManager::InitializeGLFW(int _width, int _height)
     }
 
     glGenFramebuffers(1, &framebuffer);
-    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-
-    // Создание текстуры для рендеринга
     glGenTextures(1, &texture);
-    glBindTexture(GL_TEXTURE_2D, texture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _width, _height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-
-    // Присоединение текстуры к framebuffer
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
-
-    // Создание depth буфера
     glGenRenderbuffers(1, &depthbuffer);
-    glBindRenderbuffer(GL_RENDERBUFFER, depthbuffer);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, _width, _height);
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthbuffer);
-
-    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-        std::cerr << "Error: Framebuffer is not complete" << std::endl;
-        exit(EXIT_FAILURE);
-    }
-
-    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-    glViewport(0, 0, _width, _height);
 
     #endif
 

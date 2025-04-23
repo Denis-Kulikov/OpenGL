@@ -28,50 +28,53 @@ void swapBuffer() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void MoveInCircle(Ghost *character, float radius, int step, int max_steps) {
+void MoveInGridArc(Ghost* character, float radius, int i, int j, int max_steps) {
     if (!character) return;
-    std::cout << "step: " << step << std::endl;
 
-    // Вычисляем угол поворота на каждом шаге
-    float angleStep = glm::two_pi<float>() / max_steps;
+    int horizontalSteps = max_steps;
+    int verticalSteps = max_steps / 2 + 1;
 
-    // Вычисляем текущий угол
-    float angle = angleStep * step;
+    // Углы по горизонтали (0 .. 360°)
+    double angleH = glm::two_pi<double>() * (i % horizontalSteps) / horizontalSteps;
 
-    // Новая позиция на окружности
-    float x = radius * cos(angle);
-    float z = radius * sin(angle);
-    float y = character->GetTransform()->GetWorldPos().y;
+    double t = double(j) / (verticalSteps - 1);
+    double angleV = glm::radians(90.0f) * (1.0f - 2.0f * t); // от +90° до -90°
 
-    character->GetTransform()->SetWorldPos(glm::vec3(x, y, z));
+    float x = radius * cos(angleV) * cos(angleH);
+    float y = radius * sin(angleV);
+    float z = radius * cos(angleV) * sin(angleH);
 
-    // Направление на центр
-    glm::vec3 direction = glm::normalize(character->GetTransform()->GetWorldPos());
+    glm::vec3 pos = glm::vec3(x, y, z);
+    character->GetTransform()->SetWorldPos(pos);
 
-    // Вычисляем угол поворота вокруг Y-оси
-    float rotationY = atan2(direction.x, direction.z);
-    rotationY = glm::degrees(rotationY);
-    rotationY -= 90;
-    character->SetYaw(-(rotationY));
+    // Поворот к центру
+    glm::vec3 center = glm::vec3(0.0f, 0.0f, 0.0f);
+    glm::vec3 direction = glm::normalize(center - pos);
+
+    float yaw   = glm::degrees(atan2(direction.x, direction.z));
+    float pitch = glm::degrees(asin(direction.y));  // Вычисляем угол наклона вверх/вниз
+
+    std::cout << "x = " << x << " y = " << y << " z = " << z << std::endl;
+    std::cout << "yaw = " << yaw << " pitch = " << pitch << std::endl;
+
+    character->SetYaw(yaw);
+    character->SetPitch(pitch);
 }
 
-
-void callback(Scene *scene) {
+void drow(Scene *scene, int i, int j) {
     static int frame = 0;
-    int MAX_FRAME = 40;
 
-    if (frame >= MAX_FRAME) {
-        GameManager::IsEnd = true;
-        return;
-    }
-
+    std::cout << "Frame: " << frame << std::endl;
     // Rendering
     GameManager::Time.Update();
     auto start_render = GameManager::Time.GetCurrentTime();
-    MoveInCircle(character, 1000, frame, MAX_FRAME);
+    MoveInGridArc(character, config->GetWidth() + 1, i, j, config->GetFrames());
     GameManager::UpdateCamera();
+    // GameManager::render.GetPV_Perspective();
     GameManager::render.GetPV();
     config->RenderScene();
+
+    scene->shapes[0]->Render();
 
 
     // Saving
@@ -91,16 +94,17 @@ void callback(Scene *scene) {
 
     swapBuffer();
 
-    #pragma omp parallel
+    //#pragma omp parallel
     {
-        #pragma omp single
+        //#pragma omp single
         {
             const std::string dir_name("data");
 
             // Task: Запись depth map в текстовый файл (буферизированная запись)
-            #pragma omp task
+            //#pragma omp task
             {
-                if (frame < MAX_FRAME) {
+                // if (frame < MAX_FRAME) {
+                if (false) {
                     const std::string file_name = dir_name + "/data_" + std::to_string(frame) + ".txt";
                     
                     // Используем std::string для буферизации
@@ -121,28 +125,26 @@ void callback(Scene *scene) {
             }
 
             // Task: Сохранение скриншота в PNG с буферизированной записью
-            #pragma omp task
+            //#pragma omp task
             {
-                if (frame < MAX_FRAME) {
-                    const std::string file_name = dir_name + "/screenshot_" + std::to_string(frame) + ".png";
+                const std::string file_name = dir_name + "/screenshot_" + std::to_string(i) + "_" + std::to_string(j) + ".png";
 
-                    // Оптимизированная запись через память
-                    std::vector<unsigned char> compressedData;
-                    compressedData.reserve(GameManager::width * GameManager::height * 3);
+                // Оптимизированная запись через память
+                std::vector<unsigned char> compressedData;
+                compressedData.reserve(GameManager::width * GameManager::height * 3);
 
-                    auto pngWriteCallback = [](void *context, void *data, int size) {
-                        auto *vec = static_cast<std::vector<unsigned char>*>(context);
-                        vec->insert(vec->end(), static_cast<unsigned char*>(data), static_cast<unsigned char*>(data) + size);
-                    };
+                auto pngWriteCallback = [](void *context, void *data, int size) {
+                    auto *vec = static_cast<std::vector<unsigned char>*>(context);
+                    vec->insert(vec->end(), static_cast<unsigned char*>(data), static_cast<unsigned char*>(data) + size);
+                };
 
-                    // stbi_write_png_to_func(pngWriteCallback, &compressedData, 
-                    //                        GameManager::width, GameManager::height, 3, 
-                    //                        pixels.data(), GameManager::width * 3);
+                stbi_write_png_to_func(pngWriteCallback, &compressedData, 
+                                        GameManager::width, GameManager::height, 3, 
+                                        pixels.data(), GameManager::width * 3);
 
-                    // Записываем PNG в файл одним вызовом
-                    std::ofstream out(file_name, std::ios::binary);
-                    out.write(reinterpret_cast<char*>(compressedData.data()), compressedData.size());
-                }
+                // Записываем PNG в файл одним вызовом
+                std::ofstream out(file_name, std::ios::binary);
+                out.write(reinterpret_cast<char*>(compressedData.data()), compressedData.size());
             }
         }
     }
@@ -163,14 +165,18 @@ Scene *createScene()
     auto *scene = new Scene();
 
     character = new Ghost();
-    character->GetTransform()->SetWorldPos(glm::vec3(400, 100, 0));
     scene->pushObject(character);
 
-    config = new Config();
-    config->CreateScene();
+    auto cube = new Shape(new Cube());
+    cube->GetTransform()->SetWorldPos(glm::vec3(0));
+    cube->GetTransform()->SetScale(glm::vec3(500));
+    scene->pushObject(cube);
 
     GameManager::PushPlayer(character);
     GameManager::render.pipeline.camera.OwnerTransformPtr = character->GetTransform();
+
+    config = new Config();
+    config->CreateScene();
 
     swapBuffer();
 
@@ -181,14 +187,18 @@ Scene *createScene()
 int main(int argc, char** argv)
 {
     int size = 3000;
+    // int size = 640;
     const int width = size, height = size;
     GameManager::InitializeGLFW(width, height);
 
     Scene *scene(createScene());
 
-    while (!GameManager::IsEnd) {
-        callback(scene);
-    }
+    // for (int i = 0; i < config->GetFrames(); ++i) {
+        for (int j = 0; j < config->GetFrames() / 2 + 1; ++j) {
+            drow(scene, 0, j);
+            // drow(scene, i, j);
+        }
+    // }
 
     std::cout << "Rendering time:\t" << time_render << std::endl;
     std::cout << "Saving time:\t" << time_save << std::endl;

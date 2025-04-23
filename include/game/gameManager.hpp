@@ -45,6 +45,7 @@ public:
     inline static Render render;
     inline static CallbackData callbackData = {nullptr};
     inline static GLFWwindow* window = nullptr;
+    inline static GLFWwindow* offscreen_context = nullptr;
     // inline static BulletManager bullet;
     inline static int width = 640;
     inline static int height = 480;

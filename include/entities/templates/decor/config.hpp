@@ -17,8 +17,20 @@ public:
 
     std::string GetName() const override;
     Mesh *GetMesh() const override;
+    GLfloat GetWidth() const { return lastWidth; }
+    GLfloat GetFrames() const { return num_frames; }
+
+    void DestroyBuffers();
+    void CreateBuffers(GLfloat width, GLfloat height);
+    void UpdateCanvas();
 
     void CreateScene() {
+        // Обновление окна
+        UpdateCanvas();
+
+        num_frames = scene.num_frames;
+
+        // создание объектов на сцене
         rootComponent->children.clear();
 
         AttachToRoot<sprite_obj>();
@@ -34,6 +46,7 @@ public:
             c->mesh->set_transform(c->GetMatrix());
         }
 
+        // обновление матриц объектов
         rootComponent->UpdateMatrixTree();
     }
 
@@ -58,6 +71,8 @@ protected:
         for (auto &it : vec) {
             if (it.component->parent == nullptr) {
                 rootComponent->AddChild(it.component);
+                auto pos = it.component->GetGlobalPosition();
+                std::cout << pos.x << " " << pos.y << " " << pos.z << std::endl;
             }
         }
     }
@@ -92,9 +107,9 @@ protected:
         GLuint shaderProgram = vec[0].shape->shader;
         glUseProgram(shaderProgram);
         GLint VP_Location = glGetUniformLocation(shaderProgram, "VP");
-        Matrix4f VP = GameManager::render.PV;
+        glm::mat4 VP = GameManager::render.GetPV_Orthographic();
 
-        glUniformMatrix4fv(VP_Location, 1, GL_TRUE, &VP);
+        glUniformMatrix4fv(VP_Location, 1, GL_FALSE, &VP[0][0]);
         glDrawElementsInstanced(GL_TRIANGLES, vec[0].shape->GetGeometry()->numIndices, GL_UNSIGNED_INT, 0, vec.size());
         glBindVertexArray(0);
     }
@@ -185,9 +200,13 @@ protected:
         std::vector<cube_obj>   vector_cubes;
         std::vector<sphere_obj> vector_spheres;
         std::vector<mesh_obj>   vector_meshes;
+        GLfloat width = -1, height = -1;
+        int num_frames = -1;
     };
 
     inline static std::string name;
     ConfigScene scene;
+    GLfloat lastWidth = -1, lastHeight = -1;
+    int num_frames = -1;
 };
 

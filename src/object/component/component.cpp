@@ -1,5 +1,4 @@
 #include <object/component/component.hpp>
-#include "glm/gtx/string_cast.hpp"
 
 
 Component::Component(Transform *transform)
@@ -59,16 +58,8 @@ void Component::UpdateMatrix() {
 }
 
 glm::vec3 QuatToEulerDegrees(const glm::quat& quat) {
-    glm::vec3 euler = glm::degrees(glm::eulerAngles(quat)); // Получаем углы в радианах и переводим в градусы
+    glm::vec3 euler = glm::degrees(glm::eulerAngles(quat));
     return euler;
-}
-
-void quat_to_vec(glm::quat &rotation) {
-    glm::vec3 eulerDegrees = QuatToEulerDegrees(rotation);
-
-    std::cout << "Rotation (degrees): X = " << eulerDegrees.x 
-              << ", Y = " << eulerDegrees.y 
-              << ", Z = " << eulerDegrees.z << std::endl;
 }
 
 void Component::Spawn(Transform &startTransform) {
@@ -103,6 +94,18 @@ glm::quat Component::GetRotation() const {
 
 glm::vec3 Component::GetScale() const {
     return localTransform->GetScale();
+}
+
+glm::vec3 Component::GetGlobalPosition() const {
+    return globalTransform->GetPosition();
+}
+
+glm::quat Component::GetGlobalRotation() const {
+    return globalTransform->GetRotation();
+}
+
+glm::vec3 Component::GetGlobalScale() const {
+    return globalTransform->GetScale();
 }
 
 void Component::SetPosition(const glm::vec3& position) {
@@ -140,6 +143,7 @@ void Component::AddChild(Component* child) {
     child->parent = this;
     
     child->localTransform->UpdateMatrix();
-    child->localTransform->SetMatrix(inverseTransform * child->localTransform->GetMatrix());
+    // child->localTransform->SetMatrix(inverseTransform * child->localTransform->GetMatrix());
+    child->globalTransform->SetMatrix(inverseTransform * child->localTransform->GetMatrix());
     child->UpdateInverseTransform();
 }
