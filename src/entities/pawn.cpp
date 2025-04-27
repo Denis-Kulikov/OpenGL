@@ -3,7 +3,9 @@
 
 Pawn::Pawn(const std::string &path)
     : Actor(path)
-{}
+{
+    speed = 5.0;
+}
 
 void Pawn::Teleport(const glm::vec3 newPosition) {
     transform.WorldPos = newPosition;
@@ -18,20 +20,7 @@ void Pawn::Move(const GLfloat distance, const glm::vec3 direction) {
 }
 
 void Pawn::MoveForward(const GLfloat distance) {
-    const GLfloat y = direction.y;
-
-    GLfloat forwardX = cos(ToRadian(GetYaw())) * direction.z;
-    GLfloat forwardZ = sin(ToRadian(GetYaw())) * direction.z;
-
-    GLfloat rightX = cos(ToRadian(GetYaw() + 90.0f)) * direction.x;
-    GLfloat rightZ = sin(ToRadian(GetYaw() + 90.0f)) * direction.x;
-
-    GLfloat finalX = forwardX + rightX;
-    GLfloat finalZ = forwardZ + rightZ;
-
-    glm::vec3 finalDirection(finalX, y, finalZ);
-
-    transform.Move(distance, finalDirection);
+    transform.Move(distance, direction);
 }
 
 void Pawn::MoveForward() {
@@ -61,18 +50,4 @@ void Pawn::MultiplyScale(const glm::vec3 scale) {
 
 GLfloat Pawn::GetSpeed() const {
     return speed;
-}
-
-GLfloat Pawn::GetYaw() const {
-    return yaw;
-}
-GLfloat Pawn::GetPitch() const {
-    return pitch;
-}
-
-void Pawn::SetYaw(const GLfloat new_yaw) {
-    yaw = new_yaw;
-}
-void Pawn::SetPitch(const GLfloat new_pitch) {
-    pitch = new_pitch;
 }

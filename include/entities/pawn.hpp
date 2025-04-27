@@ -19,14 +19,8 @@ public:
     void SetScale(const glm::vec3 scale);
     void MultiplyScale(const glm::vec3 scale);
     GLfloat GetSpeed() const;
-    GLfloat GetYaw() const;
-    GLfloat GetPitch() const;
-    void SetYaw(const GLfloat new_yaw);
-    void SetPitch(const GLfloat new_pitch);
 
 protected:
-    GLfloat speed = 30.0;
-    GLfloat yaw = 0;
-    GLfloat pitch = 0;
+    GLfloat speed;
 };
 

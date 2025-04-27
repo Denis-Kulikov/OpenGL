@@ -48,7 +48,7 @@ void Render::PushGeometry(const struct GeometryInfo *geometry)
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, geometry->EBO);
 }
 
-void Render::drawObject(Matrix4f& matrix, Sprite *sprite)
+void Render::drawObject(glm::mat4x4& matrix, Sprite *sprite)
 {
     if (sprite == nullptr) {
         std::cout << "Error Render.drawObject(): Sprite == nullptr" << std::endl;
@@ -67,7 +67,7 @@ void Render::drawObject(Matrix4f& matrix, Sprite *sprite)
         glUniform1i(sprite->gTextureSamplerLocation, 0);
     }
 
-    glUniformMatrix4fv(sprite->gWorldLocation, 1, GL_TRUE, &matrix);
+    glUniformMatrix4fv(sprite->gWorldLocation, 1, GL_FALSE, &matrix[0][0]);
 
     if (sprite->GetGeometry()->EBO != 0) {
         glDrawElements(GL_TRIANGLES, sprite->GetGeometry()->numIndices, GL_UNSIGNED_INT, 0);
@@ -93,11 +93,12 @@ void Render::drawSkybox(Cube &skybox)
     objectTransform skybox_transform;
     skybox_transform.SetWorldPos(pipeline.camera.GetPosition());
     skybox_transform.SetRotate(glm::vec3(0.0, 0.0, 180));
-    skybox_transform.SetScale(glm::vec3(2, 2, 2));
+    skybox_transform.SetScale(glm::vec3(2));
     
     glDepthMask(GL_FALSE);
-    auto mat4x4 = pipeline.GetTransform(skybox_transform);
-    drawObject(mat4x4, &skybox);
+    auto mat4x4 = GetPV_Perspective() * pipeline.GetModel(skybox_transform);
+    skybox.Render(&mat4x4);
+    // drawObject(mat4x4, &skybox);
     glDepthMask(GL_TRUE);
 
     glCullFace(OldCullFaceMode);

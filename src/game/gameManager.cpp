@@ -17,10 +17,15 @@ void GameManager::PushPlayer(Character *_player)
     callbackData.player = _player;
 }
 
+void GameManager::UpdateCamera()
+{
+    GameManager::render.pipeline.camera.UpdateTarget();
+}
+
 void GameManager::MouseCB(GLFWwindow* window, double xpos, double ypos) {
-    static float yaw = 90.0f;
+    static float yaw = 0.0f;
     static float pitch = 0.0f;
-    const float sensitivity = 10.0f;
+    const float sensitivity = 20.0f;
 
     if (buttons.firstMouse) {
         buttons.lastX = xpos;
@@ -45,31 +50,8 @@ void GameManager::MouseCB(GLFWwindow* window, double xpos, double ypos) {
     if (pitch > 89.0f) pitch = 89.0f;
     if (pitch < -89.0f) pitch = -89.0f;
 
-    Character* player = callbackData.player;
-
-    player->SetYaw(yaw);
-    player->SetPitch(pitch);
-}
-
-void GameManager::UpdateCamera()
-{
-    const float pitch_limit = 89.0f;
-
-    Character& player = *callbackData.player;
-
-    float yaw = glm::radians(player.GetYaw());
-    float pitch = glm::radians(glm::clamp(player.GetPitch(), -pitch_limit, pitch_limit));
-
-    // Вычисляем направление взгляда камеры
-    glm::vec3 front;
-    front.x = cos(pitch) * sin(yaw);
-    front.y = sin(pitch);
-    front.z = cos(pitch) * cos(yaw);
-    render.pipeline.camera.Params.Target = glm::normalize(front);
-
-    render.pipeline.camera.PersProj.FOV = 80.0f;
-
-    // std::cout << "pitch: " << player.GetPitch() << " | " << "yaw: " << player.GetYaw() << std::endl;
+    render.pipeline.camera.SetYaw(yaw);
+    render.pipeline.camera.SetPitch(pitch);
 }
 
 void GameManager::KeyboardCB(GLFWwindow* window, int key, int scancode, int action, int mods)
@@ -96,11 +78,26 @@ void GameManager::KeyboardCB(GLFWwindow* window, int key, int scancode, int acti
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     }
 
-    player->SetDirection(glm::vec3(
-        keys[GLFW_KEY_D] - keys[GLFW_KEY_A], 
-        keys[GLFW_KEY_SPACE] - keys[GLFW_KEY_LEFT_CONTROL],
-        keys[GLFW_KEY_S] - keys[GLFW_KEY_W]
-    ));
+    glm::vec3 front = render.pipeline.camera.Params.Target;
+    front.y = 0.0f;
+    front = glm::normalize(front);
+
+    glm::vec3 right = glm::normalize(glm::cross(front, glm::vec3(0.0f, 1.0f, 0.0f)));
+
+    glm::vec3 direction(0.0f);
+
+    if (keys[GLFW_KEY_W]) direction += front;
+    if (keys[GLFW_KEY_S]) direction -= front;
+    if (keys[GLFW_KEY_D]) direction += right;
+    if (keys[GLFW_KEY_A]) direction -= right;
+    if (keys[GLFW_KEY_SPACE]) direction += glm::vec3(0.0f, 1.0f, 0.0f);
+    if (keys[GLFW_KEY_LEFT_CONTROL]) direction -= glm::vec3(0.0f, 1.0f, 0.0f);
+
+    if (glm::length(direction) > 0.0f) {
+        direction = glm::normalize(direction);
+    }
+
+    callbackData.player->SetDirection(direction);
 }
 
 void GameManager::InitializeObjects()
@@ -116,7 +113,6 @@ void GameManager::InitializeGLFW(int _width, int _height)
     }
 
     glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
-    glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
@@ -124,7 +120,7 @@ void GameManager::InitializeGLFW(int _width, int _height)
     width = _width;
     height = _height;
 
-    #define win false 
+    #define win true 
     #if win
 
     window = glfwCreateWindow(width, height, "Game", NULL, NULL);
@@ -150,6 +146,7 @@ void GameManager::InitializeGLFW(int _width, int _height)
     }
 
     #else
+    glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
 
     offscreen_context = glfwCreateWindow(1, 1, "", NULL, NULL); // Контекст без окна
     if (!offscreen_context) {

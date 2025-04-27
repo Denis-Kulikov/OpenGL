@@ -91,41 +91,41 @@ void Config::UpdateCanvas() {
 using namespace glm;
 
 Config::ConfigScene::ConfigScene() {
-    height = 3000;
-    width = 3000;
-    num_frames = 60;
+    height = 512;
+    width = 512;
+    num_frames = 4;
 
-    const int   numTurns     = 5;        // Кол-во витков спирали
-    const int   stepsPerTurn = 60;       // Точек на один виток
-    const float maxRadius    = 1000.0f;  // Максимальный радиус спирали
-    const float heightStart  = 500.0f;   // Начальная высота в центре
-    const float heightEnd    = 100.0f;   // Конечная высота на краю
-    const float cubeSize     = 50.0f;
+    // const int   numTurns     = 5;        // Кол-во витков спирали
+    // const int   stepsPerTurn = 60;       // Точек на один виток
+    // const float maxRadius    = 1000.0f;  // Максимальный радиус спирали
+    // const float heightStart  = 500.0f;   // Начальная высота в центре
+    // const float heightEnd    = 100.0f;   // Конечная высота на краю
+    // const float cubeSize     = 50.0f;
 
-    const int totalSteps = numTurns * stepsPerTurn;
+    // const int totalSteps = numTurns * stepsPerTurn;
 
-    for (int step = 0; step < totalSteps; ++step) {
-        float t = float(step) / float(totalSteps - 1); // от 0 до 1
-        float angle = glm::two_pi<float>() * numTurns * t;
-        float radius = t * maxRadius;
-        float height = glm::mix(heightStart, heightEnd, t); // линейный спад
+    // for (int step = 0; step < totalSteps; ++step) {
+    //     float t = float(step) / float(totalSteps - 1); // от 0 до 1
+    //     float angle = glm::two_pi<float>() * numTurns * t;
+    //     float radius = t * maxRadius;
+    //     float height = glm::mix(heightStart, heightEnd, t); // линейный спад
 
-        glm::vec3 pos {
-            radius * cos(angle),
-            height,
-            radius * sin(angle)
-        };
+    //     glm::vec3 pos {
+    //         radius * cos(angle),
+    //         height,
+    //         radius * sin(angle)
+    //     };
 
-        cube c;
-        c.SetPosition(pos);
-        c.SetScale(glm::vec3(cubeSize)); // равномерный куб
+    //     cube c;
+    //     c.SetPosition(pos);
+    //     c.SetScale(glm::vec3(cubeSize)); // равномерный куб
 
-        // Поворот вдоль спирали
-        glm::quat rot = glm::angleAxis(angle, glm::vec3(0.0f, 1.0f, 0.0f));
-        c.SetRotation(rot);
+    //     // Поворот вдоль спирали
+    //     glm::quat rot = glm::angleAxis(angle, glm::vec3(0.0f, 1.0f, 0.0f));
+    //     c.SetRotation(rot);
 
-        add(c);
-    }
+    //     add(c);
+    // }
 }
 
 // Config::ConfigScene::ConfigScene() {

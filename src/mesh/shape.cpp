@@ -19,6 +19,6 @@ Shape::~Shape()
 
 void Shape::Render() const
 {
-    auto mat4x4 = GameManager::render.GetPV_Orthographic() * GameManager::render.pipeline.GetModel(transform);
+    auto mat4x4 = GameManager::render.GetPV_Perspective() * GameManager::render.pipeline.GetModel(transform);
     object->Render(&mat4x4);
 }

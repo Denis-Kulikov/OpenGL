@@ -66,6 +66,22 @@ public:
         SetPerspectiveProj(_camera.PersProj.FOV, _camera.PersProj.Width, _camera.PersProj.Height, _camera.PersProj.zNear, _camera.PersProj.zFar);
     }
 
+    void SetYaw(const GLfloat new_yaw) { yaw = new_yaw; }
+    void SetPitch(const GLfloat new_pitch) { pitch = new_pitch; }
+    GLfloat GetYaw() const { return yaw; }
+    GLfloat GetPitch() const { return pitch; }
+    void UpdateTarget() {
+        const float pitch_limit = 89.0f;
+        float yaw = glm::radians(GetYaw());
+        float pitch = glm::radians(glm::clamp(GetPitch(), -pitch_limit, pitch_limit));
+
+        glm::vec3 front;
+        front.x = cos(pitch) * sin(yaw);
+        front.y = sin(pitch);
+        front.z = cos(pitch) * cos(yaw);
+        Params.Target = glm::normalize(front);
+    }
+
     struct struct_Params {
         glm::vec3 WorldPos;
         glm::vec3 Target;
@@ -79,6 +95,9 @@ public:
         GLfloat zNear;
         GLfloat zFar;
     } PersProj;
+
+    GLfloat yaw;
+    GLfloat pitch;
 
     const objectTransform* OwnerTransformPtr = nullptr;
 };

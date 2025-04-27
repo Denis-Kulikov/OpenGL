@@ -15,7 +15,7 @@ public:
     void clearRender();
     void PushLineWidth(GLfloat _LineWidth);
     void PushGeometry(const struct GeometryInfo *geometry);
-    void drawObject(Matrix4f& matrix, Sprite *sprite);
+    void drawObject(glm::mat4x4& matrix, Sprite *sprite);
     void drawSkybox(Cube &skybox);
     void GetPV();
 

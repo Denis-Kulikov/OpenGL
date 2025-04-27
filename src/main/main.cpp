@@ -26,20 +26,9 @@ float time_render = 0;
 float time_save = 0;
 
 void swapBuffer() {
+    glfwSwapBuffers(GameManager::window);
+    glfwPollEvents();
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-}
-
-void saveDepthMap(const std::vector<float>& depthBuffer, const std::string& filename) {
-    std::string buffer;
-    buffer.reserve(GameManager::width * (GameManager::height + 1));
-    for (int j = 0; j < GameManager::height; ++j) {
-        for (int i = 0; i < GameManager::width; ++i) {
-            buffer += (depthBuffer[j * GameManager::width + i] < 1.f ? ' ' : '#');
-        }
-        buffer += '\n';
-    }
-    std::ofstream out(filename, std::ios::binary);
-    out.write(buffer.data(), buffer.size());
 }
 
 void saveScreenshot(const std::vector<unsigned char>& pixels, const std::string& filename) {
@@ -57,87 +46,24 @@ void saveScreenshot(const std::vector<unsigned char>& pixels, const std::string&
     out.write(reinterpret_cast<char*>(compressed.data()), compressed.size());
 }
 
-void MoveInGridArc(Ghost* character, float radius, int i, int j, int max_steps) {
-    if (!character) return;
-
-    int horizontalSteps = max_steps;
-    int verticalSteps = max_steps / 2 + 1;
-
-    // Углы по горизонтали (0 .. 360°)
-    double angleH = glm::two_pi<double>() * (i % horizontalSteps) / horizontalSteps;
-
-    double t = double(j) / (verticalSteps - 1);
-    double angleV = glm::radians(90.0f) * (1.0f - 2.0f * t); // от +90° до -90°
-
-    float x = radius * cos(angleV) * cos(angleH);
-    float y = radius * sin(angleV);
-    float z = radius * cos(angleV) * sin(angleH);
-
-    glm::vec3 pos = glm::vec3(x, y, z);
-    character->GetTransform()->SetWorldPos(pos);
-
-    // Поворот к центру
-    glm::vec3 center = glm::vec3(0.0f, 0.0f, 0.0f);
-    glm::vec3 direction = glm::normalize(center - pos);
-
-    float yaw   = glm::degrees(atan2(direction.x, direction.z));
-    float pitch = glm::degrees(asin(direction.y));  // Вычисляем угол наклона вверх/вниз
-
-    // std::cout << "yaw: " << yaw << std::endl;
-    // std::cout << "pitch: " << pitch << std::endl;
-
-    if (std::fabs(pitch) == 90)
-        yaw -= 180;
-
-    character->SetYaw(yaw);
-    character->SetPitch(pitch);
-}
-
-void drow(Scene *scene, ThreadPool& pool, int i, int j) {
+void draw(Scene *scene) {
     static int frame = 1;
 
-    if (frame % 10 == 0)
-        std::cout << "Frame: " << frame << std::endl;
+    // if (frame % 10 == 0)
+    //     std::cout << "Frame: " << frame << std::endl;
 
     GameManager::Time.Update();
     auto start_render = GameManager::Time.GetCurrentTime();
-    MoveInGridArc(character, config->GetWidth() + 1, i, j, config->GetFrames());
     GameManager::UpdateCamera();
     GameManager::render.GetPV();
-    config->RenderScene();
+    GameManager::callbackData.player->MoveForward();
+    GameManager::render.drawSkybox(*scene->skybox);
 
-    std::vector<float> depthBuffer(GameManager::width * GameManager::height);
-    std::vector<unsigned char> pixels(GameManager::width * GameManager::height * 3);
-
-    glFinish(); // Ожидание конца рендеринга
-    GameManager::Time.Update();
-    auto end_render = GameManager::Time.GetCurrentTime();
-    time_render += end_render - start_render;
-
-    GameManager::Time.Update();
-    auto start_save = GameManager::Time.GetCurrentTime();
-
-    glReadPixels(0, 0, GameManager::width, GameManager::height, GL_DEPTH_COMPONENT, GL_FLOAT, depthBuffer.data());
-    glReadPixels(0, 0, GameManager::width, GameManager::height, GL_RGB, GL_UNSIGNED_BYTE, pixels.data());
-
-    while (!pool.available()) {
-        std::chrono::milliseconds timespan(100);
-        std::this_thread::sleep_for(timespan);
+    for (auto &it : scene->shapes) {
+        it->Render();
     }
 
-    // pool.enqueue([=]() {
-    //     saveDepthMap(depthBuffer, "data/screenshot_" + std::to_string(i) + "_" + std::to_string(j) + ".txt");
-    // });
-
-    pool.enqueue([=]() {
-        saveScreenshot(pixels, "data/screenshot_" + std::to_string(i) + "_" + std::to_string(j) + ".png");
-    });
-
     swapBuffer();
-
-    GameManager::Time.Update();
-    auto end_save = GameManager::Time.GetCurrentTime();
-    time_save += end_save - start_save;
 
     ++frame;
 }
@@ -153,11 +79,19 @@ Scene *createScene()
     character = new Ghost();
     scene->pushObject(character);
 
+    scene->skybox = new Cube("img/skybox.png");
+
+    auto cube = new Cube("img/box.jpg");
+    auto cube_shape = new Shape(cube);
+    cube_shape->GetTransform()->SetWorldPos(glm::vec3(0, 0, 2));
+
+    scene->pushObject(cube_shape);
+
     GameManager::PushPlayer(character);
     GameManager::render.pipeline.camera.OwnerTransformPtr = character->GetTransform();
 
-    config = new Config();
-    config->CreateScene();
+    // config = new Config();
+    // config->CreateScene();
 
     swapBuffer();
 
@@ -167,28 +101,29 @@ Scene *createScene()
 
 int main(int argc, char** argv)
 {
-    int size = 3000;
-    const int width = size, height = size;
+    const int width = 1600, height = 900;
     GameManager::InitializeGLFW(width, height);
 
     Scene *scene(createScene());
-    ThreadPool pool(15, 100);
+    // ThreadPool pool(15, 100);
+
+    while (!GameManager::IsEnd) {
+        draw(scene);
+    }
 
     // for (int i = 0; i < config->GetFrames(); ++i) {
-        for (int j = 0; j < config->GetFrames() / 2 + 1; ++j) {
-            drow(scene, pool, 0, j);
-        }
+        // for (int j = 0; j < config->GetFrames() / 2 + 1; ++j) {
+        //     drow(scene, pool, 0, j);
+        // }
 
-        for (int j = 0; j < config->GetFrames() / 2 + 1; ++j) {
-            drow(scene, pool, 15, j);
-        }
+        // for (int j = 0; j < config->GetFrames() / 2 + 1; ++j) {
+        //     drow(scene, pool, 15, j);
+        // }
     // }
 
-    // std::cout << "Rendering time:\t" << time_render << std::endl;
-    // std::cout << "Saving time:\t" << time_save << std::endl;
     std::cout << "Total time:\t" << GameManager::Time.GetCurrentTime() << std::endl;
 
-    pool.shutdown();
+    // pool.shutdown();
 
     glfwDestroyWindow(GameManager::window);
     glfwTerminate();
