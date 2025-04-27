@@ -31,7 +31,7 @@ public:
     virtual struct GeometryInfo *GetGeometry();
 
     struct Sprite_rdata {
-        Matrix4f matrix;
+        glm::mat4x4 matrix;
     };
 
     virtual void Render(void *RenderData) const override;

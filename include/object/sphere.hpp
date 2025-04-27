@@ -36,7 +36,7 @@ public:
         glBindTexture(GL_TEXTURE_2D, texture);
         glUniform1i(gTextureSamplerLocation, 0);
 
-        glUniformMatrix4fv(gWorldLocation, 1, GL_TRUE, &static_cast<Sprite_rdata*>(RenderData)->matrix);
+        glUniformMatrix4fv(gWorldLocation, 1, GL_FALSE, &static_cast<Sprite_rdata*>(RenderData)->matrix[0][0]);
 
         glDrawElements(GL_TRIANGLES, geometryInfo.numIndices, GL_UNSIGNED_INT, 0);
     }

@@ -9,6 +9,7 @@ public:
 
     Matrix4f GetTransform(const objectTransform& transform) const;
     Matrix4f GetWorld(const objectTransform& transform) const;
+    glm::mat4 Pipeline::GetModel(const objectTransform& transform) const;
 
     Camera camera;
 };

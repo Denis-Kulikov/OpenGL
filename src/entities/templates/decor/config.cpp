@@ -8,7 +8,7 @@ Config::Config()
 {
     Transform *transform = new Transform();
     rootComponent = CreateComponent<ComponentPoint>(transform);
-    rootComponent->SetPosition(glm::vec3(-50.f * 15 / 2, 250.f, -50.f * 15 / 2));
+    rootComponent->SetPosition(glm::vec3(0));
     // rootComponent = CreateComponent<ComponentShape>(transform);
     // dynamic_cast<ComponentShape*>(rootComponent)->shape = new Cube("img/box.jpg");
 }
@@ -93,62 +93,39 @@ using namespace glm;
 Config::ConfigScene::ConfigScene() {
     height = 3000;
     width = 3000;
-    num_frames = 6;
-    int gridSize = 20;     // Размер сетки
-    float spacing = 25.0f;  // Расстояние между спиралями
+    num_frames = 60;
 
-    cube Cube1;
-    Cube1.SetPosition(vec3(0, 0, 0));
-    Cube1.SetScale(vec3(500, 500, 500));
-    // Cube1.SetPosition(vec3(0, 1000, 0));
-    // Cube1.SetScale(vec3(1000, 10, 10));
+    const int   numTurns     = 5;        // Кол-во витков спирали
+    const int   stepsPerTurn = 60;       // Точек на один виток
+    const float maxRadius    = 1000.0f;  // Максимальный радиус спирали
+    const float heightStart  = 500.0f;   // Начальная высота в центре
+    const float heightEnd    = 100.0f;   // Конечная высота на краю
+    const float cubeSize     = 50.0f;
 
-    // cube Cube2;
-    // Cube2.SetPosition(vec3(0, -1000, 0));
-    // Cube2.SetScale(vec3(1000, 10, 10));
+    const int totalSteps = numTurns * stepsPerTurn;
 
-    // cube Cube3;
-    // Cube3.SetPosition(vec3(500, 0, 0));
-    // Cube3.SetScale(vec3(10, 1000, 10));
+    for (int step = 0; step < totalSteps; ++step) {
+        float t = float(step) / float(totalSteps - 1); // от 0 до 1
+        float angle = glm::two_pi<float>() * numTurns * t;
+        float radius = t * maxRadius;
+        float height = glm::mix(heightStart, heightEnd, t); // линейный спад
 
-    // cube Cube4;
-    // Cube4.SetPosition(vec3(-500, 0, 0));
-    // Cube4.SetScale(vec3(10, 1000, 10));
+        glm::vec3 pos {
+            radius * cos(angle),
+            height,
+            radius * sin(angle)
+        };
 
-    add(Cube1);
-    // add(Cube2);
-    // add(Cube3);
-    // add(Cube4);
+        cube c;
+        c.SetPosition(pos);
+        c.SetScale(glm::vec3(cubeSize)); // равномерный куб
 
-    // fun(BuildSpiral, int step, int maxSteps, cube parent) {
-    //     if (step >= maxSteps) return;
+        // Поворот вдоль спирали
+        glm::quat rot = glm::angleAxis(angle, glm::vec3(0.0f, 1.0f, 0.0f));
+        c.SetRotation(rot);
 
-    //     float angle = glm::radians(step * 30.0f);
-    //     float radius = 2.0f;
-    //     float heightStep = 2.0f;
-
-    //     cube childCube;
-    //     glm::vec3 position(radius * cos(angle), step * heightStep, radius * sin(angle));
-    //     childCube.SetPosition(position);
-
-    //     glm::quat rotation = glm::angleAxis(-angle, glm::vec3(0, 1, 0));
-    //     childCube.SetRotation(rotation);
-
-    //     childCube.attach(parent);
-    //     add(childCube);
-
-    //     BuildSpiral(step + 1, maxSteps, childCube);
-    // };
-
-    // for (int x = 0; x < gridSize; x++) {
-    //     for (int y = 0; y < gridSize; y++) {
-    //         cube rootCube;
-    //         rootCube.SetPosition(vec3(x * spacing, 0.0f, y * spacing));
-    //         add(rootCube);
-
-    //         BuildSpiral(0, 100, rootCube);
-    //     }
-    // }
+        add(c);
+    }
 }
 
 // Config::ConfigScene::ConfigScene() {

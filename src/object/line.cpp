@@ -12,7 +12,7 @@ void Line::Render(void *RenderData) const {
     glUniform1i(gTextureSamplerLocation, 0);
 
     glUniform3f(gColorLocation, color.x, color.y, color.z);
-    glUniformMatrix4fv(gWorldLocation, 1, GL_TRUE, &static_cast<Sprite_rdata*>(RenderData)->matrix);
+    glUniformMatrix4fv(gWorldLocation, 1, GL_FALSE, &static_cast<Sprite_rdata*>(RenderData)->matrix[0][0]);
 
     GameManager::render.PushLineWidth(width);
     

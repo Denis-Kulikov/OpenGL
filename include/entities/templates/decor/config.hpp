@@ -71,8 +71,6 @@ protected:
         for (auto &it : vec) {
             if (it.component->parent == nullptr) {
                 rootComponent->AddChild(it.component);
-                auto pos = it.component->GetGlobalPosition();
-                std::cout << pos.x << " " << pos.y << " " << pos.z << std::endl;
             }
         }
     }
