@@ -27,6 +27,7 @@ target_link_libraries(
 	lib-render
 	lib-game
 	lib-threads
+	lib-loader
 	OpenMP::OpenMP_CXX
 )
 

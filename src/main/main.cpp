@@ -15,7 +15,7 @@
 #include <stb_image.h>
 #include <stb_image_write.h>
 
-#include <omp.h>
+#include <loader/loader.hpp>
 
 
 std::chrono::milliseconds totalTime(0);
@@ -101,6 +101,10 @@ Scene *createScene()
 
 int main(int argc, char** argv)
 {
+    std::cout << "Current path: " << std::filesystem::current_path() << std::endl;
+
+    test_llvm();
+
     const int width = 1600, height = 900;
     GameManager::InitializeGLFW(width, height);
 
