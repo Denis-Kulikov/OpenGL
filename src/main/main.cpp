@@ -1,6 +1,5 @@
 #include <entities/templates/playable/Ghost.hpp>
 #include <entities/templates/mobs/Female.hpp>
-#include <game/gameManager.hpp>
 #include <object/scene.hpp>
 #include <object/sphere.hpp>
 #include <object/sphere_wire.hpp>
@@ -15,12 +14,12 @@
 #include <stb_image.h>
 #include <stb_image_write.h>
 
-#include <loader/loader.hpp>
+#include <dynamic_compiler/dynamic_compiler.hpp>
 
 
 std::chrono::milliseconds totalTime(0);
 Config* config = nullptr;
-Ghost *character = nullptr;
+Pawn *character = nullptr;
 
 float time_render = 0;
 float time_save = 0;
@@ -87,7 +86,7 @@ Scene *createScene()
 
     scene->pushObject(cube_shape);
 
-    GameManager::PushPlayer(character);
+    GameManager::PushPlayer(reinterpret_cast<Character*>(character));
     GameManager::render.pipeline.camera.OwnerTransformPtr = character->GetTransform();
 
     // config = new Config();
@@ -101,14 +100,50 @@ Scene *createScene()
 
 int main(int argc, char** argv)
 {
-    std::cout << "Current path: " << std::filesystem::current_path() << std::endl;
+    DynamicCompiler compiler;
+    std::cout << "DynamicCompiler" << std::endl;
 
-    test_llvm();
+    if (!compiler.compile("script.cpp")) {
+        std::cerr << "Compilation failed." << std::endl;
+        return 1;
+    }
+
+    // Ищем и вызываем функцию hello
+    using HelloFunc = void (*)();
+    auto *hellofunc = reinterpret_cast<HelloFunc>(compiler.getSymbol("hello"));
+    if (!hellofunc) {
+        std::cerr << "Function 'hello' not found." << std::endl;
+        return 1;
+    }
+
+    hellofunc(); // Вызывает hello()
+
+    
+    if (!compiler.compile("create_scene.cpp")) {
+        std::cerr << "Compilation failed." << std::endl;
+        return 1;
+    }
+    std::cout << "compiler.compile" << std::endl;
+
+    using CreateScene = Scene *(*)();
+    auto *func = reinterpret_cast<CreateScene>(compiler.getSymbol("CreateScene"));
+    if (!func) {
+        std::cerr << "Function 'CreateScene' not found." << std::endl;
+        return 1;
+    }
+
+    std::cout << "compiler.getSymbol" << std::endl;
+
+    Scene *scene(func());
+    std::cout << "scene(func())" << std::endl;
+    character = scene->pawns[0];
+    std::cout << "scene->pawns[0]" << std::endl;
+
 
     const int width = 1600, height = 900;
     GameManager::InitializeGLFW(width, height);
 
-    Scene *scene(createScene());
+    // Scene *scene(createScene());
     // ThreadPool pool(15, 100);
 
     while (!GameManager::IsEnd) {

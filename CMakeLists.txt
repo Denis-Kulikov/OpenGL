@@ -2,7 +2,9 @@ cmake_minimum_required(VERSION 3.20)
 
 project(openGL VERSION 1.0 LANGUAGES CXX)
 
-set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDLL" CACHE STRING "" FORCE)
+if(MSVC)
+  set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded")
+endif()
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -19,7 +21,6 @@ else()
 endif()
 
 include_directories(build/_deps/stb_image-src)
-include_directories(build/_deps/pugixml-src/src)
 include_directories(build/_deps/glm-src)
 
 link_directories(lib)

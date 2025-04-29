@@ -6,11 +6,12 @@ add_library(${target} STATIC
 	render.cpp
 )
 
+
 if(WIN32)
     target_link_libraries(${target}
         PRIVATE
-        glfw3
-        glew32
+        glfw
+        glew32s
         opengl32
 	assimp-vc143-mtd
 	lib-decor
