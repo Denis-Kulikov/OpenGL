@@ -1,6 +1,5 @@
 #pragma once
 #include <btBulletDynamicsCommon.h>
-#include <lib-project/lib.hpp>
 #include <render/camera.hpp>
 #include "../component.hpp"
 

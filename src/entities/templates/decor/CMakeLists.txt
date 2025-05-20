@@ -3,7 +3,7 @@ set(target lib-decor)
 add_library(${target} STATIC
 	wooden_box.cpp
 	floor.cpp
-	config.cpp
+	#config.cpp
 )
 
 target_link_libraries(

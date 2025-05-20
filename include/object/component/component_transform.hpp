@@ -1,5 +1,4 @@
 #pragma once
-#include <lib-project/lib.hpp>
 #include <object/transform/transformable.hpp>
 #include <object/transform/transform.hpp>
 #include <object/transform/rigid_transform.hpp>

@@ -1,3 +1,4 @@
+#include <iostream>
 #include <object/objectTransform.hpp>
 
 glm::vec3 objectTransform::GetScale() const

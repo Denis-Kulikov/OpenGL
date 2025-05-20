@@ -1,6 +1,5 @@
 // #pragma once
 // #include <btBulletDynamicsCommon.h>
-// #include <lib-project/lib.hpp>
 // #include <object/sprite.hpp>
 // #include "../../transform/rigid_transform.hpp"
 // #include "../component.hpp"

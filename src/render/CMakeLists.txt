@@ -11,7 +11,7 @@ if(WIN32)
     target_link_libraries(${target}
         PRIVATE
         glfw
-        glew32s
+        glew32
         opengl32
 	assimp-vc143-mtd
 	lib-decor

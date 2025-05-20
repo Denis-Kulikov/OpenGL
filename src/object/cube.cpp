@@ -1,10 +1,10 @@
+#include <managers/render_manager.hpp>
 #include <object/cube.hpp>
-#include <game/gameManager.hpp>
 
 struct GeometryInfo Cube::geometryInfo = {0, 0, 0, 0, 0};
 
 void Cube::Render(void *RenderData) const {
-    GameManager::render.PushGeometry(&geometryInfo);
+    RenderManager::render.PushGeometry(&geometryInfo);
 
     glUseProgram(shader);
     glActiveTexture(GL_TEXTURE0);

@@ -1,11 +1,9 @@
 #include <render/render.hpp>
-
-#include <chrono>
-extern std::chrono::milliseconds totalTime;
+#include <glm/gtc/matrix_transform.hpp>
 
 Render::Render(const Pipeline &_pipeline)
 {
-    pipeline.camera = _pipeline.camera;
+    pipeline = _pipeline;
 }
 
 Render::Render(const Camera &_camera)
@@ -69,11 +67,7 @@ void Render::drawObject(glm::mat4x4& matrix, Sprite *sprite)
 
     glUniformMatrix4fv(sprite->gWorldLocation, 1, GL_FALSE, &matrix[0][0]);
 
-    if (sprite->GetGeometry()->EBO != 0) {
-        glDrawElements(GL_TRIANGLES, sprite->GetGeometry()->numIndices, GL_UNSIGNED_INT, 0);
-    } else {
-        glDrawArrays(GL_LINE_STRIP, 0, sprite->GetGeometry()->numVertices);
-    }
+    glDrawElements(GL_TRIANGLES, sprite->GetGeometry()->numIndices, GL_UNSIGNED_INT, 0);
 }
 
 void Render::drawSkybox(Cube &skybox)
@@ -96,7 +90,7 @@ void Render::drawSkybox(Cube &skybox)
     skybox_transform.SetScale(glm::vec3(2));
     
     glDepthMask(GL_FALSE);
-    auto mat4x4 = GetPV_Perspective() * pipeline.GetModel(skybox_transform);
+    auto mat4x4 = GetPV() * pipeline.GetModel(skybox_transform);
     skybox.Render(&mat4x4);
     // drawObject(mat4x4, &skybox);
     glDepthMask(GL_TRUE);
@@ -105,38 +99,40 @@ void Render::drawSkybox(Cube &skybox)
     glDepthFunc(OldDepthFuncMode);
 }
 
-void Render::GetPV() {
-    Matrix4f CameraTranslationTrans, CameraRotateTrans;
-    CameraTranslationTrans.InitTranslationTransform(-pipeline.camera.GetPosition().x, -pipeline.camera.GetPosition().y, -pipeline.camera.GetPosition().z);
-    CameraRotateTrans.InitCameraTransform(pipeline.camera.Params.Target, pipeline.camera.Params.Up);
-    View = CameraRotateTrans * CameraTranslationTrans;
-    PersProjTrans.InitPersProjTransform(pipeline.camera.PersProj.FOV, pipeline.camera.PersProj.Width, pipeline.camera.PersProj.Height, pipeline.camera.PersProj.zNear, pipeline.camera.PersProj.zFar);
-    PV = PersProjTrans * View;
+glm::mat4 Render::GetPV() {
+    return PV;
 }
 
-glm::mat4 Render::GetPV_Perspective() {
+void Render::UpdatePV(bool perspective) {
+    if (perspective)
+        UpdatePV_Perspective();
+    else
+        UpdatePV_Orthographic();
+}
+
+void Render::UpdatePV_Perspective() {
     const auto& cam = pipeline.camera;
 
-    glm::mat4 view = glm::lookAt(
+    View = glm::lookAt(
         cam.GetPosition(),
         cam.GetPosition() + cam.Params.Target, // направление взгляда
         cam.Params.Up
     );
 
-    glm::mat4 projection = glm::perspective(
+    ProjTrans = glm::perspective(
         glm::radians(cam.PersProj.FOV),
         static_cast<float>(cam.PersProj.Width) / cam.PersProj.Height,
         cam.PersProj.zNear,
         cam.PersProj.zFar
     );
 
-    return projection * view;
+    PV = ProjTrans * View;
 }
 
-glm::mat4 Render::GetPV_Orthographic() {
+void Render::UpdatePV_Orthographic() {
     const auto& cam = pipeline.camera;
 
-    glm::mat4 view = glm::lookAt(
+    View = glm::lookAt(
         cam.GetPosition(),
         cam.GetPosition() + cam.Params.Target,
         cam.Params.Up
@@ -145,11 +141,11 @@ glm::mat4 Render::GetPV_Orthographic() {
     float halfW = cam.PersProj.Width / 2.0f;
     float halfH = cam.PersProj.Height / 2.0f;
 
-    glm::mat4 projection = glm::ortho(
+    ProjTrans = glm::ortho(
         -halfW, halfW,
         -halfH, halfH,
         cam.PersProj.zNear, cam.PersProj.zFar
     );
 
-    return projection * view;
+    PV = ProjTrans * View;
 }

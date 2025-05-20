@@ -1,7 +1,7 @@
-#include <game/gameManager.hpp>
+#include <managers/render_manager.hpp>
 #include <mesh/shape.hpp>
 
-Shape::Shape(Sprite *_object, const objectTransform &_transform)
+Shape::Shape(Sprite *_object, const Transform &_transform)
     : Shape(_object)
 {
     transform = _transform;
@@ -19,6 +19,6 @@ Shape::~Shape()
 
 void Shape::Render() const
 {
-    auto mat4x4 = GameManager::render.GetPV_Perspective() * GameManager::render.pipeline.GetModel(transform);
+    auto mat4x4 = RenderManager::render.GetPV() * RenderManager::render.pipeline.GetModel(transform);
     object->Render(&mat4x4);
 }

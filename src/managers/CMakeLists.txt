@@ -1,9 +1,10 @@
-set(target lib-game)
-
-#set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDLL")
+set(target lib-manager)
 
 add_library(${target} STATIC
-	gameManager.cpp
+	global_state.cpp
+	render_manager.cpp
+	time_manager.cpp
+	window_manager.cpp
 	#bulletManager.cpp
 )
 
@@ -12,6 +13,7 @@ target_link_libraries(
   ${target}
   PRIVATE
 	lib-object
+	lib-render
 	#BulletCollision_Debug
 	#BulletDynamics_Debug
 	#LinearMath_Debug

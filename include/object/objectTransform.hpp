@@ -1,5 +1,8 @@
 #pragma once
-#include "../lib-project/lib.hpp"
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/glm.hpp>
+#include <GL/glew.h>
+#include <iostream>
 
 enum AXES {
     X,

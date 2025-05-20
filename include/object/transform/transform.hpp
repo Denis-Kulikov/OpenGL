@@ -1,7 +1,9 @@
 #pragma once
 #include "transformable.hpp"
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/quaternion.hpp>
 
-class Transform  : public Transformable
+class Transform : public Transformable
 {
 public:
     Transform(const Transform &transform);

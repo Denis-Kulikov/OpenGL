@@ -1,7 +1,6 @@
 #pragma once
 #include <object/transform/transform.hpp>
 
-
 class Component {
 public:
     // Component(Component *parent, const Transform *localTransform_, Transformable *globalTransform);

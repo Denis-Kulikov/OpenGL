@@ -1,98 +1,52 @@
-#include <entities/templates/playable/Ghost.hpp>
-#include <entities/templates/mobs/Female.hpp>
+#include <managers/global_state.hpp> 
+#include <managers/render_manager.hpp> 
+#include <managers/time_manager.hpp> 
+#include <managers/window_manager.hpp> 
+
 #include <object/scene.hpp>
+#include <object/cube.hpp>
 #include <object/sphere.hpp>
 #include <object/sphere_wire.hpp>
-#include <object/cube.hpp>
+#include <entities/templates/playable/Ghost.hpp>
 
-#include <threads/thread_pool.hpp>
-#include <game/gameManager.hpp> 
-
-#include <entities/templates/decor/config.hpp>
-
-#include <entities/templates/mobs/Female.hpp>
 #include <stb_image.h>
 #include <stb_image_write.h>
 
-#include <dynamic_compiler/dynamic_compiler.hpp>
-
-
-std::chrono::milliseconds totalTime(0);
-Config* config = nullptr;
-Pawn *character = nullptr;
-
-float time_render = 0;
-float time_save = 0;
-
-void swapBuffer() {
-    glfwSwapBuffers(GameManager::window);
-    glfwPollEvents();
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-}
-
-void saveScreenshot(const std::vector<unsigned char>& pixels, const std::string& filename) {
-    std::vector<unsigned char> compressed;
-    auto callback = [](void* context, void* data, int size) {
-        auto* vec = static_cast<std::vector<unsigned char>*>(context);
-        vec->insert(vec->end(), (unsigned char*)data, (unsigned char*)data + size);
-    };
-
-    stbi_write_png_to_func(callback, &compressed,
-        GameManager::width, GameManager::height, 3,
-        pixels.data(), GameManager::width * 3);
-
-    std::ofstream out(filename, std::ios::binary);
-    out.write(reinterpret_cast<char*>(compressed.data()), compressed.size());
-}
 
 void draw(Scene *scene) {
-    static int frame = 1;
+    TimeManager::Update();
+    RenderManager::UpdateCamera();
+    RenderManager::render.UpdatePV_Perspective();
+    RenderManager::render.drawSkybox(*scene->skybox);
 
-    // if (frame % 10 == 0)
-    //     std::cout << "Frame: " << frame << std::endl;
+    GlobalState::GetPlayer()->MoveForward();
+    GlobalState::GetPlayer()->rootComponent->UpdateMatrixTree();
 
-    GameManager::Time.Update();
-    auto start_render = GameManager::Time.GetCurrentTime();
-    GameManager::UpdateCamera();
-    GameManager::render.GetPV();
-    GameManager::callbackData.player->MoveForward();
-    GameManager::render.drawSkybox(*scene->skybox);
-
-    for (auto &it : scene->shapes) {
+    for (auto &it : scene->shapes)
         it->Render();
-    }
 
-    swapBuffer();
-
-    ++frame;
+    WindowManager::SwapBuffer();
 }
 
 Scene *createScene()
 {
     Cube::initializeGeometry();
     Sprite::initializeGeometry();
-    Config::Initialize();
 
     auto *scene = new Scene();
 
-    character = new Ghost();
+    Pawn *character = new Ghost();
     scene->pushObject(character);
 
     scene->skybox = new Cube("img/skybox.png");
 
     auto cube = new Cube("img/box.jpg");
     auto cube_shape = new Shape(cube);
-    cube_shape->GetTransform()->SetWorldPos(glm::vec3(0, 0, 2));
-
+    cube_shape->GetTransform()->SetPosition(glm::vec3(0, 0, 2));
     scene->pushObject(cube_shape);
 
-    GameManager::PushPlayer(reinterpret_cast<Character*>(character));
-    GameManager::render.pipeline.camera.OwnerTransformPtr = character->GetTransform();
-
-    // config = new Config();
-    // config->CreateScene();
-
-    swapBuffer();
+    GlobalState::SetPlayer(character);
+    RenderManager::render.pipeline.camera.OwnerTransformPtr = character->rootComponent->GetTransform();
 
     return scene;
 }
@@ -100,72 +54,19 @@ Scene *createScene()
 
 int main(int argc, char** argv)
 {
-    DynamicCompiler compiler;
-    std::cout << "DynamicCompiler" << std::endl;
+    const GLfloat width = 1600, height = 900;
 
-    if (!compiler.compile("script.cpp")) {
-        std::cerr << "Compilation failed." << std::endl;
-        return 1;
-    }
+    RenderManager::Initialize(70.0f, width, height, 0.5f, 7000.0f);
+    TimeManager::Initialize();
+    WindowManager::Initialize(width, height);
 
-    // Ищем и вызываем функцию hello
-    using HelloFunc = void (*)();
-    auto *hellofunc = reinterpret_cast<HelloFunc>(compiler.getSymbol("hello"));
-    if (!hellofunc) {
-        std::cerr << "Function 'hello' not found." << std::endl;
-        return 1;
-    }
+    Scene *scene(createScene());
 
-    hellofunc(); // Вызывает hello()
-
-    
-    if (!compiler.compile("create_scene.cpp")) {
-        std::cerr << "Compilation failed." << std::endl;
-        return 1;
-    }
-    std::cout << "compiler.compile" << std::endl;
-
-    using CreateScene = Scene *(*)();
-    auto *func = reinterpret_cast<CreateScene>(compiler.getSymbol("CreateScene"));
-    if (!func) {
-        std::cerr << "Function 'CreateScene' not found." << std::endl;
-        return 1;
-    }
-
-    std::cout << "compiler.getSymbol" << std::endl;
-
-    Scene *scene(func());
-    std::cout << "scene(func())" << std::endl;
-    character = scene->pawns[0];
-    std::cout << "scene->pawns[0]" << std::endl;
-
-
-    const int width = 1600, height = 900;
-    GameManager::InitializeGLFW(width, height);
-
-    // Scene *scene(createScene());
-    // ThreadPool pool(15, 100);
-
-    while (!GameManager::IsEnd) {
+    while (GlobalState::isAppRunning) {
         draw(scene);
     }
 
-    // for (int i = 0; i < config->GetFrames(); ++i) {
-        // for (int j = 0; j < config->GetFrames() / 2 + 1; ++j) {
-        //     drow(scene, pool, 0, j);
-        // }
-
-        // for (int j = 0; j < config->GetFrames() / 2 + 1; ++j) {
-        //     drow(scene, pool, 15, j);
-        // }
-    // }
-
-    std::cout << "Total time:\t" << GameManager::Time.GetCurrentTime() << std::endl;
-
-    // pool.shutdown();
-
-    glfwDestroyWindow(GameManager::window);
-    glfwTerminate();
+    WindowManager::Dispose();
 
     return 0;
 }

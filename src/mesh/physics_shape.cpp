@@ -1,4 +1,4 @@
-#include <game/gameManager.hpp>
+#include <managers/render_manager.hpp>
 #include <mesh/physics_shape.hpp>
 
 PhysicsShape::PhysicsShape(Sprite *_object, const objectTransform &_transform)

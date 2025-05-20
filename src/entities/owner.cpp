@@ -1,5 +1,4 @@
 #include <entities/owner.hpp>
-#include <game/gameManager.hpp>
 
 //Owner::Owner() {};
 //

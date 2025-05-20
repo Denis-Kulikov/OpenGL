@@ -1,5 +1,5 @@
+#include <managers/time_manager.hpp>
 #include <entities/pawn.hpp>
-#include <game/gameManager.hpp>
 
 Pawn::Pawn(const std::string &path)
     : Actor(path)
@@ -8,46 +8,59 @@ Pawn::Pawn(const std::string &path)
 }
 
 void Pawn::Teleport(const glm::vec3 newPosition) {
-    transform.WorldPos = newPosition;
+    if (rootComponent != nullptr)
+        rootComponent->SetPosition(newPosition);
 }
 
 void Pawn::Move(const glm::vec3 offset) {
-    transform.Move(offset);
+    if (rootComponent != nullptr)
+        rootComponent->Move(offset);
 }
 
-void Pawn::Move(const GLfloat distance, const glm::vec3 direction) {
-    transform.Move(distance, direction);
+void Pawn::Move(const glm::vec3 direction, const float distance) {
+    if (rootComponent != nullptr) 
+        rootComponent->Move(direction, distance);
 }
 
-void Pawn::MoveForward(const GLfloat distance) {
-    transform.Move(distance, direction);
+void Pawn::MoveForward(const float distance) {
+    Move(direction, distance);
 }
 
 void Pawn::MoveForward() {
-    MoveForward(speed * GameManager::Time.GetDeltaTime());
+    MoveForward(speed * TimeManager::GetDeltaTime());
 }
 
-void Pawn::MoveTowards(const glm::vec3 target, const GLfloat speed) {
-    glm::vec3 direction = target - transform.WorldPos;
-    Move(speed * GameManager::Time.GetDeltaTime(), direction);
+void Pawn::MoveTowards(const glm::vec3 target, const float distance) {
+    if (rootComponent != nullptr) {
+        glm::vec3 direction = target - rootComponent->GetPosition();
+        Move(direction, distance);
+    }
 }
 
 void Pawn::Rotate(const glm::vec3 rotate) {
-    transform.Rotate = rotate;
+    if (rootComponent != nullptr)
+        rootComponent->SetRotation(rotate);
 }
 
 void Pawn::AddRotate(const glm::vec3 rotate) {
-    transform.Rotate += rotate;
+    if (rootComponent != nullptr) {
+        glm::quat currentRotation = rootComponent->GetRotation();
+        glm::quat deltaRotation = glm::quat(glm::radians(rotate));
+        glm::quat newRotation = deltaRotation * currentRotation;
+        rootComponent->SetRotation(glm::normalize(newRotation));
+    }
 }
 
 void Pawn::SetScale(const glm::vec3 scale) {
-    transform.Scale = scale;
+    if (rootComponent != nullptr)
+        rootComponent->SetScale(scale);
 }
 
 void Pawn::MultiplyScale(const glm::vec3 scale) {
-    transform.Scale *= scale;
+    if (rootComponent != nullptr)
+        rootComponent->SetScale(rootComponent->GetScale() * scale);
 }
 
-GLfloat Pawn::GetSpeed() const {
+float Pawn::GetSpeed() const {
     return speed;
 }

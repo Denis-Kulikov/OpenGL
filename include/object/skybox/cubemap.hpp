@@ -1,5 +1,4 @@
 #pragma once
-#include "lib-project/lib.hpp"
 #include <stb_image.h>
 
 class Skybox {

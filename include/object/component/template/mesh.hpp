@@ -1,6 +1,5 @@
 #pragma once
-#include <lib-project/lib.hpp>
-#include <game/gameManager.hpp>
+#include <managers/time_manager.hpp>
 #include <mesh/mesh.hpp>
 #include "../component.hpp"
 
@@ -20,7 +19,7 @@ public:
         glm::mat4x4 t = glm::transpose(GetMatrix());
         mesh->set_transform(t);
         std::vector<aiMatrix4x4> Transforms;
-        mesh->BoneTransform(GameManager::Time.GetCurrentTime(), Transforms);
+        mesh->BoneTransform(TimeManager::GetCurrentTime(), Transforms);
         mesh->Render(&Transforms);
     }
 

@@ -1,7 +1,6 @@
 #pragma once
-#include "objectTransform.hpp"
+#include <iostream>
 #include "../object/renderableObject.hpp"
-#include <math/Matrix4f.hpp>
 
 struct GeometryInfo {
     ~GeometryInfo() {

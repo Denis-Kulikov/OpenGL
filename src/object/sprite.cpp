@@ -1,8 +1,9 @@
-#include <game/gameManager.hpp>
+#include <managers/render_manager.hpp>
 #include <object/sprite.hpp>
 
 #include <stb_image.h>
 #include <stb_image_resize.h>
+#include <GLFW/glfw3.h>
 
 
 Sprite::Sprite(const std::string &_name, const std::string &FS, const std::string &VS, const std::string &texturePath)
@@ -28,7 +29,7 @@ Sprite::Sprite(const std::string &texturePath)
 
 
 void Sprite::Render(void *RenderData) const {
-    GameManager::render.PushGeometry(&geometryInfo);
+    RenderManager::render.PushGeometry(&geometryInfo);
 
     glUseProgram(shader);
     glActiveTexture(GL_TEXTURE0);

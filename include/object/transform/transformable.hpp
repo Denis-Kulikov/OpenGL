@@ -1,5 +1,5 @@
 #pragma once
-#include <lib-project/lib.hpp>
+#include <glm/glm.hpp>
 
 class Transformable {
 public:

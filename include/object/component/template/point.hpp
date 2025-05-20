@@ -1,5 +1,5 @@
 #pragma once
-#include <game/gameManager.hpp>
+#include <managers/render_manager.hpp>
 #include <mesh/mesh.hpp>
 #include "../component.hpp"
 

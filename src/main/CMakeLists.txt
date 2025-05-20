@@ -11,8 +11,6 @@ target_sources(
 target_link_libraries(
   ${target}
   PRIVATE
-	lib-render
-	lib-game
+	lib-manager
 	lib-threads
-	lib-dynamic-compiler
 )

@@ -1,5 +1,4 @@
 #pragma once
-#include "lib-project/lib.hpp"
 #include "../object/renderableObject.hpp"
 #include <stb_image.h>
 

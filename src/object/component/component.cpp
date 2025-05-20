@@ -43,16 +43,17 @@ void Component::UpdateMatrixTree() {
 
 void Component::UpdateMatrix() {
     if (isMoved) {
-        isMoved = false;
         localTransform->UpdateMatrix();
-    }
 
-    if (!globalTransform->isMoving()) { // RigidTransform - то ничего не происходит
         if (parent)
-            globalTransform->SetMatrix(parent->GetMatrix()  * localTransform->GetMatrix());
+            globalTransform->SetMatrix(parent->GetMatrix() * localTransform->GetMatrix());
         else
             globalTransform->SetMatrix(localTransform->GetMatrix());
-    } else {
+        
+        isMoved = false;
+    }
+
+    if (globalTransform->isMoving()) { // RigidTransform - то ничего не происходит
         globalTransform->UpdateMatrix();
     }
 }
@@ -113,6 +114,7 @@ void Component::SetPosition(const glm::vec3& position) {
     localTransform->SetPosition(position);
 }
 void Component::SetRotation(const glm::quat& rotation) {
+    isMoved = true;
     localTransform->SetRotation(rotation);
 }
 void Component::SetScale(const glm::vec3& scale) {
@@ -125,8 +127,10 @@ void Component::Move(const glm::vec3& offset) {
     localTransform->SetPosition(localTransform->GetPosition() + offset);
 }
 void Component::Move(glm::vec3 direction, float distance) {
-    isMoved = true;
-    Move(glm::normalize(direction) * distance);
+    if (glm::length(direction) != 0) {
+        isMoved = true;
+        Move(glm::normalize(direction) * distance);
+    }
 }
 void Component::Rotate(const glm::quat& deltaRotation) {
     isMoved = true;

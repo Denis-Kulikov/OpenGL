@@ -1,26 +1,16 @@
 #include <entities/actor.hpp>
 
-Actor::Actor(const std::string &path)
-{
-}
-
+Actor::Actor(const std::string &path) {}
 Actor::~Actor() {};
 
-
 void Actor::Render() const {
-    // if (mesh != nullptr) {
-    //     static_cast<Actor_rdata*>(RenderData)->mesh->Render(static_cast<Actor_rdata*>(RenderData)->BonesTransforms);
-    // }
-    
     if (rootComponent != nullptr) {
         rootComponent->UpdateMatrixTree();
         rootComponent->RenderTree();
     }
 }
 
-
 void Actor::updateAnimation() {}
-
 
 void Actor::Spawn(Transform& startTransform)
 {
@@ -28,11 +18,6 @@ void Actor::Spawn(Transform& startTransform)
     rootComponent->Spawn(startTransform);
 }
 
-
-objectTransform *Actor::GetTransform()
-{
-    return &transform;
-}
 
 glm::vec3 Actor::GetDirection() const
 {

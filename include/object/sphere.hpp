@@ -1,5 +1,5 @@
 #pragma once
-#include "../game/gameManager.hpp"
+#include <managers/render_manager.hpp>
 
 template<std::size_t N>
 class Sphere : public Sprite
@@ -29,7 +29,7 @@ public:
     }
 
     void Render(void *RenderData) const {
-        GameManager::render.PushGeometry(&geometryInfo);
+        RenderManager::render.PushGeometry(&geometryInfo);
 
         glUseProgram(shader);
         glActiveTexture(GL_TEXTURE0);

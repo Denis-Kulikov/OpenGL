@@ -14,7 +14,7 @@ public:
     
     void StepSimulation(float deltaTime);
 
-// private:
+private:
     btBroadphaseInterface* broadphase = nullptr;
     btDefaultCollisionConfiguration* collisionConfiguration = nullptr;
     btCollisionDispatcher* dispatcher = nullptr;

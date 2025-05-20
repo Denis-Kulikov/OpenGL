@@ -3,31 +3,6 @@
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtx/transform.hpp>
 
-Matrix4f Pipeline::GetTransform(const objectTransform& transform) const
-{
-    Matrix4f ScaleTrans, RotateTrans, TranslationTrans, CameraTranslationTrans, CameraRotateTrans, PersProjTrans;
-    glm::vec3 CameraPos = -camera.GetPosition();
-
-    ScaleTrans.InitScaleTransform(transform.Scale.x, transform.Scale.y, transform.Scale.z);
-    RotateTrans.InitRotateTransform(transform.Rotate.x, transform.Rotate.y, transform.Rotate.z);
-    TranslationTrans.InitTranslationTransform(transform.WorldPos.x, transform.WorldPos.y, transform.WorldPos.z);
-    CameraTranslationTrans.InitTranslationTransform(CameraPos.x, CameraPos.y, CameraPos.z);
-    CameraRotateTrans.InitCameraTransform(camera.Params.Target, camera.Params.Up);
-    PersProjTrans.InitPersProjTransform(camera.PersProj.FOV, camera.PersProj.Width, camera.PersProj.Height, camera.PersProj.zNear, camera.PersProj.zFar);
-
-    return PersProjTrans * CameraRotateTrans * CameraTranslationTrans * TranslationTrans * RotateTrans * ScaleTrans;
-}
-
-Matrix4f Pipeline::GetWorld(const objectTransform& transform) const
-{
-    Matrix4f ScaleTrans, RotateTrans, TranslationTrans;
-
-    ScaleTrans.InitScaleTransform(transform.Scale.x, transform.Scale.y, transform.Scale.z);
-    RotateTrans.InitRotateTransform(transform.Rotate.x, transform.Rotate.y, transform.Rotate.z);
-    TranslationTrans.InitTranslationTransform(transform.WorldPos.x, transform.WorldPos.y, transform.WorldPos.z);
-
-    return TranslationTrans * RotateTrans * ScaleTrans;
-}
 
 glm::mat4 Pipeline::GetModel(const objectTransform& transform) const
 {
@@ -39,6 +14,15 @@ glm::mat4 Pipeline::GetModel(const objectTransform& transform) const
     glm::mat4 rotateMatrix = rotateZ * rotateY * rotateX;
 
     glm::mat4 translationMatrix = glm::translate(glm::vec3(transform.WorldPos.x, transform.WorldPos.y, transform.WorldPos.z));
+
+    return translationMatrix * rotateMatrix * scaleMatrix;
+}
+
+glm::mat4 Pipeline::GetModel(const Transform& transform) const
+{
+    glm::mat4 scaleMatrix = glm::scale(transform.GetScale());
+    glm::mat4 rotateMatrix = glm::mat4_cast(transform.GetRotation());
+    glm::mat4 translationMatrix = glm::translate(transform.GetPosition());
 
     return translationMatrix * rotateMatrix * scaleMatrix;
 }

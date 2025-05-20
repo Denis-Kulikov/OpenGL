@@ -65,8 +65,3 @@ void Floor::Initialize()
 std::string Floor::GetName() const {
     return Floor::name;
 }
-
-Mesh *Floor::GetMesh() const {
-    return Floor::mesh;
-}
-

@@ -1,4 +1,7 @@
+#include <iostream>
+#include <fstream>
 #include <object/shader/shader.hpp>
+#include <sstream>
 
 
 Shader::ShaderID::ShaderID(Shader id)

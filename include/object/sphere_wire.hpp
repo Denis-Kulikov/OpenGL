@@ -1,6 +1,6 @@
 #pragma once
 #include "line.hpp"
-#include "../game/gameManager.hpp"
+#include <managers/render_manager.hpp>
 
 template<std::size_t N>
 class Sphere_wire : public Line
@@ -21,7 +21,7 @@ public:
     }
 
     void Render(void *RenderData) const {
-        GameManager::render.PushGeometry(&geometryInfo);
+        RenderManager::render.PushGeometry(&geometryInfo);
 
         glUseProgram(shader);
         glActiveTexture(GL_TEXTURE0);
@@ -31,7 +31,7 @@ public:
         glUniform3f(gColorLocation, color.x, color.y, color.z);
         glUniformMatrix4fv(gWorldLocation, 1, GL_TRUE, &static_cast<Sprite_rdata*>(RenderData)->matrix[0][0]);
 
-        GameManager::render.PushLineWidth(width);
+        RenderManager::render.PushLineWidth(width);
 
         glDrawArrays(GL_LINE_STRIP, 0, geometryInfo.numVertices);
     }

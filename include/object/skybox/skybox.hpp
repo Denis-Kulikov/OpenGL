@@ -1,5 +1,4 @@
 #pragma once
-#include "lib-project/lib.hpp"
 #include "../renderableObject.hpp"
 #include "../objectTransform.hpp"
 #include "math/Vector3.hpp"

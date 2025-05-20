@@ -1,5 +1,6 @@
 #pragma once
 #include "../object/objectTransform.hpp"
+#include "../object/transform/transformable.hpp"
 
 class Camera
 {
@@ -25,14 +26,14 @@ public:
         Params.Up          = glm::vec3(0.0f, 1.0f, 0.0f);
     }
 
-    void attachOwnerTransform(const objectTransform* TransformPtr)
+    void attachOwnerTransform(const Transformable* TransformPtr)
     {
         OwnerTransformPtr = TransformPtr;
     }
 
     glm::vec3 GetPosition() const
     {
-        return OwnerTransformPtr == nullptr ? Params.WorldPos : Params.WorldPos + OwnerTransformPtr->GetWorldPos();
+        return OwnerTransformPtr == nullptr ? Params.WorldPos : Params.WorldPos + OwnerTransformPtr->GetPosition();
     }
 
     void SetPerspectiveProj(GLfloat FOV, GLfloat Width, GLfloat Height, GLfloat zNear, GLfloat zFar)
@@ -99,5 +100,5 @@ public:
     GLfloat yaw;
     GLfloat pitch;
 
-    const objectTransform* OwnerTransformPtr = nullptr;
+    const Transformable* OwnerTransformPtr = nullptr;
 };

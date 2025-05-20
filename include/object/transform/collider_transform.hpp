@@ -1,5 +1,4 @@
 #pragma once
-#include <lib-project/lib.hpp>
 #include <game/bulletManager.hpp>
 #include <btBulletDynamicsCommon.h>
 #include "transform.hpp"

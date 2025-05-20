@@ -17,10 +17,12 @@ public:
     void PushGeometry(const struct GeometryInfo *geometry);
     void drawObject(glm::mat4x4& matrix, Sprite *sprite);
     void drawSkybox(Cube &skybox);
-    void GetPV();
 
-    glm::mat4 GetPV_Perspective();
-    glm::mat4 GetPV_Orthographic();
+    glm::mat4 GetPV();
+    // Perspective - true, Orthographic - false
+    void UpdatePV(bool perspective);
+    void UpdatePV_Perspective();
+    void UpdatePV_Orthographic();
 
     Pipeline pipeline;
 
@@ -29,7 +31,7 @@ public:
 
     GLfloat LineWidth = -1;
 
-    Matrix4f PersProjTrans;
-    Matrix4f View;
-    Matrix4f PV;
+    glm::mat4 ProjTrans;
+    glm::mat4 View;
+    glm::mat4 PV;
 };

@@ -1,11 +1,11 @@
 #pragma once
 
-#include "lib-project/lib.hpp"
 #include <assimp/scene.h>
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
 #include "math/Matrix4f.hpp"
 #include "../object/shader/shader.hpp"
+#include "../object/objectTransform.hpp"
 
 
 

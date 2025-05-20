@@ -1,5 +1,7 @@
 #pragma once
-#include "lib-project/lib.hpp"
+#include <GL/glew.h>
+#include <map>
+#include <string.h>
 #include <stb_image.h>
 
 class Shader {
