@@ -1,5 +1,5 @@
 #include <object/component/component.hpp>
-
+#include <iostream>
 
 Component::Component(Transform *transform)
     : localTransform(transform), globalTransform(new Transform()) {
@@ -51,10 +51,6 @@ void Component::UpdateMatrix() {
             globalTransform->SetMatrix(localTransform->GetMatrix());
         
         isMoved = false;
-    }
-
-    if (globalTransform->isMoving()) { // RigidTransform - то ничего не происходит
-        globalTransform->UpdateMatrix();
     }
 }
 
@@ -113,6 +109,10 @@ void Component::SetPosition(const glm::vec3& position) {
     isMoved = true;
     localTransform->SetPosition(position);
 }
+void Component::SetRotation(const glm::vec3& rotation) {
+    glm::quat quaternion = glm::quat(glm::radians(rotation));
+    SetRotation(quaternion);
+}
 void Component::SetRotation(const glm::quat& rotation) {
     isMoved = true;
     localTransform->SetRotation(rotation);
@@ -146,8 +146,51 @@ void Component::AddChild(Component* child) {
     children.push_back(child);
     child->parent = this;
     
-    child->localTransform->UpdateMatrix();
-    // child->localTransform->SetMatrix(inverseTransform * child->localTransform->GetMatrix());
-    child->globalTransform->SetMatrix(inverseTransform * child->localTransform->GetMatrix());
-    child->UpdateInverseTransform();
+    std::cout << GetPosition().x << " "
+        << GetPosition().y << " "
+        << GetPosition().z 
+        << std::endl;
+
+    std::cout << GetScale().x << " "
+        << GetScale().y << " "
+        << GetScale().z 
+        << std::endl;
+
+
+    std::cout << child->GetPosition().x << " "
+        << child->GetPosition().y << " "
+        << child->GetPosition().z 
+        << std::endl;
+
+    std::cout << child->GetScale().x << " "
+        << child->GetScale().y << " "
+        << child->GetScale().z 
+        << std::endl;
+
+    child->localTransform->SetMatrix(inverseTransform * child->localTransform->GetMatrix());
+    child->isMoved = true;
+    // child->globalTransform->SetMatrix(inverseTransform * child->localTransform->GetMatrix());
+    // child->UpdateInverseTransform();
+
+    std::cout << child->GetPosition().x << " "
+        << child->GetPosition().y << " "
+        << child->GetPosition().z 
+        << std::endl;
+
+    std::cout << child->GetScale().x << " "
+        << child->GetScale().y << " "
+        << child->GetScale().z 
+        << std::endl;
+
+    std::cout << std::endl;
 }
+
+
+// void Component::AddChild(Component* child) {
+//     children.push_back(child);
+//     child->parent = this;
+    
+//     child->localTransform->SetMatrix(inverseTransform * child->localTransform->GetMatrix());
+//     child->isMoved = true;
+//     child->UpdateInverseTransform();
+// }

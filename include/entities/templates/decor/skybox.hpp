@@ -1,17 +1,20 @@
 #pragma once
 
 #include "../../actor.hpp"
+#include <object/primitive/cube.hpp>
+#include <object/component/template/shape.hpp>
 
-class Ghost : public Actor
+class Skybox : public Actor
 {
 public:
-    Ghost();
-    ~Ghost();
+    Skybox();
+    ~Skybox();
     
     static void Initialize();
 
     std::string GetName() const override;
-    
+
 protected:
     inline static std::string name;
+    inline static Cube *cube = nullptr;
 };

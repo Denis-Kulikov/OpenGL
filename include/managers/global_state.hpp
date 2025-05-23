@@ -1,13 +1,13 @@
 #pragma once
-#include "../entities/character.hpp"
+#include "../entities/actor.hpp"
 
 class GlobalState  
 {
 public:
     static void TerminateApp();
-    static void SetPlayer(Pawn* newPlayer);
-    static Pawn* GetPlayer();
+    static void SetPlayer(Actor* newPlayer);
+    static Actor* GetPlayer();
 
-    inline static Pawn* player = nullptr;
+    inline static Actor* player = nullptr;
     inline static bool isAppRunning = true;
 };

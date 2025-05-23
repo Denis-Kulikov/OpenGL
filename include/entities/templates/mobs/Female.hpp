@@ -1,8 +1,8 @@
 #pragma once
+#include "../../actor.hpp"
+#include <object/geometry/mesh.hpp>
 
-#include "../../character.hpp"
-
-class Female : public Character
+class Female : public Actor
 {
 public:
     Female();
@@ -13,5 +13,6 @@ public:
     std::string GetName() const override;
 
 protected:
+    inline static GeometryMesh* mesh = nullptr;
     inline static std::string name;
 };

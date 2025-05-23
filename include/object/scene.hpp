@@ -1,10 +1,5 @@
 #pragma once
-#include "sprite.hpp"
-#include "sphere.hpp"
-#include "line.hpp"
-#include "cube_wire.hpp"
 #include "../entities/actor.hpp"
-#include "../mesh/shape.hpp"
 // #include <game/bulletManager.hpp>
 
 class Scene 
@@ -12,13 +7,11 @@ class Scene
 public:
     Scene() {};
     ~Scene() {
-        for (auto& it : pawns) delete it;
+        for (auto& it : actors) delete it;
     };
-    void pushObject(Pawn* pawn) { pawns.push_back(pawn); };
-    void pushObject(Shape* shape) { shapes.push_back(shape); };
+    void pushObject(Actor* actor) { actors.push_back(actor); };
     
-    std::vector<Pawn*> pawns;
-    std::vector<Shape*> shapes;
+    std::vector<Actor*> actors;
     // BulletManager btManager;
-    Cube *skybox;
+    Actor* skybox;
 };

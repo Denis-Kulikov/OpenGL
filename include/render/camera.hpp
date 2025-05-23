@@ -1,13 +1,14 @@
 #pragma once
-#include "../object/objectTransform.hpp"
 #include "../object/transform/transformable.hpp"
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/glm.hpp>
+#include <GL/glew.h>
 
 class Camera
 {
 public:
     Camera(const Camera &camera) 
     {
-        Params.WorldPos = camera.Params.WorldPos;
         Params.Target   = camera.Params.Target;
         Params.Up       = camera.Params.Up;
 
@@ -16,24 +17,11 @@ public:
         PersProj.Height = camera.PersProj.Height;
         PersProj.zNear  = camera.PersProj.zNear;
         PersProj.zFar   = camera.PersProj.zFar;
-
-        OwnerTransformPtr = camera.OwnerTransformPtr;
     }
     Camera()
     {
-        Params.WorldPos    = glm::vec3(0.0f, 0.0f, 0.0f);
         Params.Target      = glm::vec3(0.0f, 0.0f, 1.0f);
         Params.Up          = glm::vec3(0.0f, 1.0f, 0.0f);
-    }
-
-    void attachOwnerTransform(const Transformable* TransformPtr)
-    {
-        OwnerTransformPtr = TransformPtr;
-    }
-
-    glm::vec3 GetPosition() const
-    {
-        return OwnerTransformPtr == nullptr ? Params.WorldPos : Params.WorldPos + OwnerTransformPtr->GetPosition();
     }
 
     void SetPerspectiveProj(GLfloat FOV, GLfloat Width, GLfloat Height, GLfloat zNear, GLfloat zFar)
@@ -54,16 +42,15 @@ public:
         PersProj.zFar   = _camera.PersProj.zFar;
     }
 
-    void SetCamera(const glm::vec3& WorldPos, const glm::vec3& Target, const glm::vec3& Up)
+    void SetCamera(const glm::vec3& Target, const glm::vec3& Up)
     {
-        Params.WorldPos = WorldPos;
         Params.Target   = Target;
         Params.Up       = Up;
     }
 
     void SetCamera(const Camera &_camera)
     {
-        SetCamera(_camera.Params.WorldPos, _camera.Params.Target, _camera.Params.Up);
+        SetCamera(_camera.Params.Target, _camera.Params.Up);
         SetPerspectiveProj(_camera.PersProj.FOV, _camera.PersProj.Width, _camera.PersProj.Height, _camera.PersProj.zNear, _camera.PersProj.zFar);
     }
 
@@ -84,7 +71,6 @@ public:
     }
 
     struct struct_Params {
-        glm::vec3 WorldPos;
         glm::vec3 Target;
         glm::vec3 Up;
     } Params;
@@ -99,6 +85,4 @@ public:
 
     GLfloat yaw;
     GLfloat pitch;
-
-    const Transformable* OwnerTransformPtr = nullptr;
 };

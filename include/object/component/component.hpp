@@ -1,9 +1,9 @@
 #pragma once
 #include <object/transform/transform.hpp>
+#include <object/material/material.hpp>
 
 class Component {
 public:
-    // Component(Component *parent, const Transform *localTransform_, Transformable *globalTransform);
     Component(Transform *transform);
     // Component(RigidTransform *transform);
     ~Component();
@@ -27,6 +27,7 @@ public:
 
 
     void SetPosition(const glm::vec3& position);
+    void SetRotation(const glm::vec3& rotation);
     void SetRotation(const glm::quat& rotation);
     void SetScale(const glm::vec3& scale);
 
@@ -43,15 +44,14 @@ public:
     std::vector<Component*>& GetChildren() { return children; }
     void AddChild(Component* child);
 
-// protected:
-    // void Spawn(const glm::mat4x4 &startTransform);
+    Material* material = nullptr;
 
     std::vector<Component*> children;
     Component *parent = nullptr;
     Transformable *globalTransform = nullptr;
     Transformable *localTransform = nullptr;
     glm::mat4x4 inverseTransform;
-    bool isMoved = false;
+    bool isMoved = true;
 };
 
 

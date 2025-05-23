@@ -4,10 +4,10 @@ void GlobalState::TerminateApp() {
     isAppRunning = false;
 }
 
-void GlobalState::SetPlayer(Pawn* newPlayer) {
+void GlobalState::SetPlayer(Actor* newPlayer) {
     player = newPlayer;
 }
 
-Pawn* GlobalState::GetPlayer() {
+Actor* GlobalState::GetPlayer() {
     return player;
 }

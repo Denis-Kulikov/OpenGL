@@ -1,10 +1,10 @@
 #pragma once
 
-#include "../../pawn.hpp"
-#include <object/cube.hpp>
+#include "../../actor.hpp"
+#include <object/primitive/cube.hpp>
 #include <object/component/template/shape.hpp>
 
-class WoodenBox : public Pawn
+class WoodenBox : public Actor
 {
 public:
     // WoodenBox(BulletManager *btManagere);
@@ -16,8 +16,6 @@ public:
     std::string GetName() const override;
 
 protected:
-    static void BuildSpiral(ComponentShape *parent, int step, int maxSteps);
-
     inline static std::string name;
     inline static Cube *cube = nullptr;
 };

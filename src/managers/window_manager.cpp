@@ -4,13 +4,12 @@
 #include <managers/window_manager.hpp> 
 #include <GLFW/glfw3.h>
 
-void WindowManager::Initialize(GLfloat Width, GLfloat Height)
-{
+void WindowManager::Initialize(GLfloat Width, GLfloat Height) {
     width = Width;
     height = Height;
 
     if (!glfwInit()) {
-        std::cerr << "Error: " << "Failed to initialize GLFW" << std::endl;
+        std::cerr << "Error: Failed to initialize GLFW" << std::endl;
         exit(EXIT_FAILURE);
     }
 
@@ -19,59 +18,25 @@ void WindowManager::Initialize(GLfloat Width, GLfloat Height)
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-
-    #define win true 
-    #if win
-
     window = glfwCreateWindow(width, height, "Game", NULL, NULL);
     if (!window) {
         glfwTerminate();
-        std::cerr << "Error: " << "Failed to create GLFW window" << std::endl;
+        std::cerr << "Error: Failed to create GLFW window" << std::endl;
         exit(EXIT_FAILURE);
     }
 
-
     glfwMakeContextCurrent(window);
+
+    if (glewInit() != GLEW_OK) {
+        std::cerr << "Error: Failed to initialize GLEW" << std::endl;
+        exit(EXIT_FAILURE);
+    }
+
     glfwSetCursorPosCallback(window, WindowManager::MouseCB);
     glfwSetKeyCallback(window, WindowManager::KeyboardCB);
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
     glfwSetWindowPos(window, 150, 75);
-
-
-    if (glewInit() != GLEW_OK) {
-        std::cerr << "Error: " << "Failed to initialize GLEW" << std::endl;
-        exit(EXIT_FAILURE);
-    }
-
-    #else
-    glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
-
-    offscreen_context = glfwCreateWindow(1, 1, "", NULL, NULL); // Контекст без окна
-    if (!offscreen_context) {
-        std::cerr << "Error: Failed to create offscreen OpenGL context" << std::endl;
-        glfwTerminate();
-        exit(EXIT_FAILURE);
-    }
-
-    glfwMakeContextCurrent(offscreen_context); // Устанавливаем контекст как текущий
-
-    glewExperimental = GL_TRUE;
-    GLenum err = glewInit();
-    if (err != GLEW_OK) {
-        std::cerr << "Error: Failed to initialize GLEW" << std::endl;
-        exit(EXIT_FAILURE);
-    }
-
-    glGenFramebuffers(1, &framebuffer);
-    glGenTextures(1, &texture);
-    glGenRenderbuffers(1, &depthbuffer);
-
-    #endif
-
-    glEnable(GL_DEPTH_TEST);
-    glClearColor(0.12f, 0.12f, 0.12f, 0.0f);
-    SwapBuffer();
 }
 
 void WindowManager::Dispose()
@@ -114,15 +79,16 @@ void WindowManager::MouseCB(GLFWwindow* window, double xpos, double ypos) {
     if (pitch > 89.0f) pitch = 89.0f;
     if (pitch < -89.0f) pitch = -89.0f;
 
-    RenderManager::render.pipeline.camera.SetYaw(yaw);
-    RenderManager::render.pipeline.camera.SetPitch(pitch);
+    if (RenderManager::render.camera == nullptr) return;
+    RenderManager::render.camera->camera.SetYaw(yaw);
+    RenderManager::render.camera->camera.SetPitch(pitch);
 }
 
 void WindowManager::KeyboardCB(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
     static bool keys[GLFW_KEY_LAST] = {false};
 
-    Pawn* player = GlobalState::GetPlayer();
+    Actor* player = GlobalState::GetPlayer();
 
     if (action == GLFW_PRESS) 
         keys[key] = true;
@@ -141,8 +107,9 @@ void WindowManager::KeyboardCB(GLFWwindow* window, int key, int scancode, int ac
         buttons.cursor_disable = !buttons.cursor_disable;
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     }
-
-    glm::vec3 front = RenderManager::render.pipeline.camera.Params.Target;
+    
+    if (RenderManager::render.camera == nullptr) return;
+    glm::vec3 front = RenderManager::render.camera->camera.Params.Target;
     front.y = 0.0f;
     front = glm::normalize(front);
 

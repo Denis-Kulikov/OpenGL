@@ -4,9 +4,10 @@
 #include <managers/window_manager.hpp> 
 
 #include <object/scene.hpp>
-#include <object/cube.hpp>
-#include <object/sphere.hpp>
-#include <object/sphere_wire.hpp>
+#include <object/primitive/cube.hpp>
+#include <entities/templates/decor/wooden_box.hpp>
+#include <entities/templates/decor/skybox.hpp>
+#include <entities/templates/mobs/female.hpp>
 #include <entities/templates/playable/Ghost.hpp>
 
 #include <stb_image.h>
@@ -20,9 +21,13 @@ void draw(Scene *scene) {
     RenderManager::render.drawSkybox(*scene->skybox);
 
     GlobalState::GetPlayer()->MoveForward();
-    GlobalState::GetPlayer()->rootComponent->UpdateMatrixTree();
 
-    for (auto &it : scene->shapes)
+    // std::cout << GlobalState::GetPlayer()->rootComponent->children[0]->GetPosition().x << " "
+    //     <<GlobalState::GetPlayer()->rootComponent->children[0]->GetPosition().y << " "
+    //     <<GlobalState::GetPlayer()->rootComponent->children[0]->GetPosition().z 
+    //     << std::endl;
+
+    for (auto &it : scene->actors)
         it->Render();
 
     WindowManager::SwapBuffer();
@@ -30,23 +35,35 @@ void draw(Scene *scene) {
 
 Scene *createScene()
 {
-    Cube::initializeGeometry();
-    Sprite::initializeGeometry();
+    Skybox::Initialize();
+    WoodenBox::Initialize();
+    Female::Initialize();
 
     auto *scene = new Scene();
 
-    Pawn *character = new Ghost();
+    Actor *character = new Ghost();
     scene->pushObject(character);
 
-    scene->skybox = new Cube("img/skybox.png");
+    auto cube = new WoodenBox();
+    cube->rootComponent->SetPosition(glm::vec3(0, 0, 2));
+    // cube->rootComponent->SetRotation(glm::vec3(0, 0, 45));
+    scene->pushObject(cube);
 
-    auto cube = new Cube("img/box.jpg");
-    auto cube_shape = new Shape(cube);
-    cube_shape->GetTransform()->SetPosition(glm::vec3(0, 0, 2));
-    scene->pushObject(cube_shape);
+    // auto cube2 = new WoodenBox();
+    // cube2->rootComponent->SetPosition(glm::vec3(0, 0, 2));
+    // scene->pushObject(cube2);
+
+    auto female = new Female();
+    // cube2->rootComponent->SetPosition(glm::vec3(0, 0, 2));
+    // cube2->rootComponent->Rotate(glm::vec3(0, 0, 45));
+    female->rootComponent->SetPosition(glm::vec3(2, 0, 1));
+    female->rootComponent->SetScale(glm::vec3(0.01));
+    female->rootComponent->SetScale(glm::vec3(1));
+    scene->pushObject(female);
+
+    scene->skybox = new Skybox();
 
     GlobalState::SetPlayer(character);
-    RenderManager::render.pipeline.camera.OwnerTransformPtr = character->rootComponent->GetTransform();
 
     return scene;
 }
@@ -56,9 +73,9 @@ int main(int argc, char** argv)
 {
     const GLfloat width = 1600, height = 900;
 
-    RenderManager::Initialize(70.0f, width, height, 0.5f, 7000.0f);
-    TimeManager::Initialize();
     WindowManager::Initialize(width, height);
+    RenderManager::Initialize(70.0f, width, height, 0.1f, 1000.0f);
+    TimeManager::Initialize();
 
     Scene *scene(createScene());
 

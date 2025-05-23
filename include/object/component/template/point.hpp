@@ -1,6 +1,4 @@
 #pragma once
-#include <managers/render_manager.hpp>
-#include <mesh/mesh.hpp>
 #include "../component.hpp"
 
 class ComponentPoint : public Component {

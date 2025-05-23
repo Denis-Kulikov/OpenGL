@@ -12,7 +12,6 @@ if(WIN32)
 target_link_libraries(
   ${target}
   PRIVATE
-	lib-object
 	lib-render
 	#BulletCollision_Debug
 	#BulletDynamics_Debug

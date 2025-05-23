@@ -1,5 +1,5 @@
 #pragma once
-#include <object/sprite.hpp>
+#include <object/geometry/base.hpp>
 #include "../component.hpp"
 
 class ComponentShape : public Component {
@@ -17,7 +17,7 @@ public:
     void Render() const override;
 
 // private:
-    Sprite *shape;
+    GeometryBase *shape;
 };
 
 

@@ -11,4 +11,7 @@ add_library(${target} STATIC
 target_link_libraries(${target}
     PRIVATE
 	lib-transform
+	lib-material
+	lib-primitive
+	#lib-mesh
 )
