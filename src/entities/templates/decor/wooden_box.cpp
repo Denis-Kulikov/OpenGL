@@ -5,15 +5,13 @@ WoodenBox::WoodenBox()
 {
     Transform *transform1 = new Transform();
     ComponentShape *shape1 = CreateComponent<ComponentShape>(transform1);
-    transform1->SetScale(glm::vec3(0.5));
-    transform1->SetPosition(glm::vec3(-2, 0, 0));
+    transform1->SetScale(glm::vec3(1.0));
     shape1->shape = cube;
     shape1->material = Material::Find("WoodenBox");
 
     Transform *transform2 = new Transform();
     ComponentShape *shape2 = CreateComponent<ComponentShape>(transform2);
     shape2->shape = cube;
-    transform2->SetPosition(glm::vec3(0, 0.5, 0));
     transform2->SetScale(glm::vec3(0.5, 3, 0.5));
     shape2->material = Material::Find("WoodenBox");
 

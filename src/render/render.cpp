@@ -18,7 +18,7 @@ void Render::drawSkybox(Actor &skybox) {
     glDepthFunc(GL_LEQUAL);
     glDepthMask(GL_FALSE);
 
-    skybox.rootComponent->SetPosition(camera->GetPosition());
+    skybox.rootComponent->SetPosition(camera->GetGlobalPosition());
     skybox.rootComponent->SetRotation(glm::vec3(0, 0, 180));
     skybox.rootComponent->SetScale(glm::vec3(2));
     skybox.Render();
@@ -53,8 +53,8 @@ void Render::UpdatePV_Perspective() {
     const auto& c = camera->camera;
 
     View = glm::lookAt(
-        camera->GetPosition(),
-        camera->GetPosition() + c.Params.Target,
+        camera->GetGlobalPosition(),
+        camera->GetGlobalPosition() + c.Params.Target,
         c.Params.Up
     );
 
@@ -73,8 +73,8 @@ void Render::UpdatePV_Orthographic() {
     const auto& c = camera->camera;
 
     View = glm::lookAt(
-        camera->GetPosition(),
-        camera->GetPosition() + c.Params.Target,
+        camera->GetGlobalPosition(),
+        camera->GetGlobalPosition() + c.Params.Target,
         c.Params.Up
     );
 

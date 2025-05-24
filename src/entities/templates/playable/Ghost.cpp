@@ -5,7 +5,6 @@
 
 Ghost::Ghost() {
     Transform *transformPoint = new Transform();
-    // transformPoint->SetPosition(glm::vec3(1));
     ComponentPoint *point = CreateComponent<ComponentPoint>(transformPoint);
 
     Transform *transformCamera = new Transform();

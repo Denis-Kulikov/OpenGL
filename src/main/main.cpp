@@ -22,11 +22,6 @@ void draw(Scene *scene) {
 
     GlobalState::GetPlayer()->MoveForward();
 
-    // std::cout << GlobalState::GetPlayer()->rootComponent->children[0]->GetPosition().x << " "
-    //     <<GlobalState::GetPlayer()->rootComponent->children[0]->GetPosition().y << " "
-    //     <<GlobalState::GetPlayer()->rootComponent->children[0]->GetPosition().z 
-    //     << std::endl;
-
     for (auto &it : scene->actors)
         it->Render();
 

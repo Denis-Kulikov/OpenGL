@@ -2,13 +2,11 @@
 #include <iostream>
 
 Component::Component(Transform *transform)
-    : localTransform(transform), globalTransform(new Transform()) {
-    UpdateInverseTransform();
-}
+    : localTransform(transform), globalTransform(new Transform()) 
+{}
 
 // Component::Component(RigidTransform *transform)
 //     : localTransform(transform), globalTransform(transform) {
-//     UpdateInverseTransform();
 // }
 
 
@@ -42,17 +40,26 @@ void Component::UpdateMatrixTree() {
 }
 
 void Component::UpdateMatrix() {
-    if (isMoved) {
-        localTransform->UpdateMatrix();
+    localTransform->UpdateMatrix();
 
-        if (parent)
-            globalTransform->SetMatrix(parent->GetMatrix() * localTransform->GetMatrix());
-        else
-            globalTransform->SetMatrix(localTransform->GetMatrix());
-        
-        isMoved = false;
-    }
+    if (parent)
+        globalTransform->SetMatrix(parent->GetMatrix() * localTransform->GetMatrix());
+    else
+        globalTransform->SetMatrix(localTransform->GetMatrix());
 }
+
+// void Component::UpdateMatrix() {
+//     if (isMoved) {
+//         localTransform->UpdateMatrix();
+
+//         if (parent)
+//             globalTransform->SetMatrix(parent->GetMatrix() * localTransform->GetMatrix());
+//         else
+//             globalTransform->SetMatrix(localTransform->GetMatrix());
+        
+//         isMoved = false;
+//     }
+// }
 
 glm::vec3 QuatToEulerDegrees(const glm::quat& quat) {
     glm::vec3 euler = glm::degrees(glm::eulerAngles(quat));
@@ -142,48 +149,38 @@ void Component::RotateAround(const glm::vec3& axis, float angle) {
     Rotate(deltaRotation);
 }
 
+#include <iomanip>
+void PrintMatrix(const glm::mat4& matrix) {
+    std::cout << std::fixed << std::setprecision(3);
+    for (int row = 0; row < 4; ++row) {
+        std::cout << "| ";
+        for (int col = 0; col < 4; ++col) {
+            std::cout << std::setw(8) << matrix[col][row] << " ";
+        }
+        std::cout << "|\n";
+    }
+    std::cout << std::endl;
+}
+
 void Component::AddChild(Component* child) {
     children.push_back(child);
+    child->localTransform->UpdateMatrix();
     child->parent = this;
-    
-    std::cout << GetPosition().x << " "
-        << GetPosition().y << " "
-        << GetPosition().z 
-        << std::endl;
 
-    std::cout << GetScale().x << " "
-        << GetScale().y << " "
-        << GetScale().z 
-        << std::endl;
+    UpdateInverseTransform();
 
-
-    std::cout << child->GetPosition().x << " "
-        << child->GetPosition().y << " "
-        << child->GetPosition().z 
-        << std::endl;
-
-    std::cout << child->GetScale().x << " "
-        << child->GetScale().y << " "
-        << child->GetScale().z 
-        << std::endl;
+    PrintMatrix(localTransform->GetMatrix());
+    PrintMatrix(child->localTransform->GetMatrix());
 
     child->localTransform->SetMatrix(inverseTransform * child->localTransform->GetMatrix());
     child->isMoved = true;
-    // child->globalTransform->SetMatrix(inverseTransform * child->localTransform->GetMatrix());
-    // child->UpdateInverseTransform();
+    child->UpdateInverseTransform();
 
-    std::cout << child->GetPosition().x << " "
-        << child->GetPosition().y << " "
-        << child->GetPosition().z 
-        << std::endl;
-
-    std::cout << child->GetScale().x << " "
-        << child->GetScale().y << " "
-        << child->GetScale().z 
-        << std::endl;
+    PrintMatrix(child->localTransform->GetMatrix());
 
     std::cout << std::endl;
 }
+
 
 
 // void Component::AddChild(Component* child) {

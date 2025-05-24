@@ -70,12 +70,6 @@ public:
 //     return component;
 // }
 
-template <typename C>
-C* CreateComponent() {
-    static_assert(std::is_base_of_v<Component, C>, "T must derive from Component");
-
-    return new C(new Transform());
-}
 
 template <typename C, typename T>
 C* CreateComponent(T *transform) {
