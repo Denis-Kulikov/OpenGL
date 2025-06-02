@@ -20,7 +20,7 @@ void Component::UpdateInverseTransform() {
     localTransform->UpdateMatrix();
     inverseTransform = glm::inverse(localTransform->GetMatrix()); 
     if (parent) {
-        inverseTransform = inverseTransform * parent->inverseTransform;
+        inverseTransform = inverseTransform.GetMatrix() * parent->inverseTransform.GetMatrix();
     }
 }
 
@@ -41,36 +41,16 @@ void Component::UpdateMatrixTree() {
 
 void Component::UpdateMatrix() {
     localTransform->UpdateMatrix();
-
-    if (parent)
-        globalTransform->SetMatrix(parent->GetMatrix() * localTransform->GetMatrix());
-    else
-        globalTransform->SetMatrix(localTransform->GetMatrix());
+    *globalTransform = parent ? parent->GetMatrix() * localTransform->GetMatrix() : localTransform->GetMatrix();
 }
-
-// void Component::UpdateMatrix() {
-//     if (isMoved) {
-//         localTransform->UpdateMatrix();
-
-//         if (parent)
-//             globalTransform->SetMatrix(parent->GetMatrix() * localTransform->GetMatrix());
-//         else
-//             globalTransform->SetMatrix(localTransform->GetMatrix());
-        
-//         isMoved = false;
-//     }
-// }
 
 glm::vec3 QuatToEulerDegrees(const glm::quat& quat) {
     glm::vec3 euler = glm::degrees(glm::eulerAngles(quat));
     return euler;
 }
 
-void Component::Spawn(Transform &startTransform) {
-    if (isMoved) {
-        isMoved = false;
-        localTransform->UpdateMatrix();
-    }
+void Component::Spawn(const Transform &startTransform) {
+    localTransform->UpdateMatrix();
 
     Transform transform = startTransform;
 
@@ -113,43 +93,50 @@ glm::vec3 Component::GetGlobalScale() const {
 }
 
 void Component::SetPosition(const glm::vec3& position) {
-    isMoved = true;
-    localTransform->SetPosition(position);
+    if (parent) {
+        // localTransform->SetPosition(position);
+
+        glm::vec4 worldPos = glm::vec4(position, 1.0f);
+        glm::vec4 localPos = parent->inverseTransform.GetMatrix() * worldPos;
+        localTransform->SetPosition(glm::vec3(localPos));
+    } else {
+        localTransform->SetPosition(position);
+    }
 }
 void Component::SetRotation(const glm::vec3& rotation) {
     glm::quat quaternion = glm::quat(glm::radians(rotation));
     SetRotation(quaternion);
 }
 void Component::SetRotation(const glm::quat& rotation) {
-    isMoved = true;
     localTransform->SetRotation(rotation);
 }
 void Component::SetScale(const glm::vec3& scale) {
-    isMoved = true;
-    localTransform->SetScale(scale);
+    if (parent) {
+        glm::vec3 parentScale = parent->inverseTransform.GetScale();
+        localTransform->SetScale(scale * parentScale);
+    } else {
+        localTransform->SetScale(scale);
+    }
 }
 
 void Component::Move(const glm::vec3& offset) {
-    isMoved = true;
     localTransform->SetPosition(localTransform->GetPosition() + offset);
 }
 void Component::Move(glm::vec3 direction, float distance) {
     if (glm::length(direction) != 0) {
-        isMoved = true;
         Move(glm::normalize(direction) * distance);
     }
 }
 void Component::Rotate(const glm::quat& deltaRotation) {
-    isMoved = true;
     localTransform->SetRotation(localTransform->GetRotation() * deltaRotation);
 }
 void Component::RotateAround(const glm::vec3& axis, float angle) {
-    isMoved = true;
     glm::quat deltaRotation = glm::angleAxis(angle, glm::normalize(axis));
     Rotate(deltaRotation);
 }
 
 #include <iomanip>
+
 void PrintMatrix(const glm::mat4& matrix) {
     std::cout << std::fixed << std::setprecision(3);
     for (int row = 0; row < 4; ++row) {
@@ -159,35 +146,16 @@ void PrintMatrix(const glm::mat4& matrix) {
         }
         std::cout << "|\n";
     }
-    std::cout << std::endl;
 }
-
 void Component::AddChild(Component* child) {
     children.push_back(child);
-    child->localTransform->UpdateMatrix();
     child->parent = this;
 
+    child->localTransform->UpdateMatrix();
     UpdateInverseTransform();
 
     PrintMatrix(localTransform->GetMatrix());
-    PrintMatrix(child->localTransform->GetMatrix());
 
-    child->localTransform->SetMatrix(inverseTransform * child->localTransform->GetMatrix());
-    child->isMoved = true;
+    *child->localTransform = inverseTransform.GetMatrix() * child->localTransform->GetMatrix();
     child->UpdateInverseTransform();
-
-    PrintMatrix(child->localTransform->GetMatrix());
-
-    std::cout << std::endl;
 }
-
-
-
-// void Component::AddChild(Component* child) {
-//     children.push_back(child);
-//     child->parent = this;
-    
-//     child->localTransform->SetMatrix(inverseTransform * child->localTransform->GetMatrix());
-//     child->isMoved = true;
-//     child->UpdateInverseTransform();
-// }

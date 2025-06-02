@@ -1,6 +1,5 @@
 add_subdirectory(component)
 add_subdirectory(material)
-#add_subdirectory(mesh)
 add_subdirectory(primitive)
 add_subdirectory(skybox)
 add_subdirectory(transform)

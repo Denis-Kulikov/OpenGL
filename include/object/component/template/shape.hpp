@@ -17,7 +17,7 @@ public:
     void Render() const override;
 
 // private:
-    GeometryBase *shape;
+    Geometry *shape;
 };
 
 

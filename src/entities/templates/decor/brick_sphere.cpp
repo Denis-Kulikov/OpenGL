@@ -1,46 +1,31 @@
-#include <entities/templates/decor/wooden_box.hpp>
+#include <entities/templates/decor/brick_sphere.hpp>
 #include <managers/render_manager.hpp> 
 
-WoodenBox::WoodenBox()
+BrickSphere::BrickSphere()
 {
     std::cout << name << std::endl;
     Transform *transform1 = new Transform();
     ComponentShape *shape1 = CreateComponent<ComponentShape>(transform1);
-    shape1->SetPosition(glm::vec3(0.05, 0, 0.02));
-    shape1->shape = cube;
-    shape1->material = Material::Find("WoodenBox");
-
-    Transform *transform2 = new Transform();
-    ComponentShape *shape2 = CreateComponent<ComponentShape>(transform2);
-    shape2->shape = cube;
-    shape2->SetPosition(glm::vec3(0.2, 0.75, 0.2));
-    shape2->SetRotation(glm::vec3(0.0, 12, 0));
-    transform2->SetScale(glm::vec3(0.5));
-    shape2->material = Material::Find("WoodenBox");
-
-    Transform *transform3 = new Transform();
-    ComponentShape *shape3 = CreateComponent<ComponentShape>(transform3);
-    shape3->shape = cube;
-    shape3->SetPosition(glm::vec3(0.2, 0.75 + 0.375, 0.2));
-    shape3->SetRotation(glm::vec3(0, -14, 0));
-    transform3->SetScale(glm::vec3(0.25));
-    shape3->material = Material::Find("WoodenBox");
-
-    shape1->AddChild(shape2);
-    shape2->AddChild(shape3);
+    shape1->shape = sphere;
+    shape1->material = Material::Find("BrickSphere");
 
     rootComponent = shape1;
 }
 
-WoodenBox::~WoodenBox() {}
+BrickSphere::~BrickSphere() {}
 
-void WoodenBox::Initialize()
+void BrickSphere::Initialize()
 {
-    WoodenBox::name = "WoodenBox";
+    BrickSphere::name = "BrickSphere";
+    sphere = RenderManager::primitives.sphere;
+    auto shader = Shader::Create("sprite", "shaders/sprite_fs.glsl", "shaders/sprite_vs.glsl");
+    // auto texture_wooden_box = Texture::Create("brick_wall", "img/white.png");
+    auto texture_wooden_box = Texture::Create("brick_wall", "img/brick_wall_10_diff_1k.jpg");
+    
     cube = RenderManager::primitives.cube;
     auto shader_cube = Shader::Create("cube", "shaders/cube_fs.glsl", "shaders/cube_vs.glsl");
-    auto texture_wooden_box = Texture::Create("wooden_box", "img/box.jpg");
-    
+
+
     auto init_sprite = new Material::InitFunction([](Material& m) {
         std::vector<std::string> str = {"gWorld", "textureSampler"};
         for (auto s : str) {
@@ -65,10 +50,10 @@ void WoodenBox::Initialize()
 
     });
 
-    auto material_wooden_box = Material::Create("WoodenBox", shader_cube, init_sprite, apply_sprite);
+    auto material_wooden_box = Material::Create("BrickSphere", shader, init_sprite, apply_sprite);
     material_wooden_box->PushTexture(texture_wooden_box);
 }
 
-std::string WoodenBox::GetName() const {
-    return WoodenBox::name;
+std::string BrickSphere::GetName() const {
+    return BrickSphere::name;
 }

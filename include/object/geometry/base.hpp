@@ -2,7 +2,7 @@
 #include <glm/glm.hpp>
 #include <GL/glew.h>
 
-class GeometryBase {
+class Geometry {
 public:
     int GetType() {return type;}
     virtual void Bind() const = 0;

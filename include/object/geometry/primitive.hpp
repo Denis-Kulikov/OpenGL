@@ -1,7 +1,7 @@
 #pragma once
 #include "base.hpp"
 
-class GeometryPrimitive : public GeometryBase {
+class GeometryPrimitive : public Geometry {
 public:
     ~GeometryPrimitive() {
         if (VAO != 0) glDeleteVertexArrays(1, &VAO);

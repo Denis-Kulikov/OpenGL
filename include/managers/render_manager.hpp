@@ -2,6 +2,7 @@
 #include <render/render.hpp>
 #include <object/primitive/sprite.hpp>
 #include <object/primitive/cube.hpp>
+#include <object/primitive/sphere.hpp>
 
 class RenderManager  
 {
@@ -19,6 +20,7 @@ public:
     inline static struct {
         Sprite* sprite = nullptr;
         Cube* cube = nullptr;
+        Sphere<10>* sphere = nullptr;
     } primitives;
 
     inline static Camera::struct_PersProj PersProj;

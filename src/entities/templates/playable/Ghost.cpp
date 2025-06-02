@@ -4,6 +4,7 @@
 #include <managers/render_manager.hpp> 
 
 Ghost::Ghost() {
+    std::cout << name << std::endl;
     Transform *transformPoint = new Transform();
     ComponentPoint *point = CreateComponent<ComponentPoint>(transformPoint);
 

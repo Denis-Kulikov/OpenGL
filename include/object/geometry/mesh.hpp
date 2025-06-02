@@ -6,7 +6,7 @@
 #include <object/material/texture.hpp>
 #include <iostream>
 
-class GeometryMesh : public GeometryBase {
+class GeometryMesh : public Geometry {
 public:
     GeometryMesh(const std::string& Filename) {
         LoadMesh(Filename);
@@ -32,19 +32,19 @@ public:
     int GetTextureIndex(int index) {return m_Entries[index].MaterialIndex;}
 
 
-   struct MeshEntry {
-       MeshEntry() {
+    struct MeshEntry {
+        MeshEntry() {
             NumIndices = 0;
             MaterialIndex = -1;
             BaseVertex = 0;
             BaseIndex = 0;
-       }
+        }
 
-       unsigned int NumIndices;
-       unsigned int BaseVertex;
-       unsigned int BaseIndex;
-       unsigned int MaterialIndex;
-   };
+        unsigned int NumIndices;
+        unsigned int BaseVertex;
+        unsigned int BaseIndex;
+        unsigned int MaterialIndex;
+    };
 
     enum VB_TYPES {
         POS_VB,

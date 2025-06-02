@@ -1,9 +1,10 @@
 set(target lib-decor)
 
 add_library(${target} STATIC
+	grass.cpp
 	wooden_box.cpp
 	skybox.cpp
-	#floor.cpp
+	brick_sphere.cpp
 )
 
 target_link_libraries(

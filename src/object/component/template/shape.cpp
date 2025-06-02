@@ -6,8 +6,10 @@ void ComponentShape::Render() const {
     auto mat4x4 = RenderManager::render.GetPV() * globalTransform->GetMatrix();
     material->UpdateValue("gWorld", mat4x4);
 
+    // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
     switch (shape->GetType()) {
-    case GeometryBase::Type::PRIMITIVE:
+    case Geometry::Type::PRIMITIVE:
         material->Bind();
         if (!material->GetTexture().empty())
             material->GetTexture()[0]->Bind();
@@ -15,7 +17,7 @@ void ComponentShape::Render() const {
         shape->Draw();
         break;
     
-    case GeometryBase::Type::MESH:
+    case Geometry::Type::MESH:
         GeometryMesh* gMesh = static_cast<GeometryMesh*>(shape);
         material->Bind();
         gMesh->Bind();

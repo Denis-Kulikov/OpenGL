@@ -14,6 +14,7 @@ void Transform::UpdateTransform() {
                         glm::length(matrix[2])));
 }
 
+#include <iostream>
 void Transform::UpdateMatrix() {
     glm::mat4 translate = glm::translate(glm::mat4(1.0f), Transform::GetPosition());
     glm::mat4 rotate = glm::mat4_cast(Transform::GetRotation());

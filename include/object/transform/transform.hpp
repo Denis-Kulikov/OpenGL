@@ -11,7 +11,15 @@ public:
 
     void UpdateMatrix() override;
     void UpdateTransform() override;
-    // void SetMatrix(const glm::mat4x4 &matrix_) override;
+    Transform& operator=(const glm::mat4x4& matrix_) {
+        matrix = matrix_;
+        UpdateTransform();
+        return *this;
+    }
+    Transform& operator=(const Transformable& transform) {
+        *this = transform.GetMatrix();
+        return *this;
+    }
     bool isMoving() const override { return false; };
 
     glm::vec3 GetPosition() const override;

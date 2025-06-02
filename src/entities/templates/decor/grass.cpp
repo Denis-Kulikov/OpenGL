@@ -1,25 +1,25 @@
-#include <entities/templates/decor/skybox.hpp>
+#include <entities/templates/decor/grass.hpp>
 #include <managers/render_manager.hpp> 
 
-Skybox::Skybox()
+Grass::Grass()
 {
     std::cout << name << std::endl;
     Transform *transform = new Transform();
     ComponentShape *shape = CreateComponent<ComponentShape>(transform);
-    shape->shape = cube;
+    shape->shape = sprite;
     rootComponent = shape;
-    rootComponent->material = Material::Find("skybox");
+    rootComponent->material = Material::Find("grass");
 }
 
-Skybox::~Skybox() {}
+Grass::~Grass() {}
 
-void Skybox::Initialize()
+void Grass::Initialize()
 {
-    Skybox::name = "skybox";
-    cube = RenderManager::primitives.cube;
+    Grass::name = "skybox";
+    sprite = RenderManager::primitives.sprite;
     
-    auto shader_cube = Shader::Create("cube", "shaders/cube_fs.glsl", "shaders/cube_vs.glsl");
-    auto texture_skybox = Texture::Create("skybox", "img/skybox.png");
+    auto shader_cube = Shader::Create("cube", "shaders/sprite_fs.glsl", "shaders/sprite_vs.glsl");
+    auto texture_skybox = Texture::Create("grass", "img/grass.png");
     
     auto init_sprite = new Material::InitFunction([](Material& m) {
         std::vector<std::string> str = {"gWorld", "textureSampler"};
@@ -52,10 +52,10 @@ void Skybox::Initialize()
 
     });
 
-    auto material_skybox = Material::Create("skybox", shader_cube, init_sprite, apply_sprite);
+    auto material_skybox = Material::Create("grass", shader_cube, init_sprite, apply_sprite);
     material_skybox->PushTexture(texture_skybox);
 }
 
-std::string Skybox::GetName() const {
-    return Skybox::name;
+std::string Grass::GetName() const {
+    return Grass::name;
 }

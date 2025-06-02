@@ -1,14 +1,20 @@
 #pragma once
 #include <glm/glm.hpp>
+#define GLM_ENABLE_EXPERIMENTAL
 
 class Transformable {
 public:
     const glm::mat4 &GetMatrix() const { return matrix; };
     virtual void UpdateMatrix() = 0;
     virtual void UpdateTransform() = 0;
-    virtual void SetMatrix(const glm::mat4x4 &matrix_) {
+    Transformable& operator=(const glm::mat4x4& matrix_) {
         matrix = matrix_;
         UpdateTransform();
+        return *this;
+    }
+    Transformable& operator=(const Transformable& transform) {
+        *this = transform.GetMatrix();
+        return *this;
     }
 
     virtual bool isMoving() const = 0;

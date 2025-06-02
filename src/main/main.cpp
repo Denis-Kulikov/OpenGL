@@ -5,6 +5,8 @@
 
 #include <object/scene.hpp>
 #include <object/primitive/cube.hpp>
+#include <entities/templates/decor/grass.hpp>
+#include <entities/templates/decor/brick_sphere.hpp>
 #include <entities/templates/decor/wooden_box.hpp>
 #include <entities/templates/decor/skybox.hpp>
 #include <entities/templates/mobs/female.hpp>
@@ -18,43 +20,51 @@ void draw(Scene *scene) {
     TimeManager::Update();
     RenderManager::UpdateCamera();
     RenderManager::render.UpdatePV_Perspective();
-    RenderManager::render.drawSkybox(*scene->skybox);
+    // RenderManager::render.drawSkybox(*scene->skybox);
 
     GlobalState::GetPlayer()->MoveForward();
 
     for (auto &it : scene->actors)
         it->Render();
 
+
     WindowManager::SwapBuffer();
 }
 
 Scene *createScene()
 {
+    Ghost::Initialize();
+    Grass::Initialize();
     Skybox::Initialize();
     WoodenBox::Initialize();
     Female::Initialize();
+    BrickSphere::Initialize();
 
     auto *scene = new Scene();
 
     Actor *character = new Ghost();
     scene->pushObject(character);
 
-    auto cube = new WoodenBox();
-    cube->rootComponent->SetPosition(glm::vec3(0, 0, 2));
-    // cube->rootComponent->SetRotation(glm::vec3(0, 0, 45));
-    scene->pushObject(cube);
+    auto grass = new Grass();
+    grass->Teleport(glm::vec3(-1, -1, 5));
+    grass->rootComponent->SetScale(glm::vec3(3));
+    grass->rootComponent->SetRotation(glm::vec3(90, 0, 0));
+    // scene->pushObject(grass);
 
-    // auto cube2 = new WoodenBox();
-    // cube2->rootComponent->SetPosition(glm::vec3(0, 0, 2));
-    // scene->pushObject(cube2);
+    auto cube = new WoodenBox();
+    cube->Teleport(glm::vec3(0, -0.5, 4 + 2));
+    // scene->pushObject(cube);
+
+    auto sphere = new BrickSphere();
+    sphere->Teleport(glm::vec3(-2, -0.5, 3 + 1));
+    sphere->rootComponent->SetScale(glm::vec3(0.5));
+    scene->pushObject(sphere);
 
     auto female = new Female();
-    // cube2->rootComponent->SetPosition(glm::vec3(0, 0, 2));
-    // cube2->rootComponent->Rotate(glm::vec3(0, 0, 45));
-    female->rootComponent->SetPosition(glm::vec3(2, 0, 1));
+    female->rootComponent->SetRotation(glm::vec3(0, 180 - 45, 0));
+    female->rootComponent->SetPosition(glm::vec3(0, -1, 4.2));
     female->rootComponent->SetScale(glm::vec3(0.01));
-    female->rootComponent->SetScale(glm::vec3(1));
-    scene->pushObject(female);
+    // scene->pushObject(female);
 
     scene->skybox = new Skybox();
 

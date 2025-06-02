@@ -12,7 +12,7 @@ public:
     void UpdateInverseTransformTree();
     void UpdateMatrix();
     void UpdateMatrixTree();
-    void Spawn(Transform &startTransform);
+    void Spawn(const Transform &startTransform);
 
     virtual void Render() const = 0;
     void RenderTree() const;
@@ -50,8 +50,7 @@ public:
     Component *parent = nullptr;
     Transformable *globalTransform = nullptr;
     Transformable *localTransform = nullptr;
-    glm::mat4x4 inverseTransform;
-    bool isMoved = true;
+    Transform inverseTransform;
 };
 
 
