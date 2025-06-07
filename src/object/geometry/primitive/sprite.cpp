@@ -1,5 +1,5 @@
 #include <managers/render_manager.hpp>
-#include <object/primitive/sprite.hpp>
+#include <object/geometry/primitive/sprite.hpp>
 
 #include <stb_image.h>
 #include <stb_image_resize.h>

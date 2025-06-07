@@ -1,8 +1,8 @@
 #pragma once
 
 #include "../../actor.hpp"
-#include <object/primitive/sphere.hpp>
-#include <object/primitive/cube.hpp>
+#include <object/geometry/primitive/sphere.hpp>
+#include <object/geometry/primitive/cube.hpp>
 #include <object/component/template/shape.hpp>
 
 class BrickSphere : public Actor

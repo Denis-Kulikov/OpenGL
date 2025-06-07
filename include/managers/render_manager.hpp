@@ -1,8 +1,8 @@
 #pragma once
 #include <render/render.hpp>
-#include <object/primitive/sprite.hpp>
-#include <object/primitive/cube.hpp>
-#include <object/primitive/sphere.hpp>
+#include <object/geometry/primitive/sprite.hpp>
+#include <object/geometry/primitive/cube.hpp>
+#include <object/geometry/primitive/sphere.hpp>
 
 class RenderManager  
 {

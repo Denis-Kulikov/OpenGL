@@ -4,7 +4,6 @@
 #include <managers/window_manager.hpp> 
 
 #include <object/scene.hpp>
-#include <object/primitive/cube.hpp>
 #include <entities/templates/decor/grass.hpp>
 #include <entities/templates/decor/brick_sphere.hpp>
 #include <entities/templates/decor/wooden_box.hpp>
@@ -12,21 +11,17 @@
 #include <entities/templates/mobs/female.hpp>
 #include <entities/templates/playable/Ghost.hpp>
 
-#include <stb_image.h>
-#include <stb_image_write.h>
-
 
 void draw(Scene *scene) {
     TimeManager::Update();
     RenderManager::UpdateCamera();
     RenderManager::render.UpdatePV_Perspective();
-    // RenderManager::render.drawSkybox(*scene->skybox);
+    RenderManager::render.drawSkybox(*scene->skybox);
 
     GlobalState::GetPlayer()->MoveForward();
 
     for (auto &it : scene->actors)
         it->Render();
-
 
     WindowManager::SwapBuffer();
 }
@@ -49,11 +44,11 @@ Scene *createScene()
     grass->Teleport(glm::vec3(-1, -1, 5));
     grass->rootComponent->SetScale(glm::vec3(3));
     grass->rootComponent->SetRotation(glm::vec3(90, 0, 0));
-    // scene->pushObject(grass);
+    scene->pushObject(grass);
 
     auto cube = new WoodenBox();
     cube->Teleport(glm::vec3(0, -0.5, 4 + 2));
-    // scene->pushObject(cube);
+    scene->pushObject(cube);
 
     auto sphere = new BrickSphere();
     sphere->Teleport(glm::vec3(-2, -0.5, 3 + 1));
@@ -64,7 +59,7 @@ Scene *createScene()
     female->rootComponent->SetRotation(glm::vec3(0, 180 - 45, 0));
     female->rootComponent->SetPosition(glm::vec3(0, -1, 4.2));
     female->rootComponent->SetScale(glm::vec3(0.01));
-    // scene->pushObject(female);
+    scene->pushObject(female);
 
     scene->skybox = new Skybox();
 

@@ -12,7 +12,6 @@ if(WIN32)
         glfw
         glew32
         opengl32
-	assimp-vc143-mtd
 	lib-decor
 	lib-mobs
         lib-playable

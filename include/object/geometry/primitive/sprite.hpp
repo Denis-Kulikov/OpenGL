@@ -1,5 +1,5 @@
 #pragma once
-#include "../geometry/primitive.hpp"
+#include "../primitive.hpp"
 
 class Sprite : public GeometryPrimitive
 {

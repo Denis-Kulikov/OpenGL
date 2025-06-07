@@ -1,5 +1,5 @@
 #pragma once
-#include "../geometry/primitive.hpp"
+#include "../primitive.hpp"
 
 
 template<std::size_t N>

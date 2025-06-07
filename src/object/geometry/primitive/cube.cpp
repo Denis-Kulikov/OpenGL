@@ -1,5 +1,5 @@
 #include <managers/render_manager.hpp>
-#include <object/primitive/cube.hpp>
+#include <object/geometry/primitive/cube.hpp>
 
 
 Cube::Cube() {
