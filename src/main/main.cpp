@@ -56,7 +56,8 @@ Scene *createScene()
     scene->pushObject(sphere);
 
     auto female = new Female();
-    female->rootComponent->SetRotation(glm::vec3(0, 180 - 45, 0));
+    // female->rootComponent->SetRotation(glm::vec3(0, 180 - 45, 0));
+    female->rootComponent->SetRotation(glm::vec3(-90, 0, 0));
     female->rootComponent->SetPosition(glm::vec3(0, -1, 4.2));
     female->rootComponent->SetScale(glm::vec3(0.01));
     scene->pushObject(female);

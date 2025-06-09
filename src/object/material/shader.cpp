@@ -43,7 +43,7 @@ void Shader::Link(const std::string &FS, const std::string &VS) {
         GLint infoLogLength;
         GLchar* infoLog;
         glGetProgramInfoLog(shaderProgram, 2000, NULL, log);
-        std::cout << "Shader " << " compilation Log:\n" << log << std::endl;
+        std::cout << "Shader (" << FS << ", " << VS << ") compilation Log:\n" << log << std::endl;
     
         glGetShaderiv(fragmentShader, GL_INFO_LOG_LENGTH, &infoLogLength);
         infoLog = new GLchar[infoLogLength + 1];

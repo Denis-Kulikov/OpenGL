@@ -6,13 +6,10 @@ GeometrySkeletalMesh::GeometrySkeletalMesh(const std::string& Filename)
 {
     buffers.resize(NUM_skeletal_VBs, 0);
     InitBuffers();
-
-    if (LoadMesh(Filename)) {
-
-    }
+    LoadMesh(Filename);
+    SetType(SKELETAL_MESH);
 
     glBindVertexArray(0);	
-    SetType(MESH);
 }
 
 bool GeometrySkeletalMesh::InitFromScene(const aiScene* m_pScene, const std::string& Filename) {
@@ -54,6 +51,12 @@ bool GeometrySkeletalMesh::InitFromScene(const aiScene* m_pScene, const std::str
         return false;
     }
 
+    skeleton.BuildBoneTree(m_pScene->mRootNode);
+
+    if (!LoadAnimations(m_pScene)) {
+        return false;
+    }
+
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers[EBO]);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(Indices[0]) * Indices.size(), &Indices[0], GL_STATIC_DRAW);
 
@@ -83,21 +86,23 @@ bool GeometrySkeletalMesh::InitFromScene(const aiScene* m_pScene, const std::str
 }
 
 void GeometrySkeletalMesh::LoadBones(unsigned int MeshIndex, const aiMesh* pMesh, std::vector<VertexBoneData>& Bones) {
-    for (unsigned int i = 0; i < pMesh->mNumBones; i++) {
-        unsigned int BoneIndex = 0;
-        std::string BoneName(pMesh->mBones[i]->mName.data);
+    auto NumBones = pMesh->mNumBones;
+    skeleton.BoneMap.reserve(pMesh->mNumBones);
+    skeleton.BoneInfo.resize(pMesh->mNumBones, glm::mat4(1.0f));
 
-        if (m_BoneMapping.find(BoneName) == m_BoneMapping.end()) {
-            BoneIndex = m_NumBones;
-            m_NumBones++;
-            m_BoneInfo.emplace_back(BoneInfo());
-        } else {
-            BoneIndex = m_BoneMapping[BoneName];
+    for (unsigned int i = 0; i < NumBones; i++) {
+        std::string BoneName(pMesh->mBones[i]->mName.data);
+        std::string UniqueName = BoneName;
+        int Index;
+
+        int suffix = 1;
+        while (skeleton.BoneMap.find(UniqueName) != skeleton.BoneMap.end()) {
+            UniqueName = BoneName + "_" + std::to_string(suffix++);
         }
 
-        m_BoneMapping[BoneName] = BoneIndex;
+        skeleton.BoneMap[UniqueName] = i;
         auto m = pMesh->mBones[i]->mOffsetMatrix;
-        m_BoneInfo[BoneIndex].BoneOffset = glm::mat4(
+        skeleton.BoneInfo[i] = glm::mat4(
             m.a1, m.b1, m.c1, m.d1,
             m.a2, m.b2, m.c2, m.d2,
             m.a3, m.b3, m.c3, m.d3,
@@ -107,170 +112,28 @@ void GeometrySkeletalMesh::LoadBones(unsigned int MeshIndex, const aiMesh* pMesh
         for (unsigned int j = 0; j < pMesh->mBones[i]->mNumWeights; j++) {
             unsigned int VertexID = m_Entries[MeshIndex].BaseVertex + pMesh->mBones[i]->mWeights[j].mVertexId;
             float Weight = pMesh->mBones[i]->mWeights[j].mWeight;
-            Bones[VertexID].AddBoneData(BoneIndex, Weight);
+            Bones[VertexID].AddBoneData(i, Weight);
         }
     }
 }
 
-unsigned int GeometrySkeletalMesh::FindPosition(float AnimationTime, const aiNodeAnim* pNodeAnim)
-{    
-    for (unsigned int i = 0 ; i < pNodeAnim->mNumPositionKeys - 1 ; i++) {
-        if (AnimationTime < (float)pNodeAnim->mPositionKeys[i + 1].mTime) {
-            return i;
+bool GeometrySkeletalMesh::LoadAnimations(const aiScene* scene) {
+    if (!scene || !scene->HasAnimations()) {
+        return false;
+    }
+
+    skeleton.AnimationMap.clear();
+
+    for (unsigned int i = 0; i < scene->mNumAnimations; ++i) {
+        const aiAnimation* anim = scene->mAnimations[i];
+        std::string animName = anim->mName.C_Str();
+        if (animName.empty()) {
+            animName = "Animation_" + std::to_string(i);
         }
-    }
-    
-    return 0;
-}
+        std::cout << "GeometrySkeletalMesh::LoadAnimations:" << animName << std::endl; 
 
-unsigned int GeometrySkeletalMesh::FindRotation(float AnimationTime, const aiNodeAnim* pNodeAnim)
-{
-    for (unsigned int i = 0 ; i < pNodeAnim->mNumRotationKeys - 1 ; i++) {
-        if (AnimationTime < (float)pNodeAnim->mRotationKeys[i + 1].mTime) {
-            return i;
-        }
+        skeleton.AnimationMap.emplace(std::move(animName), SkeletalAnimation(anim, skeleton.BoneMap));
     }
 
-    return 0;
-}
-
-unsigned int GeometrySkeletalMesh::FindScaling(float AnimationTime, const aiNodeAnim* pNodeAnim)
-{
-    for (unsigned int i = 0 ; i < pNodeAnim->mNumScalingKeys - 1 ; i++) {
-        if (AnimationTime < (float)pNodeAnim->mScalingKeys[i + 1].mTime) {
-            return i;
-        }
-    }
-
-    return 0;
-}
-
-
-void GeometrySkeletalMesh::CalcInterpolatedPosition(aiVector3D& Out, float AnimationTime, const aiNodeAnim* pNodeAnim)
-{
-    if (pNodeAnim->mNumPositionKeys == 1) {
-        Out = pNodeAnim->mPositionKeys[0].mValue;
-        return;
-    }
-            
-    unsigned int PositionIndex = FindPosition(AnimationTime, pNodeAnim);
-    unsigned int NextPositionIndex = (PositionIndex + 1);
-    assert(NextPositionIndex < pNodeAnim->mNumPositionKeys);
-    float DeltaTime = (float)(pNodeAnim->mPositionKeys[NextPositionIndex].mTime - pNodeAnim->mPositionKeys[PositionIndex].mTime);
-    float Factor = (AnimationTime - (float)pNodeAnim->mPositionKeys[PositionIndex].mTime) / DeltaTime;
-    assert(Factor >= 0.0f && Factor <= 1.0f);
-    const aiVector3D& Start = pNodeAnim->mPositionKeys[PositionIndex].mValue;
-    const aiVector3D& End = pNodeAnim->mPositionKeys[NextPositionIndex].mValue;
-    aiVector3D Delta = End - Start;
-    Out = Start + Factor * Delta;
-}
-
-void GeometrySkeletalMesh::CalcInterpolatedRotation(aiQuaternion& Out, float AnimationTime, const aiNodeAnim* pNodeAnim)
-{
-	// we need at least two values to interpolate...
-    if (pNodeAnim->mNumRotationKeys == 1) {
-        Out = pNodeAnim->mRotationKeys[0].mValue;
-        return;
-    }
-    
-    unsigned int RotationIndex = FindRotation(AnimationTime, pNodeAnim);
-    unsigned int NextRotationIndex = (RotationIndex + 1);
-    assert(NextRotationIndex < pNodeAnim->mNumRotationKeys);
-    float DeltaTime = (float)(pNodeAnim->mRotationKeys[NextRotationIndex].mTime - pNodeAnim->mRotationKeys[RotationIndex].mTime);
-    float Factor = (AnimationTime - (float)pNodeAnim->mRotationKeys[RotationIndex].mTime) / DeltaTime;
-    assert(Factor >= 0.0f && Factor <= 1.0f);
-    const aiQuaternion& StartRotationQ = pNodeAnim->mRotationKeys[RotationIndex].mValue;
-    const aiQuaternion& EndRotationQ   = pNodeAnim->mRotationKeys[NextRotationIndex].mValue;    
-    aiQuaternion::Interpolate(Out, StartRotationQ, EndRotationQ, Factor);
-    Out = Out.Normalize();
-}
-
-void GeometrySkeletalMesh::CalcInterpolatedScaling(aiVector3D& Out, float AnimationTime, const aiNodeAnim* pNodeAnim)
-{
-    if (pNodeAnim->mNumScalingKeys == 1) {
-        Out = pNodeAnim->mScalingKeys[0].mValue;
-        return;
-    }
-
-    unsigned int ScalingIndex = FindScaling(AnimationTime, pNodeAnim);
-    unsigned int NextScalingIndex = (ScalingIndex + 1);
-    assert(NextScalingIndex < pNodeAnim->mNumScalingKeys);
-    float DeltaTime = (float)(pNodeAnim->mScalingKeys[NextScalingIndex].mTime - pNodeAnim->mScalingKeys[ScalingIndex].mTime);
-    float Factor = (AnimationTime - (float)pNodeAnim->mScalingKeys[ScalingIndex].mTime) / DeltaTime;
-    assert(Factor >= 0.0f && Factor <= 1.0f);
-    const aiVector3D& Start = pNodeAnim->mScalingKeys[ScalingIndex].mValue;
-    const aiVector3D& End   = pNodeAnim->mScalingKeys[NextScalingIndex].mValue;
-    aiVector3D Delta = End - Start;
-    Out = Start + Factor * Delta;
-}
-
-
-const aiNodeAnim* GeometrySkeletalMesh::FindNodeAnim(const aiAnimation* pAnimation, const std::string NodeName)
-{
-    for (unsigned int i = 0 ; i < pAnimation->mNumChannels ; i++) {
-        const aiNodeAnim* pNodeAnim = pAnimation->mChannels[i];
-        
-        if (std::string(pNodeAnim->mNodeName.data) == NodeName) {
-            return pNodeAnim;
-        }
-    }
-    
-    return NULL;
-}
-
-void GeometrySkeletalMesh::ReadNodeHeirarchy(float AnimationTime, const aiNode* pNode, const aiMatrix4x4& ParentTransform)
-{
-    std::string NodeName(pNode->mName.data);
-
-    const aiAnimation* pAnimation = m_pScene->mAnimations[0];
-
-    aiMatrix4x4 NodeTransformation = pNode->mTransformation;
-
-    const aiNodeAnim* pNodeAnim = FindNodeAnim(pAnimation, NodeName);
-
-    if (pNodeAnim) {
-        aiVector3D Scaling;
-        CalcInterpolatedScaling(Scaling, AnimationTime, pNodeAnim);
-        aiMatrix4x4 ScalingM;
-        aiMatrix4x4::Scaling(Scaling, ScalingM);
-
-        aiQuaternion RotationQ;
-        CalcInterpolatedRotation(RotationQ, AnimationTime, pNodeAnim);
-        aiMatrix4x4 RotationM = aiMatrix4x4(RotationQ.GetMatrix());
-
-        aiVector3D Translation;
-        CalcInterpolatedPosition(Translation, AnimationTime, pNodeAnim);
-        aiMatrix4x4 TranslationM;
-        aiMatrix4x4::Translation(Translation, TranslationM);
-
-        NodeTransformation = TranslationM * RotationM * ScalingM;
-    }
-
-    aiMatrix4x4 GlobalTransformation = ParentTransform * NodeTransformation;
-
-    if (m_BoneMapping.find(NodeName) != m_BoneMapping.end()) {
-        unsigned int BoneIndex = m_BoneMapping[NodeName];
-        m_BoneInfo[BoneIndex].FinalTransformation = GlobalTransformation * m_BoneInfo[BoneIndex].BoneOffset;
-    }
-
-    for (unsigned int i = 0; i < pNode->mNumChildren; i++) {
-        ReadNodeHeirarchy(AnimationTime, pNode->mChildren[i], GlobalTransformation);
-    }
-}
-
-void GeometrySkeletalMesh::BoneTransform(float TimeInSeconds, std::vector<aiMatrix4x4>& Transforms)
-{
-    aiMatrix4x4 Identity;
-
-    float TicksPerSecond = (float)(m_pScene->mAnimations[0]->mTicksPerSecond != 0 ? m_pScene->mAnimations[0]->mTicksPerSecond : 25.0f);
-    float TimeInTicks = TimeInSeconds * TicksPerSecond;
-    float AnimationTime = fmod(TimeInTicks, (float)m_pScene->mAnimations[0]->mDuration);
-
-    ReadNodeHeirarchy(AnimationTime, m_pScene->mRootNode, Identity);
-
-    Transforms.resize(m_NumBones);
-
-    for (unsigned int i = 0; i < m_NumBones; i++) {
-        Transforms[i] = m_BoneInfo[i].FinalTransformation;
-    }
+    return true;
 }

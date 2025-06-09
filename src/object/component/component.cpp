@@ -94,8 +94,6 @@ glm::vec3 Component::GetGlobalScale() const {
 
 void Component::SetPosition(const glm::vec3& position) {
     if (parent) {
-        // localTransform->SetPosition(position);
-
         glm::vec4 worldPos = glm::vec4(position, 1.0f);
         glm::vec4 localPos = parent->inverseTransform.GetMatrix() * worldPos;
         localTransform->SetPosition(glm::vec3(localPos));
@@ -135,26 +133,12 @@ void Component::RotateAround(const glm::vec3& axis, float angle) {
     Rotate(deltaRotation);
 }
 
-#include <iomanip>
-
-void PrintMatrix(const glm::mat4& matrix) {
-    std::cout << std::fixed << std::setprecision(3);
-    for (int row = 0; row < 4; ++row) {
-        std::cout << "| ";
-        for (int col = 0; col < 4; ++col) {
-            std::cout << std::setw(8) << matrix[col][row] << " ";
-        }
-        std::cout << "|\n";
-    }
-}
 void Component::AddChild(Component* child) {
     children.push_back(child);
     child->parent = this;
 
     child->localTransform->UpdateMatrix();
     UpdateInverseTransform();
-
-    PrintMatrix(localTransform->GetMatrix());
 
     *child->localTransform = inverseTransform.GetMatrix() * child->localTransform->GetMatrix();
     child->UpdateInverseTransform();

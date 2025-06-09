@@ -3,8 +3,9 @@ add_subdirectory(primitive)
 set(target lib-geometry)
 
 add_library(${target} STATIC
-	mesh.cpp
 	primitive.cpp
+	mesh.cpp
+	skeletal_mesh.cpp
 )
 
 target_link_libraries(${target}

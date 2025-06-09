@@ -10,7 +10,8 @@ public:
 
     enum Type {
         PRIMITIVE,
-        MESH
+        MESH,
+        SKELETAL_MESH
     };
 
 protected:

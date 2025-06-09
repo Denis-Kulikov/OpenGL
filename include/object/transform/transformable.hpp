@@ -4,6 +4,8 @@
 
 class Transformable {
 public:
+    Transformable(const glm::mat4x4& mat) { matrix = mat; }
+    Transformable() {}
     const glm::mat4 &GetMatrix() const { return matrix; };
     virtual void UpdateMatrix() = 0;
     virtual void UpdateTransform() = 0;

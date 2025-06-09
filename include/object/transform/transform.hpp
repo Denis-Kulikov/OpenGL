@@ -40,7 +40,10 @@ public:
     glm::vec3 GetRightVector() const override;
 
 private:
-    glm::vec3 Position;
+    void moved() {dirty = true;}
+
     glm::quat Rotation;
+    glm::vec3 Position;
     glm::vec3 Scale;
+    bool dirty = true;
 };

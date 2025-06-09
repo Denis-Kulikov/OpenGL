@@ -45,29 +45,12 @@ public:
     void AddChild(Component* child);
 
     Material* material = nullptr;
-
     std::vector<Component*> children;
     Component *parent = nullptr;
     Transformable *globalTransform = nullptr;
     Transformable *localTransform = nullptr;
     Transform inverseTransform;
 };
-
-
-
-// template <typename T>
-// T* CreateComponent(Component *parent, Transform *transform) {
-//     static_assert(std::is_base_of<Component, T>::value, "T must derive from Component");
-//     T* component = new T(parent, transform);
-//     return component;
-// }
-
-// template <typename T>
-// T* CreateComponent(Component *parent, RigidTransform *transform) {
-//     static_assert(std::is_base_of<Component, T>::value, "T must derive from Component");
-//     T* component = new T(parent, transform);
-//     return component;
-// }
 
 
 template <typename C, typename T>

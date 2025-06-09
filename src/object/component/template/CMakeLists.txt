@@ -2,9 +2,9 @@ set(target lib-component-template)
 
 add_library(${target} STATIC
 	camera.cpp
-	mesh.cpp
 	shape.cpp
-	static_mehs.cpp
+	mesh.cpp
+	skeletal_mesh.cpp
 )
 
 target_link_libraries(${target}
