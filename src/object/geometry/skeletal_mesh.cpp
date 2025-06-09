@@ -88,7 +88,8 @@ bool GeometrySkeletalMesh::InitFromScene(const aiScene* m_pScene, const std::str
 void GeometrySkeletalMesh::LoadBones(unsigned int MeshIndex, const aiMesh* pMesh, std::vector<VertexBoneData>& Bones) {
     auto NumBones = pMesh->mNumBones;
     skeleton.BoneMap.reserve(pMesh->mNumBones);
-    skeleton.BoneInfo.resize(pMesh->mNumBones, glm::mat4(1.0f));
+    skeleton.BoneLocal.resize(pMesh->mNumBones, glm::mat4(1.0f));
+    skeleton.BoneInvers.resize(pMesh->mNumBones, glm::mat4(1.0f));
 
     for (unsigned int i = 0; i < NumBones; i++) {
         std::string BoneName(pMesh->mBones[i]->mName.data);
@@ -102,7 +103,7 @@ void GeometrySkeletalMesh::LoadBones(unsigned int MeshIndex, const aiMesh* pMesh
 
         skeleton.BoneMap[UniqueName] = i;
         auto m = pMesh->mBones[i]->mOffsetMatrix;
-        skeleton.BoneInfo[i] = glm::mat4(
+        skeleton.BoneLocal[i] = glm::mat4(
             m.a1, m.b1, m.c1, m.d1,
             m.a2, m.b2, m.c2, m.d2,
             m.a3, m.b3, m.c3, m.d3,
@@ -115,6 +116,10 @@ void GeometrySkeletalMesh::LoadBones(unsigned int MeshIndex, const aiMesh* pMesh
             Bones[VertexID].AddBoneData(i, Weight);
         }
     }
+
+    for (auto& it : skeleton.BoneMap) {
+        std::cout << it.second << "|" << it.first << std::endl;
+    }    
 }
 
 bool GeometrySkeletalMesh::LoadAnimations(const aiScene* scene) {

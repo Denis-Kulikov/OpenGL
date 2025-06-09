@@ -8,9 +8,9 @@ public:
     // Component(RigidTransform *transform);
     ~Component();
 
-    void UpdateInverseTransform();
-    void UpdateInverseTransformTree();
-    void UpdateMatrix();
+    virtual void UpdateInverse();
+    void UpdateInverseTree();
+    virtual void UpdateMatrix();
     void UpdateMatrixTree();
     void Spawn(const Transform &startTransform);
 

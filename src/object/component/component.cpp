@@ -16,19 +16,19 @@ Component::~Component() {
     delete localTransform;
 }
 
-void Component::UpdateInverseTransform() {
-    localTransform->UpdateMatrix();
-    inverseTransform = glm::inverse(localTransform->GetMatrix()); 
+void Component::UpdateInverse() { // virtual
     if (parent) {
-        inverseTransform = inverseTransform.GetMatrix() * parent->inverseTransform.GetMatrix();
-    }
+        parent->localTransform->UpdateMatrix();
+        inverseTransform = glm::inverse(parent->localTransform->GetMatrix()) * parent->inverseTransform.GetMatrix();
+    } else
+        inverseTransform = glm::mat4x4(1.0f);
 }
 
-void Component::UpdateInverseTransformTree()
+void Component::UpdateInverseTree()
 {
-    UpdateInverseTransform();
+    UpdateInverse();
     for (Component* child : children) {
-        child->UpdateInverseTransformTree();
+        child->UpdateInverseTree();
     }   
 }
 
@@ -39,7 +39,7 @@ void Component::UpdateMatrixTree() {
     }
 }
 
-void Component::UpdateMatrix() {
+void Component::UpdateMatrix() { // virtual
     localTransform->UpdateMatrix();
     *globalTransform = parent ? parent->GetMatrix() * localTransform->GetMatrix() : localTransform->GetMatrix();
 }
@@ -95,7 +95,7 @@ glm::vec3 Component::GetGlobalScale() const {
 void Component::SetPosition(const glm::vec3& position) {
     if (parent) {
         glm::vec4 worldPos = glm::vec4(position, 1.0f);
-        glm::vec4 localPos = parent->inverseTransform.GetMatrix() * worldPos;
+        glm::vec4 localPos = inverseTransform.GetMatrix() * worldPos;
         localTransform->SetPosition(glm::vec3(localPos));
     } else {
         localTransform->SetPosition(position);
@@ -110,7 +110,7 @@ void Component::SetRotation(const glm::quat& rotation) {
 }
 void Component::SetScale(const glm::vec3& scale) {
     if (parent) {
-        glm::vec3 parentScale = parent->inverseTransform.GetScale();
+        glm::vec3 parentScale = inverseTransform.GetScale();
         localTransform->SetScale(scale * parentScale);
     } else {
         localTransform->SetScale(scale);
@@ -137,9 +137,8 @@ void Component::AddChild(Component* child) {
     children.push_back(child);
     child->parent = this;
 
+    UpdateInverse();
+    child->UpdateInverse();
     child->localTransform->UpdateMatrix();
-    UpdateInverseTransform();
-
-    *child->localTransform = inverseTransform.GetMatrix() * child->localTransform->GetMatrix();
-    child->UpdateInverseTransform();
+    *child->localTransform = child->inverseTransform.GetMatrix() * child->localTransform->GetMatrix();
 }

@@ -9,8 +9,10 @@ Female::Female()
     std::cout << name << std::endl;
     Transform *transform = new Transform();
     ComponentSkeletalMesh *shape = CreateComponent<ComponentSkeletalMesh>(transform);
+    // shape->SetRotation(glm::vec3(-90, 0, 0));
     shape->SetSkeletalMesh(mesh);
     shape->animator->SetAnimation("Take 001");
+
     rootComponent = shape;
     rootComponent->material = Material::Find("female");
 }

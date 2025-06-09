@@ -29,9 +29,11 @@ public:
         startTime = TimeManager::GetCurrentTime();
     }
 
+    bool HasAnimation() const { return animation != nullptr; }
+
     void Update(std::vector<glm::mat4x4>& transforms) const {
-        transforms.resize(skeleton.BoneInfo.size());
-        if (animation == nullptr) {
+        transforms.resize(skeleton.BoneLocal.size());
+        if (!HasAnimation()) {
             ApplyBasePose(skeleton.BoneTree, component.GetMatrix(), transforms);
             return;
         }
@@ -48,7 +50,7 @@ public:
 private:
     void ApplyBasePose(const BoneNode& node, const glm::mat4& parentTransform, std::vector<glm::mat4x4>& transforms) const {
         if (node.Index >= 0) {
-            glm::mat4 localTransform = skeleton.BoneInfo[node.Index];
+            glm::mat4 localTransform = skeleton.BoneLocal[node.Index];
             glm::mat4 globalTransform = parentTransform * localTransform;
             transforms[node.Index] = globalTransform;
 
@@ -83,7 +85,7 @@ private:
             }
 
             glm::mat4 globalTransform = parentTransform * localTransform;
-            transforms[node.Index] = globalTransform * skeleton.BoneInfo[node.Index];
+            transforms[node.Index] = globalTransform * skeleton.BoneLocal[node.Index];
 
             for (const auto& child : node.Children) {
                 ReadNodeHierarchy(child, globalTransform, transforms, AnimationTime);

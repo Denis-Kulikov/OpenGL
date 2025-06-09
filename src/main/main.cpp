@@ -11,6 +11,8 @@
 #include <entities/templates/mobs/female.hpp>
 #include <entities/templates/playable/Ghost.hpp>
 
+#include <object/component/template/skeletal_mesh.hpp>
+
 
 void draw(Scene *scene) {
     TimeManager::Update();
@@ -55,11 +57,21 @@ Scene *createScene()
     sphere->rootComponent->SetScale(glm::vec3(0.5));
     scene->pushObject(sphere);
 
+    //
+    auto sphere_ = new BrickSphere();
+    auto sph = static_cast<ComponentShape*>(sphere_->rootComponent);
+    sphere_->rootComponent->SetScale(glm::vec3(15));
+
     auto female = new Female();
-    // female->rootComponent->SetRotation(glm::vec3(0, 180 - 45, 0));
-    female->rootComponent->SetRotation(glm::vec3(-90, 0, 0));
+    sphere_->rootComponent->SetScale(glm::vec3(100 / 5));
+    female->rootComponent->AddChild(sphere_->rootComponent);
+    // auto sm = static_cast<ComponentSkeletalMesh*>(female->rootComponent);
+    // sm->AttachToBone(sm->mesh->skeleton.BoneMap.at("_rootJoint"), sphere_->rootComponent);
+
+    // female->rootComponent->SetRotation(glm::vec3(-90, 45, 0));
     female->rootComponent->SetPosition(glm::vec3(0, -1, 4.2));
-    female->rootComponent->SetScale(glm::vec3(0.01));
+    female->SetScale(glm::vec3(0.01));
+
     scene->pushObject(female);
 
     scene->skybox = new Skybox();
