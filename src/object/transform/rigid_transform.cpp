@@ -1,33 +1,21 @@
 #include <object/transform/rigid_transform.hpp>
 
-
-RigidTransform::RigidTransform(BulletManager *btManager, btCollisionShape *colliderShape, btScalar mass)
-    : btManager(btManager), Scale(1)
+RigidTransform::RigidTransform(btCollisionShape* baseShape, btScalar mass, const glm::vec3& scale)
+    : Scale(scale)
 {
     btVector3 localInertia(0, 0, 0);
-    if (mass > 0.0f) {
-        colliderShape->calculateLocalInertia(mass, localInertia);
-    }
+    if (mass != 0.f && baseShape)
+        baseShape->calculateLocalInertia(mass, localInertia);
 
-    btTransform initialTransform;
-    initialTransform.setIdentity();
-    btMotionState *motionState = new btDefaultMotionState(initialTransform);
+    btDefaultMotionState* motionState = new btDefaultMotionState();
 
-    btRigidBody::btRigidBodyConstructionInfo rigidBodyCI(
-        mass, motionState, colliderShape, localInertia);
-    rigidBody = new btRigidBody(rigidBodyCI);
-
-    btManager->AddRigidBody(rigidBody);
-}
-
-RigidTransform::RigidTransform(BulletManager *btManager, btRigidBody* rigidBody)
-    : btManager(btManager), rigidBody(rigidBody), Scale(1)
-{
-    btManager->AddRigidBody(rigidBody);
+    btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, motionState, baseShape, localInertia);
+    rigidBody = new btRigidBody(rbInfo);
+    BulletManager::AddRigidBody(rigidBody);
 }
 
 RigidTransform::RigidTransform(const RigidTransform &other)
-    : btManager(other.btManager), Scale(other.Scale) {
+    : Scale(other.Scale) {
     if (other.rigidBody) {
         btCollisionShape *shape = other.rigidBody->getCollisionShape();
         btScalar mass = 1.0f / other.rigidBody->getInvMass();
@@ -45,20 +33,19 @@ RigidTransform::RigidTransform(const RigidTransform &other)
             mass, motionState, shape, localInertia);
         rigidBody = new btRigidBody(rigidBodyCI);
 
-        btManager->AddRigidBody(rigidBody);
+        BulletManager::AddRigidBody(rigidBody);
     }
 }
 
 RigidTransform &RigidTransform::operator=(const RigidTransform &other) {
     if (this == &other) return *this;
 
-    if (btManager && rigidBody) {
-        btManager->RemoveRigidBody(rigidBody);
+    if (rigidBody) {
+        BulletManager::RemoveRigidBody(rigidBody);
         delete rigidBody->getMotionState();
         delete rigidBody;
     }
 
-    btManager = other.btManager;
     Scale = other.Scale;
 
     if (other.rigidBody) {
@@ -78,7 +65,7 @@ RigidTransform &RigidTransform::operator=(const RigidTransform &other) {
             mass, motionState, shape, localInertia);
         rigidBody = new btRigidBody(rigidBodyCI);
 
-        btManager->AddRigidBody(rigidBody);
+        BulletManager::AddRigidBody(rigidBody);
     }
 
     return *this;
@@ -86,11 +73,9 @@ RigidTransform &RigidTransform::operator=(const RigidTransform &other) {
 
 RigidTransform::~RigidTransform()
 {
-    if (btManager != nullptr) {
-        btManager->RemoveRigidBody(rigidBody);
-        delete rigidBody->getMotionState(); 
-        delete rigidBody;
-    }
+    BulletManager::RemoveRigidBody(rigidBody);
+    delete rigidBody->getMotionState(); 
+    delete rigidBody;
 }
 
 void RigidTransform::UpdateTransform() {

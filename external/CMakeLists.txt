@@ -1,4 +1,4 @@
-#add_subdirectory(bullet)
+add_subdirectory(bullet)
 add_subdirectory(stb_image)
 
 #add_subdirectory(glew)

@@ -1,11 +1,12 @@
 #pragma once
 #include <object/transform/transform.hpp>
+#include <object/transform/rigid_transform.hpp>
 #include <object/material/material.hpp>
 
 class Component {
 public:
+    Component(RigidTransform *transform);
     Component(Transform *transform);
-    // Component(RigidTransform *transform);
     ~Component();
 
     virtual void UpdateInverse();

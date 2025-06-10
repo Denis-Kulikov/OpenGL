@@ -1,5 +1,4 @@
 add_subdirectory(component)
 add_subdirectory(geometry)
 add_subdirectory(material)
-add_subdirectory(skybox)
 add_subdirectory(transform)

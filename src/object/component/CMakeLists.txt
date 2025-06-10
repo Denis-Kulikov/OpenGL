@@ -4,8 +4,7 @@ add_subdirectory(template)
 
 add_library(${target} STATIC
 	component.cpp
-	#rigid.cpp
-	#transform.cpp
+	component_physics.cpp
 )
 
 target_link_libraries(${target}
@@ -13,5 +12,4 @@ target_link_libraries(${target}
 	lib-transform
 	lib-material
 	lib-primitive
-	#lib-mesh
 )

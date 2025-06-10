@@ -89,7 +89,6 @@ void GeometrySkeletalMesh::LoadBones(unsigned int MeshIndex, const aiMesh* pMesh
     auto NumBones = pMesh->mNumBones;
     skeleton.BoneMap.reserve(pMesh->mNumBones);
     skeleton.BoneLocal.resize(pMesh->mNumBones, glm::mat4(1.0f));
-    skeleton.BoneInvers.resize(pMesh->mNumBones, glm::mat4(1.0f));
 
     for (unsigned int i = 0; i < NumBones; i++) {
         std::string BoneName(pMesh->mBones[i]->mName.data);
@@ -116,10 +115,6 @@ void GeometrySkeletalMesh::LoadBones(unsigned int MeshIndex, const aiMesh* pMesh
             Bones[VertexID].AddBoneData(i, Weight);
         }
     }
-
-    for (auto& it : skeleton.BoneMap) {
-        std::cout << it.second << "|" << it.first << std::endl;
-    }    
 }
 
 bool GeometrySkeletalMesh::LoadAnimations(const aiScene* scene) {

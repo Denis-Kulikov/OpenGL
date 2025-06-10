@@ -5,7 +5,7 @@ add_library(${target} STATIC
 	render_manager.cpp
 	time_manager.cpp
 	window_manager.cpp
-	#bulletManager.cpp
+	bullet_manager.cpp
 )
 
 if(WIN32)
@@ -13,9 +13,9 @@ target_link_libraries(
   ${target}
   PRIVATE
 	lib-render
-	#BulletCollision_Debug
-	#BulletDynamics_Debug
-	#LinearMath_Debug
+	BulletCollision_Debug
+	BulletDynamics_Debug
+	LinearMath_Debug
 )
 else()
 target_link_libraries(${target} PRIVATE lib-object)

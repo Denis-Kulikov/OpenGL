@@ -7,7 +7,6 @@
 class WoodenBox : public Actor
 {
 public:
-    // WoodenBox(BulletManager *btManagere);
     WoodenBox();
     ~WoodenBox();
     

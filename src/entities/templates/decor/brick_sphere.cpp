@@ -1,15 +1,26 @@
 #include <entities/templates/decor/brick_sphere.hpp>
 #include <managers/render_manager.hpp> 
+#include <object/component/template/shape.hpp>
+#include <object/component/component_physics.hpp>
 
 BrickSphere::BrickSphere()
 {
     std::cout << name << std::endl;
+    btScalar radius = 1.0f;
+    btScalar mass = 1.0f;
+    glm::vec3 scale(1);
+    btCollisionShape* colliderShape = new btSphereShape(radius);
+    RigidTransform * rigidBody = new RigidTransform(colliderShape, mass, scale);
+    ComponentPhysics *body = CreateComponent<ComponentPhysics>(rigidBody);
+
     Transform *transform1 = new Transform();
     ComponentShape *shape1 = CreateComponent<ComponentShape>(transform1);
     shape1->shape = sphere;
     shape1->material = Material::Find("BrickSphere");
 
-    rootComponent = shape1;
+    body->AddChild(shape1);
+
+    rootComponent = body;
 }
 
 BrickSphere::~BrickSphere() {}
@@ -22,7 +33,6 @@ void BrickSphere::Initialize()
     // auto texture_wooden_box = Texture::Create("brick_wall", "img/white.png");
     auto texture_wooden_box = Texture::Create("brick_wall", "img/brick_wall_10_diff_1k.jpg");
     
-    cube = RenderManager::primitives.cube;
     auto shader_cube = Shader::Create("cube", "shaders/cube_fs.glsl", "shaders/cube_vs.glsl");
 
 

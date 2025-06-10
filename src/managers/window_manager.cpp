@@ -100,6 +100,10 @@ void WindowManager::KeyboardCB(GLFWwindow* window, int key, int scancode, int ac
         GlobalState::TerminateApp();
     }
 
+    if (keys[GLFW_KEY_R]) {
+        GlobalState::fScreenshot = true;
+    }  
+
     if ((keys[GLFW_KEY_LEFT_ALT] || keys[GLFW_KEY_RIGHT_ALT]) && buttons.cursor_disable) {
         buttons.cursor_disable = !buttons.cursor_disable;
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);

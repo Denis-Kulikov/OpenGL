@@ -6,8 +6,8 @@ WoodenBox::WoodenBox()
     std::cout << name << std::endl;
     Transform *transform1 = new Transform();
     ComponentShape *shape1 = CreateComponent<ComponentShape>(transform1);
-    shape1->SetPosition(glm::vec3(0.05, 0, 0.02));
-    shape1->SetRotation(glm::vec3(10.0, 20, 0));
+    // shape1->SetPosition(glm::vec3(0.05, 0, 0.02));
+    shape1->SetRotation(glm::vec3(0.0, 20, 0));
     shape1->shape = cube;
     shape1->material = Material::Find("WoodenBox");
 
@@ -15,15 +15,15 @@ WoodenBox::WoodenBox()
     ComponentShape *shape2 = CreateComponent<ComponentShape>(transform2);
     shape2->shape = cube;
     shape2->SetPosition(glm::vec3(0.2, 0.75, 0.2));
-    shape2->SetRotation(glm::vec3(0.0, 30, 0));
-    transform2->SetScale(glm::vec3(0.5));
+    // shape2->SetRotation(glm::vec3(0.0, 30, 0));
+    shape2->SetScale(glm::vec3(0.5));
     shape2->material = Material::Find("WoodenBox");
 
     Transform *transform3 = new Transform();
     ComponentShape *shape3 = CreateComponent<ComponentShape>(transform3);
     shape3->shape = cube;
     shape3->SetPosition(glm::vec3(0.2, 0.75 + 0.375, 0.2));
-    shape3->SetRotation(glm::vec3(0, -75, 0));
+    // shape3->SetRotation(glm::vec3(0, -75, 0));
     transform3->SetScale(glm::vec3(0.25));
     shape3->material = Material::Find("WoodenBox");
 

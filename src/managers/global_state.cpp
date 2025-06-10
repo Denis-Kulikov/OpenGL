@@ -1,7 +1,7 @@
 #include <managers/global_state.hpp> 
 
 void GlobalState::TerminateApp() {
-    isAppRunning = false;
+    fIsAppRunning = false;
 }
 
 void GlobalState::SetPlayer(Actor* newPlayer) {

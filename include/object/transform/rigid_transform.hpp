@@ -1,13 +1,14 @@
 #pragma once
-#include <game/bulletManager.hpp>
+#include <managers/bullet_manager.hpp>
 #include <btBulletDynamicsCommon.h>
 #include "transformable.hpp"
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/quaternion.hpp>
 
 class RigidTransform : public Transformable
 {
 public:
-    RigidTransform(BulletManager *btManager, btCollisionShape *colliderShape, btScalar mass);
-    RigidTransform(BulletManager *btManager, btRigidBody *rigidBody);
+    RigidTransform(btCollisionShape* baseShape, btScalar mass, const glm::vec3& scale);
     RigidTransform(const RigidTransform &other);
     RigidTransform &operator=(const RigidTransform &other);
     ~RigidTransform();
@@ -39,8 +40,7 @@ public:
     void ApplyImpulse(const glm::vec3& impulse);
     void ApplyTorque(const glm::vec3& torque);
 
-// protected:
     glm::vec3 Scale;
     btRigidBody *rigidBody = nullptr;
-    BulletManager *btManager = nullptr;
+    btCollisionShape* collisionShape = nullptr;
 };

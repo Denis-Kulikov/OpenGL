@@ -3,21 +3,21 @@
 
 class BulletManager {
 public:
-    BulletManager();
-    ~BulletManager();
+    static void Initialize();
+    static void Dispose();
 
-    void AddRigidBody(btRigidBody* body);
-    void RemoveRigidBody(btRigidBody* body);
+    static void AddRigidBody(btRigidBody* body);
+    static void RemoveRigidBody(btRigidBody* body);
 
-    void AddCollisionObject(btCollisionObject* collisionObject);
-    void RemoveCollisionObject(btCollisionObject* collisionObject);
+    static void AddCollisionObject(btCollisionObject* collisionObject);
+    static void RemoveCollisionObject(btCollisionObject* collisionObject);
     
-    void StepSimulation(float deltaTime);
+    static void StepSimulation(float deltaTime);
 
 private:
-    btBroadphaseInterface* broadphase = nullptr;
-    btDefaultCollisionConfiguration* collisionConfiguration = nullptr;
-    btCollisionDispatcher* dispatcher = nullptr;
-    btSequentialImpulseConstraintSolver* solver = nullptr;
-    btDiscreteDynamicsWorld* dynamicsWorld = nullptr;
+    inline static btBroadphaseInterface* broadphase = nullptr;
+    inline static btDefaultCollisionConfiguration* collisionConfiguration = nullptr;
+    inline static btCollisionDispatcher* dispatcher = nullptr;
+    inline static btSequentialImpulseConstraintSolver* solver = nullptr;
+    inline static btDiscreteDynamicsWorld* dynamicsWorld = nullptr;
 };

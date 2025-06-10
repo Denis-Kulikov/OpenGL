@@ -1,14 +1,12 @@
 #include <object/component/component.hpp>
-#include <iostream>
+
+Component::Component(RigidTransform *transform)
+    : localTransform(transform), globalTransform(transform) 
+{}
 
 Component::Component(Transform *transform)
     : localTransform(transform), globalTransform(new Transform()) 
 {}
-
-// Component::Component(RigidTransform *transform)
-//     : localTransform(transform), globalTransform(transform) {
-// }
-
 
 Component::~Component() {
     if (globalTransform != localTransform)
@@ -42,11 +40,6 @@ void Component::UpdateMatrixTree() {
 void Component::UpdateMatrix() { // virtual
     localTransform->UpdateMatrix();
     *globalTransform = parent ? parent->GetMatrix() * localTransform->GetMatrix() : localTransform->GetMatrix();
-}
-
-glm::vec3 QuatToEulerDegrees(const glm::quat& quat) {
-    glm::vec3 euler = glm::degrees(glm::eulerAngles(quat));
-    return euler;
 }
 
 void Component::Spawn(const Transform &startTransform) {

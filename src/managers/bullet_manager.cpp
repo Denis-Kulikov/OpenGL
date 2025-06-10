@@ -1,17 +1,16 @@
-#include <game/bulletManager.hpp>
+#include <managers/bullet_manager.hpp>
 
-BulletManager::BulletManager() {
-    // Инициализация всех необходимых частей Bullet
+void BulletManager::Initialize() {
     collisionConfiguration = new btDefaultCollisionConfiguration();
     dispatcher = new btCollisionDispatcher(collisionConfiguration);
     broadphase = new btDbvtBroadphase();
     solver = new btSequentialImpulseConstraintSolver();
     dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, broadphase, solver, collisionConfiguration);
 
-    dynamicsWorld->setGravity(btVector3(0, -9.81f, 0)); // Устанавливаем гравитацию
+    dynamicsWorld->setGravity(btVector3(0, -9.81f, 0));
 }
 
-BulletManager::~BulletManager() {
+void BulletManager::Dispose() {
     delete dynamicsWorld;
     delete solver;
     delete broadphase;
@@ -37,7 +36,6 @@ void BulletManager::RemoveCollisionObject(btCollisionObject* collisionObject) {
     dynamicsWorld->removeCollisionObject(collisionObject);
     delete collisionObject;
 }
-
 
 void BulletManager::StepSimulation(float deltaTime) {
     dynamicsWorld->stepSimulation(deltaTime, 10);
