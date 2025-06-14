@@ -1,12 +1,14 @@
 #pragma once
-#include "../../actor.hpp"
-#include <object/geometry/skeletal_mesh.hpp>
 
-class Female : public Actor
+#include "../../actor.hpp"
+#include <object/geometry/primitive/cube.hpp>
+#include <object/component/template/shape.hpp>
+
+class Tree : public Actor
 {
 public:
-    Female();
-    ~Female();
+    Tree();
+    ~Tree();
     
     static void Initialize();
 

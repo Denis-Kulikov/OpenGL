@@ -1,24 +1,37 @@
-#include <entities/templates/decor/grass.hpp>
+#include <entities/templates/decor/stone_floor.hpp>
 #include <managers/render_manager.hpp> 
+#include <object/component/template/component_physics.hpp>
 
-Grass::Grass()
+StoneFloor::StoneFloor()
 {
     std::cout << name << std::endl;
+
+    btScalar mass = 0.0f;
+    glm::vec3 scale(4, 4, 0.001f);
+    btCollisionShape* colliderShape = new btBoxShape(btVector3(scale.x, scale.y, scale.z));
+    RigidTransform * rigidBody = new RigidTransform(colliderShape, mass, scale);
+    ComponentPhysics *body = CreateComponent<ComponentPhysics>(rigidBody);
+    body->SetRotation({-90, 0, 0});
+
     Transform *transform = new Transform();
     ComponentShape *shape = CreateComponent<ComponentShape>(transform);
     shape->shape = RenderManager::primitives.sprite;
-    shape->material = Material::Find("grass");
-    rootComponent = shape;
+    body->AddChild(shape);
+    shape->SetScale({1, 1, 1});
+    // shape->SetScale({1, 1000, 1});
+    shape->material = Material::Find("stone_floor");
+
+    rootComponent = body;
 }
 
-Grass::~Grass() {}
+StoneFloor::~StoneFloor() {}
 
-void Grass::Initialize()
+void StoneFloor::Initialize()
 {
-    Grass::name = "Grass";
+    StoneFloor::name = "StoneFloor";
     
-    auto shader_cube = Shader::Create("sprite", "shaders/sprite_fs.glsl", "shaders/sprite_vs.glsl");
-    auto texture_skybox = Texture::Create("grass", "img/grass.png");
+    auto shader = Shader::Create("sprite", "shaders/sprite_fs.glsl", "shaders/sprite_vs.glsl");
+    auto texture = Texture::Create("stone_floor", "img/floor.jpg");
     
     auto init_sprite = new Material::InitFunction([](Material& m) {
         std::vector<std::string> str = {"gWorld", "textureSampler"};
@@ -31,13 +44,6 @@ void Grass::Initialize()
         }
         m.values["gWorld"] = {glGetUniformLocation(m.GetShader()->GetID(), "gWorld"), new glm::mat4};
         m.values["textureSampler"] = {glGetUniformLocation(m.GetShader()->GetID(), "textureSampler"), nullptr};
-
-        for (const auto& it : m.values) {
-            if (it.second.first < 0) {
-                std::cout << "init: " << it.first << " " << it.second.first << std::endl;
-            }
-            
-        }
     });
     auto apply_sprite = new Material::ApplyFunction([](const Material& m) {
         glActiveTexture(GL_TEXTURE0);
@@ -50,10 +56,10 @@ void Grass::Initialize()
 
     });
 
-    auto material_skybox = Material::Create("grass", shader_cube, init_sprite, apply_sprite);
-    material_skybox->PushTexture(texture_skybox);
+    auto material = Material::Create("stone_floor", shader, init_sprite, apply_sprite);
+    material->PushTexture(texture);
 }
 
-std::string Grass::GetName() const {
-    return Grass::name;
+std::string StoneFloor::GetName() const {
+    return StoneFloor::name;
 }

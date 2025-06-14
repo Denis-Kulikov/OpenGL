@@ -1,34 +1,38 @@
 #include <entities/templates/decor/wooden_box.hpp>
 #include <managers/render_manager.hpp> 
+#include <object/component/template/component_physics.hpp>
 
 WoodenBox::WoodenBox()
 {
     std::cout << name << std::endl;
     Transform *transform1 = new Transform();
     ComponentShape *shape1 = CreateComponent<ComponentShape>(transform1);
-    // shape1->SetPosition(glm::vec3(0.05, 0, 0.02));
-    shape1->SetRotation(glm::vec3(0.0, 20, 0));
-    shape1->shape = cube;
+    shape1->shape = RenderManager::primitives.cube;
+    shape1->SetPosition(glm::vec3(0.0, 0, 0));
+    shape1->SetRotation(glm::vec3(0.0, 45, 0));
+    shape1->SetScale(glm::vec3(0.5));
     shape1->material = Material::Find("WoodenBox");
 
     Transform *transform2 = new Transform();
     ComponentShape *shape2 = CreateComponent<ComponentShape>(transform2);
-    shape2->shape = cube;
-    shape2->SetPosition(glm::vec3(0.2, 0.75, 0.2));
-    // shape2->SetRotation(glm::vec3(0.0, 30, 0));
-    shape2->SetScale(glm::vec3(0.5));
+    shape2->shape = RenderManager::primitives.cube;
+    shape1->AddChild(shape2);
+    shape2->SetPosition(glm::vec3(1.0, .75, 0.0));
+    shape2->SetRotation(glm::vec3(0.0, 0, 0));
+    // shape2->SetScale(glm::vec3(0.5));
+    // shape2->SetScale(glm::vec3(1.0, 1, 1));
+    shape2->SetScale(glm::vec3(1));
     shape2->material = Material::Find("WoodenBox");
 
     Transform *transform3 = new Transform();
     ComponentShape *shape3 = CreateComponent<ComponentShape>(transform3);
-    shape3->shape = cube;
-    shape3->SetPosition(glm::vec3(0.2, 0.75 + 0.375, 0.2));
-    // shape3->SetRotation(glm::vec3(0, -75, 0));
-    transform3->SetScale(glm::vec3(0.25));
+    shape3->shape = RenderManager::primitives.cube;
+    shape2->AddChild(shape3);
+    shape3->SetPosition(glm::vec3(0.0, 1.75, 0.0));
+    // shape3->SetRotation(glm::vec3(0, 45, 0));
+    shape3->SetScale(glm::vec3(2.0, 1, 1.0));
     shape3->material = Material::Find("WoodenBox");
 
-    shape1->AddChild(shape2);
-    shape2->AddChild(shape3);
 
     rootComponent = shape1;
 }
@@ -38,7 +42,6 @@ WoodenBox::~WoodenBox() {}
 void WoodenBox::Initialize()
 {
     WoodenBox::name = "WoodenBox";
-    cube = RenderManager::primitives.cube;
     auto shader_cube = Shader::Create("cube", "shaders/cube_fs.glsl", "shaders/cube_vs.glsl");
     auto texture_wooden_box = Texture::Create("wooden_box", "img/box.jpg");
     
@@ -55,7 +58,6 @@ void WoodenBox::Initialize()
         m.values["textureSampler"] = {glGetUniformLocation(m.GetShader()->GetID(), "textureSampler"), nullptr};
     });
     auto apply_sprite = new Material::ApplyFunction([](const Material& m) {
-        glUseProgram(m.GetShader()->GetID());
         glActiveTexture(GL_TEXTURE0);
 
         GLint texLoc = m.values.at("textureSampler").first;
@@ -63,7 +65,6 @@ void WoodenBox::Initialize()
         GLint matLoc = m.values.at("gWorld").first;
         glm::mat4* matPtr = static_cast<glm::mat4*>(m.values.at("gWorld").second);
         glUniformMatrix4fv(matLoc, 1, GL_FALSE, glm::value_ptr(*matPtr));
-
     });
 
     auto material_wooden_box = Material::Create("WoodenBox", shader_cube, init_sprite, apply_sprite);

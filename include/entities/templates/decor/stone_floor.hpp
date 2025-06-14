@@ -1,14 +1,14 @@
 #pragma once
 
 #include "../../actor.hpp"
-#include <object/geometry/primitive/cube.hpp>
+#include <object/geometry/primitive/sprite.hpp>
 #include <object/component/template/shape.hpp>
 
-class Skybox : public Actor
+class StoneFloor : public Actor
 {
 public:
-    Skybox();
-    ~Skybox();
+    StoneFloor();
+    ~StoneFloor();
     
     static void Initialize();
 

@@ -1,5 +1,5 @@
 #pragma once
-#include "base.hpp"
+#include "geometry.hpp"
 
 class GeometryPrimitive : public Geometry {
 public:
@@ -8,6 +8,7 @@ public:
     virtual void Bind() const override;
     virtual void Draw(void* data = nullptr) const override;
 
+protected:
     GLuint VAO = 0;
     GLuint VBO = 0;
     GLuint EBO = 0;
@@ -15,4 +16,3 @@ public:
     GLint numVertices = 0;
     GLint numIndices = 0;
 };
-

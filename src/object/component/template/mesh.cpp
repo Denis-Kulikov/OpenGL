@@ -2,8 +2,8 @@
 #include <object/component/template/mesh.hpp>
 
 void ComponentMesh::Render() const {
-    material->UpdateValue("Projection", RenderManager::render.ProjTrans);
-    material->UpdateValue("View", RenderManager::render.View);
+    material->UpdateValue("Projection", RenderManager::pipeline.ProjTrans);
+    material->UpdateValue("View", RenderManager::pipeline.View);
     material->UpdateValue("Model", GetMatrix());
 
     material->Bind();

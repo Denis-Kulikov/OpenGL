@@ -1,5 +1,5 @@
 #pragma once
-#include <object/geometry/base.hpp>
+#include <object/geometry/geometry.hpp>
 #include "../component.hpp"
 
 class ComponentShape : public Component {
@@ -10,6 +10,5 @@ public:
     void Render() const override;
 
     GeometryPrimitive *shape;
+    Material* material = nullptr;
 };
-
-

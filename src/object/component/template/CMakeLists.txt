@@ -5,6 +5,7 @@ add_library(${target} STATIC
 	shape.cpp
 	mesh.cpp
 	skeletal_mesh.cpp
+	component_physics.cpp
 )
 
 target_link_libraries(${target}

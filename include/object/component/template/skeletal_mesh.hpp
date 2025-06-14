@@ -14,4 +14,5 @@ public:
 
     Animator* animator;
     GeometrySkeletalMesh *mesh;
+    Material* material = nullptr;
 };

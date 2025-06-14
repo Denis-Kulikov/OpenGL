@@ -2,21 +2,22 @@
 #include "../entities/actor.hpp"
 #include <object/component/template/camera.hpp>
 
-class Render
+class Pipeline
 {
 public:
-    Render(const Camera &_camera);
-    Render();
+    Pipeline(const Camera &_camera);
+    Pipeline();
     
     void SetCamera(const Camera &_camera);
     void drawSkybox(Actor &skybox);
 
     glm::mat4 GetModel(const Transform& transform) const;
-    glm::mat4 GetPV();
     // Perspective - true, Orthographic - false
-    void UpdatePV(bool perspective);
-    void UpdatePV_Perspective();
-    void UpdatePV_Orthographic();
+    void UpdatePV();
+    void UpdateProj(bool perspective);
+    void UpdateView();
+    void UpdatePerspective();
+    void UpdateOrthographic();
 
     ComponentCamera* camera = nullptr;
 

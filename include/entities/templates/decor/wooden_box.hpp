@@ -16,5 +16,4 @@ public:
 
 protected:
     inline static std::string name;
-    inline static Cube *cube = nullptr;
 };

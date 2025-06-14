@@ -2,7 +2,11 @@
 
 void RenderManager::Initialize(GLfloat FOV, GLfloat Width, GLfloat Height, GLfloat zNear, GLfloat zFar)
 {
-    // render.pipeline.camera.SetPerspectiveProj(FOV, Width, Height, zNear, zFar);
+    if (glewInit() != GLEW_OK) {
+        std::cerr << "Error: Failed to initialize GLEW" << std::endl;
+        exit(EXIT_FAILURE);
+    }
+
     PersProj = {FOV, Width, Height, zNear, zFar};
     glEnable(GL_DEPTH_TEST);
     glClearColor(0.12f, 0.12f, 0.12f, 0.0f);
@@ -15,13 +19,13 @@ void RenderManager::Dispose() {}
 
 void RenderManager::PushCamera(ComponentCamera* camera)
 {
-    render.camera = camera;
+    pipeline.camera = camera;
 }
 
 void RenderManager::UpdateCamera()
 {
-    if (RenderManager::render.camera != nullptr) {
-        RenderManager::render.camera->camera.UpdateTarget();
+    if (RenderManager::pipeline.camera != nullptr) {
+        RenderManager::pipeline.camera->camera.UpdateTarget();
     }
 }
 

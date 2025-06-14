@@ -6,9 +6,9 @@ Skybox::Skybox()
     std::cout << name << std::endl;
     Transform *transform = new Transform();
     ComponentShape *shape = CreateComponent<ComponentShape>(transform);
-    shape->shape = cube;
+    shape->shape = RenderManager::primitives.cube;
+    shape->material = Material::Find("skybox");
     rootComponent = shape;
-    rootComponent->material = Material::Find("skybox");
 }
 
 Skybox::~Skybox() {}
@@ -16,7 +16,6 @@ Skybox::~Skybox() {}
 void Skybox::Initialize()
 {
     Skybox::name = "skybox";
-    cube = RenderManager::primitives.cube;
     
     auto shader_cube = Shader::Create("cube", "shaders/cube_fs.glsl", "shaders/cube_vs.glsl");
     auto texture_skybox = Texture::Create("skybox", "img/skybox.png");
@@ -41,7 +40,6 @@ void Skybox::Initialize()
         }
     });
     auto apply_sprite = new Material::ApplyFunction([](const Material& m) {
-        glUseProgram(m.GetShader()->GetID());
         glActiveTexture(GL_TEXTURE0);
 
         GLint texLoc = m.values.at("textureSampler").first;

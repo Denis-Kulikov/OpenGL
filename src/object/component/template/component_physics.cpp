@@ -1,17 +1,18 @@
-#include <object/component/component_physics.hpp>
+#include <object/component/template/component_physics.hpp>
 
 
 ComponentPhysics::ComponentPhysics(RigidTransform *transform)
     : Component(transform)
 {}
 
-void ComponentPhysics::UpdateInverse() { // virtual
+void ComponentPhysics::UpdateInverse() {
     if (!fIsInit) {
         localTransform->UpdateMatrix();
         inverseTransform = glm::inverse(localTransform->GetMatrix());
+        fIsInit = true;
     }
 }
 
-void ComponentPhysics::UpdateMatrix() { // virtual
+void ComponentPhysics::UpdateMatrix() {
     localTransform->UpdateMatrix();
 }

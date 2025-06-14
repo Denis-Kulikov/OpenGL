@@ -5,6 +5,8 @@ add_library(${target} STATIC
 	wooden_box.cpp
 	skybox.cpp
 	brick_sphere.cpp
+	stone_floor.cpp
+	tree.cpp
 )
 
 target_link_libraries(

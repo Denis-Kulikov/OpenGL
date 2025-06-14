@@ -4,18 +4,21 @@
 #include <object/material/material.hpp>
 
 class Component {
-public:
+protected:
     Component(RigidTransform *transform);
+
+public:
     Component(Transform *transform);
     ~Component();
 
     virtual void UpdateInverse();
     void UpdateInverseTree();
     virtual void UpdateMatrix();
-    void UpdateMatrixTree();
+    void UpdateMatrixTree(const glm::mat4x4& parentTR = 1, const glm::mat4x4& parentS = 1);
+    // void UpdateMatrixTree();
     void Spawn(const Transform &startTransform);
 
-    virtual void Render() const = 0;
+    virtual void Render() const {};
     void RenderTree() const;
 
     glm::vec3 GetPosition() const;
@@ -45,12 +48,17 @@ public:
     std::vector<Component*>& GetChildren() { return children; }
     void AddChild(Component* child);
 
-    Material* material = nullptr;
     std::vector<Component*> children;
     Component *parent = nullptr;
+
+protected:
     Transformable *globalTransform = nullptr;
     Transformable *localTransform = nullptr;
     Transform inverseTransform;
+    Transform invScale;
+    Transform invPose;
+    Transform invTR;
+    glm::quat invRot;
 };
 
 

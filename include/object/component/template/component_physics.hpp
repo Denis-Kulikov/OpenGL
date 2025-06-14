@@ -1,5 +1,5 @@
 #pragma once
-#include "component.hpp"
+#include "../component.hpp"
 
 class ComponentPhysics : public Component {
 public:
@@ -11,8 +11,3 @@ public:
 
     bool fIsInit = 0;
 };
-
-
-// ComponentPhysics* CreateComponent(RigidTransform *transform) {
-//     return new ComponentPhysics(transform);
-// }

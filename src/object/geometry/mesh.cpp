@@ -85,7 +85,7 @@ bool GeometryMesh::InitFromScene(const aiScene* m_pScene, const std::string& Fil
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers[EBO]);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(Indices[0]) * Indices.size(), &Indices[0], GL_STATIC_DRAW);
 
-    glBindBuffer(GL_ARRAY_BUFFER, buffers[VBO]);
+    glBindBuffer(GL_ARRAY_BUFFER, buffers[POSITION_VB]);
     glBufferData(GL_ARRAY_BUFFER, sizeof(Positions[0]) * Positions.size(), &Positions[0], GL_STATIC_DRAW);
     glEnableVertexAttribArray(POSITION_LOCATION);
     glVertexAttribPointer(POSITION_LOCATION, 3, GL_FLOAT, GL_FALSE, 0, 0);    
@@ -159,4 +159,26 @@ bool GeometryMesh::InitMaterials(const aiScene* scene, const std::string& direct
     }
 
     return true;
+}
+
+GeometryMesh* GeometryMesh::Create(const std::string& name, const std::string& path) {
+    auto [it, inserted] = cache.try_emplace(name, path);
+    return &it->second;
+}
+GeometryMesh* GeometryMesh::Find(const std::string& name) {
+    auto it = cache.find(name);
+    return it != cache.end() ? &it->second : nullptr;
+}
+
+void GeometryMesh::Delete(const std::string& path) {
+    auto it = cache.find(path);
+    if (it != cache.end()) {
+        cache.erase(it); 
+    }
+}
+
+void GeometryMesh::ClearСache() {
+    for (auto it = cache.begin(); it != cache.end(); ) {
+        it = cache.erase(it);
+    }
 }

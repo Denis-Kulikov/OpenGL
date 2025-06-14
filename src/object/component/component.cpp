@@ -1,12 +1,27 @@
 #include <object/component/component.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/quaternion.hpp>
+
+std::string printVec3(const glm::vec3& v);
+glm::vec3 quatToEuler(const glm::quat& q);
+
 
 Component::Component(RigidTransform *transform)
-    : localTransform(transform), globalTransform(transform) 
-{}
+    : localTransform(transform), globalTransform(transform)
+{
+    inverseTransform = glm::mat4x4(1.0f);
+    invPose = 1;
+    invTR = 1;
+}
 
 Component::Component(Transform *transform)
     : localTransform(transform), globalTransform(new Transform()) 
-{}
+{
+    inverseTransform = 1;
+    invPose = 1;
+    invTR = 1;
+    invRot = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
+}
 
 Component::~Component() {
     if (globalTransform != localTransform)
@@ -14,10 +29,11 @@ Component::~Component() {
     delete localTransform;
 }
 
-void Component::UpdateInverse() { // virtual
+void Component::UpdateInverse() {
     if (parent) {
-        parent->localTransform->UpdateMatrix();
-        inverseTransform = glm::inverse(parent->localTransform->GetMatrix()) * parent->inverseTransform.GetMatrix();
+        invScale = glm::inverse(glm::scale(glm::mat4(1.0f), parent->GetGlobalScale()));
+        invPose = parent->invPose.GetMatrix() * invScale.GetMatrix();
+        invRot = glm::inverse(parent->GetRotation());
     } else
         inverseTransform = glm::mat4x4(1.0f);
 }
@@ -30,16 +46,36 @@ void Component::UpdateInverseTree()
     }   
 }
 
-void Component::UpdateMatrixTree() {
-    UpdateMatrix();
+// void Component::UpdateMatrixTree() {
+//     UpdateMatrix();
+//     for (Component* child : children) {
+//         child->UpdateMatrixTree();
+//     }
+// }
+
+void Component::UpdateMatrixTree(const glm::mat4x4& parentTR, const glm::mat4x4& parentS) {
+    glm::mat4 T = glm::translate(glm::mat4(1.0f), GetPosition());
+    glm::mat4 R = glm::mat4_cast(GetRotation());
+    glm::mat4 S = glm::scale(glm::mat4(1.0f), GetScale());
+    auto TR = T * R;
+    if (parent) {
+        TR = parentTR * TR;
+        S = parentS * S;
+    }
+
+    *globalTransform = TR * S;
+    // globalTransform->UpdateTransform();
+
     for (Component* child : children) {
-        child->UpdateMatrixTree();
+        child->UpdateMatrixTree(TR, S);
     }
 }
 
-void Component::UpdateMatrix() { // virtual
+void Component::UpdateMatrix() {
     localTransform->UpdateMatrix();
-    *globalTransform = parent ? parent->GetMatrix() * localTransform->GetMatrix() : localTransform->GetMatrix();
+    *globalTransform = parent ? parent->GetMatrix() * localTransform->GetMatrix(): 
+                                localTransform->GetMatrix();
+    globalTransform->UpdateTransform();
 }
 
 void Component::Spawn(const Transform &startTransform) {
@@ -87,9 +123,23 @@ glm::vec3 Component::GetGlobalScale() const {
 
 void Component::SetPosition(const glm::vec3& position) {
     if (parent) {
-        glm::vec4 worldPos = glm::vec4(position, 1.0f);
-        glm::vec4 localPos = inverseTransform.GetMatrix() * worldPos;
-        localTransform->SetPosition(glm::vec3(localPos));
+        glm::vec3 invScaleX = glm::vec3(invPose.GetMatrix()[0]);
+        glm::vec3 invScaleY = glm::vec3(invPose.GetMatrix()[1]);
+        glm::vec3 invScaleZ = glm::vec3(invPose.GetMatrix()[2]);
+
+        float invScaleXVal = glm::length(invScaleX);
+        float invScaleYVal = glm::length(invScaleY);
+        float invScaleZVal = glm::length(invScaleZ);
+
+        invPose.SetScale(glm::vec3(invScaleXVal, invScaleYVal, invScaleZVal));
+
+
+        auto vec = position * invPose.GetScale();
+        vec -= parent->localTransform->GetPosition();
+        glm::vec3 local = invRot * vec;
+        std::cout << "Offset:" << printVec3(local) << std::endl;
+
+        localTransform->SetPosition(local);
     } else {
         localTransform->SetPosition(position);
     }
@@ -99,12 +149,31 @@ void Component::SetRotation(const glm::vec3& rotation) {
     SetRotation(quaternion);
 }
 void Component::SetRotation(const glm::quat& rotation) {
-    localTransform->SetRotation(rotation);
+    if (parent) {
+        // glm::quat parentRotation = parent->localTransform->GetRotation();
+        // glm::quat localRotation = glm::inverse(parentRotation);
+        localTransform->SetRotation(invRot * rotation);
+    } else {
+        localTransform->SetRotation(rotation);
+    }
 }
 void Component::SetScale(const glm::vec3& scale) {
     if (parent) {
-        glm::vec3 parentScale = inverseTransform.GetScale();
-        localTransform->SetScale(scale * parentScale);
+        glm::vec3 invScaleX = glm::vec3(invScale.GetMatrix()[0]);
+        glm::vec3 invScaleY = glm::vec3(invScale.GetMatrix()[1]);
+        glm::vec3 invScaleZ = glm::vec3(invScale.GetMatrix()[2]);
+
+        float invScaleXVal = glm::length(invScaleX);
+        float invScaleYVal = glm::length(invScaleY);
+        float invScaleZVal = glm::length(invScaleZ);
+
+        invScale.SetScale(glm::vec3(invScaleXVal, invScaleYVal, invScaleZVal));
+
+        std::cout << "1:" << printVec3(parent->localTransform->GetScale()) << std::endl;
+        std::cout << "2:" << printVec3(invScale.GetScale()) << std::endl;
+        std::cout << "2:" << printVec3(invPose.GetScale()) << std::endl;
+        std::cout << std::endl;
+        localTransform->SetScale(scale * invScale.GetScale());
     } else {
         localTransform->SetScale(scale);
     }
@@ -131,7 +200,7 @@ void Component::AddChild(Component* child) {
     child->parent = this;
 
     UpdateInverse();
+    UpdateMatrix();
     child->UpdateInverse();
-    child->localTransform->UpdateMatrix();
-    *child->localTransform = child->inverseTransform.GetMatrix() * child->localTransform->GetMatrix();
+    // child->localTransform->UpdateMatrix();
 }

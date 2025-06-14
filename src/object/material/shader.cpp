@@ -3,27 +3,10 @@
 #include <object/material/shader.hpp>
 #include <sstream>
 
-Shader::Shader(const std::string& name_, const std::string& FS, const std::string& VS)
+Shader::Shader(const std::string& FS, const std::string& VS)
 {
-    name = name_;
-    auto it = Find(name);
-    if (it != nullptr) {
-        *this = *it;
-    } else {
-        // std::cout << "new shader:" << FS+VS << std::endl;
-        Link(FS, VS);
-    }
+    Link(FS, VS);
 }
-
-Shader::Shader(const std::string &FS, const std::string &VS)
-    : Shader(FS + VS, FS, VS)
-{}
-
-Shader* Shader::Create(const std::string& name, const std::string& FS, const std::string& VS) {
-    auto [it, inserted] = cache.try_emplace(name, FS, VS);
-    return &it->second;
-}
-
 
 void Shader::Link(const std::string &FS, const std::string &VS) {
     shaderProgram = glCreateProgram();
@@ -105,8 +88,22 @@ GLuint Shader::Compile(const std::string &ShaderPath, GLuint type)
     return Shader;
 }
 
+void Shader::Bind() const {
+    glUseProgram(GetID());
+}
+
 GLuint Shader::GetID() const {
     return shaderProgram;
+}
+
+Shader* Shader::Create(const std::string& name, const std::string& FS, const std::string& VS) {
+    auto [it, inserted] = cache.try_emplace(name, FS, VS);
+    return &it->second;
+}
+
+Shader* Shader::Find(const std::string &name) {
+    auto it = cache.find(name);
+    return it != cache.end() ? &it->second : nullptr;
 }
 
 void Shader::Delete(const std::string &name) {
@@ -119,7 +116,12 @@ void Shader::Delete(const std::string &name) {
     }
 }
 
-Shader* Shader::Find(const std::string &name) {
-    auto it = cache.find(name);
-    return it != cache.end() ? &it->second : nullptr;
+void Shader::ClearСache() {
+    for (auto it = cache.begin(); it != cache.end(); ) {
+        if (glIsTexture(it->second.GetID())) {
+            GLuint id = it->second.GetID();
+            glDeleteShader(id);
+        }
+        it = cache.erase(it);
+    }
 }

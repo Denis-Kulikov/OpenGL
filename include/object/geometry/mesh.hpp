@@ -1,5 +1,5 @@
 #pragma once
-#include "base.hpp"
+#include "geometry.hpp"
 #include <assimp/scene.h>
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
@@ -18,6 +18,10 @@ public:
     std::size_t size() {return m_Entries.size();}
     int GetTextureIndex(int index) {return m_Entries[index].MaterialIndex;}
 
+    static GeometryMesh* Create(const std::string& name, const std::string& path);
+    static GeometryMesh* Find(const std::string &name);
+    static void Delete(const std::string &name);
+    static void ClearСache();
 
     struct MeshEntry {
         MeshEntry() {
@@ -41,7 +45,7 @@ protected:
     enum VB_TYPES {
         VAO,
         EBO,
-        VBO,
+        POSITION_VB,
         TEXCOORD_VB,
         NORMAL_VB,
         NUM_VBs,
@@ -58,9 +62,10 @@ protected:
                 std::vector<glm::vec3>& Positions, std::vector<glm::vec3>& Normals,
                 std::vector<glm::vec2>& TexCoords, std::vector<unsigned int>& Indices);
 
+    inline static std::unordered_map<std::string, GeometryMesh> cache;
     std::vector<GLuint> buffers;
+    std::vector<MeshEntry> m_Entries;
 
 public:
-    std::vector<MeshEntry> m_Entries;
     std::vector<Texture*> m_Textures;
 };

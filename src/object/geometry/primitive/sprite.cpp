@@ -11,11 +11,12 @@ Sprite::Sprite()
     SetType(PRIMITIVE);
     // |2|3|
     // |1|4|
+    const float SIZE = 1.f;
     std::vector<GLfloat> vertices = {
-        -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
-        -1.0f,  1.0f, 0.0f, 0.0f, 1.0f,
-        1.0f,  1.0f, 0.0f,  1.0f, 1.0f,
-        1.0f, -1.0f, 0.0f,  1.0f, 0.0f
+        -SIZE, -SIZE, 0.0f, 0.0f, 0.0f,
+        -SIZE,  SIZE, 0.0f, 0.0f, SIZE,
+        SIZE,  SIZE, 0.0f,  SIZE, SIZE,
+        SIZE, -SIZE, 0.0f,  SIZE, 0.0f
     };
 
     std::vector<GLuint> indices = {

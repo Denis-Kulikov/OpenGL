@@ -9,11 +9,11 @@ Female::Female()
     std::cout << name << std::endl;
     Transform *transform = new Transform();
     ComponentSkeletalMesh *shape = CreateComponent<ComponentSkeletalMesh>(transform);
-    shape->SetSkeletalMesh(mesh);
+    shape->SetSkeletalMesh(GeometrySkeletalMesh::Find("Female"));
     shape->animator->SetAnimation("Take 001");
+    shape->material = Material::Find("female");
 
     rootComponent = shape;
-    rootComponent->material = Material::Find("female");
 }
 
 Female::~Female()
@@ -23,7 +23,7 @@ void Female::Initialize()
 {
     Female::name = "Female";
     std::string path("assets/model/female/female.glb");
-    mesh = new GeometrySkeletalMesh(path);
+    auto mesh = GeometrySkeletalMesh::Create("Female", path);
 
     auto shader_mesh = Shader::Create("mesh", "shaders/sprite_fs.glsl", "shaders/skeletal_mesh_vs.glsl");
     auto init_sprite = new Material::InitFunction([](Material& m) {

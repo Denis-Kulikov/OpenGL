@@ -11,7 +11,7 @@ Ghost::Ghost() {
     Transform *transformCamera = new Transform();
     ComponentCamera *camera = CreateComponent<ComponentCamera>(transformCamera);
     camera->camera.PersProj = RenderManager::PersProj;
-    RenderManager::render.camera = camera;
+    RenderManager::pipeline.camera = camera;
 
     point->AddChild(camera);
 

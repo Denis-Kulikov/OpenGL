@@ -13,8 +13,8 @@
 
 class Animator {
 public:
-    Animator(const Component& component, const Skeleton& skeleton)
-        : component(component), skeleton(skeleton)
+    Animator(const Skeleton& skeleton)
+        : skeleton(skeleton)
     {}
 
     void SetAnimation(const std::string& animationName) {
@@ -31,10 +31,11 @@ public:
 
     bool HasAnimation() const { return animation != nullptr; }
 
-    void Update(std::vector<glm::mat4x4>& transforms) const {
+    void ApplyAnimation(std::vector<glm::mat4x4>& transforms, glm::mat4x4 parentTransform) const {
         transforms.resize(skeleton.BoneLocal.size());
         if (!HasAnimation()) {
-            ApplyBasePose(skeleton.BoneTree, component.GetMatrix(), transforms);
+            for (auto& it : transforms)
+                it = 1;
             return;
         }
 
@@ -44,26 +45,10 @@ public:
         float TimeInTicks = TimeInSeconds * TicksPerSecond;
         float AnimationTime = fmod(TimeInTicks, (float)animation->Duration);
 
-        ReadNodeHierarchy(skeleton.BoneTree, component.GetMatrix(), transforms, AnimationTime);
+        ReadNodeHierarchy(skeleton.BoneTree, parentTransform, transforms, AnimationTime);
     }
 
 private:
-    void ApplyBasePose(const BoneNode& node, const glm::mat4& parentTransform, std::vector<glm::mat4x4>& transforms) const {
-        if (node.Index >= 0) {
-            glm::mat4 localTransform = skeleton.BoneLocal[node.Index];
-            glm::mat4 globalTransform = parentTransform * localTransform;
-            transforms[node.Index] = globalTransform;
-
-            for (const auto& child : node.Children) {
-                ApplyBasePose(child, globalTransform, transforms);
-            }
-        } else {
-            for (const auto& child : node.Children) {
-                ApplyBasePose(child, parentTransform, transforms);
-            }
-        }
-    }
-
     void Animator::ReadNodeHierarchy(const BoneNode& node, const glm::mat4& parentTransform,
                                     std::vector<glm::mat4x4>& transforms, float AnimationTime) const
     {
@@ -98,7 +83,6 @@ private:
     }
 
 private:
-    const Component& component;
     const Skeleton& skeleton;
     const SkeletalAnimation* animation = nullptr;
     std::vector<glm::mat4x4>* transforms;

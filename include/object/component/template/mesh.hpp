@@ -11,4 +11,5 @@ public:
     void Render() const override;
 
     GeometryMesh *mesh;
+    Material* material = nullptr;
 };

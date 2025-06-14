@@ -6,13 +6,16 @@
 
 #include <object/scene.hpp>
 #include <entities/templates/decor/grass.hpp>
+#include <entities/templates/decor/stone_floor.hpp>
 #include <entities/templates/decor/brick_sphere.hpp>
 #include <entities/templates/decor/wooden_box.hpp>
+#include <entities/templates/decor/tree.hpp>
 #include <entities/templates/decor/skybox.hpp>
 #include <entities/templates/mobs/female.hpp>
 #include <entities/templates/playable/Ghost.hpp>
 
 #include <threads/thread_pool.hpp>
+// #include <object/component/template/component_physics.hpp>
 
 #include <stb_image_write.h>
 
@@ -43,6 +46,7 @@ void saveFrameAsJPEG(const unsigned char* pixelData, int width, int height, cons
 }
 
 
+WoodenBox* cube;
 void flipVertically(unsigned char* data, int width, int height, int channels) {
     int rowSize = width * channels;
     std::vector<unsigned char> tempRow(rowSize);
@@ -55,15 +59,33 @@ void flipVertically(unsigned char* data, int width, int height, int channels) {
     }
 }
 
-void draw(Scene *scene) {
+glm::vec3 SpinTopRotation(float time, float spinSpeed, float tiltSpeed, float tiltAmount) {
+    // Время — накопленное, т.е. time += deltaTime каждый кадр
+
+    // Основное вращение вокруг вертикальной оси (обычно Y)
+    float yaw = time * spinSpeed; // вращение вокруг Y
+
+    // Наклон, который описывает круг на X и Z
+    float pitch = sin(time * tiltSpeed) * tiltAmount; // наклон вперёд-назад (X)
+    float roll  = cos(time * tiltSpeed) * tiltAmount; // наклон влево-вправо (Z)
+
+    return glm::vec3(pitch, yaw, roll);
+}
+
+
+void Callback(Scene *scene) {
     TimeManager::Update();
+    BulletManager::StepSimulation(TimeManager::GetDeltaTime());
     RenderManager::UpdateCamera();
-    RenderManager::render.UpdatePV_Perspective();
-    RenderManager::render.drawSkybox(*scene->skybox);
+    RenderManager::pipeline.UpdateView();
+    RenderManager::pipeline.UpdatePV();
+    RenderManager::pipeline.drawSkybox(*scene->skybox);
     GlobalState::GetPlayer()->MoveForward();
 
     static ThreadPool threadPool(8, 24);
-    
+
+    // cube->rootComponent->SetRotation(SpinTopRotation(TimeManager::GetCurrentTime(), 180.0f, 3.0f, 45.0f));
+
     for (auto &it : scene->actors)
         it->Render();
 
@@ -96,7 +118,6 @@ void draw(Scene *scene) {
         }
     }
 
-    BulletManager::StepSimulation(TimeManager::GetDeltaTime());
     WindowManager::SwapBuffer();
 }
 
@@ -104,53 +125,58 @@ Scene *createScene()
 {
     Ghost::Initialize();
     Grass::Initialize();
+    StoneFloor::Initialize();
     Skybox::Initialize();
     WoodenBox::Initialize();
+    Tree::Initialize();
     Female::Initialize();
     BrickSphere::Initialize();
 
     auto *scene = new Scene();
 
     Actor *character = new Ghost();
+    // character->Teleport(glm::vec3(9, 6, 0));
     scene->pushObject(character);
 
-    auto grass = new Grass();
-    grass->Teleport(glm::vec3(-1, -1, 5));
-    grass->rootComponent->SetScale(glm::vec3(3));
-    grass->rootComponent->SetRotation(glm::vec3(90, 0, 0));
-    scene->pushObject(grass);
+    // auto grass = new Grass();
+    // grass->Teleport(glm::vec3(-1, -1, 5));
+    // grass->rootComponent->SetScale(glm::vec3(3));
+    // grass->rootComponent->SetRotation(glm::vec3(90, 0, 0));
+    // scene->pushObject(grass);
 
-    auto cube = new WoodenBox();
-    cube->Teleport(glm::vec3(0, -0.5, 4 + 2));
+    cube = new WoodenBox();
+    // cube->Teleport(glm::vec3(0, -0.5, 4 + 2));
+    cube->Teleport(glm::vec3(0, -1, 4));
+    // cube->rootComponent->SetRotation(glm::vec3(20, 30, 75));
     scene->pushObject(cube);
 
-    // printMat4(cube.)
-    cube->rootComponent->UpdateMatrixTree();
-    // std::cout << "Scale: " << printVec3(cube->rootComponent->GetGlobalScale()) << std::endl;
-    // std::cout << "Scale: " << printVec3(cube->rootComponent->children[0]->GetGlobalScale()) << std::endl;
-    // std::cout << "Scale: " << printVec3(cube->rootComponent->children[0]->children[0]->GetGlobalScale()) << std::endl;
+//     auto sphere = new BrickSphere();
+//     sphere->Teleport(glm::vec3(0, 1, -6));
+//     auto body = static_cast<RigidTransform*>(sphere->rootComponent->localTransform);
+//     glm::vec3 impulseDir = glm::normalize(glm::vec3(0.0f, -0.2f, 1.0f));
+//     body->ApplyImpulse(impulseDir * 100.0f);
+//     scene->pushObject(sphere);
 
-    // std::cout << "Position: " << printVec3(cube->rootComponent->GetGlobalPosition()) << std::endl;
-    // std::cout << "Position: " << printVec3(cube->rootComponent->children[0]->GetGlobalPosition()) << std::endl;
-    // std::cout << "Position: " << printVec3(cube->rootComponent->children[0]->children[0]->GetGlobalPosition()) << std::endl;
+// const int stackHeight = 5;
+// for (int i = 0; i < stackHeight; ++i) {
+//     auto box = new WoodenBox();
+//     float y = 0.01f + i * 2.01f;
+//     box->Teleport(glm::vec3(0.0f, y, 12.0f));
+//     scene->pushObject(box);
+// }
 
-    // std::cout << "Rotate: " << printVec3(quatToEuler(cube->rootComponent->GetGlobalRotation())) << std::endl;
-    // std::cout << "Rotate: " << printVec3(quatToEuler(cube->rootComponent->children[0]->GetGlobalRotation())) << std::endl;
-    // std::cout << "Rotate: " << printVec3(quatToEuler(cube->rootComponent->children[0]->children[0]->GetGlobalRotation())) << std::endl;
 
-    // GlobalState::fIsAppRunning = false;
 
-    auto sphere = new BrickSphere();
-    sphere->Teleport(glm::vec3(-2, -0.5, 3 + 1));
-    sphere->rootComponent->SetScale(glm::vec3(0.5));
-    scene->pushObject(sphere);
+    // auto floor = new StoneFloor();
+    // floor->Teleport(glm::vec3(0, 0, 10));
+    // // floor->rootComponent->SetScale(glm::vec3(0.5));
+    // scene->pushObject(floor);
 
-    auto female = new Female();
-    // female->rootComponent->SetRotation(glm::vec3(0, 180 - 45, 0));
-    female->rootComponent->SetRotation(glm::vec3(-90, 0, 0));
-    female->rootComponent->SetPosition(glm::vec3(0, -1, 4.2));
-    female->rootComponent->SetScale(glm::vec3(0.01));
-    scene->pushObject(female);
+    // auto female = new Female();
+    // female->rootComponent->SetRotation(glm::vec3(-90, 180 + 30, 0));
+    // female->rootComponent->SetPosition(glm::vec3(0, -1 + 0.1, 4.2 - 2.6));
+    // female->rootComponent->SetScale(glm::vec3(0.01));
+    // scene->pushObject(female);
 
     scene->skybox = new Skybox();
 
@@ -168,13 +194,15 @@ int main(int argc, char** argv)
     RenderManager::Initialize(70.0f, width, height, 0.1f, 1000.0f);
     BulletManager::Initialize();
     TimeManager::Initialize();
-    // GlobalState::FPS = 60;
+    // GlobalState::FPS = 65;
 
     Scene *scene(createScene());
     WindowManager::SwapBuffer();
 
+    RenderManager::pipeline.UpdatePerspective();
+    TimeManager::Update();
     while (GlobalState::fIsAppRunning) {
-        draw(scene);
+        Callback(scene);
     }
 
     WindowManager::Dispose();

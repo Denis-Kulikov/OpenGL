@@ -1,5 +1,5 @@
 #pragma once
-#include <render/render.hpp>
+#include <render/pipeline.hpp>
 #include <object/geometry/primitive/sprite.hpp>
 #include <object/geometry/primitive/cube.hpp>
 #include <object/geometry/primitive/sphere.hpp>
@@ -15,7 +15,7 @@ public:
 
     static void initializePrimitive();
 
-    inline static Render render;
+    inline static Pipeline pipeline;
 
     inline static struct {
         Sprite* sprite = nullptr;

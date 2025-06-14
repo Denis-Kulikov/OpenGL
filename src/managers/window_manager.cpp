@@ -26,12 +26,6 @@ void WindowManager::Initialize(GLfloat Width, GLfloat Height) {
     }
 
     glfwMakeContextCurrent(window);
-
-    if (glewInit() != GLEW_OK) {
-        std::cerr << "Error: Failed to initialize GLEW" << std::endl;
-        exit(EXIT_FAILURE);
-    }
-
     glfwSetCursorPosCallback(window, WindowManager::MouseCB);
     glfwSetKeyCallback(window, WindowManager::KeyboardCB);
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -79,9 +73,9 @@ void WindowManager::MouseCB(GLFWwindow* window, double xpos, double ypos) {
     if (pitch > 89.0f) pitch = 89.0f;
     if (pitch < -89.0f) pitch = -89.0f;
 
-    if (RenderManager::render.camera == nullptr) return;
-    RenderManager::render.camera->camera.SetYaw(yaw);
-    RenderManager::render.camera->camera.SetPitch(pitch);
+    if (RenderManager::pipeline.camera == nullptr) return;
+    RenderManager::pipeline.camera->camera.SetYaw(yaw);
+    RenderManager::pipeline.camera->camera.SetPitch(pitch);
 }
 
 void WindowManager::KeyboardCB(GLFWwindow* window, int key, int scancode, int action, int mods)
@@ -112,8 +106,8 @@ void WindowManager::KeyboardCB(GLFWwindow* window, int key, int scancode, int ac
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     }
     
-    if (RenderManager::render.camera == nullptr) return;
-    glm::vec3 front = RenderManager::render.camera->camera.Params.Target;
+    if (RenderManager::pipeline.camera == nullptr) return;
+    glm::vec3 front = RenderManager::pipeline.camera->camera.Params.Target;
     front.y = 0.0f;
     front = glm::normalize(front);
 

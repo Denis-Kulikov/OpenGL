@@ -2,7 +2,7 @@ set(target lib-render)
 
 add_library(${target} STATIC
 	stb_image_impl.cpp
-	render.cpp
+	pipeline.cpp
 )
 
 

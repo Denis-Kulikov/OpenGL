@@ -7,6 +7,9 @@ RigidTransform::RigidTransform(btCollisionShape* baseShape, btScalar mass, const
     if (mass != 0.f && baseShape)
         baseShape->calculateLocalInertia(mass, localInertia);
 
+    if (baseShape)
+        baseShape->setLocalScaling(btVector3(scale.x, scale.y, scale.z));
+
     btDefaultMotionState* motionState = new btDefaultMotionState();
 
     btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, motionState, baseShape, localInertia);

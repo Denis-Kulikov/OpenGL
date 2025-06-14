@@ -7,21 +7,15 @@
 #include <stb_image.h>
 #include <stb_image_resize.h>
 
-Texture::Texture(const std::string& name, const aiTexture* texture) 
-    : name(name)
+Texture::Texture(const aiTexture* texture) 
 {
     Load(texture);
 }
 
-Texture::Texture(const std::string& name, const std::string& path)
-    : name(name)
+Texture::Texture(const std::string& path)
 {
     Load(path);
 }
-
-Texture::Texture(const std::string& path)
-    : Texture(path, path)
-{}
 
 void Texture::Bind() const {
     glBindTexture(GL_TEXTURE_2D, textureID);
@@ -36,12 +30,12 @@ float Texture::GetScale() const {
 }
 
 Texture* Texture::Create(const std::string& name, const std::string& path) {
-    auto [it, inserted] = cache.try_emplace(name, name, path);
+    auto [it, inserted] = cache.try_emplace(name, path);
     return &it->second;
 }
 
 Texture* Texture::Create(const std::string& name, const aiTexture* texture) {
-    auto [it, inserted] = cache.try_emplace(name, name, texture);
+    auto [it, inserted] = cache.try_emplace(name, texture);
     return &it->second;
 }
 Texture* Texture::Find(const std::string& name) {
@@ -61,7 +55,7 @@ void Texture::Delete(const std::string& path) {
     }
 }
 
-void Texture::ClearChashe() {
+void Texture::ClearСache() {
     for (auto it = cache.begin(); it != cache.end(); ) {
         if (glIsTexture(it->second.GetID())) {
             GLuint id = it->second.GetID();

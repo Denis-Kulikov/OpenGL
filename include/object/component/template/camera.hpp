@@ -7,7 +7,5 @@ public:
     ComponentCamera(Transform *transform)
         : Component(transform) {}
 
-    void Render() const override {}
-
     Camera camera;
 };

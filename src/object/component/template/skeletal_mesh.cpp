@@ -7,13 +7,13 @@ void ComponentSkeletalMesh::Render() const {
         return;
     }
 
-    material->UpdateValue("Projection", RenderManager::render.ProjTrans);
-    material->UpdateValue("View", RenderManager::render.View);
+    material->UpdateValue("Projection", RenderManager::pipeline.ProjTrans);
+    material->UpdateValue("View", RenderManager::pipeline.View);
     material->Bind();
     mesh->Bind();
 
     std::vector<glm::mat4x4> mats;
-    animator->Update(mats);
+    animator->ApplyAnimation(mats, GetMatrix());
     int location = it->second.first;
     glUniformMatrix4fv(location, mats.size(), GL_FALSE, glm::value_ptr(mats[0]));
 
@@ -29,6 +29,6 @@ void ComponentSkeletalMesh::Render() const {
 void ComponentSkeletalMesh::SetSkeletalMesh(GeometrySkeletalMesh *new_mesh) {
     if (new_mesh != nullptr) {
         mesh = new_mesh;
-        animator = new Animator(*this, mesh->skeleton);
+        animator = new Animator(mesh->GetSkeleton());
     }
 }

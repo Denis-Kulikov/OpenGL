@@ -12,6 +12,10 @@ GeometrySkeletalMesh::GeometrySkeletalMesh(const std::string& Filename)
     glBindVertexArray(0);	
 }
 
+const Skeleton& GeometrySkeletalMesh::GetSkeleton() const {
+    return skeleton;
+}
+
 bool GeometrySkeletalMesh::InitFromScene(const aiScene* m_pScene, const std::string& Filename) {
     m_Entries.resize(m_pScene->mNumMeshes);
     m_Textures.resize(m_pScene->mNumMaterials);
@@ -60,7 +64,7 @@ bool GeometrySkeletalMesh::InitFromScene(const aiScene* m_pScene, const std::str
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers[EBO]);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(Indices[0]) * Indices.size(), &Indices[0], GL_STATIC_DRAW);
 
-    glBindBuffer(GL_ARRAY_BUFFER, buffers[VBO]);
+    glBindBuffer(GL_ARRAY_BUFFER, buffers[POSITION_VB]);
     glBufferData(GL_ARRAY_BUFFER, sizeof(Positions[0]) * Positions.size(), &Positions[0], GL_STATIC_DRAW);
     glEnableVertexAttribArray(POSITION_LOCATION);
     glVertexAttribPointer(POSITION_LOCATION, 3, GL_FLOAT, GL_FALSE, 0, 0);    
@@ -136,4 +140,26 @@ bool GeometrySkeletalMesh::LoadAnimations(const aiScene* scene) {
     }
 
     return true;
+}
+
+GeometrySkeletalMesh* GeometrySkeletalMesh::Create(const std::string& name, const std::string& path) {
+    auto [it, inserted] = cache.try_emplace(name, path);
+    return &it->second;
+}
+GeometrySkeletalMesh* GeometrySkeletalMesh::Find(const std::string& name) {
+    auto it = cache.find(name);
+    return it != cache.end() ? &it->second : nullptr;
+}
+
+void GeometrySkeletalMesh::Delete(const std::string& path) {
+    auto it = cache.find(path);
+    if (it != cache.end()) {
+        cache.erase(it); 
+    }
+}
+
+void GeometrySkeletalMesh::ClearСache() {
+    for (auto it = cache.begin(); it != cache.end(); ) {
+        it = cache.erase(it);
+    }
 }

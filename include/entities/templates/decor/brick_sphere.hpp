@@ -15,5 +15,4 @@ public:
 
 protected:
     inline static std::string name;
-    inline static Sphere<10> *sphere = nullptr;
 };

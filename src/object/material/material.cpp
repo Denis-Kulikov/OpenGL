@@ -1,7 +1,7 @@
 #include <object/material/material.hpp>
 
-Material::Material(const std::string& name, InitFunction* initializer, ApplyFunction* applier)
-    : name(name), initializer(initializer), applier(applier)
+Material::Material(Shader *shader, InitFunction* initializer, ApplyFunction* applier)
+    : shader(shader), initializer(initializer), applier(applier)
 {}
 
 
@@ -27,6 +27,7 @@ void Material::SetTexture(std::vector<Texture*>& new_texture) {
 }
 
 void Material::Bind() const {
+    shader->Bind();
     (*applier)(*this);
 }
 
@@ -35,7 +36,7 @@ void Material::UpdateUniforms() {
 }
 
 Material* Material::Create(const std::string& name, Shader *shader, InitFunction* initializer, ApplyFunction* applier) {
-    auto [it, inserted] = materialChashe.try_emplace(name, name, initializer, applier);
+    auto [it, inserted] = cache.try_emplace(name, shader, initializer, applier);
     
     if (inserted) {
         it->second.SetShader(shader);
@@ -44,10 +45,27 @@ Material* Material::Create(const std::string& name, Shader *shader, InitFunction
     return &it->second;
 }
 
-void Material::Delete(const std::string &name) {
+Material* Material::Find(const std::string &name) {
+    auto it = cache.find(name);
+    return it != cache.end() ? &it->second : nullptr;
 }
 
-Material* Material::Find(const std::string &name) {
-    auto it = materialChashe.find(name);
-    return it != materialChashe.end() ? &it->second : nullptr;
+void Material::Delete(const std::string &name) {
+    auto it = cache.find(name);
+    if (it != cache.end()) {
+        if (it->second.initializer)
+            delete it->second.initializer;
+        if (it->second.applier)
+            delete it->second.applier;
+        cache.erase(it); 
+    }
+}
+
+void Material::ClearСache() {
+    for (auto it = cache.begin(); it != cache.end(); ) {
+        if (it->second.initializer)
+            delete it->second.initializer;
+        if (it->second.applier)
+            delete it->second.applier;
+    }
 }

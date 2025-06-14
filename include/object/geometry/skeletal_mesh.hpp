@@ -7,6 +7,15 @@ class GeometrySkeletalMesh : public GeometryMesh {
 public:
     GeometrySkeletalMesh(const std::string& Filename);
 
+    const Skeleton& GetSkeleton() const;
+    
+    static GeometrySkeletalMesh* Create(const std::string& name, const std::string& path);
+    static GeometrySkeletalMesh* Find(const std::string &name);
+    static void Delete(const std::string &name);
+    static void ClearСache();
+
+
+protected:
     #define BONE_ID_LOCATION     3
     #define BONE_WEIGHT_LOCATION 4
 
@@ -15,5 +24,6 @@ public:
     bool LoadAnimations(const aiScene* m_pScene);
 
     Skeleton skeleton;
+    inline static std::unordered_map<std::string, GeometrySkeletalMesh> cache;
 };
 

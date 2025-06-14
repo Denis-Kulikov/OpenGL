@@ -1,13 +1,13 @@
 #include <entities/templates/decor/brick_sphere.hpp>
 #include <managers/render_manager.hpp> 
 #include <object/component/template/shape.hpp>
-#include <object/component/component_physics.hpp>
+#include <object/component/template/component_physics.hpp>
 
 BrickSphere::BrickSphere()
 {
     std::cout << name << std::endl;
     btScalar radius = 1.0f;
-    btScalar mass = 1.0f;
+    btScalar mass = 5.0f;
     glm::vec3 scale(1);
     btCollisionShape* colliderShape = new btSphereShape(radius);
     RigidTransform * rigidBody = new RigidTransform(colliderShape, mass, scale);
@@ -15,7 +15,7 @@ BrickSphere::BrickSphere()
 
     Transform *transform1 = new Transform();
     ComponentShape *shape1 = CreateComponent<ComponentShape>(transform1);
-    shape1->shape = sphere;
+    shape1->shape = RenderManager::primitives.sphere;
     shape1->material = Material::Find("BrickSphere");
 
     body->AddChild(shape1);
@@ -28,7 +28,6 @@ BrickSphere::~BrickSphere() {}
 void BrickSphere::Initialize()
 {
     BrickSphere::name = "BrickSphere";
-    sphere = RenderManager::primitives.sphere;
     auto shader = Shader::Create("sprite", "shaders/sprite_fs.glsl", "shaders/sprite_vs.glsl");
     // auto texture_wooden_box = Texture::Create("brick_wall", "img/white.png");
     auto texture_wooden_box = Texture::Create("brick_wall", "img/brick_wall_10_diff_1k.jpg");
@@ -49,7 +48,6 @@ void BrickSphere::Initialize()
         m.values["textureSampler"] = {glGetUniformLocation(m.GetShader()->GetID(), "textureSampler"), nullptr};
     });
     auto apply_sprite = new Material::ApplyFunction([](const Material& m) {
-        glUseProgram(m.GetShader()->GetID());
         glActiveTexture(GL_TEXTURE0);
 
         GLint texLoc = m.values.at("textureSampler").first;
