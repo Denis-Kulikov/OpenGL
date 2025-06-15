@@ -15,19 +15,8 @@
 #include <entities/templates/playable/Ghost.hpp>
 
 #include <threads/thread_pool.hpp>
-// #include <object/component/template/component_physics.hpp>
 
 #include <stb_image_write.h>
-
-#include <iomanip> 
-void printMat4(const glm::mat4& mat) {
-    for (int row = 0; row < 4; ++row) {
-        for (int col = 0; col < 4; ++col) {
-            std::cout << std::setw(10) << mat[col][row] << " ";
-        }
-        std::cout << std::endl;
-    }
-}
 
 std::string printVec3(const glm::vec3& v) {
     return "(" + std::to_string(v.x) + ", " + std::to_string(v.y) + ", " + std::to_string(v.z) + ")";
@@ -45,8 +34,6 @@ void saveFrameAsJPEG(const unsigned char* pixelData, int width, int height, cons
     stbi_write_jpg(fileName.c_str(), width, height, 3, pixelData, 90);
 }
 
-
-WoodenBox* cube;
 void flipVertically(unsigned char* data, int width, int height, int channels) {
     int rowSize = width * channels;
     std::vector<unsigned char> tempRow(rowSize);
@@ -57,19 +44,6 @@ void flipVertically(unsigned char* data, int width, int height, int channels) {
         memcpy(row1, row2, rowSize);
         memcpy(row2, tempRow.data(), rowSize);
     }
-}
-
-glm::vec3 SpinTopRotation(float time, float spinSpeed, float tiltSpeed, float tiltAmount) {
-    // Время — накопленное, т.е. time += deltaTime каждый кадр
-
-    // Основное вращение вокруг вертикальной оси (обычно Y)
-    float yaw = time * spinSpeed; // вращение вокруг Y
-
-    // Наклон, который описывает круг на X и Z
-    float pitch = sin(time * tiltSpeed) * tiltAmount; // наклон вперёд-назад (X)
-    float roll  = cos(time * tiltSpeed) * tiltAmount; // наклон влево-вправо (Z)
-
-    return glm::vec3(pitch, yaw, roll);
 }
 
 
@@ -83,8 +57,6 @@ void Callback(Scene *scene) {
     GlobalState::GetPlayer()->MoveForward();
 
     static ThreadPool threadPool(8, 24);
-
-    // cube->rootComponent->SetRotation(SpinTopRotation(TimeManager::GetCurrentTime(), 180.0f, 3.0f, 45.0f));
 
     for (auto &it : scene->actors)
         it->Render();
@@ -135,46 +107,35 @@ Scene *createScene()
     auto *scene = new Scene();
 
     Actor *character = new Ghost();
-    // character->Teleport(glm::vec3(9, 6, 0));
     scene->pushObject(character);
 
-    // auto grass = new Grass();
-    // grass->Teleport(glm::vec3(-1, -1, 5));
-    // grass->rootComponent->SetScale(glm::vec3(3));
-    // grass->rootComponent->SetRotation(glm::vec3(90, 0, 0));
-    // scene->pushObject(grass);
 
-    cube = new WoodenBox();
-    // cube->Teleport(glm::vec3(0, -0.5, 4 + 2));
-    cube->Teleport(glm::vec3(0, -1, 4));
-    // cube->rootComponent->SetRotation(glm::vec3(20, 30, 75));
+    auto cube = new Tree();
+    cube->Teleport(glm::vec3(0, 0, 4));
     scene->pushObject(cube);
 
-//     auto sphere = new BrickSphere();
-//     sphere->Teleport(glm::vec3(0, 1, -6));
-//     auto body = static_cast<RigidTransform*>(sphere->rootComponent->localTransform);
-//     glm::vec3 impulseDir = glm::normalize(glm::vec3(0.0f, -0.2f, 1.0f));
-//     body->ApplyImpulse(impulseDir * 100.0f);
-//     scene->pushObject(sphere);
+    auto grass = new Grass();
+    grass->Teleport(glm::vec3(0, 2, 4));
+    grass->rootComponent->SetScale(glm::vec3(0.3));
+    grass->rootComponent->SetRotation(glm::vec3(90, 0, 0));
+    scene->pushObject(grass);
 
-// const int stackHeight = 5;
-// for (int i = 0; i < stackHeight; ++i) {
-//     auto box = new WoodenBox();
-//     float y = 0.01f + i * 2.01f;
-//     box->Teleport(glm::vec3(0.0f, y, 12.0f));
-//     scene->pushObject(box);
-// }
+    auto cubeX = new WoodenBox();
+    cubeX->Teleport(glm::vec3(0, 2.3, 4));
+    cubeX->SetScale(glm::vec3(0.1));
+    scene->pushObject(cubeX);
 
-
+    // auto sphere = new BrickSphere();
+    // sphere->Teleport(glm::vec3(0, 1, 10));
+    // scene->pushObject(sphere);
 
     // auto floor = new StoneFloor();
-    // floor->Teleport(glm::vec3(0, 0, 10));
-    // // floor->rootComponent->SetScale(glm::vec3(0.5));
+    // floor->Teleport(glm::vec3(0, -3, 10));
     // scene->pushObject(floor);
 
     // auto female = new Female();
     // female->rootComponent->SetRotation(glm::vec3(-90, 180 + 30, 0));
-    // female->rootComponent->SetPosition(glm::vec3(0, -1 + 0.1, 4.2 - 2.6));
+    // female->rootComponent->SetPosition(glm::vec3(0, 0, 7));
     // female->rootComponent->SetScale(glm::vec3(0.01));
     // scene->pushObject(female);
 

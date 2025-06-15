@@ -13,74 +13,46 @@ Tree::Tree()
     root->SetScale(glm::vec3(0.2, 1.0, 0.2));
     root->material = Material::Find("Tree");
 
-//
-    ComponentPoint *point_1_1 = CreateComponent<ComponentPoint>(new Transform());
-    root->AddChild(point_1_1);
-    point_1_1->SetPosition(glm::vec3(0.0, 1.0, 0));
-    point_1_1->SetScale(glm::vec3(1));
+// добавление веток
+    // ComponentPoint *point_1_1 = CreateComponent<ComponentPoint>(new Transform());
+    // root->AddChild(point_1_1);
+    // point_1_1->SetPosition(glm::vec3(0.0, 1.0, 0));
+    // point_1_1->SetScale(glm::vec3(1));
+
 
     ComponentShape *branch_1_1 = CreateComponent<ComponentShape>(new Transform());
-    point_1_1->AddChild(branch_1_1);
     branch_1_1->shape = RenderManager::primitives.cube;
     branch_1_1->SetPosition(glm::vec3(0.0, 1.5, 0));
     branch_1_1->SetRotation(glm::vec3(0.0, 0, 0));
-    branch_1_1->SetScale(glm::vec3(0.1, 0.5, 0.1));
+    branch_1_1->SetScale(glm::vec3(0.15, 1, 0.15));
     branch_1_1->material = Material::Find("Tree");   
+
+
+    root->AddChild(branch_1_1);
+    branch_1_1->SetGlobalTransform(branch_1_1->globalTransform->GetMatrix());
+
+//
+    // ComponentPoint *point_1_2 = CreateComponent<ComponentPoint>(new Transform());
+    // branch_1_1->AddChild(point_1_2);
+    // point_1_2->SetPosition(glm::vec3(0.0, 2.0, 0));
+    // point_1_2->SetScale(glm::vec3(1));
+
+    // ComponentShape *branch_1_2 = CreateComponent<ComponentShape>(new Transform());
+    // point_1_2->AddChild(branch_1_2);
+    // branch_1_2->shape = RenderManager::primitives.cube;
+    // branch_1_2->SetPosition(glm::vec3(0.0, 2.5, 0));
+    // // branch_1_2->SetPosition(glm::vec3(0.0, 2.0, 0));
+    // branch_1_2->SetRotation(glm::vec3(0.0, 0, 0));
+    // branch_1_2->SetScale(glm::vec3(0.1, 01, 0.1));
+    // branch_1_2->material = Material::Find("Tree");  
     
-    point_1_1->SetRotation(glm::vec3(10.0, 0, 0));
 
-    // Transform *transform1 = new Transform();
-    // ComponentShape *shape1 = CreateComponent<ComponentShape>(transform1);
-    // shape1->shape = RenderManager::primitives.cube;
-    // shape1->SetPosition(glm::vec3(0.0, -0.5, 0));
-    // shape1->SetRotation(glm::vec3(0.0, 45, 0));
-    // shape1->SetScale(glm::vec3(0.4, 0.2, 0.4));
-    // shape1->material = Material::Find("WoodenBox");
 
-    // Transform *transform2 = new Transform();
-    // ComponentShape *shape2 = CreateComponent<ComponentShape>(transform2);
-    // shape2->shape = RenderManager::primitives.cube;
-    // shape1->AddChild(shape2);
-    // shape2->SetPosition(glm::vec3(0.0, 1.0, 0.0));
-    // shape2->SetRotation(glm::vec3(0.0, 0, 0));
-    // // shape2->SetScale(glm::vec3(0.5));
-    // // shape2->SetScale(glm::vec3(1.0, 1, 1));
-    // shape2->SetScale(glm::vec3(1));
-    // shape2->material = Material::Find("WoodenBox");
+// //
+    //point_1_1->SetRotation(glm::vec3(10.0, 0, 0));
+    //point_1_2->SetRotation(glm::vec3(10.0, 0, 0));
 
-    // Transform *transform3 = new Transform();
-    // ComponentShape *shape3 = CreateComponent<ComponentShape>(transform3);
-    // shape3->shape = RenderManager::primitives.cube;
-    // shape2->AddChild(shape3);
-    // shape3->SetPosition(glm::vec3(0.0, 3, 0.0));
-    // // shape3->SetRotation(glm::vec3(0, 45, 0));
-    // shape3->SetScale(glm::vec3(0.1, 0.5, 0.1));
-    // shape3->material = Material::Find("WoodenBox");
 
-    // // shape2->SetScale(glm::vec3(1, 0.5, 1));
-    // // shape2->SetPosition(glm::vec3(1, 1.5, 1));
-    // shape2->SetRotation(glm::vec3(30.0, 0, 0));
-
-    // rootComponent = shape1;
-
-    // ComponentShape *shape2 = CreateComponent<ComponentShape>(new Transform());
-    // shape2->shape = RenderManager::primitives.sphere;
-    // shape1->AddChild(shape2);
-    // shape2->SetPosition(glm::vec3(0.0, 1.0, 0.0));
-    // shape2->SetRotation(glm::vec3(0.0, 0, 0));
-    // // shape2->SetScale(glm::vec3(0.5));
-    // // shape2->SetScale(glm::vec3(1.0, 1, 1));
-    // shape2->SetScale(glm::vec3(1));
-    // shape2->material = Material::Find("Leaf");
-
-    // Transform *transform3 = new Transform();
-    // ComponentShape *shape3 = CreateComponent<ComponentShape>(transform3);
-    // shape3->shape = RenderManager::primitives.cube;
-    // shape2->AddChild(shape3);
-    // shape3->SetPosition(glm::vec3(0.0, 3, 0.0));
-    // // shape3->SetRotation(glm::vec3(0, 45, 0));
-    // shape3->SetScale(glm::vec3(2.0, 1, 1.0));
-    // shape3->material = Material::Find("WoodenBox");
 
     rootComponent = root;
 }

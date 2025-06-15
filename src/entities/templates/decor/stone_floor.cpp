@@ -17,7 +17,7 @@ StoneFloor::StoneFloor()
     ComponentShape *shape = CreateComponent<ComponentShape>(transform);
     shape->shape = RenderManager::primitives.sprite;
     body->AddChild(shape);
-    shape->SetScale({1, 1, 1});
+    shape->SetScale({4, 4, 1});
     // shape->SetScale({1, 1000, 1});
     shape->material = Material::Find("stone_floor");
 

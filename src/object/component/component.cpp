@@ -12,6 +12,7 @@ Component::Component(RigidTransform *transform)
     inverseTransform = glm::mat4x4(1.0f);
     invPose = 1;
     invTR = 1;
+    invRot = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
 }
 
 Component::Component(Transform *transform)
@@ -21,6 +22,7 @@ Component::Component(Transform *transform)
     invPose = 1;
     invTR = 1;
     invRot = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
+    invOffset = glm::vec3(0);
 }
 
 Component::~Component() {
@@ -34,8 +36,30 @@ void Component::UpdateInverse() {
         invScale = glm::inverse(glm::scale(glm::mat4(1.0f), parent->GetGlobalScale()));
         invPose = parent->invPose.GetMatrix() * invScale.GetMatrix();
         invRot = glm::inverse(parent->GetRotation());
-    } else
+
+    {
+        glm::vec3 invScaleX = glm::vec3(invScale.GetMatrix()[0]);
+        glm::vec3 invScaleY = glm::vec3(invScale.GetMatrix()[1]);
+        glm::vec3 invScaleZ = glm::vec3(invScale.GetMatrix()[2]);
+        float invScaleXVal = glm::length(invScaleX);
+        float invScaleYVal = glm::length(invScaleY);
+        float invScaleZVal = glm::length(invScaleZ);
+        invScale.SetScale(glm::vec3(invScaleXVal, invScaleYVal, invScaleZVal));
+    }
+    {
+        glm::vec3 invScaleX = glm::vec3(invPose.GetMatrix()[0]);
+        glm::vec3 invScaleY = glm::vec3(invPose.GetMatrix()[1]);
+        glm::vec3 invScaleZ = glm::vec3(invPose.GetMatrix()[2]);
+        float invScaleXVal = glm::length(invScaleX);
+        float invScaleYVal = glm::length(invScaleY);
+        float invScaleZVal = glm::length(invScaleZ);
+        invPose.SetScale(glm::vec3(invScaleXVal, invScaleYVal, invScaleZVal));
+    }
+
+        invOffset = (invOffset + parent->GetPosition()) * invScale.GetScale();
+    } else {
         inverseTransform = glm::mat4x4(1.0f);
+    }
 }
 
 void Component::UpdateInverseTree()
@@ -64,7 +88,6 @@ void Component::UpdateMatrixTree(const glm::mat4x4& parentTR, const glm::mat4x4&
     }
 
     *globalTransform = TR * S;
-    // globalTransform->UpdateTransform();
 
     for (Component* child : children) {
         child->UpdateMatrixTree(TR, S);
@@ -135,9 +158,8 @@ void Component::SetPosition(const glm::vec3& position) {
 
 
         auto vec = position * invPose.GetScale();
-        vec -= parent->localTransform->GetPosition();
+        vec -= parent->GetPosition();
         glm::vec3 local = invRot * vec;
-        std::cout << "Offset:" << printVec3(local) << std::endl;
 
         localTransform->SetPosition(local);
     } else {
@@ -159,20 +181,6 @@ void Component::SetRotation(const glm::quat& rotation) {
 }
 void Component::SetScale(const glm::vec3& scale) {
     if (parent) {
-        glm::vec3 invScaleX = glm::vec3(invScale.GetMatrix()[0]);
-        glm::vec3 invScaleY = glm::vec3(invScale.GetMatrix()[1]);
-        glm::vec3 invScaleZ = glm::vec3(invScale.GetMatrix()[2]);
-
-        float invScaleXVal = glm::length(invScaleX);
-        float invScaleYVal = glm::length(invScaleY);
-        float invScaleZVal = glm::length(invScaleZ);
-
-        invScale.SetScale(glm::vec3(invScaleXVal, invScaleYVal, invScaleZVal));
-
-        std::cout << "1:" << printVec3(parent->localTransform->GetScale()) << std::endl;
-        std::cout << "2:" << printVec3(invScale.GetScale()) << std::endl;
-        std::cout << "2:" << printVec3(invPose.GetScale()) << std::endl;
-        std::cout << std::endl;
         localTransform->SetScale(scale * invScale.GetScale());
     } else {
         localTransform->SetScale(scale);

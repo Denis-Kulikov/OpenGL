@@ -8,13 +8,15 @@ protected:
     Component(RigidTransform *transform);
 
 public:
+    void SetGlobalTransform(const glm::mat4& desiredGlobalTransform);
+
     Component(Transform *transform);
     ~Component();
 
     virtual void UpdateInverse();
     void UpdateInverseTree();
     virtual void UpdateMatrix();
-    void UpdateMatrixTree(const glm::mat4x4& parentTR = 1, const glm::mat4x4& parentS = 1);
+    virtual void UpdateMatrixTree(const glm::mat4x4& parentTR = glm::mat4(1.0f), const glm::mat4x4& parentS = glm::mat4(1.0f));
     // void UpdateMatrixTree();
     void Spawn(const Transform &startTransform);
 
@@ -51,7 +53,7 @@ public:
     std::vector<Component*> children;
     Component *parent = nullptr;
 
-protected:
+// protected:
     Transformable *globalTransform = nullptr;
     Transformable *localTransform = nullptr;
     Transform inverseTransform;
@@ -59,6 +61,7 @@ protected:
     Transform invPose;
     Transform invTR;
     glm::quat invRot;
+    glm::vec3 invOffset;
 };
 
 
