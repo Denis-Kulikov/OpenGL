@@ -8,8 +8,6 @@ protected:
     Component(RigidTransform *transform);
 
 public:
-    void SetGlobalTransform(const glm::mat4& desiredGlobalTransform);
-
     Component(Transform *transform);
     ~Component();
 
@@ -31,11 +29,11 @@ public:
     glm::quat GetGlobalRotation() const;
     glm::vec3 GetGlobalScale() const;
 
-
+    void FixPosition(const glm::vec3& scale);
     void SetPosition(const glm::vec3& position);
     void SetRotation(const glm::vec3& rotation);
     void SetRotation(const glm::quat& rotation);
-    void SetScale(const glm::vec3& scale);
+    void SetScale(glm::vec3 scale);
 
     void Move(const glm::vec3& offset);
     void Move(glm::vec3 direction, float distance);
@@ -56,10 +54,8 @@ public:
 // protected:
     Transformable *globalTransform = nullptr;
     Transformable *localTransform = nullptr;
-    Transform inverseTransform;
     Transform invScale;
     Transform invPose;
-    Transform invTR;
     glm::quat invRot;
     glm::vec3 invOffset;
 };

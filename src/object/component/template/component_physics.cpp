@@ -6,11 +6,9 @@ ComponentPhysics::ComponentPhysics(RigidTransform *transform)
 {}
 
 void ComponentPhysics::UpdateInverse() {
-    if (!fIsInit) {
-        localTransform->UpdateMatrix();
-        inverseTransform = glm::inverse(localTransform->GetMatrix());
-        fIsInit = true;
-    }
+    invScale = glm::mat4x4(1.f);
+    invRot = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
+    invOffset = glm::vec3(0);
 }
 
 void ComponentPhysics::UpdateMatrix() {

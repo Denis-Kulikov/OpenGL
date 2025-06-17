@@ -112,18 +112,27 @@ Scene *createScene()
 
     auto cube = new Tree();
     cube->Teleport(glm::vec3(0, 0, 4));
+    // cube->MultiplyScale(glm::vec3(0.5));
+    // cube->rootComponent->SetRotation(glm::vec3(24, 72, -36));
     scene->pushObject(cube);
 
+    cube->rootComponent->UpdateMatrixTree();
+    auto c = cube->rootComponent;
+    while (!c->children.empty()) {
+        c = c->children[0];
+    }
+    std::cout << printVec3(c->GetGlobalPosition()) << std::endl;
+
     auto grass = new Grass();
-    grass->Teleport(glm::vec3(0, 2, 4));
+    grass->Teleport(glm::vec3(0, 2.0, 4));
     grass->rootComponent->SetScale(glm::vec3(0.3));
     grass->rootComponent->SetRotation(glm::vec3(90, 0, 0));
     scene->pushObject(grass);
 
-    auto cubeX = new WoodenBox();
-    cubeX->Teleport(glm::vec3(0, 2.3, 4));
-    cubeX->SetScale(glm::vec3(0.1));
-    scene->pushObject(cubeX);
+    // auto cubeX = new WoodenBox();
+    // cubeX->Teleport(glm::vec3(0, 2.3, 4));
+    // cubeX->SetScale(glm::vec3(0.1));
+    // scene->pushObject(cubeX);
 
     // auto sphere = new BrickSphere();
     // sphere->Teleport(glm::vec3(0, 1, 10));
