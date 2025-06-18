@@ -33,5 +33,5 @@ void RenderManager::initializePrimitive()
 {
     primitives.sprite = new Sprite();
     primitives.cube = new Cube();
-    primitives.sphere = new Sphere<10>();
+    primitives.sphere = new Sphere<16>();
 }

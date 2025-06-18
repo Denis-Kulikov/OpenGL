@@ -54,9 +54,8 @@ public:
 // protected:
     Transformable *globalTransform = nullptr;
     Transformable *localTransform = nullptr;
-    Transform invScale;
-    Transform invPose;
     glm::quat invRot;
+    glm::vec3 invScale;
     glm::vec3 invOffset;
 };
 

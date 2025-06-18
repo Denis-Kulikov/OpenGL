@@ -9,18 +9,16 @@ glm::vec3 quatToEuler(const glm::quat& q);
 Component::Component(RigidTransform *transform)
     : localTransform(transform), globalTransform(transform)
 {
-    invScale = glm::mat4x4(1.f);
-    invPose = glm::mat4x4(1.f);
     invRot = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
+    invScale = glm::vec3(1.f);
     invOffset = glm::vec3(0);
 }
 
 Component::Component(Transform *transform)
     : localTransform(transform), globalTransform(new Transform()) 
 {
-    invScale = glm::mat4x4(1.f);
-    invPose = glm::mat4x4(1.f);
     invRot = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
+    invScale = glm::vec3(1.f);
     invOffset = glm::vec3(0);
 }
 
@@ -32,32 +30,25 @@ Component::~Component() {
 
 void Component::UpdateInverse() {
     if (parent) {
-        invScale = glm::inverse(glm::scale(glm::mat4(1.0f), parent->GetScale()));
-        invScale = parent->invScale.GetMatrix() * invScale.GetMatrix();
-        invScale.UpdateTransform();
+        Transform invScaleMat4x4;
+        invScaleMat4x4 = glm::inverse(glm::scale(glm::mat4(1.0f), parent->GetScale()));
+        invScaleMat4x4.UpdateTransform();
 
-        if (parent->parent) {
-            invPose = glm::inverse(glm::scale(glm::mat4(1.0f), parent->parent->GetScale()));
-            invPose = parent->invPose.GetMatrix() * invPose.GetMatrix();
-            invPose.UpdateTransform();
-        }
+        invScale = parent->invScale * invScaleMat4x4.GetScale();
 
-        invRot = glm::inverse(parent->GetRotation());
+        invRot = parent->invRot * glm::inverse(parent->GetRotation());
 
         invOffset = parent->invOffset + parent->GetPosition();
         // invOffset = parent->invOffset + parent->GetPosition();
 
-        std::cout << "invScale: " << printVec3(invScale.GetScale()) << std::endl;
-        std::cout << "invPose: " << printVec3(invPose.GetScale()) << std::endl;
-        std::cout << "parent->invPose: " << printVec3(parent->invOffset) << std::endl;
-        std::cout << "parent->GetPosition: " << printVec3(parent->GetPosition()) << std::endl;
-        std::cout << "invOffset: " << printVec3(invOffset) << std::endl;
+        // std::cout << "invScale: " << printVec3(invScale) << std::endl;
+        // std::cout << "invRot: " << printVec3(quatToEuler(invRot)) << std::endl;
+        // std::cout << "parent->GetPosition: " << printVec3(parent->GetPosition()) << std::endl;
+        // std::cout << "invOffset: " << printVec3(invOffset) << std::endl;
         std::cout << std::endl;
-
-
     } else {
-        invScale = glm::mat4x4(1.f);
         invRot = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
+        invScale = glm::vec3(1.f);
         invOffset = glm::vec3(0);
     }
 }
@@ -154,15 +145,7 @@ void Component::FixPosition(const glm::vec3& scale) {
 
 void Component::SetPosition(const glm::vec3& position) {
     if (parent) {
-        auto vec = position;
-        vec -= invOffset;
-        // vec *= invScale.GetScale();
-        // std::cout << "invScale: " << printVec3(invScale.GetScale()) << std::endl;
-        // std::cout << "invOffset: " << printVec3(invOffset) << std::endl;
-        // std::cout << "vec: " << printVec3(vec) << std::endl;
-        // std::cout << std::endl;
-        glm::vec3 local = invRot * vec;
-
+        auto local = glm::inverse(parent->GetRotation()) * (position - invOffset);
         localTransform->SetPosition(local);
     } else {
         localTransform->SetPosition(position);
@@ -174,8 +157,6 @@ void Component::SetRotation(const glm::vec3& rotation) {
 }
 void Component::SetRotation(const glm::quat& rotation) {
     if (parent) {
-        // glm::quat parentRotation = parent->localTransform->GetRotation();
-        // glm::quat localRotation = glm::inverse(parentRotation);
         localTransform->SetRotation(invRot * rotation);
     } else {
         localTransform->SetRotation(rotation);
@@ -183,7 +164,7 @@ void Component::SetRotation(const glm::quat& rotation) {
 }
 void Component::SetScale(glm::vec3 scale) {
     if (parent) {
-        scale *= invScale.GetScale();
+        scale *= invScale;
     }
     
     glm::vec3 scaleChange = scale / localTransform->GetScale();
@@ -214,6 +195,10 @@ void Component::AddChild(Component* child) {
     children.push_back(child);
     child->parent = this;
 
-    // UpdateInverse();
+    UpdateInverse();
     child->UpdateInverse();
+
+    child->SetPosition({0, 0, 0});
+    child->SetRotation({0, 0, 0});
+    child->SetScale({1, 1, 1});
 }

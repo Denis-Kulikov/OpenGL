@@ -46,6 +46,20 @@ void flipVertically(unsigned char* data, int width, int height, int channels) {
     }
 }
 
+Tree* tree;
+float GetBranchSwingValue(float frequency = 0.7f, float amplitude = 10.0f) {
+    using namespace std::chrono;
+    static auto startTime = high_resolution_clock::now();
+    
+    auto now = high_resolution_clock::now();
+    float timeSeconds = duration<float>(now - startTime).count();
+
+    // Значение колеблется от -amplitude до +amplitude
+    float swing = std::sin(timeSeconds * frequency * 2.0f * 3.14159f) * amplitude;
+
+    // Центр смещения — 50, итоговый диапазон: [40, 60]
+    return 20.0f + swing;
+}
 
 void Callback(Scene *scene) {
     TimeManager::Update();
@@ -57,6 +71,9 @@ void Callback(Scene *scene) {
     GlobalState::GetPlayer()->MoveForward();
 
     static ThreadPool threadPool(8, 24);
+
+    tree->rootComponent->children[0]->SetRotation(glm::vec3(GetBranchSwingValue(), 0.f, 0.f));
+    tree->rootComponent->children[0]->children[0]->children[1]->SetRotation(glm::vec3(GetBranchSwingValue(), 0.f, 0.f));
 
     for (auto &it : scene->actors)
         it->Render();
@@ -110,28 +127,22 @@ Scene *createScene()
     scene->pushObject(character);
 
 
-    auto cube = new Tree();
-    cube->Teleport(glm::vec3(0, 0, 4));
-    // cube->MultiplyScale(glm::vec3(0.5));
-    // cube->rootComponent->SetRotation(glm::vec3(24, 72, -36));
-    scene->pushObject(cube);
+    tree = new Tree();
+    tree->Teleport(glm::vec3(0, -0.0, 4));
+    //cube->MultiplyScale(glm::vec3(0.5));
+    //cube->rootComponent->SetRotation(glm::vec3(24, 72, -36));
+    scene->pushObject(tree);
 
-    cube->rootComponent->UpdateMatrixTree();
-    auto c = cube->rootComponent;
-    while (!c->children.empty()) {
-        c = c->children[0];
-    }
-    std::cout << printVec3(c->GetGlobalPosition()) << std::endl;
 
     auto grass = new Grass();
-    grass->Teleport(glm::vec3(0, 2.0, 4));
-    grass->rootComponent->SetScale(glm::vec3(0.3));
+    grass->Teleport(glm::vec3(1, -1.0, 5.5));
+    grass->rootComponent->SetScale(glm::vec3(5.3));
     grass->rootComponent->SetRotation(glm::vec3(90, 0, 0));
     scene->pushObject(grass);
 
     // auto cubeX = new WoodenBox();
-    // cubeX->Teleport(glm::vec3(0, 2.3, 4));
-    // cubeX->SetScale(glm::vec3(0.1));
+    // cubeX->Teleport(glm::vec3(2, 2.3, 4));
+    // // cubeX->SetScale(glm::vec3(0.3));
     // scene->pushObject(cubeX);
 
     // auto sphere = new BrickSphere();

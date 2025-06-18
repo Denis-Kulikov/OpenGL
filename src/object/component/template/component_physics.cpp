@@ -6,8 +6,8 @@ ComponentPhysics::ComponentPhysics(RigidTransform *transform)
 {}
 
 void ComponentPhysics::UpdateInverse() {
-    invScale = glm::mat4x4(1.f);
     invRot = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
+    invScale = glm::vec3(1.f);
     invOffset = glm::vec3(0);
 }
 

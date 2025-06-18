@@ -6,18 +6,18 @@ src_path = Path("src")
 output_file = "project_code_report.txt"
 
 module_descriptions = {
-    "managers": "Менеджеры, управляющие глобальным состоянием и системами.",
-    "render": "Классы для управления рендерингом.",
-    "object/material": "Графические ресурсы: шейдеры, материалы и текстуры.",
-    "object/geometry": "Геометрия объектов: меши, примитивы, скелеты и анимации.",
-    "object/transform": "Компоненты, отвечающие за трансформации объектов.",
-    "object/component/template": "Шаблонные компоненты.",
-    "object/component": "Компоненты сущностей.",
-    "object/entities/decore": "Декоративные объекты сцены.",
-    "object/entities/mobes": "Объекты передвижения и NPC.",
-    "object/entities/playeble": "Игровые персонажи.",
-    "object/entities": "Общие сущности и сцена.",
-    "threads": "Пул потоков для параллельного сохранения скриншотов.",
+    "managers": "",
+    "render": "",
+    "object/material": "",
+    "object/geometry": "",
+    "object/transform": "",
+    "object/component/template": "",
+    "object/component": "",
+    "object/entities/decore": "",
+    "object/entities/mobes": "",
+    "object/entities/playeble": "",
+    "object/entities": "",
+    "threads": "",
 }
 
 def collect_files():
@@ -43,21 +43,24 @@ def read_file(file_path):
         return f"// Ошибка чтения файла: {e}"
 
 def generate_report(code_map):
+    listing_counter = 1
     with open(output_file, "w", encoding="utf-8") as out:
         for module, files in sorted(code_map.items()):
             for hpp, cpp in sorted(files):
                 title = hpp.relative_to(include_path)
-                out.write(f"\nФайл: include\{title}\n\n")
+                out.write(f"Листинг A.{listing_counter} – Файл include\\{title}\n\n")
                 out.write(read_file(hpp))
                 out.write("\n\n")
+                listing_counter += 1
+                
                 if cpp:
                     title_cpp = cpp.relative_to(src_path)
-                    out.write(f"Реализация: src\{title_cpp}\n\n")
+                    out.write(f"Листинг A.{listing_counter} – Файл src\\{title_cpp}\n\n")
                     out.write(read_file(cpp))
                     out.write("\n\n")
+                    listing_counter += 1
 
-        print(f"[✓] Сохранён отчёт: {output_file}")
-
+        print(f"[✓] Отчёт сохранён: {output_file}")
 
 if __name__ == "__main__":
     code_data = collect_files()

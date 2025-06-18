@@ -20,7 +20,7 @@ public:
     inline static struct {
         Sprite* sprite = nullptr;
         Cube* cube = nullptr;
-        Sphere<10>* sphere = nullptr;
+        Sphere<16>* sphere = nullptr;
     } primitives;
 
     inline static Camera::struct_PersProj PersProj;
