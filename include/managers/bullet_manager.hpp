@@ -12,6 +12,8 @@ public:
     static void AddCollisionObject(btCollisionObject* collisionObject);
     static void RemoveCollisionObject(btCollisionObject* collisionObject);
     
+    static void UpdateSingleAabb(btRigidBody* body);
+
     static void StepSimulation(float deltaTime);
 
 private:

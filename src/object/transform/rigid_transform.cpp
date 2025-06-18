@@ -7,9 +7,6 @@ RigidTransform::RigidTransform(btCollisionShape* baseShape, btScalar mass, const
     if (mass != 0.f && baseShape)
         baseShape->calculateLocalInertia(mass, localInertia);
 
-    if (baseShape)
-        baseShape->setLocalScaling(btVector3(scale.x, scale.y, scale.z));
-
     btDefaultMotionState* motionState = new btDefaultMotionState();
 
     btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, motionState, baseShape, localInertia);
@@ -120,7 +117,19 @@ glm::vec3 RigidTransform::GetScale() const
 
 void RigidTransform::SetScale(const glm::vec3& scale)
 {
-    Scale = scale;
+    if (rigidBody && rigidBody->getCollisionShape()) {
+        Scale = scale;
+        
+        rigidBody->getCollisionShape()->setLocalScaling(btVector3(
+            scale.x,
+            scale.y,
+            scale.z
+        ));
+        
+        if (rigidBody->isStaticObject()) {
+            BulletManager::UpdateSingleAabb(rigidBody);
+        }
+    }
 }
 
 void RigidTransform::SetPosition(const glm::vec3& position)
@@ -130,6 +139,10 @@ void RigidTransform::SetPosition(const glm::vec3& position)
     transform.setOrigin(btVector3(position.x, position.y, position.z));
     rigidBody->getMotionState()->setWorldTransform(transform);
     rigidBody->setWorldTransform(transform);
+
+    if (rigidBody->isStaticObject()) {
+        BulletManager::UpdateSingleAabb(rigidBody);
+    }
 }
 
 void RigidTransform::SetRotation(const glm::quat& rotation)
@@ -139,6 +152,10 @@ void RigidTransform::SetRotation(const glm::quat& rotation)
     transform.setRotation(btQuaternion(rotation.x, rotation.y, rotation.z, rotation.w));
     rigidBody->getMotionState()->setWorldTransform(transform);
     rigidBody->setWorldTransform(transform);
+
+    if (rigidBody->isStaticObject()) {
+        BulletManager::UpdateSingleAabb(rigidBody);
+    }
 }
 
 void RigidTransform::Move(const glm::vec3& offset)

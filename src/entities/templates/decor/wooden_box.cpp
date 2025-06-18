@@ -6,33 +6,29 @@ WoodenBox::WoodenBox()
 {
     std::cout << name << std::endl;
 
+    glm::vec3 scale(1.f);
+    btScalar mass = 2.0f;
+    btCollisionShape* colliderShape = new btBoxShape(btVector3(
+        scale.x, 
+        scale.y, 
+        scale.z
+    ));
+    
+    RigidTransform* rigidBody = new RigidTransform(
+        colliderShape, 
+        mass, 
+        scale
+    );
+
+    ComponentPhysics *body = CreateComponent<ComponentPhysics>(rigidBody);
+
     ComponentShape *shape1 = CreateComponent<ComponentShape>(new Transform());
+    body->AddChild(shape1);
     shape1->shape = RenderManager::primitives.cube;
-    shape1->SetRotation(glm::vec3(0.0, 45, 0));
-    shape1->SetScale(glm::vec3(0.5));
+    shape1->SetScale(scale);
     shape1->material = Material::Find("WoodenBox");
 
-    ComponentShape *shape2 = CreateComponent<ComponentShape>(new Transform());
-    shape1->AddChild(shape2);
-    shape2->shape = RenderManager::primitives.cube;
-    shape2->SetPosition(glm::vec3(1.0, 1.5, 0.0));
-    // shape2->SetRotation(glm::vec3(0.0, 0, 0));
-    // shape2->SetScale(glm::vec3(0.5));
-    // shape2->SetScale(glm::vec3(1.0, 1, 1));
-    // shape2->SetScale(glm::vec3(1));
-    shape2->material = Material::Find("WoodenBox");
-
-    Transform *transform3 = new Transform();
-    ComponentShape *shape3 = CreateComponent<ComponentShape>(transform3);
-    shape3->shape = RenderManager::primitives.cube;
-    shape2->AddChild(shape3);
-    shape3->SetPosition(glm::vec3(0.0, 3.5, 0.0));
-    // shape3->SetRotation(glm::vec3(0, 45, 0));
-    shape3->SetScale(glm::vec3(2.0, 1, 1.0));
-    shape3->material = Material::Find("WoodenBox");
-
-
-    rootComponent = shape1;
+    rootComponent = body;
 }
 
 WoodenBox::~WoodenBox() {}

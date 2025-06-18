@@ -37,6 +37,10 @@ void BulletManager::RemoveCollisionObject(btCollisionObject* collisionObject) {
     delete collisionObject;
 }
 
+void BulletManager::UpdateSingleAabb(btRigidBody* body) {
+    dynamicsWorld->updateSingleAabb(body);
+}
+
 void BulletManager::StepSimulation(float deltaTime) {
     dynamicsWorld->stepSimulation(deltaTime, 10);
 }

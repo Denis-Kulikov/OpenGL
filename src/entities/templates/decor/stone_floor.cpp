@@ -7,7 +7,7 @@ StoneFloor::StoneFloor()
     std::cout << name << std::endl;
 
     btScalar mass = 0.0f;
-    glm::vec3 scale(4, 4, 0.001f);
+    glm::vec3 scale(10, 10, 0.001f);
     btCollisionShape* colliderShape = new btBoxShape(btVector3(scale.x, scale.y, scale.z));
     RigidTransform * rigidBody = new RigidTransform(colliderShape, mass, scale);
     ComponentPhysics *body = CreateComponent<ComponentPhysics>(rigidBody);
@@ -15,10 +15,10 @@ StoneFloor::StoneFloor()
 
     Transform *transform = new Transform();
     ComponentShape *shape = CreateComponent<ComponentShape>(transform);
-    shape->shape = RenderManager::primitives.sprite;
     body->AddChild(shape);
-    shape->SetScale({4, 4, 1});
-    // shape->SetScale({1, 1000, 1});
+    shape->shape = RenderManager::primitives.sprite;
+    shape->SetScale(scale);
+    shape->SetRotation({-90, 0, 0});
     shape->material = Material::Find("stone_floor");
 
     rootComponent = body;

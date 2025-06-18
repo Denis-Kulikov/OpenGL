@@ -33,7 +33,6 @@ void Component::UpdateInverse() {
         Transform invScaleMat4x4;
         invScaleMat4x4 = glm::inverse(glm::scale(glm::mat4(1.0f), parent->GetScale()));
         invScaleMat4x4.UpdateTransform();
-
         invScale = parent->invScale * invScaleMat4x4.GetScale();
 
         invRot = parent->invRot * glm::inverse(parent->GetRotation());
@@ -45,7 +44,7 @@ void Component::UpdateInverse() {
         // std::cout << "invRot: " << printVec3(quatToEuler(invRot)) << std::endl;
         // std::cout << "parent->GetPosition: " << printVec3(parent->GetPosition()) << std::endl;
         // std::cout << "invOffset: " << printVec3(invOffset) << std::endl;
-        std::cout << std::endl;
+        // std::cout << std::endl;
     } else {
         invRot = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
         invScale = glm::vec3(1.f);

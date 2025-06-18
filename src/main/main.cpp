@@ -72,8 +72,8 @@ void Callback(Scene *scene) {
 
     static ThreadPool threadPool(8, 24);
 
-    tree->rootComponent->children[0]->SetRotation(glm::vec3(GetBranchSwingValue(), 0.f, 0.f));
-    tree->rootComponent->children[0]->children[0]->children[1]->SetRotation(glm::vec3(GetBranchSwingValue(), 0.f, 0.f));
+    // tree->rootComponent->children[0]->SetRotation(glm::vec3(GetBranchSwingValue(), 0.f, 0.f));
+    // tree->rootComponent->children[0]->children[0]->children[1]->SetRotation(glm::vec3(GetBranchSwingValue(), 0.f, 0.f));
 
     for (auto &it : scene->actors)
         it->Render();
@@ -124,34 +124,43 @@ Scene *createScene()
     auto *scene = new Scene();
 
     Actor *character = new Ghost();
+    character->Teleport(glm::vec3(0, 0, -2.5));
     scene->pushObject(character);
 
 
-    tree = new Tree();
-    tree->Teleport(glm::vec3(0, -0.0, 4));
-    //cube->MultiplyScale(glm::vec3(0.5));
-    //cube->rootComponent->SetRotation(glm::vec3(24, 72, -36));
-    scene->pushObject(tree);
+    // tree = new Tree();
+    // tree->Teleport(glm::vec3(0, -0.0, 4));
+    // scene->pushObject(tree);
 
 
-    auto grass = new Grass();
-    grass->Teleport(glm::vec3(1, -1.0, 5.5));
-    grass->rootComponent->SetScale(glm::vec3(5.3));
-    grass->rootComponent->SetRotation(glm::vec3(90, 0, 0));
-    scene->pushObject(grass);
+    // auto grass = new Grass();
+    // grass->Teleport(glm::vec3(1, -1.0, 5.5));
+    // grass->rootComponent->SetScale(glm::vec3(5.3));
+    // grass->rootComponent->SetRotation(glm::vec3(90, 0, 0));
+    // scene->pushObject(grass);
 
     // auto cubeX = new WoodenBox();
-    // cubeX->Teleport(glm::vec3(2, 2.3, 4));
-    // // cubeX->SetScale(glm::vec3(0.3));
+    // cubeX->Teleport(glm::vec3(0, 2.3, 10));
     // scene->pushObject(cubeX);
 
-    // auto sphere = new BrickSphere();
-    // sphere->Teleport(glm::vec3(0, 1, 10));
-    // scene->pushObject(sphere);
+    float boxHeight = 2.0f;
+    float startY = -4.0f;
 
-    // auto floor = new StoneFloor();
-    // floor->Teleport(glm::vec3(0, -3, 10));
-    // scene->pushObject(floor);
+    for (int i = 0; i < 5; i++) {
+        auto box = new WoodenBox();
+        box->Teleport(glm::vec3(0, startY + i * boxHeight, 10));
+        scene->pushObject(box);
+    }
+
+
+    auto sphere = new BrickSphere();
+    sphere->Teleport(glm::vec3(10, 3, 10));
+    static_cast<RigidTransform*>(sphere->rootComponent->localTransform)->ApplyImpulse(glm::vec3(-50, 0, 0)); // Импульс влево (к ящикам)
+    scene->pushObject(sphere);
+
+    auto floor = new StoneFloor();
+    floor->Teleport(glm::vec3(0, -5, 10));
+    scene->pushObject(floor);
 
     // auto female = new Female();
     // female->rootComponent->SetRotation(glm::vec3(-90, 180 + 30, 0));
@@ -175,7 +184,7 @@ int main(int argc, char** argv)
     RenderManager::Initialize(70.0f, width, height, 0.1f, 1000.0f);
     BulletManager::Initialize();
     TimeManager::Initialize();
-    // GlobalState::FPS = 65;
+    GlobalState::FPS = 45;
 
     Scene *scene(createScene());
     WindowManager::SwapBuffer();

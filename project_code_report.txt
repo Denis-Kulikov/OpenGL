@@ -1,0 +1,4255 @@
+Листинг A.1 – Файл include\managers\bullet_manager.hpp
+
+#pragma once
+#include <btBulletDynamicsCommon.h>
+
+class BulletManager {
+public:
+    static void Initialize();
+    static void Dispose();
+
+    static void AddRigidBody(btRigidBody* body);
+    static void RemoveRigidBody(btRigidBody* body);
+
+    static void AddCollisionObject(btCollisionObject* collisionObject);
+    static void RemoveCollisionObject(btCollisionObject* collisionObject);
+    
+    static void UpdateSingleAabb(btRigidBody* body);
+
+    static void StepSimulation(float deltaTime);
+
+private:
+    inline static btBroadphaseInterface* broadphase = nullptr;
+    inline static btDefaultCollisionConfiguration* collisionConfiguration = nullptr;
+    inline static btCollisionDispatcher* dispatcher = nullptr;
+    inline static btSequentialImpulseConstraintSolver* solver = nullptr;
+    inline static btDiscreteDynamicsWorld* dynamicsWorld = nullptr;
+};
+
+
+Листинг A.2 – Файл src\managers\bullet_manager.cpp
+
+#include <managers/bullet_manager.hpp>
+
+void BulletManager::Initialize() {
+    collisionConfiguration = new btDefaultCollisionConfiguration();
+    dispatcher = new btCollisionDispatcher(collisionConfiguration);
+    broadphase = new btDbvtBroadphase();
+    solver = new btSequentialImpulseConstraintSolver();
+    dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, broadphase, solver, collisionConfiguration);
+
+    dynamicsWorld->setGravity(btVector3(0, -9.81f, 0));
+}
+
+void BulletManager::Dispose() {
+    delete dynamicsWorld;
+    delete solver;
+    delete broadphase;
+    delete dispatcher;
+    delete collisionConfiguration;
+}
+
+
+void BulletManager::AddRigidBody(btRigidBody* body) {
+    dynamicsWorld->addRigidBody(body);
+}
+
+void BulletManager::RemoveRigidBody(btRigidBody* body) {
+    dynamicsWorld->removeRigidBody(body);
+    delete body;
+}
+
+void BulletManager::AddCollisionObject(btCollisionObject* collisionObject) {
+    dynamicsWorld->addCollisionObject(collisionObject);
+}
+
+void BulletManager::RemoveCollisionObject(btCollisionObject* collisionObject) {
+    dynamicsWorld->removeCollisionObject(collisionObject);
+    delete collisionObject;
+}
+
+void BulletManager::UpdateSingleAabb(btRigidBody* body) {
+    dynamicsWorld->updateSingleAabb(body);
+}
+
+void BulletManager::StepSimulation(float deltaTime) {
+    dynamicsWorld->stepSimulation(deltaTime, 10);
+}
+
+
+Листинг A.3 – Файл include\managers\global_state.hpp
+
+#pragma once
+#include "../entities/actor.hpp"
+
+class GlobalState  
+{
+public:
+    static void TerminateApp();
+    static void SetPlayer(Actor* newPlayer);
+    static Actor* GetPlayer();
+
+    inline static Actor* player = nullptr;
+    inline static bool fIsAppRunning = true;
+    inline static bool fScreenshot = false;
+    inline static int ScreenshotCounter = 0;
+    inline static int FrameCounter = 0;
+    inline static int FPS = 0;
+};
+
+
+Листинг A.4 – Файл src\managers\global_state.cpp
+
+#include <managers/global_state.hpp> 
+
+void GlobalState::TerminateApp() {
+    fIsAppRunning = false;
+}
+
+void GlobalState::SetPlayer(Actor* newPlayer) {
+    player = newPlayer;
+}
+
+Actor* GlobalState::GetPlayer() {
+    return player;
+}
+
+
+Листинг A.5 – Файл include\managers\render_manager.hpp
+
+#pragma once
+#include <render/pipeline.hpp>
+#include <object/geometry/primitive/sprite.hpp>
+#include <object/geometry/primitive/cube.hpp>
+#include <object/geometry/primitive/sphere.hpp>
+
+class RenderManager  
+{
+public:
+    static void Initialize(GLfloat FOV, GLfloat Width, GLfloat Height, GLfloat zNear, GLfloat zFar);
+    static void Dispose();
+
+    static void PushCamera(ComponentCamera* camera);
+    static void UpdateCamera();
+
+    static void initializePrimitive();
+
+    inline static Pipeline pipeline;
+
+    inline static struct {
+        Sprite* sprite = nullptr;
+        Cube* cube = nullptr;
+        Sphere<16>* sphere = nullptr;
+    } primitives;
+
+    inline static Camera::struct_PersProj PersProj;
+};
+
+
+Листинг A.6 – Файл src\managers\render_manager.cpp
+
+#include <managers/render_manager.hpp> 
+
+void RenderManager::Initialize(GLfloat FOV, GLfloat Width, GLfloat Height, GLfloat zNear, GLfloat zFar)
+{
+    if (glewInit() != GLEW_OK) {
+        std::cerr << "Error: Failed to initialize GLEW" << std::endl;
+        exit(EXIT_FAILURE);
+    }
+
+    PersProj = {FOV, Width, Height, zNear, zFar};
+    glEnable(GL_DEPTH_TEST);
+    glClearColor(0.12f, 0.12f, 0.12f, 0.0f);
+    initializePrimitive();
+
+    Texture::Create("white", "img/white.png");
+}
+
+void RenderManager::Dispose() {}
+
+void RenderManager::PushCamera(ComponentCamera* camera)
+{
+    pipeline.camera = camera;
+}
+
+void RenderManager::UpdateCamera()
+{
+    if (RenderManager::pipeline.camera != nullptr) {
+        RenderManager::pipeline.camera->camera.UpdateTarget();
+    }
+}
+
+void RenderManager::initializePrimitive()
+{
+    primitives.sprite = new Sprite();
+    primitives.cube = new Cube();
+    primitives.sphere = new Sphere<16>();
+}
+
+
+Листинг A.7 – Файл include\managers\time_manager.hpp
+
+#pragma once
+#include <chrono>
+
+class TimeManager {
+public:
+    static void Initialize();
+    static void Update();
+    static float GetDeltaTime();
+    static float GetCurrentTime();
+
+private:
+    static inline std::chrono::steady_clock::time_point m_prevTime;
+    static inline std::chrono::steady_clock::time_point m_currentTime;
+    static inline std::chrono::steady_clock::time_point Start;
+};
+
+
+Листинг A.8 – Файл src\managers\time_manager.cpp
+
+#include <managers/time_manager.hpp>
+#include <managers/global_state.hpp>
+
+void TimeManager::Initialize() {
+    Start = m_currentTime = m_prevTime = std::chrono::steady_clock::now();
+}
+
+void TimeManager::Update() {
+    m_prevTime = m_currentTime;
+    if (GlobalState::FPS) {
+        std::chrono::duration<double> frameDuration(1.0 / GlobalState::FPS);
+        auto frameDurationNs = std::chrono::duration_cast<std::chrono::steady_clock::duration>(frameDuration);
+        m_currentTime += frameDurationNs;
+    } else {
+        m_currentTime = std::chrono::steady_clock::now();
+    }
+}
+
+float TimeManager::GetDeltaTime() {
+    std::chrono::duration<float> deltaTime = m_currentTime - m_prevTime;
+    return deltaTime.count();
+}
+
+float TimeManager::GetCurrentTime() {
+    std::chrono::duration<float> currentTime = m_currentTime - Start;
+    return currentTime.count();
+}
+
+
+Листинг A.9 – Файл include\managers\window_manager.hpp
+
+#pragma once
+
+struct GLFWwindow;
+
+class WindowManager  
+{
+public:
+    static void Initialize(GLfloat Width, GLfloat Height);
+    static void Dispose();
+
+    static void SwapBuffer();
+    static void MouseCB(GLFWwindow* window, double xpos, double ypos);
+    static void KeyboardCB(GLFWwindow* window, int key, int scancode, int action, int mods);
+
+private:
+    struct Buttons {
+        int yaw = 0;
+        int pitch = 0;
+
+        float lastX = 400, lastY = 300;
+
+        bool cursor_disable = true;
+        bool firstMouse = true;
+    };
+
+    inline static Buttons buttons = {0, 0, 400, 300, true, true};
+    inline static GLFWwindow* window = nullptr;
+    inline static int width = 640;
+    inline static int height = 480;
+};
+
+
+Листинг A.10 – Файл src\managers\window_manager.cpp
+
+#include <managers/global_state.hpp> 
+#include <managers/render_manager.hpp> 
+#include <managers/time_manager.hpp> 
+#include <managers/window_manager.hpp> 
+#include <GLFW/glfw3.h>
+
+void WindowManager::Initialize(GLfloat Width, GLfloat Height) {
+    width = Width;
+    height = Height;
+
+    if (!glfwInit()) {
+        std::cerr << "Error: Failed to initialize GLFW" << std::endl;
+        exit(EXIT_FAILURE);
+    }
+
+    glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+    window = glfwCreateWindow(width, height, "Game", NULL, NULL);
+    if (!window) {
+        glfwTerminate();
+        std::cerr << "Error: Failed to create GLFW window" << std::endl;
+        exit(EXIT_FAILURE);
+    }
+
+    glfwMakeContextCurrent(window);
+    glfwSetCursorPosCallback(window, WindowManager::MouseCB);
+    glfwSetKeyCallback(window, WindowManager::KeyboardCB);
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
+    glfwSetWindowPos(window, 150, 75);
+}
+
+void WindowManager::Dispose()
+{
+    glfwDestroyWindow(window);
+    glfwTerminate();
+}
+
+void WindowManager::SwapBuffer() {
+    glfwSwapBuffers(window);
+    glfwPollEvents();
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+}
+
+void WindowManager::MouseCB(GLFWwindow* window, double xpos, double ypos) {
+    static float yaw = 0.0f;
+    static float pitch = 0.0f;
+    const float sensitivity = 20.0f;
+
+    if (buttons.firstMouse) {
+        buttons.lastX = xpos;
+        buttons.lastY = ypos;
+        buttons.firstMouse = false;
+    }
+
+    float xOffset = xpos - buttons.lastX;
+    float yOffset = buttons.lastY - ypos;
+
+    buttons.lastX = xpos;
+    buttons.lastY = ypos;
+
+    if (!buttons.cursor_disable) return;
+
+    xOffset *= sensitivity * TimeManager::GetDeltaTime();
+    yOffset *= sensitivity * TimeManager::GetDeltaTime();
+
+    yaw -= xOffset;
+    pitch += yOffset;
+
+    if (pitch > 89.0f) pitch = 89.0f;
+    if (pitch < -89.0f) pitch = -89.0f;
+
+    if (RenderManager::pipeline.camera == nullptr) return;
+    RenderManager::pipeline.camera->camera.SetYaw(yaw);
+    RenderManager::pipeline.camera->camera.SetPitch(pitch);
+}
+
+void WindowManager::KeyboardCB(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+    static bool keys[GLFW_KEY_LAST] = {false};
+
+    Actor* player = GlobalState::GetPlayer();
+
+    if (action == GLFW_PRESS) 
+        keys[key] = true;
+    else if (action == GLFW_RELEASE) 
+        keys[key] = false;
+
+    if (keys[GLFW_KEY_F]) {
+        glfwSetWindowShouldClose(window, GLFW_TRUE);
+        GlobalState::TerminateApp();
+    }
+
+    if (keys[GLFW_KEY_R]) {
+        GlobalState::fScreenshot = true;
+    }  
+
+    if ((keys[GLFW_KEY_LEFT_ALT] || keys[GLFW_KEY_RIGHT_ALT]) && buttons.cursor_disable) {
+        buttons.cursor_disable = !buttons.cursor_disable;
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+    } else if (!buttons.cursor_disable) {
+        buttons.cursor_disable = !buttons.cursor_disable;
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    }
+    
+    if (RenderManager::pipeline.camera == nullptr) return;
+    glm::vec3 front = RenderManager::pipeline.camera->camera.Params.Target;
+    front.y = 0.0f;
+    front = glm::normalize(front);
+
+    glm::vec3 right = glm::normalize(glm::cross(front, glm::vec3(0.0f, 1.0f, 0.0f)));
+
+    glm::vec3 direction(0.0f);
+
+    if (keys[GLFW_KEY_W]) direction += front;
+    if (keys[GLFW_KEY_S]) direction -= front;
+    if (keys[GLFW_KEY_D]) direction += right;
+    if (keys[GLFW_KEY_A]) direction -= right;
+    if (keys[GLFW_KEY_SPACE]) direction += glm::vec3(0.0f, 1.0f, 0.0f);
+    if (keys[GLFW_KEY_LEFT_CONTROL]) direction -= glm::vec3(0.0f, 1.0f, 0.0f);
+
+    if (glm::length(direction) > 0.0f) {
+        direction = glm::normalize(direction);
+    }
+
+    player->SetDirection(direction);
+}
+
+
+Листинг A.11 – Файл include\object\component\component.hpp
+
+#pragma once
+#include <object/transform/transform.hpp>
+#include <object/transform/rigid_transform.hpp>
+#include <object/material/material.hpp>
+
+class Component {
+protected:
+    Component(RigidTransform *transform);
+
+public:
+    Component(Transform *transform);
+    ~Component();
+
+    virtual void UpdateInverse();
+    void UpdateInverseTree();
+    virtual void UpdateMatrix();
+    virtual void UpdateMatrixTree(const glm::mat4x4& parentTR = glm::mat4(1.0f), const glm::mat4x4& parentS = glm::mat4(1.0f));
+    // void UpdateMatrixTree();
+    void Spawn(const Transform &startTransform);
+
+    virtual void Render() const {};
+    void RenderTree() const;
+
+    glm::vec3 GetPosition() const;
+    glm::quat GetRotation() const;
+    glm::vec3 GetScale() const;
+
+    glm::vec3 GetGlobalPosition() const;
+    glm::quat GetGlobalRotation() const;
+    glm::vec3 GetGlobalScale() const;
+
+    void FixPosition(const glm::vec3& scale);
+    void SetPosition(const glm::vec3& position);
+    void SetRotation(const glm::vec3& rotation);
+    void SetRotation(const glm::quat& rotation);
+    void SetScale(glm::vec3 scale);
+
+    void Move(const glm::vec3& offset);
+    void Move(glm::vec3 direction, float distance);
+    void Rotate(const glm::quat& deltaRotation);
+    void RotateAround(const glm::vec3& axis, float angle);
+
+    Transformable *GetTransform() { return globalTransform; }
+    Transformable *GetLocalTransform() { return localTransform; }
+    void SetTransform(Transform &new_transformable) { *localTransform = new_transformable; }
+    const glm::mat4 &GetMatrix() const { return globalTransform->GetMatrix(); }
+    Component *GetParent() const { return parent; }
+    std::vector<Component*>& GetChildren() { return children; }
+    void AddChild(Component* child);
+
+    std::vector<Component*> children;
+    Component *parent = nullptr;
+
+// protected:
+    Transformable *globalTransform = nullptr;
+    Transformable *localTransform = nullptr;
+    glm::quat invRot;
+    glm::vec3 invScale;
+    glm::vec3 invOffset;
+};
+
+
+template <typename C, typename T>
+C* CreateComponent(T *transform) {
+    static_assert(std::is_base_of_v<Component, C>, "T must derive from Component");
+    static_assert(std::is_base_of_v<Transformable, T>, "TransformType must derive from Transformable");
+
+    return new C(transform);
+}
+
+
+Листинг A.12 – Файл src\object\component\component.cpp
+
+#include <object/component/component.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/quaternion.hpp>
+
+std::string printVec3(const glm::vec3& v);
+glm::vec3 quatToEuler(const glm::quat& q);
+
+
+Component::Component(RigidTransform *transform)
+    : localTransform(transform), globalTransform(transform)
+{
+    invRot = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
+    invScale = glm::vec3(1.f);
+    invOffset = glm::vec3(0);
+}
+
+Component::Component(Transform *transform)
+    : localTransform(transform), globalTransform(new Transform()) 
+{
+    invRot = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
+    invScale = glm::vec3(1.f);
+    invOffset = glm::vec3(0);
+}
+
+Component::~Component() {
+    if (globalTransform != localTransform)
+        delete globalTransform;
+    delete localTransform;
+}
+
+void Component::UpdateInverse() {
+    if (parent) {
+        Transform invScaleMat4x4;
+        invScaleMat4x4 = glm::inverse(glm::scale(glm::mat4(1.0f), parent->GetScale()));
+        invScaleMat4x4.UpdateTransform();
+        invScale = parent->invScale * invScaleMat4x4.GetScale();
+
+        invRot = parent->invRot * glm::inverse(parent->GetRotation());
+
+        invOffset = parent->invOffset + parent->GetPosition();
+        // invOffset = parent->invOffset + parent->GetPosition();
+
+        // std::cout << "invScale: " << printVec3(invScale) << std::endl;
+        // std::cout << "invRot: " << printVec3(quatToEuler(invRot)) << std::endl;
+        // std::cout << "parent->GetPosition: " << printVec3(parent->GetPosition()) << std::endl;
+        // std::cout << "invOffset: " << printVec3(invOffset) << std::endl;
+        // std::cout << std::endl;
+    } else {
+        invRot = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
+        invScale = glm::vec3(1.f);
+        invOffset = glm::vec3(0);
+    }
+}
+
+void Component::UpdateInverseTree()
+{
+    UpdateInverse();
+    for (Component* child : children) {
+        child->UpdateInverseTree();
+    }   
+}
+
+// void Component::UpdateMatrixTree() {
+//     UpdateMatrix();
+//     for (Component* child : children) {
+//         child->UpdateMatrixTree();
+//     }
+// }
+
+void Component::UpdateMatrixTree(const glm::mat4x4& parentTR, const glm::mat4x4& parentS) {
+    glm::mat4 T = glm::translate(glm::mat4(1.0f), GetPosition());
+    glm::mat4 R = glm::mat4_cast(GetRotation());
+    glm::mat4 S = glm::scale(glm::mat4(1.0f), GetScale());
+    auto TR = T * R;
+    if (parent) {
+        TR = parentTR * TR;
+        S = parentS * S;
+    }
+
+    *globalTransform = TR * S;
+
+    for (Component* child : children) {
+        child->UpdateMatrixTree(TR, S);
+    }
+}
+
+void Component::UpdateMatrix() {
+    localTransform->UpdateMatrix();
+    *globalTransform = parent ? parent->GetMatrix() * localTransform->GetMatrix(): 
+                                localTransform->GetMatrix();
+    globalTransform->UpdateTransform();
+}
+
+void Component::Spawn(const Transform &startTransform) {
+    localTransform->UpdateMatrix();
+
+    Transform transform = startTransform;
+
+    transform.UpdateMatrix();
+
+    localTransform->SetPosition(transform.GetPosition() + localTransform->GetPosition());
+    localTransform->SetRotation(transform.GetRotation() * localTransform->GetRotation());
+    localTransform->SetScale(transform.GetScale() * localTransform->GetScale());
+}
+
+void Component::RenderTree() const {
+    Render();
+    for (const Component* child : children) {
+        child->RenderTree();
+    }
+}
+
+glm::vec3 Component::GetPosition() const {
+    return localTransform->GetPosition();
+}
+
+glm::quat Component::GetRotation() const {
+    return localTransform->GetRotation();
+}
+
+glm::vec3 Component::GetScale() const {
+    return localTransform->GetScale();
+}
+
+glm::vec3 Component::GetGlobalPosition() const {
+    return globalTransform->GetPosition();
+}
+
+glm::quat Component::GetGlobalRotation() const {
+    return globalTransform->GetRotation();
+}
+
+glm::vec3 Component::GetGlobalScale() const {
+    return globalTransform->GetScale();
+}
+
+void Component::FixPosition(const glm::vec3& scale) {
+    localTransform->SetPosition(GetPosition() * scale);
+
+    for (Component* child : children) {
+        child->FixPosition(scale);
+    }
+}
+
+void Component::SetPosition(const glm::vec3& position) {
+    if (parent) {
+        auto local = glm::inverse(parent->GetRotation()) * (position - invOffset);
+        localTransform->SetPosition(local);
+    } else {
+        localTransform->SetPosition(position);
+    }
+}
+void Component::SetRotation(const glm::vec3& rotation) {
+    glm::quat quaternion = glm::quat(glm::radians(rotation));
+    SetRotation(quaternion);
+}
+void Component::SetRotation(const glm::quat& rotation) {
+    if (parent) {
+        localTransform->SetRotation(invRot * rotation);
+    } else {
+        localTransform->SetRotation(rotation);
+    }
+}
+void Component::SetScale(glm::vec3 scale) {
+    if (parent) {
+        scale *= invScale;
+    }
+    
+    glm::vec3 scaleChange = scale / localTransform->GetScale();
+    localTransform->SetScale(scale);
+
+    for (auto& child : children) {
+        child->FixPosition(scale);
+    }
+}
+
+void Component::Move(const glm::vec3& offset) {
+    localTransform->SetPosition(localTransform->GetPosition() + offset);
+}
+void Component::Move(glm::vec3 direction, float distance) {
+    if (glm::length(direction) != 0) {
+        Move(glm::normalize(direction) * distance);
+    }
+}
+void Component::Rotate(const glm::quat& deltaRotation) {
+    localTransform->SetRotation(localTransform->GetRotation() * deltaRotation);
+}
+void Component::RotateAround(const glm::vec3& axis, float angle) {
+    glm::quat deltaRotation = glm::angleAxis(angle, glm::normalize(axis));
+    Rotate(deltaRotation);
+}
+
+void Component::AddChild(Component* child) {
+    children.push_back(child);
+    child->parent = this;
+
+    UpdateInverse();
+    child->UpdateInverse();
+
+    child->SetPosition({0, 0, 0});
+    child->SetRotation({0, 0, 0});
+    child->SetScale({1, 1, 1});
+}
+
+
+Листинг A.13 – Файл include\object\component\template\camera.hpp
+
+#pragma once
+#include <render/camera.hpp>
+#include "../component.hpp"
+
+class ComponentCamera : public Component {
+public:
+    ComponentCamera(Transform *transform)
+        : Component(transform) {}
+
+    Camera camera;
+};
+
+
+Листинг A.14 – Файл src\object\component\template\camera.cpp
+
+
+
+Листинг A.15 – Файл include\object\component\template\component_physics.hpp
+
+#pragma once
+#include "../component.hpp"
+
+class ComponentPhysics : public Component {
+public:
+    ComponentPhysics(RigidTransform *transform);
+
+    virtual void UpdateInverse() override;
+    virtual void UpdateMatrix() override;
+    virtual void UpdateMatrixTree(const glm::mat4x4& parentTR = glm::mat4(1.0f), const glm::mat4x4& parentS = glm::mat4(1.0f)) override;
+    void Render() const override {};
+
+    bool fIsInit = 0;
+};
+
+
+Листинг A.16 – Файл src\object\component\template\component_physics.cpp
+
+#include <object/component/template/component_physics.hpp>
+
+
+ComponentPhysics::ComponentPhysics(RigidTransform *transform)
+    : Component(transform)
+{}
+
+void ComponentPhysics::UpdateInverse() {
+    invRot = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
+    invScale = glm::vec3(1.f);
+    invOffset = glm::vec3(0);
+}
+
+void ComponentPhysics::UpdateMatrix() {
+    localTransform->UpdateMatrix();
+}
+
+void ComponentPhysics::UpdateMatrixTree(const glm::mat4x4& parentTR, const glm::mat4x4& parentS) {
+    glm::mat4 T = glm::translate(glm::mat4(1.0f), GetPosition());
+    glm::mat4 R = glm::mat4_cast(GetRotation());
+    glm::mat4 S = glm::scale(glm::mat4(1.0f), GetScale());
+    auto TR = T * R;
+    if (parent) {
+        TR = parentTR * TR;
+        S = parentS * S;
+    }
+
+    for (Component* child : children) {
+        child->UpdateMatrixTree(TR, S);
+    }
+}
+
+
+Листинг A.17 – Файл include\object\component\template\mesh.hpp
+
+#pragma once
+#include <managers/time_manager.hpp>
+#include <object/geometry/mesh.hpp>
+#include "../component.hpp"
+
+class ComponentMesh : public Component {
+public:
+    ComponentMesh(Transform *transform)
+        : Component(transform) {}
+
+    void Render() const override;
+
+    GeometryMesh *mesh;
+    Material* material = nullptr;
+};
+
+
+Листинг A.18 – Файл src\object\component\template\mesh.cpp
+
+#include <managers/render_manager.hpp>
+#include <object/component/template/mesh.hpp>
+
+void ComponentMesh::Render() const {
+    material->UpdateValue("Projection", RenderManager::pipeline.ProjTrans);
+    material->UpdateValue("View", RenderManager::pipeline.View);
+    material->UpdateValue("Model", GetMatrix());
+
+    material->Bind();
+    mesh->Bind();
+    for (int i = 0; i < mesh->size(); ++i) {
+        if (!material->GetTexture().empty()) {
+            int index = mesh->GetTextureIndex(i);
+            material->GetTexture()[index]->Bind();
+        }
+        mesh->Draw(&i);
+    }
+}
+
+
+Листинг A.19 – Файл include\object\component\template\point.hpp
+
+#pragma once
+#include "../component.hpp"
+
+class ComponentPoint : public Component {
+public:
+    ComponentPoint(Transform *transform)
+        : Component(transform) {}
+};
+
+
+Листинг A.20 – Файл include\object\component\template\shape.hpp
+
+#pragma once
+#include <object/geometry/geometry.hpp>
+#include "../component.hpp"
+
+class ComponentShape : public Component {
+public:
+    ComponentShape(Transform *transform)
+        : Component(transform) {}
+
+    void Render() const override;
+
+    GeometryPrimitive *shape;
+    Material* material = nullptr;
+};
+
+
+Листинг A.21 – Файл src\object\component\template\shape.cpp
+
+#include <managers/render_manager.hpp>
+#include <object/component/template/shape.hpp>
+
+void ComponentShape::Render() const {
+    auto mat4x4 = RenderManager::pipeline.PV * globalTransform->GetMatrix();
+    material->UpdateValue("gWorld", mat4x4);
+    material->Bind();
+    if (!material->GetTexture().empty())
+        material->GetTexture()[0]->Bind();
+    shape->Bind();
+    shape->Draw();
+}
+
+
+Листинг A.22 – Файл include\object\component\template\skeletal_mesh.hpp
+
+#pragma once
+#include <managers/time_manager.hpp>
+#include <object/geometry/skeletal_mesh.hpp>
+#include <object/geometry/skeleton/animation/animator.hpp>
+#include "../component.hpp"
+
+class ComponentSkeletalMesh : public Component {
+public:
+    ComponentSkeletalMesh(Transform *transform)
+        : Component(transform) {}
+
+    void Render() const override;
+    void SetSkeletalMesh(GeometrySkeletalMesh *new_mesh);
+
+    Animator* animator;
+    GeometrySkeletalMesh *mesh;
+    Material* material = nullptr;
+};
+
+
+Листинг A.23 – Файл src\object\component\template\skeletal_mesh.cpp
+
+#include <managers/render_manager.hpp>
+#include <object/component/template/skeletal_mesh.hpp>
+
+void ComponentSkeletalMesh::Render() const {
+    const auto it = material->values.find("gBones");
+    if (it == material->values.end()) {
+        return;
+    }
+
+    material->UpdateValue("Projection", RenderManager::pipeline.ProjTrans);
+    material->UpdateValue("View", RenderManager::pipeline.View);
+    material->Bind();
+    mesh->Bind();
+
+    std::vector<glm::mat4x4> mats;
+    animator->ApplyAnimation(mats, GetMatrix());
+    int location = it->second.first;
+    glUniformMatrix4fv(location, mats.size(), GL_FALSE, glm::value_ptr(mats[0]));
+
+    for (int i = 0; i < mesh->size(); ++i) {
+        if (!material->GetTexture().empty()) {
+            int index = mesh->GetTextureIndex(i);
+            material->GetTexture()[index]->Bind();
+        }
+        mesh->Draw(&i);
+    }
+}
+
+void ComponentSkeletalMesh::SetSkeletalMesh(GeometrySkeletalMesh *new_mesh) {
+    if (new_mesh != nullptr) {
+        mesh = new_mesh;
+        animator = new Animator(mesh->GetSkeleton());
+    }
+}
+
+
+Листинг A.24 – Файл include\object\geometry\geometry.hpp
+
+#pragma once
+#include <glm/glm.hpp>
+#include <GL/glew.h>
+
+class Geometry {
+public:
+    int GetType() {return type;}
+    virtual void Bind() const = 0;
+    virtual void Draw(void* data = nullptr) const = 0;
+
+    enum Type {
+        PRIMITIVE,
+        MESH,
+        SKELETAL_MESH
+    };
+
+protected:
+    void SetType(int new_type) {type = new_type;};
+
+private:
+    int type;
+};
+
+
+Листинг A.25 – Файл include\object\geometry\mesh.hpp
+
+#pragma once
+#include "geometry.hpp"
+#include <assimp/scene.h>
+#include <assimp/Importer.hpp>
+#include <assimp/postprocess.h>
+#include <object/material/texture.hpp>
+#include <iostream>
+
+class GeometryMesh : public Geometry {
+protected:
+    GeometryMesh() {}
+
+public:
+    GeometryMesh(const std::string& Filename);
+
+    virtual void Bind() const override;
+    virtual void Draw(void* data = nullptr) const override;
+    std::size_t size() {return m_Entries.size();}
+    int GetTextureIndex(int index) {return m_Entries[index].MaterialIndex;}
+
+    static GeometryMesh* Create(const std::string& name, const std::string& path);
+    static GeometryMesh* Find(const std::string &name);
+    static void Delete(const std::string &name);
+    static void ClearСache();
+
+    struct MeshEntry {
+        MeshEntry() {
+            NumIndices = 0;
+            MaterialIndex = -1;
+            BaseVertex = 0;
+            BaseIndex = 0;
+        }
+
+        unsigned int NumIndices;
+        unsigned int BaseVertex;
+        unsigned int BaseIndex;
+        unsigned int MaterialIndex;
+    };
+
+protected:
+    #define POSITION_LOCATION    0
+    #define TEX_COORD_LOCATION   1
+    #define NORMAL_LOCATION      2 // нужно изменить шейдеры
+
+    enum VB_TYPES {
+        VAO,
+        EBO,
+        POSITION_VB,
+        TEXCOORD_VB,
+        NORMAL_VB,
+        NUM_VBs,
+        BONE_VB = NUM_VBs,
+        NUM_skeletal_VBs
+    };
+
+
+    void InitBuffers();
+    bool LoadMesh(const std::string& Filename);
+    virtual bool InitFromScene(const aiScene* m_pScene, const std::string& Filename);
+    bool InitMaterials(const aiScene* scene, const std::string& directory);
+    void InitMesh(unsigned int MeshIndex, const aiMesh* paiMesh,
+                std::vector<glm::vec3>& Positions, std::vector<glm::vec3>& Normals,
+                std::vector<glm::vec2>& TexCoords, std::vector<unsigned int>& Indices);
+
+    inline static std::unordered_map<std::string, GeometryMesh> cache;
+    std::vector<GLuint> buffers;
+    std::vector<MeshEntry> m_Entries;
+
+public:
+    std::vector<Texture*> m_Textures;
+};
+
+
+Листинг A.26 – Файл src\object\geometry\mesh.cpp
+
+#include <object/geometry/mesh.hpp>
+
+
+GeometryMesh::GeometryMesh(const std::string& Filename)
+    : buffers(NUM_VBs, 0)
+{
+    InitBuffers();
+    LoadMesh(Filename);
+    SetType(MESH);
+
+    glBindVertexArray(0);	
+}
+
+void GeometryMesh::Bind() const {
+    glBindVertexArray(buffers[VAO]);
+}
+
+void GeometryMesh::Draw(void* data) const {
+    int index = *static_cast<int*>(data);
+
+    glDrawElementsBaseVertex(GL_TRIANGLES, 
+                                m_Entries[index].NumIndices, 
+                                GL_UNSIGNED_INT, 
+                                (void*)(sizeof(unsigned int) * m_Entries[index].BaseIndex), 
+                                m_Entries[index].BaseVertex);
+}
+
+void GeometryMesh::InitBuffers() {
+    glGenVertexArrays(1, &buffers[0]);   
+    glBindVertexArray(buffers[0]);
+    glGenBuffers(buffers.size() - 1, buffers.data() + 1);
+}
+
+bool GeometryMesh::LoadMesh(const std::string& Filename) {
+    Assimp::Importer Importer;
+    const aiScene* m_pScene = Importer.ReadFile(Filename.c_str(), aiProcess_Triangulate | aiProcess_GenSmoothNormals| aiProcess_FlipUVs);
+
+    if (m_pScene) {
+        InitFromScene(m_pScene, Filename);
+    } else {
+        printf("Error parsing '%s': '%s'\n", Filename.c_str(), Importer.GetErrorString());
+        return false;
+    }
+
+    return false;
+}
+
+bool GeometryMesh::InitFromScene(const aiScene* m_pScene, const std::string& Filename) {
+    m_Entries.resize(m_pScene->mNumMeshes);
+    m_Textures.resize(m_pScene->mNumMaterials);
+
+    std::vector<unsigned int> Indices;
+    std::vector<glm::vec3> Positions;
+    std::vector<glm::vec2> TexCoords;
+    std::vector<glm::vec3> Normals;
+    
+    unsigned int NumVertices = 0;
+    unsigned int NumIndices = 0;
+    
+    for (unsigned int i = 0 ; i < m_Entries.size() ; i++) {
+        m_Entries[i].MaterialIndex = m_pScene->mMeshes[i]->mMaterialIndex;        
+        m_Entries[i].NumIndices    = m_pScene->mMeshes[i]->mNumFaces * 3;
+        m_Entries[i].BaseVertex    = NumVertices;
+        m_Entries[i].BaseIndex     = NumIndices;
+        
+        NumVertices += m_pScene->mMeshes[i]->mNumVertices;
+        NumIndices  += m_Entries[i].NumIndices;
+    }
+
+    Indices.reserve(NumIndices);
+    Positions.reserve(NumVertices);
+    TexCoords.reserve(NumVertices);
+    Normals.reserve(NumVertices);
+
+    for (unsigned int i = 0 ; i < m_Entries.size() ; i++) {
+        const aiMesh* paiMesh = m_pScene->mMeshes[i];
+        std::cout << m_pScene->mMeshes[i]->mName.C_Str() << std::endl;
+        InitMesh(i, paiMesh, Positions, Normals, TexCoords, Indices);
+    }
+
+    if (!InitMaterials(m_pScene, Filename.substr(0, Filename.find_last_of("/\\")))) {
+        return false;
+    }
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers[EBO]);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(Indices[0]) * Indices.size(), &Indices[0], GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ARRAY_BUFFER, buffers[POSITION_VB]);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(Positions[0]) * Positions.size(), &Positions[0], GL_STATIC_DRAW);
+    glEnableVertexAttribArray(POSITION_LOCATION);
+    glVertexAttribPointer(POSITION_LOCATION, 3, GL_FLOAT, GL_FALSE, 0, 0);    
+
+    glBindBuffer(GL_ARRAY_BUFFER, buffers[TEXCOORD_VB]);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(TexCoords[0]) * TexCoords.size(), &TexCoords[0], GL_STATIC_DRAW);
+    glEnableVertexAttribArray(TEX_COORD_LOCATION);
+    glVertexAttribPointer(TEX_COORD_LOCATION, 2, GL_FLOAT, GL_FALSE, 0, 0);
+
+   	glBindBuffer(GL_ARRAY_BUFFER, buffers[NORMAL_VB]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(Normals[0]) * Normals.size(), &Normals[0], GL_STATIC_DRAW);
+    glEnableVertexAttribArray(NORMAL_LOCATION);
+    glVertexAttribPointer(NORMAL_LOCATION, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+    return true;
+}
+
+void GeometryMesh::InitMesh(unsigned int MeshIndex, const aiMesh* paiMesh,
+                std::vector<glm::vec3>& Positions, std::vector<glm::vec3>& Normals,
+                std::vector<glm::vec2>& TexCoords, std::vector<unsigned int>& Indices)
+{
+    const aiVector3D Zero3D(0.0f, 0.0f, 0.0f);
+    
+    for (unsigned int i = 0 ; i < paiMesh->mNumVertices ; i++) {
+        const aiVector3D* pPos      = &(paiMesh->mVertices[i]);
+        const aiVector3D* pNormal   = &(paiMesh->mNormals[i]);
+        const aiVector3D* pTexCoord = paiMesh->HasTextureCoords(0) ? &(paiMesh->mTextureCoords[0][i]) : &Zero3D;
+
+        Positions.push_back(glm::vec3(pPos->x, pPos->y, pPos->z));
+        Normals.push_back(glm::vec3(pNormal->x, pNormal->y, pNormal->z));
+        TexCoords.push_back(glm::vec2(pTexCoord->x, pTexCoord->y));        
+    }
+    
+    for (unsigned int i = 0 ; i < paiMesh->mNumFaces ; i++) {
+        const aiFace& Face = paiMesh->mFaces[i];
+        assert(Face.mNumIndices == 3);
+        Indices.push_back(Face.mIndices[0]);
+        Indices.push_back(Face.mIndices[1]);
+        Indices.push_back(Face.mIndices[2]);
+    }
+}
+
+bool GeometryMesh::InitMaterials(const aiScene* scene, const std::string& directory) {
+    m_Textures.resize(scene->mNumMaterials);
+
+    for (unsigned int i = 0; i < scene->mNumMaterials; ++i) {
+        const aiMaterial* mat = scene->mMaterials[i];
+
+        // Используем только первый диффузный слот
+        if (mat->GetTextureCount(aiTextureType_DIFFUSE) > 0) {
+            aiString path;
+            if (mat->GetTexture(aiTextureType_DIFFUSE, 0, &path) == AI_SUCCESS) {
+                std::string texPath = path.C_Str();
+
+                // Встроенная текстура (embedded) начинается с '*'
+                if (texPath[0] == '*') {
+                    int texIndex = std::stoi(texPath.substr(1));
+                    aiTexture* texture = scene->mTextures[texIndex];
+
+                    std::string uniqueName = directory + "/embedded_" + std::to_string(texIndex);
+                    m_Textures[i] = Texture::Create(uniqueName, texture);
+                } else {
+                    // Внешняя текстура
+                    std::string fullPath = directory + "/" + texPath;
+                    m_Textures[i] = Texture::Create(fullPath, fullPath);
+                }
+            }
+        } else {
+            m_Textures[i] = Texture::Find("white");
+        }
+    }
+
+    return true;
+}
+
+GeometryMesh* GeometryMesh::Create(const std::string& name, const std::string& path) {
+    auto [it, inserted] = cache.try_emplace(name, path);
+    return &it->second;
+}
+GeometryMesh* GeometryMesh::Find(const std::string& name) {
+    auto it = cache.find(name);
+    return it != cache.end() ? &it->second : nullptr;
+}
+
+void GeometryMesh::Delete(const std::string& path) {
+    auto it = cache.find(path);
+    if (it != cache.end()) {
+        cache.erase(it); 
+    }
+}
+
+void GeometryMesh::ClearСache() {
+    for (auto it = cache.begin(); it != cache.end(); ) {
+        it = cache.erase(it);
+    }
+}
+
+
+Листинг A.27 – Файл include\object\geometry\primitive\cube.hpp
+
+#pragma once
+#include "sprite.hpp"
+
+class Cube : public Sprite
+{
+public:
+    Cube();
+};
+
+
+Листинг A.28 – Файл src\object\geometry\primitive\cube.cpp
+
+#include <managers/render_manager.hpp>
+#include <object/geometry/primitive/cube.hpp>
+
+
+Cube::Cube() {
+    SetType(PRIMITIVE);
+
+    struct Vertex {
+        glm::vec3 position;
+        glm::vec2 texCoord;
+    };
+
+    const float size = 1.f;
+    std::vector<Vertex> vertices = {
+        // передняя грань (начало: ближний сверху справа)
+        {{ size,  size,  size}, {0.5f, 2.0f / 3.0f}},  {{-size,  size,  size}, {0.25f, 2.0f / 3.0f}},  {{-size, -size,  size}, {0.25f, 1.0f / 3.0f}},  {{ size, -size,  size}, {0.5f, 1.0f / 3.0f}},
+        // задняя грань (начало: дальний сверху справа)
+        {{ size,  size, -size}, {0.75f, 2.0f / 3.0f}}, {{-size,  size, -size}, {1.0f, 2.0f / 3.0f}}, {{-size, -size, -size}, {1.0f, 1.0f / 3.0f}}, {{ size, -size, -size}, {0.75f, 1.0f / 3.0f}},
+
+        // левая грань (начало: дальний сверху слева)
+        {{-size,  size,  size}, {0.25f, 2.0f / 3.0f}}, {{-size,  size, -size}, {0.0f, 2.0f / 3.0f}}, {{-size, -size, -size}, {0.0f, 1.0f / 3.0f}}, {{-size, -size,  size}, {0.25f, 1.0f / 3.0f}},
+        // правая грань (начало: ближний сверху справа)
+        {{ size,  size,  size}, {0.5f, 2.0f / 3.0f}},  {{ size,  size, -size}, {0.75f, 2.0f / 3.0f}},  {{ size, -size, -size}, {0.75f, 1.0f / 3.0f}},  {{ size, -size,  size}, {0.5f, 1.0f / 3.0f}},
+
+        // нижняя грань (начало: ближний снизу слева)
+        {{-size, -size,  size}, {0.25f, 1.0f / 3.0f}}, {{ size, -size,  size}, {0.5f, 1.0f / 3.0f}}, {{ size, -size, -size}, {0.5f, 0.0f}},  {{-size, -size, -size}, {0.25f, 0.0f}},
+        // верхняя грань (начало: ближний сверху слева)
+        {{-size,  size,  size}, {0.25f, 2.0f / 3.0f}}, {{ size,  size,  size}, {0.5f, 2.0f / 3.0f}},   {{ size,  size, -size}, {0.5f, 1.0f}},   {{-size,  size, -size}, {0.25f, 1.0f}},
+    };
+
+
+    std::vector<GLuint> indices = {
+        0,  1,  2,  0,  2,  3,   // передняя грань
+        4,  5,  6,  4,  6,  7,   // задняя грань
+        8,  9,  10, 8,  10, 11,  // левая грань
+        12, 13, 14, 12, 14, 15,  // правая грань
+        16, 17, 18, 16, 18, 19,  // нижняя грань
+        20, 21, 22, 20, 22, 23   // верхняя грань
+    };
+
+    numVertices = vertices.size();
+    numIndices = indices.size();
+
+    glGenVertexArrays(1, &VAO);
+    glBindVertexArray(VAO);
+
+    glGenBuffers(1, &VBO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), vertices.data(), GL_STATIC_DRAW);
+
+    glGenBuffers(1, &EBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), indices.data(), GL_STATIC_DRAW);
+
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, position));
+
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, texCoord));
+
+    glBindVertexArray(0);
+}
+
+
+Листинг A.29 – Файл include\object\geometry\primitive\sphere.hpp
+
+#pragma once
+#include "../primitive.hpp"
+
+
+template<std::size_t N>
+class Sphere : public GeometryPrimitive
+{
+public:
+
+    Sphere() {
+        SetType(PRIMITIVE);
+
+        struct Vertex {
+            Vertex(glm::vec3 position, glm::vec2 texCoord)
+                : position(position), texCoord(texCoord) {}
+            glm::vec3 position;
+            glm::vec2 texCoord;
+        };
+        std::vector<Vertex> vertices;
+        std::vector<GLuint> indices;
+        numVertices = N;
+
+        int numLat = N; // количество широт
+        int numLon = N; // количество долгот
+
+        const float RADIUS = 1.f;
+        for (int lat = 0; lat <= numLat; ++lat) {
+            float theta = lat * glm::pi<float>() / numLat; // угол широты
+            float sinTheta = sin(theta);
+            float cosTheta = cos(theta);
+
+            for (int lon = 0; lon <= numLon; ++lon) {
+                float phi = lon * 2 * glm::pi<float>() / numLon; // угол долготы
+                float sinPhi = sin(phi);
+                float cosPhi = cos(phi);
+
+                // Координаты вершины
+                float x = cosPhi * sinTheta;
+                float y = cosTheta;
+                float z = sinPhi * sinTheta;
+
+                // Добавление вершин
+                glm::vec3 position = glm::vec3(x, y, z) * RADIUS;
+
+                // Текстурные координаты
+                glm::vec2 texCoord;
+                float u = static_cast<float>(lon) / numLon;
+                float v = static_cast<float>(lat) / numLat;
+                texCoord.x = u;
+                texCoord.y = v;
+
+                vertices.emplace_back(position, texCoord);
+            }
+        }
+
+        // Генерация индексов
+        for (int lat = 0; lat < numLat; ++lat) {
+            for (int lon = 0; lon < numLon; ++lon) {
+                int first = lat * (numLon + 1) + lon;
+                int second = first + numLon + 1;
+
+                indices.push_back(first);
+                indices.push_back(second);
+                indices.push_back(first + 1);
+
+                indices.push_back(second);
+                indices.push_back(second + 1);
+                indices.push_back(first + 1);
+            }
+        }
+
+        numVertices = vertices.size();
+        numIndices = indices.size();
+
+        glGenVertexArrays(1, &VAO);
+        glBindVertexArray(VAO);
+
+        glGenBuffers(1, &VBO);
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), vertices.data(), GL_STATIC_DRAW);
+
+        glGenBuffers(1, &EBO);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), indices.data(), GL_STATIC_DRAW);
+
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, position));
+
+        glEnableVertexAttribArray(1);
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, texCoord));
+
+        glBindVertexArray(0);
+    }
+};
+
+Листинг A.30 – Файл include\object\geometry\primitive\sprite.hpp
+
+#pragma once
+#include "../primitive.hpp"
+
+class Sprite : public GeometryPrimitive
+{
+public:
+    Sprite();
+};
+
+
+Листинг A.31 – Файл src\object\geometry\primitive\sprite.cpp
+
+#include <managers/render_manager.hpp>
+#include <object/geometry/primitive/sprite.hpp>
+
+#include <stb_image.h>
+#include <stb_image_resize.h>
+#include <GLFW/glfw3.h>
+
+
+Sprite::Sprite()
+{
+    SetType(PRIMITIVE);
+    // |2|3|
+    // |1|4|
+    const float SIZE = 1.f;
+    std::vector<GLfloat> vertices = {
+        -SIZE, -SIZE, 0.0f, 0.0f, 0.0f,
+        -SIZE,  SIZE, 0.0f, 0.0f, SIZE,
+        SIZE,  SIZE, 0.0f,  SIZE, SIZE,
+        SIZE, -SIZE, 0.0f,  SIZE, 0.0f
+    };
+
+    std::vector<GLuint> indices = {
+        0, 1, 2,
+        0, 2, 3
+    };
+
+    numVertices = vertices.size();
+    numIndices = indices.size();
+
+    glGenVertexArrays(1, &VAO);
+    glBindVertexArray(VAO);
+
+    glGenBuffers(1, &VBO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(GLfloat), vertices.data(), GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)0);
+    glEnableVertexAttribArray(0);
+
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
+    glEnableVertexAttribArray(1);
+
+    glGenBuffers(1, &EBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), indices.data(), GL_STATIC_DRAW);
+
+    glBindVertexArray(0);
+}
+
+
+Листинг A.32 – Файл include\object\geometry\primitive.hpp
+
+#pragma once
+#include "geometry.hpp"
+
+class GeometryPrimitive : public Geometry {
+public:
+    ~GeometryPrimitive();
+
+    virtual void Bind() const override;
+    virtual void Draw(void* data = nullptr) const override;
+
+protected:
+    GLuint VAO = 0;
+    GLuint VBO = 0;
+    GLuint EBO = 0;
+
+    GLint numVertices = 0;
+    GLint numIndices = 0;
+};
+
+
+Листинг A.33 – Файл src\object\geometry\primitive.cpp
+
+#include <object/geometry/primitive.hpp>
+
+GeometryPrimitive::~GeometryPrimitive() {
+    if (VAO != 0) glDeleteVertexArrays(1, &VAO);
+    if (VBO != 0) glDeleteBuffers(1, &VBO);
+    if (EBO != 0) glDeleteBuffers(1, &EBO);
+}
+
+void GeometryPrimitive::Bind() const {
+    glBindVertexArray(VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+}
+
+void GeometryPrimitive::Draw(void* data) const {
+    glDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, 0);
+}
+
+
+Листинг A.34 – Файл include\object\geometry\skeletal_mesh.hpp
+
+#pragma once
+#include "mesh.hpp"
+#include "skeleton/bone/vertex_bone_data.hpp"
+#include "skeleton/skeleton.hpp"
+
+class GeometrySkeletalMesh : public GeometryMesh {
+public:
+    GeometrySkeletalMesh(const std::string& Filename);
+
+    const Skeleton& GetSkeleton() const;
+    
+    static GeometrySkeletalMesh* Create(const std::string& name, const std::string& path);
+    static GeometrySkeletalMesh* Find(const std::string &name);
+    static void Delete(const std::string &name);
+    static void ClearСache();
+
+
+protected:
+    #define BONE_ID_LOCATION     3
+    #define BONE_WEIGHT_LOCATION 4
+
+    virtual bool InitFromScene(const aiScene* m_pScene, const std::string& Filename);
+    void LoadBones(unsigned int MeshIndex, const aiMesh* pMesh, std::vector<VertexBoneData>& Bones);
+    bool LoadAnimations(const aiScene* m_pScene);
+
+    Skeleton skeleton;
+    inline static std::unordered_map<std::string, GeometrySkeletalMesh> cache;
+};
+
+
+
+Листинг A.35 – Файл src\object\geometry\skeletal_mesh.cpp
+
+#include <object/geometry/skeletal_mesh.hpp>
+
+
+GeometrySkeletalMesh::GeometrySkeletalMesh(const std::string& Filename) 
+    : GeometryMesh()
+{
+    buffers.resize(NUM_skeletal_VBs, 0);
+    InitBuffers();
+    LoadMesh(Filename);
+    SetType(SKELETAL_MESH);
+
+    glBindVertexArray(0);	
+}
+
+const Skeleton& GeometrySkeletalMesh::GetSkeleton() const {
+    return skeleton;
+}
+
+bool GeometrySkeletalMesh::InitFromScene(const aiScene* m_pScene, const std::string& Filename) {
+    m_Entries.resize(m_pScene->mNumMeshes);
+    m_Textures.resize(m_pScene->mNumMaterials);
+
+    std::vector<unsigned int> Indices;
+    std::vector<glm::vec3> Positions;
+    std::vector<glm::vec2> TexCoords;
+    std::vector<glm::vec3> Normals;
+    std::vector<VertexBoneData> Bones;
+    
+    unsigned int NumVertices = 0;
+    unsigned int NumIndices = 0;
+    
+    for (unsigned int i = 0 ; i < m_Entries.size() ; i++) {
+        m_Entries[i].MaterialIndex = m_pScene->mMeshes[i]->mMaterialIndex;        
+        m_Entries[i].NumIndices    = m_pScene->mMeshes[i]->mNumFaces * 3;
+        m_Entries[i].BaseVertex    = NumVertices;
+        m_Entries[i].BaseIndex     = NumIndices;
+        
+        NumVertices += m_pScene->mMeshes[i]->mNumVertices;
+        NumIndices  += m_Entries[i].NumIndices;
+    }
+
+    Indices.reserve(NumIndices);
+    Positions.reserve(NumVertices);
+    TexCoords.reserve(NumVertices);
+    Normals.reserve(NumVertices);
+    Bones.resize(NumVertices);
+
+    for (unsigned int i = 0 ; i < m_Entries.size() ; i++) {
+        const aiMesh* paiMesh = m_pScene->mMeshes[i];
+        InitMesh(i, paiMesh, Positions, Normals, TexCoords, Indices);
+        LoadBones(i, paiMesh, Bones);
+    }
+
+    if (!InitMaterials(m_pScene, Filename)) {
+        return false;
+    }
+
+    skeleton.BuildBoneTree(m_pScene->mRootNode);
+
+    if (!LoadAnimations(m_pScene)) {
+        return false;
+    }
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers[EBO]);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(Indices[0]) * Indices.size(), &Indices[0], GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ARRAY_BUFFER, buffers[POSITION_VB]);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(Positions[0]) * Positions.size(), &Positions[0], GL_STATIC_DRAW);
+    glEnableVertexAttribArray(POSITION_LOCATION);
+    glVertexAttribPointer(POSITION_LOCATION, 3, GL_FLOAT, GL_FALSE, 0, 0);    
+
+    glBindBuffer(GL_ARRAY_BUFFER, buffers[TEXCOORD_VB]);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(TexCoords[0]) * TexCoords.size(), &TexCoords[0], GL_STATIC_DRAW);
+    glEnableVertexAttribArray(TEX_COORD_LOCATION);
+    glVertexAttribPointer(TEX_COORD_LOCATION, 2, GL_FLOAT, GL_FALSE, 0, 0);
+
+    glBindBuffer(GL_ARRAY_BUFFER, buffers[NORMAL_VB]);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(Normals[0]) * Normals.size(), &Normals[0], GL_STATIC_DRAW);
+    glEnableVertexAttribArray(NORMAL_LOCATION);
+    glVertexAttribPointer(NORMAL_LOCATION, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+    glBindBuffer(GL_ARRAY_BUFFER, buffers[BONE_VB]);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(Bones[0]) * Bones.size(), &Bones[0], GL_STATIC_DRAW);
+    glEnableVertexAttribArray(BONE_ID_LOCATION);
+    glVertexAttribIPointer(BONE_ID_LOCATION, 4, GL_INT, sizeof(VertexBoneData), (const GLvoid*)0);
+    glEnableVertexAttribArray(BONE_WEIGHT_LOCATION);    
+    glVertexAttribPointer(BONE_WEIGHT_LOCATION, 4, GL_FLOAT, GL_FALSE, sizeof(VertexBoneData), (const GLvoid*)16);
+
+    return true;
+}
+
+void GeometrySkeletalMesh::LoadBones(unsigned int MeshIndex, const aiMesh* pMesh, std::vector<VertexBoneData>& Bones) {
+    auto NumBones = pMesh->mNumBones;
+    skeleton.BoneMap.reserve(pMesh->mNumBones);
+    skeleton.BoneLocal.resize(pMesh->mNumBones, glm::mat4(1.0f));
+
+    for (unsigned int i = 0; i < NumBones; i++) {
+        std::string BoneName(pMesh->mBones[i]->mName.data);
+        std::string UniqueName = BoneName;
+        int Index;
+
+        int suffix = 1;
+        while (skeleton.BoneMap.find(UniqueName) != skeleton.BoneMap.end()) {
+            UniqueName = BoneName + "_" + std::to_string(suffix++);
+        }
+
+        skeleton.BoneMap[UniqueName] = i;
+        auto m = pMesh->mBones[i]->mOffsetMatrix;
+        skeleton.BoneLocal[i] = glm::mat4(
+            m.a1, m.b1, m.c1, m.d1,
+            m.a2, m.b2, m.c2, m.d2,
+            m.a3, m.b3, m.c3, m.d3,
+            m.a4, m.b4, m.c4, m.d4
+        );
+
+        for (unsigned int j = 0; j < pMesh->mBones[i]->mNumWeights; j++) {
+            unsigned int VertexID = m_Entries[MeshIndex].BaseVertex + pMesh->mBones[i]->mWeights[j].mVertexId;
+            float Weight = pMesh->mBones[i]->mWeights[j].mWeight;
+            Bones[VertexID].AddBoneData(i, Weight);
+        }
+    }
+}
+
+bool GeometrySkeletalMesh::LoadAnimations(const aiScene* scene) {
+    if (!scene || !scene->HasAnimations()) {
+        return false;
+    }
+
+    skeleton.AnimationMap.clear();
+
+    for (unsigned int i = 0; i < scene->mNumAnimations; ++i) {
+        const aiAnimation* anim = scene->mAnimations[i];
+        std::string animName = anim->mName.C_Str();
+        if (animName.empty()) {
+            animName = "Animation_" + std::to_string(i);
+        }
+        std::cout << "GeometrySkeletalMesh::LoadAnimations:" << animName << std::endl; 
+
+        skeleton.AnimationMap.emplace(std::move(animName), SkeletalAnimation(anim, skeleton.BoneMap));
+    }
+
+    return true;
+}
+
+GeometrySkeletalMesh* GeometrySkeletalMesh::Create(const std::string& name, const std::string& path) {
+    auto [it, inserted] = cache.try_emplace(name, path);
+    return &it->second;
+}
+GeometrySkeletalMesh* GeometrySkeletalMesh::Find(const std::string& name) {
+    auto it = cache.find(name);
+    return it != cache.end() ? &it->second : nullptr;
+}
+
+void GeometrySkeletalMesh::Delete(const std::string& path) {
+    auto it = cache.find(path);
+    if (it != cache.end()) {
+        cache.erase(it); 
+    }
+}
+
+void GeometrySkeletalMesh::ClearСache() {
+    for (auto it = cache.begin(); it != cache.end(); ) {
+        it = cache.erase(it);
+    }
+}
+
+
+Листинг A.36 – Файл include\object\geometry\skeleton\animation\animator.hpp
+
+#pragma once
+#include <string>
+#include <vector>
+#include <unordered_map>
+#include <glm/glm.hpp>
+#include <glm/gtx/quaternion.hpp>
+#include <assimp/scene.h>
+#include "skeletal_animation.hpp"
+#include "../skeleton.hpp"
+#include <object/transform/transform.hpp>
+#include <object/component/component.hpp>
+#include <managers/time_manager.hpp>
+
+class Animator {
+public:
+    Animator(const Skeleton& skeleton)
+        : skeleton(skeleton)
+    {}
+
+    void SetAnimation(const std::string& animationName) {
+        auto it = skeleton.AnimationMap.find(animationName);
+        if (it == skeleton.AnimationMap.end()) {
+            std::cerr << "Animation not found: " << animationName << std::endl;
+            animation = nullptr;
+            return;
+        }
+
+        animation = &it->second;
+        startTime = TimeManager::GetCurrentTime();
+    }
+
+    bool HasAnimation() const { return animation != nullptr; }
+
+    void ApplyAnimation(std::vector<glm::mat4x4>& transforms, glm::mat4x4 parentTransform) const {
+        transforms.resize(skeleton.BoneLocal.size());
+        if (!HasAnimation()) {
+            for (auto& it : transforms)
+                it = 1;
+            return;
+        }
+
+        float currentTime = TimeManager::GetCurrentTime();
+        float TicksPerSecond = (float)(animation->TicksPerSecond != 0 ? animation->TicksPerSecond : 25.0f);
+        float TimeInSeconds = currentTime - startTime;
+        float TimeInTicks = TimeInSeconds * TicksPerSecond;
+        float AnimationTime = fmod(TimeInTicks, (float)animation->Duration);
+
+        ReadNodeHierarchy(skeleton.BoneTree, parentTransform, transforms, AnimationTime);
+    }
+
+private:
+    void Animator::ReadNodeHierarchy(const BoneNode& node, const glm::mat4& parentTransform,
+                                    std::vector<glm::mat4x4>& transforms, float AnimationTime) const
+    {
+        glm::mat4 localTransform = glm::mat4(1.0f);
+
+        if (node.Index >= 0) {
+            auto it = animation->Tracks.find(node.Index);
+            if (it != animation->Tracks.end()) {
+                const auto& track = it->second;
+                glm::vec3 scaling = track.CalcInterpolatedScaling(AnimationTime);
+                glm::quat rotation = track.CalcInterpolatedRotation(AnimationTime);
+                glm::vec3 translation = track.CalcInterpolatedPosition(AnimationTime);
+
+                glm::mat4 T = glm::translate(glm::mat4(1.0f), translation);
+                glm::mat4 R = glm::toMat4(rotation);
+                glm::mat4 S = glm::scale(glm::mat4(1.0f), scaling);
+
+                localTransform = T * R * S;
+            }
+
+            glm::mat4 globalTransform = parentTransform * localTransform;
+            transforms[node.Index] = globalTransform * skeleton.BoneLocal[node.Index];
+
+            for (const auto& child : node.Children) {
+                ReadNodeHierarchy(child, globalTransform, transforms, AnimationTime);
+            }
+        } else {
+            for (const auto& child : node.Children) {
+                ReadNodeHierarchy(child, parentTransform, transforms, AnimationTime);
+            }
+        }
+    }
+
+private:
+    const Skeleton& skeleton;
+    const SkeletalAnimation* animation = nullptr;
+    std::vector<glm::mat4x4>* transforms;
+    float startTime;
+};
+
+
+Листинг A.37 – Файл include\object\geometry\skeleton\animation\skeletal_animation.hpp
+
+#pragma once
+#include <string>
+#include <vector>
+#include <unordered_map>
+#include <glm/glm.hpp>
+#include <glm/gtc/quaternion.hpp>
+#include <assimp/scene.h>
+
+#include <iostream>
+
+class BoneKeyframes {
+private:
+    template<typename T>
+    unsigned int FindKeyframeIndex(float AnimationTime, const std::vector<std::pair<double, T>>& keyframes) const {
+        if (keyframes.size() < 2)
+            return 0;
+
+        int left = 0;
+        int right = keyframes.size() - 2;
+
+        while (left <= right) {
+            int mid = (left + right) / 2;
+            if (AnimationTime < keyframes[mid + 1].first)
+                right = mid - 1;
+            else
+                left = mid + 1;
+        }
+
+        return left;
+    }
+
+public:
+    unsigned int FindPosition(float AnimationTime) const {
+        return FindKeyframeIndex(AnimationTime, Positions);
+    }
+    unsigned int FindRotation(float AnimationTime) const {
+        return FindKeyframeIndex(AnimationTime, Rotations);
+    }
+    unsigned int FindScaling(float AnimationTime) const {
+        return FindKeyframeIndex(AnimationTime, Scales);
+    }
+
+    glm::vec3 CalcInterpolatedPosition(float AnimationTime) const {
+        if (Positions.empty())
+            return glm::vec3(0.0f);
+        
+        if (Positions.size() == 1 || AnimationTime <= Positions.front().first)
+            return Positions.front().second;
+
+        if (AnimationTime >= Positions.back().first)
+            return Positions.back().second;
+
+        unsigned int PositionIndex = FindPosition(AnimationTime);
+        unsigned int NextPositionIndex = PositionIndex + 1;
+
+        if (NextPositionIndex >= Positions.size()) // страховка
+            return Positions.back().second;
+
+        float StartTime = static_cast<float>(Positions[PositionIndex].first);
+        float EndTime   = static_cast<float>(Positions[NextPositionIndex].first);
+        float DeltaTime = EndTime - StartTime;
+
+        if (DeltaTime <= 0.0f)
+            return Positions[PositionIndex].second;
+
+        float Factor = (AnimationTime - StartTime) / DeltaTime;
+        Factor = std::clamp(Factor, 0.0f, 1.0f);
+
+        const auto& Start = Positions[PositionIndex].second;
+        const auto& End = Positions[NextPositionIndex].second;
+
+        return glm::mix(Start, End, Factor);
+    }
+    glm::quat CalcInterpolatedRotation(float AnimationTime) const {
+        if (Rotations.empty())
+            return glm::quat(0, 0, 0, 0);
+        
+        if (Rotations.size() == 1 || AnimationTime <= Rotations.front().first)
+            return Rotations.front().second;
+
+        if (AnimationTime >= Rotations.back().first)
+            return Rotations.back().second;
+
+        unsigned int RotationIndex = FindRotation(AnimationTime);
+        unsigned int NextRotationIndex = RotationIndex + 1;
+
+        if (NextRotationIndex >= Rotations.size())
+            return Rotations.back().second;
+
+        float StartTime = static_cast<float>(Rotations[RotationIndex].first);
+        float EndTime   = static_cast<float>(Rotations[NextRotationIndex].first);
+        float DeltaTime = EndTime - StartTime;
+
+        if (DeltaTime <= 0.0f)
+            return Rotations[RotationIndex].second;
+
+        float Factor = std::clamp((AnimationTime - StartTime) / DeltaTime, 0.0f, 1.0f);
+
+        const auto& Start = Rotations[RotationIndex].second;
+        const auto& End   = Rotations[NextRotationIndex].second;
+
+        return glm::normalize(glm::slerp(Start, End, Factor));
+    }
+    glm::vec3 CalcInterpolatedScaling(float AnimationTime) const {
+        if (Scales.empty())
+            return glm::vec3(0.0f);
+        
+        if (Scales.size() == 1 || AnimationTime <= Scales.front().first)
+            return Scales.front().second;
+
+        if (AnimationTime >= Scales.back().first)
+            return Scales.back().second;
+
+        unsigned int PositionIndex = FindScaling(AnimationTime);
+        unsigned int NextPositionIndex = PositionIndex + 1;
+
+        if (NextPositionIndex >= Scales.size()) // страховка
+            return Scales.back().second;
+
+        float StartTime = static_cast<float>(Scales[PositionIndex].first);
+        float EndTime   = static_cast<float>(Scales[NextPositionIndex].first);
+        float DeltaTime = EndTime - StartTime;
+
+        if (DeltaTime <= 0.0f)
+            return Scales[PositionIndex].second;
+
+        float Factor = (AnimationTime - StartTime) / DeltaTime;
+        Factor = std::clamp(Factor, 0.0f, 1.0f);
+
+        const auto& Start = Scales[PositionIndex].second;
+        const auto& End = Scales[NextPositionIndex].second;
+
+        return glm::mix(Start, End, Factor);
+    }
+
+    std::vector<std::pair<double, glm::vec3>> Positions;
+    std::vector<std::pair<double, glm::quat>> Rotations;
+    std::vector<std::pair<double, glm::vec3>> Scales;
+};
+
+class SkeletalAnimation {
+public:
+    double Duration = 0.0;              // в тиках
+    double TicksPerSecond = 25.0;       // default if not specified
+
+    // Каналы: имя кости -> ключевые кадры
+    std::unordered_map<int, BoneKeyframes> Tracks;
+
+    explicit SkeletalAnimation(const aiAnimation* anim, const std::unordered_map<std::string, int>& BoneMap) {
+        Duration = anim->mDuration;
+        TicksPerSecond = anim->mTicksPerSecond != 0.0 ? anim->mTicksPerSecond : 25.0;
+
+        for (unsigned int i = 0; i < anim->mNumChannels; ++i) {
+            aiNodeAnim* channel = anim->mChannels[i];
+            std::string boneName(channel->mNodeName.C_Str());
+            BoneKeyframes keyframes;
+
+            for (unsigned int j = 0; j < channel->mNumPositionKeys; ++j) {
+                auto& key = channel->mPositionKeys[j];
+                keyframes.Positions.emplace_back(key.mTime, glm::vec3(key.mValue.x, key.mValue.y, key.mValue.z));
+            }
+            for (unsigned int j = 0; j < channel->mNumRotationKeys; ++j) {
+                auto& key = channel->mRotationKeys[j];
+                keyframes.Rotations.emplace_back(key.mTime, glm::quat(key.mValue.w, key.mValue.x, key.mValue.y, key.mValue.z));
+            }
+            for (unsigned int j = 0; j < channel->mNumScalingKeys; ++j) {
+                auto& key = channel->mScalingKeys[j];
+                keyframes.Scales.emplace_back(key.mTime, glm::vec3(key.mValue.x, key.mValue.y, key.mValue.z));
+            }
+
+            auto it = BoneMap.find(boneName);
+            if (it != BoneMap.end()) {
+                Tracks[it->second] = std::move(keyframes);
+            } else {
+                std::cerr << "Bone name not found in BoneMap: " << boneName << std::endl;
+            }
+        }
+    }
+};
+
+
+Листинг A.38 – Файл include\object\geometry\skeleton\bone\bone_node.hpp
+
+#pragma once
+#include <vector>
+
+struct BoneNode {
+    BoneNode(int BoneIndex, BoneNode* Parent)
+        : Index(BoneIndex), Parent(Parent) {}
+    BoneNode() {}
+
+    BoneNode* Parent = nullptr;
+    std::vector<BoneNode> Children;
+    int Index;
+};
+
+Листинг A.39 – Файл include\object\geometry\skeleton\bone\vertex_bone_data.hpp
+
+#pragma once
+#define NUM_BONES_PER_VEREX 4
+
+struct VertexBoneData {
+    void AddBoneData(unsigned int BoneID, float Weight) {
+        for (unsigned int i = 0 ; i < size ; i++) {
+            if (Weights[i] == 0.0) {
+                IDs[i]     = BoneID;
+                Weights[i] = Weight;
+                return;
+            }
+        }
+    }
+    static const int size = NUM_BONES_PER_VEREX;
+    unsigned int IDs[size];
+    float Weights[size];
+};
+
+Листинг A.40 – Файл include\object\geometry\skeleton\skeleton.hpp
+
+#pragma once
+#include <glm/glm.hpp>
+#include <string>
+#include "animation/skeletal_animation.hpp"
+#include "bone/bone_node.hpp"
+
+class Skeleton {
+public:
+    void BuildBoneTree(const aiNode* node) {
+        std::string nodeName(node->mName.C_Str());
+        int boneIndex = -1;
+        auto it = BoneMap.find(nodeName);
+        if (it != BoneMap.end()) {
+            boneIndex = it->second;
+        }
+        
+        BoneTree = BoneNode(boneIndex, nullptr);
+        for (unsigned int i = 0; i < node->mNumChildren; ++i) {
+            BuildBoneTreeRecursive(node->mChildren[i], BoneTree);
+        }
+    }
+
+private:
+    void BuildBoneTreeRecursive(const aiNode* node, BoneNode& parent) {
+        for (unsigned int i = 0; i < node->mNumChildren; ++i) {
+            const aiNode* childNode = node->mChildren[i];
+            std::string childName(childNode->mName.C_Str());
+
+            int boneIndex = -1;
+            auto it = BoneMap.find(childName);
+            if (it != BoneMap.end()) {
+                boneIndex = it->second;
+            }
+
+            parent.Children.emplace_back(boneIndex, &parent);
+            BoneNode& newChild = parent.Children.back();
+
+            BuildBoneTreeRecursive(childNode, newChild);
+        }
+    }
+
+public:
+    std::unordered_map<std::string, int> BoneMap;
+    std::unordered_map<std::string, SkeletalAnimation> AnimationMap;
+    std::vector<glm::mat4> BoneLocal;
+    BoneNode BoneTree;
+};
+
+
+Листинг A.41 – Файл include\object\material\material.hpp
+
+#pragma once
+#include "shader.hpp"
+#include "texture.hpp"
+#include <functional>
+#include <glm/gtc/type_ptr.hpp>
+
+class Material {
+public:
+    using InitFunction   = std::function<void(Material&)>;
+    using ApplyFunction  = std::function<void(const Material&)>;
+
+    Material(Shader *shader, InitFunction* initializer, ApplyFunction* applier);
+
+
+    template<typename T>
+    void UpdateValue(const std::string &uniform_name, const T& new_value) {
+        void* ptr = values[uniform_name].second;
+        if (ptr) {
+            *static_cast<T*>(ptr) = new_value;
+        }
+    }
+
+    void Bind() const;
+    Shader* GetShader() const;
+    const std::vector<Texture*>& GetTexture() const;
+    void SetShader(Shader *new_shader);
+    void PushTexture(Texture *new_texture);
+    void SetTexture(std::vector<Texture*>& new_texture);
+
+    static Material* Create(const std::string& name, Shader *shader, InitFunction* initializer, ApplyFunction* applier);
+    static Material* Find(const std::string &name);
+    static void Delete(const std::string &name);
+    static void ClearСache();
+
+    std::unordered_map<std::string, std::pair<GLint, void*>> values;
+
+private:
+    void UpdateUniforms();
+
+    Shader* shader = nullptr;
+    std::vector<Texture*> texture;
+    InitFunction* initializer = nullptr; // утечка памяти
+    ApplyFunction* applier = nullptr; // утечка памяти
+
+    inline static std::unordered_map<std::string, Material> cache;
+};
+
+
+Листинг A.42 – Файл src\object\material\material.cpp
+
+#include <object/material/material.hpp>
+
+Material::Material(Shader *shader, InitFunction* initializer, ApplyFunction* applier)
+    : shader(shader), initializer(initializer), applier(applier)
+{}
+
+
+Shader* Material::GetShader() const {
+    return shader;
+}
+
+void Material::SetShader(Shader *new_shader) {
+    shader = new_shader;
+    UpdateUniforms();
+}
+
+const std::vector<Texture*>& Material::GetTexture() const {
+    return texture;
+}
+
+void Material::PushTexture(Texture *new_texture) {
+    texture.push_back(new_texture);
+}
+
+void Material::SetTexture(std::vector<Texture*>& new_texture) {
+    texture = new_texture;
+}
+
+void Material::Bind() const {
+    shader->Bind();
+    (*applier)(*this);
+}
+
+void Material::UpdateUniforms() {
+    (*initializer)(*this);
+}
+
+Material* Material::Create(const std::string& name, Shader *shader, InitFunction* initializer, ApplyFunction* applier) {
+    auto [it, inserted] = cache.try_emplace(name, shader, initializer, applier);
+    
+    if (inserted) {
+        it->second.SetShader(shader);
+    }
+
+    return &it->second;
+}
+
+Material* Material::Find(const std::string &name) {
+    auto it = cache.find(name);
+    return it != cache.end() ? &it->second : nullptr;
+}
+
+void Material::Delete(const std::string &name) {
+    auto it = cache.find(name);
+    if (it != cache.end()) {
+        if (it->second.initializer)
+            delete it->second.initializer;
+        if (it->second.applier)
+            delete it->second.applier;
+        cache.erase(it); 
+    }
+}
+
+void Material::ClearСache() {
+    for (auto it = cache.begin(); it != cache.end(); ) {
+        if (it->second.initializer)
+            delete it->second.initializer;
+        if (it->second.applier)
+            delete it->second.applier;
+    }
+}
+
+
+Листинг A.43 – Файл include\object\material\shader.hpp
+
+#pragma once
+#include <GL/glew.h>
+#include <string>
+#include <stb_image.h>
+#include <unordered_map>
+#include <memory>
+
+class Shader {
+public:
+    Shader(const std::string& FS, const std::string& VS);
+
+    void Bind() const;
+    GLuint GetID() const;
+    static Shader* Create(const std::string& name, const std::string& FS, const std::string& VS);
+    static Shader* Find(const std::string &name);
+    static void Delete(const std::string &name);
+    static void ClearСache();
+
+private:
+    GLuint Compile(const std::string& ShaderPath, GLuint type);
+    void Link(const std::string &FS, const std::string &VS);
+
+    GLuint shaderProgram;
+    inline static std::unordered_map<std::string, Shader> cache;
+};
+
+
+Листинг A.44 – Файл src\object\material\shader.cpp
+
+#include <iostream>
+#include <fstream>
+#include <object/material/shader.hpp>
+#include <sstream>
+
+Shader::Shader(const std::string& FS, const std::string& VS)
+{
+    Link(FS, VS);
+}
+
+void Shader::Link(const std::string &FS, const std::string &VS) {
+    shaderProgram = glCreateProgram();
+
+    GLuint fragmentShader;
+    GLuint vertexShader;
+    fragmentShader = Compile(FS, GL_FRAGMENT_SHADER);
+    vertexShader = Compile(VS, GL_VERTEX_SHADER);
+    glAttachShader(shaderProgram, fragmentShader);
+    glAttachShader(shaderProgram, vertexShader);
+    glLinkProgram(shaderProgram);
+
+    GLint ok;
+    GLchar log[2000];
+    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &ok);
+    if (!ok) {
+        GLint infoLogLength;
+        GLchar* infoLog;
+        glGetProgramInfoLog(shaderProgram, 2000, NULL, log);
+        std::cout << "Shader (" << FS << ", " << VS << ") compilation Log:\n" << log << std::endl;
+    
+        glGetShaderiv(fragmentShader, GL_INFO_LOG_LENGTH, &infoLogLength);
+        infoLog = new GLchar[infoLogLength + 1];
+        glGetShaderInfoLog(fragmentShader, infoLogLength, NULL, infoLog);
+        std::cout << "Shader fragmentShader Log:\n" << infoLog << std::endl;
+        delete[] infoLog;
+
+        glGetShaderiv(vertexShader, GL_INFO_LOG_LENGTH, &infoLogLength);
+        infoLog = new GLchar[infoLogLength + 1];
+        glGetShaderInfoLog(vertexShader, infoLogLength, NULL, infoLog);
+        std::cout << "Shader vertexShader Log:\n" << infoLog << std::endl;
+        delete[] infoLog;
+
+        glDeleteShader(fragmentShader);
+        glDeleteShader(vertexShader);
+        
+        std::cout << std::endl;
+    }
+
+    GLenum error = glGetError();
+    if (error != GL_NO_ERROR) {
+        std::cerr << "Shader::Link OpenGL error: " << error << std::endl;
+    }
+}
+
+GLuint Shader::Compile(const std::string &ShaderPath, GLuint type)
+{
+    std::ifstream ShaderFile(ShaderPath);
+    if (!ShaderFile.is_open()) {
+        std::cerr << "Error: Could not open Shader file '" << ShaderPath << "'" << std::endl;
+        return 0;
+    }
+
+    std::stringstream ShaderStream;
+    ShaderStream << ShaderFile.rdbuf();
+    ShaderFile.close();
+
+    std::string ShaderCode = ShaderStream.str();
+    const GLchar* ShaderCodePtr = ShaderCode.c_str();
+
+    GLuint Shader = glCreateShader(type);
+    glShaderSource(Shader, 1, &ShaderCodePtr, NULL);
+    glCompileShader(Shader);
+
+    GLint ok;
+    GLchar log[2000];
+    glGetShaderiv(Shader, GL_COMPILE_STATUS, &ok);
+    if (!ok) {
+        glGetShaderInfoLog(Shader, 2000, NULL, log);
+        printf("Shader(%s): %s\n", ShaderPath.c_str(), log);
+        std::cout << ShaderCode << std::endl;
+    }
+
+    GLenum error = glGetError();
+    if (error != GL_NO_ERROR) {
+        std::cerr << "Shader::Compile OpenGL error: " << error << std::endl;
+    }
+
+    return Shader;
+}
+
+void Shader::Bind() const {
+    glUseProgram(GetID());
+}
+
+GLuint Shader::GetID() const {
+    return shaderProgram;
+}
+
+Shader* Shader::Create(const std::string& name, const std::string& FS, const std::string& VS) {
+    auto [it, inserted] = cache.try_emplace(name, FS, VS);
+    return &it->second;
+}
+
+Shader* Shader::Find(const std::string &name) {
+    auto it = cache.find(name);
+    return it != cache.end() ? &it->second : nullptr;
+}
+
+void Shader::Delete(const std::string &name) {
+    auto it = cache.find(name);
+    if (it != cache.end()) {
+        GLuint id = it->second.GetID();
+        if (glIsProgram(it->second.GetID())) 
+            glDeleteTextures(1, &id);
+        cache.erase(it); 
+    }
+}
+
+void Shader::ClearСache() {
+    for (auto it = cache.begin(); it != cache.end(); ) {
+        if (glIsTexture(it->second.GetID())) {
+            GLuint id = it->second.GetID();
+            glDeleteShader(id);
+        }
+        it = cache.erase(it);
+    }
+}
+
+Листинг A.45 – Файл include\object\material\texture.hpp
+
+#pragma once
+#include <GL/glew.h>
+#include <glm/glm.hpp>
+#include <string>
+#include <assimp/scene.h>
+#include <iostream>
+
+class Texture {
+public:
+    Texture(const aiTexture* texture);
+    Texture(const std::string& path);
+
+    void Bind() const;
+    GLuint GetID() const;
+    float GetScale() const;
+
+    static Texture* Create(const std::string& name, const std::string& path);
+    static Texture* Create(const std::string& name, const aiTexture* texture);
+    static Texture* Find(const std::string& name);
+    static void Delete(const std::string& path);
+    static void ClearСache();
+
+private:
+    void Load(std::string path);
+    void Load(const aiTexture* texture);
+
+    GLuint textureID;
+    float scale;
+    inline static std::unordered_map<std::string, Texture> cache;
+};
+
+
+Листинг A.46 – Файл src\object\material\texture.cpp
+
+#include <object/material/texture.hpp>
+
+#include <iostream>
+#include <cmath>
+#include <cassert>
+
+#include <stb_image.h>
+#include <stb_image_resize.h>
+
+Texture::Texture(const aiTexture* texture) 
+{
+    Load(texture);
+}
+
+Texture::Texture(const std::string& path)
+{
+    Load(path);
+}
+
+void Texture::Bind() const {
+    glBindTexture(GL_TEXTURE_2D, textureID);
+}
+
+GLuint Texture::GetID() const {
+    return textureID;
+}
+
+float Texture::GetScale() const {
+    return scale;
+}
+
+Texture* Texture::Create(const std::string& name, const std::string& path) {
+    auto [it, inserted] = cache.try_emplace(name, path);
+    return &it->second;
+}
+
+Texture* Texture::Create(const std::string& name, const aiTexture* texture) {
+    auto [it, inserted] = cache.try_emplace(name, texture);
+    return &it->second;
+}
+Texture* Texture::Find(const std::string& name) {
+    auto it = cache.find(name);
+    return it != cache.end() ? &it->second : nullptr;
+}
+
+void Texture::Delete(const std::string& path) {
+    auto it = cache.find(path);
+    if (it != cache.end()) {
+        if (glIsTexture(it->second.GetID())) {
+            GLuint id = it->second.GetID();
+            glDeleteTextures(1, &id);
+
+        }
+        cache.erase(it); 
+    }
+}
+
+void Texture::ClearСache() {
+    for (auto it = cache.begin(); it != cache.end(); ) {
+        if (glIsTexture(it->second.GetID())) {
+            GLuint id = it->second.GetID();
+            glDeleteTextures(1, &id);
+        }
+        it = cache.erase(it);
+    }
+}
+
+void Texture::Load(std::string path) {
+    int x, y, n;
+    path = std::string("assets/") + path;
+    unsigned char *img = stbi_load(path.c_str(), &x, &y, &n, 0);
+    assert(img != nullptr);
+
+    int new_x = 1 << (int)std::ceil(std::log2(x));
+    int new_y = 1 << (int)std::ceil(std::log2(y));
+
+    unsigned char *resized_img = (unsigned char*)malloc(new_x * new_y * n);
+    if (resized_img == nullptr) {
+        std::cerr << "Failed to allocate memory for resized texture" << std::endl;
+        stbi_image_free(img);
+        return;
+    }
+
+    stbir_resize_uint8(img, x, y, 0, resized_img, new_x, new_y, 0, n);
+
+    glGenTextures(1, &textureID);
+    glBindTexture(GL_TEXTURE_2D, textureID);
+
+    GLenum format = (n == 4) ? GL_RGBA : GL_RGB;
+
+    glTexImage2D(GL_TEXTURE_2D, 0, format, new_x, new_y, 0, format, GL_UNSIGNED_BYTE, resized_img);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    stbi_image_free(img);
+    free(resized_img);
+
+    glGenerateMipmap(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    scale = static_cast<GLfloat>(new_x) / static_cast<GLfloat>(new_y);
+
+    GLenum error = glGetError();
+    if (error != GL_NO_ERROR) {
+        std::cerr << "Texture::Load OpenGL error: " << error << std::endl;
+    }
+}
+
+void Texture::Load(const aiTexture* texture) {
+    int width, height, channels;
+    
+    unsigned char* data = stbi_load_from_memory(
+        reinterpret_cast<const unsigned char*>(texture->pcData), 
+        texture->mWidth, 
+        &width, &height, &channels, 0
+    );
+
+    
+    scale = height > 0? static_cast<GLfloat>(width) / static_cast<GLfloat>(height) : 0;
+
+
+    if (data == nullptr) {
+        std::cerr << "Failed to load PNG from memory: " << stbi_failure_reason() << std::endl;
+        textureID = 0;
+        return;
+    }
+
+    GLenum format = (channels == 4) ? GL_RGBA : GL_RGB;
+
+    glGenTextures(1, &textureID);
+    glBindTexture(GL_TEXTURE_2D, textureID);
+
+    glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    glGenerateMipmap(GL_TEXTURE_2D);
+
+    stbi_image_free(data);
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+
+Листинг A.47 – Файл include\object\transform\rigid_transform.hpp
+
+#pragma once
+#include <managers/bullet_manager.hpp>
+#include <btBulletDynamicsCommon.h>
+#include "transformable.hpp"
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/quaternion.hpp>
+
+class RigidTransform : public Transformable
+{
+public:
+    RigidTransform(btCollisionShape* baseShape, btScalar mass, const glm::vec3& scale);
+    RigidTransform(const RigidTransform &other);
+    RigidTransform &operator=(const RigidTransform &other);
+    ~RigidTransform();
+
+    void UpdateMatrix() override;
+    void UpdateTransform() override;
+    // void SetMatrix(const glm::mat4x4 &matrix_) override;
+    bool isMoving() const override { return true; };
+
+    glm::vec3 GetPosition() const override;
+    glm::quat GetRotation() const override;
+    glm::vec3 GetScale() const override;
+
+    void SetPosition(const glm::vec3& position) override;
+    void SetRotation(const glm::quat& rotation) override;
+    void SetScale(const glm::vec3& scale) override;
+
+    void Move(const glm::vec3& offset) override;
+    void Move(glm::vec3 direction, float distance) override;
+    void Rotate(const glm::quat& deltaRotation) override;
+    void RotateAround(const glm::vec3& axis, float angle) override;
+
+    glm::vec3 GetForwardVector() const override;
+    glm::vec3 GetUpVector() const override;
+    glm::vec3 GetRightVector() const override;
+
+
+    void ApplyForce(const glm::vec3& force);
+    void ApplyImpulse(const glm::vec3& impulse);
+    void ApplyTorque(const glm::vec3& torque);
+
+    glm::vec3 Scale;
+    btRigidBody *rigidBody = nullptr;
+    btCollisionShape* collisionShape = nullptr;
+};
+
+
+Листинг A.48 – Файл src\object\transform\rigid_transform.cpp
+
+#include <object/transform/rigid_transform.hpp>
+
+RigidTransform::RigidTransform(btCollisionShape* baseShape, btScalar mass, const glm::vec3& scale)
+    : Scale(scale)
+{
+    btVector3 localInertia(0, 0, 0);
+    if (mass != 0.f && baseShape)
+        baseShape->calculateLocalInertia(mass, localInertia);
+
+    if (baseShape)
+        baseShape->setLocalScaling(btVector3(scale.x, scale.y, scale.z));
+
+    btDefaultMotionState* motionState = new btDefaultMotionState();
+
+    btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, motionState, baseShape, localInertia);
+    rigidBody = new btRigidBody(rbInfo);
+    BulletManager::AddRigidBody(rigidBody);
+}
+
+RigidTransform::RigidTransform(const RigidTransform &other)
+    : Scale(other.Scale) {
+    if (other.rigidBody) {
+        btCollisionShape *shape = other.rigidBody->getCollisionShape();
+        btScalar mass = 1.0f / other.rigidBody->getInvMass();
+
+        btVector3 localInertia(0, 0, 0);
+        if (mass > 0.0f) {
+            shape->calculateLocalInertia(mass, localInertia);
+        }
+
+        btTransform initialTransform;
+        other.rigidBody->getMotionState()->getWorldTransform(initialTransform);
+        btMotionState *motionState = new btDefaultMotionState(initialTransform);
+
+        btRigidBody::btRigidBodyConstructionInfo rigidBodyCI(
+            mass, motionState, shape, localInertia);
+        rigidBody = new btRigidBody(rigidBodyCI);
+
+        BulletManager::AddRigidBody(rigidBody);
+    }
+}
+
+RigidTransform &RigidTransform::operator=(const RigidTransform &other) {
+    if (this == &other) return *this;
+
+    if (rigidBody) {
+        BulletManager::RemoveRigidBody(rigidBody);
+        delete rigidBody->getMotionState();
+        delete rigidBody;
+    }
+
+    Scale = other.Scale;
+
+    if (other.rigidBody) {
+        btCollisionShape *shape = other.rigidBody->getCollisionShape();
+        btScalar mass = 1.0f / other.rigidBody->getInvMass(); 
+
+        btVector3 localInertia(0, 0, 0);
+        if (mass > 0.0f) {
+            shape->calculateLocalInertia(mass, localInertia);
+        }
+
+        btTransform initialTransform;
+        other.rigidBody->getMotionState()->getWorldTransform(initialTransform);
+        btMotionState *motionState = new btDefaultMotionState(initialTransform);
+
+        btRigidBody::btRigidBodyConstructionInfo rigidBodyCI(
+            mass, motionState, shape, localInertia);
+        rigidBody = new btRigidBody(rigidBodyCI);
+
+        BulletManager::AddRigidBody(rigidBody);
+    }
+
+    return *this;
+}
+
+RigidTransform::~RigidTransform()
+{
+    BulletManager::RemoveRigidBody(rigidBody);
+    delete rigidBody->getMotionState(); 
+    delete rigidBody;
+}
+
+void RigidTransform::UpdateTransform() {
+    RigidTransform::SetPosition(glm::vec3(matrix[3]));
+    RigidTransform::SetRotation(glm::quat_cast(matrix));
+    RigidTransform::SetScale(glm::vec3(glm::length(matrix[0]),
+                        glm::length(matrix[1]),
+                        glm::length(matrix[2])));
+}
+
+void RigidTransform::UpdateMatrix() {
+    glm::mat4 translate = glm::translate(glm::mat4(1.0f), RigidTransform::GetPosition());
+    glm::mat4 rotate = glm::mat4_cast(RigidTransform::GetRotation());
+    glm::mat4 scale = glm::scale(glm::mat4(1.0f), RigidTransform::GetScale());
+    matrix = translate * rotate * scale;
+}
+
+
+glm::vec3 RigidTransform::GetPosition() const
+{
+    btTransform transform;
+    rigidBody->getMotionState()->getWorldTransform(transform);
+    btVector3 pos = transform.getOrigin();
+    return glm::vec3(pos.getX(), pos.getY(), pos.getZ());
+}
+
+glm::quat RigidTransform::GetRotation() const
+{
+    btTransform transform;
+    rigidBody->getMotionState()->getWorldTransform(transform);
+    btQuaternion rot = transform.getRotation();
+    return glm::quat(rot.getW(), rot.getX(), rot.getY(), rot.getZ());
+}
+
+glm::vec3 RigidTransform::GetScale() const
+{
+    return Scale;
+}
+
+void RigidTransform::SetScale(const glm::vec3& scale)
+{
+    if (rigidBody && rigidBody->getCollisionShape()) {
+        Scale = scale;
+        
+        rigidBody->getCollisionShape()->setLocalScaling(btVector3(
+            scale.x,
+            scale.y,
+            scale.z
+        ));
+        
+        if (rigidBody->isStaticObject()) {
+            BulletManager::UpdateSingleAabb(rigidBody);
+        }
+    }
+}
+
+void RigidTransform::SetPosition(const glm::vec3& position)
+{
+    btTransform transform;
+    rigidBody->getMotionState()->getWorldTransform(transform);
+    transform.setOrigin(btVector3(position.x, position.y, position.z));
+    rigidBody->getMotionState()->setWorldTransform(transform);
+    rigidBody->setWorldTransform(transform);
+
+    if (rigidBody->isStaticObject()) {
+        BulletManager::UpdateSingleAabb(rigidBody);
+    }
+}
+
+void RigidTransform::SetRotation(const glm::quat& rotation)
+{
+    btTransform transform;
+    rigidBody->getMotionState()->getWorldTransform(transform);
+    transform.setRotation(btQuaternion(rotation.x, rotation.y, rotation.z, rotation.w));
+    rigidBody->getMotionState()->setWorldTransform(transform);
+    rigidBody->setWorldTransform(transform);
+
+    if (rigidBody->isStaticObject()) {
+        BulletManager::UpdateSingleAabb(rigidBody);
+    }
+}
+
+void RigidTransform::Move(const glm::vec3& offset)
+{
+    glm::vec3 currentPos = GetPosition();
+    SetPosition(currentPos + offset);
+}
+
+void RigidTransform::Move(glm::vec3 direction, float distance)
+{
+    if (glm::length(direction) != 0) {
+        direction = glm::normalize(direction);
+        Move(direction * distance);
+    }
+}
+
+void RigidTransform::Rotate(const glm::quat& deltaRotation)
+{
+    glm::quat currentRotation = GetRotation();
+    SetRotation(currentRotation * deltaRotation);
+}
+
+void RigidTransform::RotateAround(const glm::vec3& axis, float angle)
+{
+    glm::quat delta = glm::angleAxis(glm::radians(angle), glm::normalize(axis));
+    Rotate(delta);
+}
+
+glm::vec3 RigidTransform::GetForwardVector() const
+{
+    return glm::normalize(GetRotation() * glm::vec3(0.0f, 0.0f, -1.0f));
+}
+
+glm::vec3 RigidTransform::GetUpVector() const
+{
+    return glm::normalize(GetRotation() * glm::vec3(0.0f, 1.0f, 0.0f));
+}
+
+glm::vec3 RigidTransform::GetRightVector() const
+{
+    return glm::normalize(GetRotation() * glm::vec3(1.0f, 0.0f, 0.0f));
+}
+
+void RigidTransform::ApplyForce(const glm::vec3& force) { rigidBody->applyCentralForce(btVector3(force.x, force.y, force.z)); }
+void RigidTransform::ApplyImpulse(const glm::vec3& impulse) { rigidBody->applyCentralImpulse(btVector3(impulse.x, impulse.y, impulse.z)); }
+void RigidTransform::ApplyTorque(const glm::vec3& torque) { rigidBody->applyTorque(btVector3(torque.x, torque.y, torque.z)); }
+
+
+Листинг A.49 – Файл include\object\transform\transform.hpp
+
+#pragma once
+#include "transformable.hpp"
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/quaternion.hpp>
+
+class Transform : public Transformable
+{
+public:
+    Transform(const Transform &transform);
+    Transform();
+
+    void UpdateMatrix() override;
+    void UpdateTransform() override;
+    Transform& operator=(const glm::mat4x4& matrix_) {
+        matrix = matrix_;
+        UpdateTransform();
+        return *this;
+    }
+    Transform& operator=(const Transformable& transform) {
+        *this = transform.GetMatrix();
+        return *this;
+    }
+    bool isMoving() const override { return false; };
+
+    glm::vec3 GetPosition() const override;
+    glm::quat GetRotation() const override;
+    glm::vec3 GetScale() const override;
+
+    void SetPosition(const glm::vec3& position) override;
+    void SetRotation(const glm::quat& rotation) override;
+    void SetScale(const glm::vec3& scale) override;
+
+    void Move(const glm::vec3& offset) override;
+    void Move(glm::vec3 direction, float distance) override;
+    void Rotate(const glm::quat& deltaRotation) override;
+    void RotateAround(const glm::vec3& axis, float angle) override;
+
+    glm::vec3 GetForwardVector() const override;
+    glm::vec3 GetUpVector() const override;
+    glm::vec3 GetRightVector() const override;
+
+private:
+    void moved() {dirty = true;}
+
+    glm::quat Rotation;
+    glm::vec3 Position;
+    glm::vec3 Scale;
+    bool dirty = true;
+};
+
+
+Листинг A.50 – Файл src\object\transform\transform.cpp
+
+#include <object/transform/transform.hpp>
+
+Transform::Transform(const Transform &transform)
+    : Position(transform.GetPosition()), Rotation(transform.GetRotation()), Scale(transform.GetScale()), Transformable(transform.matrix)
+{}
+
+Transform::Transform() : Position(0.0f), Rotation(glm::quat(1, 0, 0, 0)), Scale(1.0f) {}
+
+void Transform::UpdateTransform() {
+    Transform::SetPosition(glm::vec3(matrix[3]));
+    Transform::SetRotation(glm::quat_cast(matrix));
+    Transform::SetScale(glm::vec3(glm::length(matrix[0]),
+                        glm::length(matrix[1]),
+                        glm::length(matrix[2])));
+}
+
+void Transform::UpdateMatrix() {
+    if (!dirty) return;
+    glm::mat4 T = glm::translate(glm::mat4(1.0f), Transform::GetPosition());
+    glm::mat4 R = glm::mat4_cast(Transform::GetRotation());
+    glm::mat4 S = glm::scale(glm::mat4(1.0f), Transform::GetScale());
+    matrix = T * R * S;
+    dirty = false;
+}
+
+glm::vec3 Transform::GetPosition() const { return Position; }
+glm::quat Transform::GetRotation() const { return Rotation; }
+glm::vec3 Transform::GetScale()    const { return Scale; }
+
+void Transform::SetPosition(const glm::vec3& position) { moved(); Position = position; }
+void Transform::SetRotation(const glm::quat& rotation) { moved(); Rotation = rotation; }
+void Transform::SetScale(const glm::vec3& scale)       { moved(); Scale = scale; }
+
+void Transform::Move(const glm::vec3& offset) { moved(); Position += offset; }
+void Transform::Move(glm::vec3 direction, float distance) {
+    moved();
+    if (glm::length(direction) != 0) {
+        direction = glm::normalize(direction);
+        Move(direction * distance);
+    }
+}
+
+void Transform::Rotate(const glm::quat& deltaRotation) { moved(); Rotation = glm::normalize(deltaRotation * Rotation); }
+void Transform::RotateAround(const glm::vec3& axis, float angle) { 
+    moved();
+    glm::quat delta = glm::angleAxis(glm::radians(angle), glm::normalize(axis));
+    Rotate(delta);
+}
+
+glm::vec3 Transform::GetForwardVector() const { return glm::normalize(Rotation * glm::vec3(0.0f, 0.0f, -1.0f)); }
+glm::vec3 Transform::GetUpVector()      const { return glm::normalize(Rotation * glm::vec3(0.0f, 1.0f, 0.0f)); }
+glm::vec3 Transform::GetRightVector()   const { return glm::normalize(Rotation * glm::vec3(1.0f, 0.0f, 0.0f)); }
+
+Листинг A.51 – Файл include\object\transform\transformable.hpp
+
+#pragma once
+#include <glm/glm.hpp>
+#define GLM_ENABLE_EXPERIMENTAL
+
+class Transformable {
+public:
+    Transformable(const glm::mat4x4& mat) { matrix = mat; }
+    Transformable() {}
+    const glm::mat4 &GetMatrix() const { return matrix; };
+    virtual void UpdateMatrix() = 0;
+    virtual void UpdateTransform() = 0;
+    Transformable& operator=(const glm::mat4x4& matrix_) {
+        matrix = matrix_;
+        UpdateTransform();
+        return *this;
+    }
+    Transformable& operator=(const Transformable& transform) {
+        *this = transform.GetMatrix();
+        return *this;
+    }
+
+    virtual bool isMoving() const = 0;
+
+    virtual glm::vec3 GetPosition() const = 0;
+    virtual glm::quat GetRotation() const = 0;
+    virtual glm::vec3 GetScale() const = 0;
+
+    virtual void SetPosition(const glm::vec3& position) = 0;
+    virtual void SetRotation(const glm::quat& rotation) = 0;
+    virtual void SetScale(const glm::vec3& scale) = 0;
+
+    virtual void Move(const glm::vec3& offset) = 0;
+    virtual void Move(glm::vec3 direction, float distance) = 0;
+    virtual void Rotate(const glm::quat& deltaRotation) = 0;
+    virtual void RotateAround(const glm::vec3& axis, float angle) = 0;
+
+    virtual glm::vec3 GetForwardVector() const = 0;
+    virtual glm::vec3 GetUpVector() const = 0;
+    virtual glm::vec3 GetRightVector() const = 0;
+
+protected:
+    glm::mat4x4 matrix;
+};
+
+
+Листинг A.52 – Файл include\render\camera.hpp
+
+#pragma once
+#include "../object/transform/transformable.hpp"
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/glm.hpp>
+#include <GL/glew.h>
+
+class Camera
+{
+public:
+    Camera(const Camera &camera) 
+    {
+        Params.Target   = camera.Params.Target;
+        Params.Up       = camera.Params.Up;
+
+        PersProj.FOV    = camera.PersProj.FOV;
+        PersProj.Width  = camera.PersProj.Width;
+        PersProj.Height = camera.PersProj.Height;
+        PersProj.zNear  = camera.PersProj.zNear;
+        PersProj.zFar   = camera.PersProj.zFar;
+    }
+    Camera()
+    {
+        Params.Target      = glm::vec3(0.0f, 0.0f, 1.0f);
+        Params.Up          = glm::vec3(0.0f, 1.0f, 0.0f);
+    }
+
+    void SetPerspectiveProj(GLfloat FOV, GLfloat Width, GLfloat Height, GLfloat zNear, GLfloat zFar)
+    {
+        PersProj.FOV    = FOV;
+        PersProj.Width  = Width;
+        PersProj.Height = Height;
+        PersProj.zNear  = zNear;
+        PersProj.zFar   = zFar;
+    }
+
+    void SetPerspectiveProj(const Camera &_camera)
+    {
+        PersProj.FOV    = _camera.PersProj.FOV;
+        PersProj.Width  = _camera.PersProj.Width;
+        PersProj.Height = _camera.PersProj.Height;
+        PersProj.zNear  = _camera.PersProj.zNear;
+        PersProj.zFar   = _camera.PersProj.zFar;
+    }
+
+    void SetCamera(const glm::vec3& Target, const glm::vec3& Up)
+    {
+        Params.Target   = Target;
+        Params.Up       = Up;
+    }
+
+    void SetCamera(const Camera &_camera)
+    {
+        SetCamera(_camera.Params.Target, _camera.Params.Up);
+        SetPerspectiveProj(_camera.PersProj.FOV, _camera.PersProj.Width, _camera.PersProj.Height, _camera.PersProj.zNear, _camera.PersProj.zFar);
+    }
+
+    void SetYaw(const GLfloat new_yaw) { yaw = new_yaw; }
+    void SetPitch(const GLfloat new_pitch) { pitch = new_pitch; }
+    GLfloat GetYaw() const { return yaw; }
+    GLfloat GetPitch() const { return pitch; }
+    void UpdateTarget() {
+        const float pitch_limit = 89.0f;
+        float yaw = glm::radians(GetYaw());
+        float pitch = glm::radians(glm::clamp(GetPitch(), -pitch_limit, pitch_limit));
+
+        glm::vec3 front;
+        front.x = cos(pitch) * sin(yaw);
+        front.y = sin(pitch);
+        front.z = cos(pitch) * cos(yaw);
+        Params.Target = glm::normalize(front);
+    }
+
+    struct struct_Params {
+        glm::vec3 Target;
+        glm::vec3 Up;
+    } Params;
+
+    struct struct_PersProj {
+        GLfloat FOV;
+        GLfloat Width;
+        GLfloat Height;
+        GLfloat zNear;
+        GLfloat zFar;
+    } PersProj;
+
+    GLfloat yaw;
+    GLfloat pitch;
+};
+
+
+Листинг A.53 – Файл include\render\pipeline.hpp
+
+#pragma once
+#include "../entities/actor.hpp"
+#include <object/component/template/camera.hpp>
+
+class Pipeline
+{
+public:
+    Pipeline(const Camera &_camera);
+    Pipeline();
+    
+    void SetCamera(const Camera &_camera);
+    void drawSkybox(Actor &skybox);
+
+    glm::mat4 GetModel(const Transform& transform) const;
+    // Perspective - true, Orthographic - false
+    void UpdatePV();
+    void UpdateProj(bool perspective);
+    void UpdateView();
+    void UpdatePerspective();
+    void UpdateOrthographic();
+
+    ComponentCamera* camera = nullptr;
+
+    glm::mat4 ProjTrans;
+    glm::mat4 View;
+    glm::mat4 PV;
+};
+
+
+Листинг A.54 – Файл src\render\pipeline.cpp
+
+#include <render/pipeline.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/quaternion.hpp>
+#include <glm/gtx/transform.hpp>
+
+Pipeline::Pipeline() {}
+
+void Pipeline::drawSkybox(Actor &skybox) {
+    if (camera == nullptr) return;
+    GLint oldCullFaceMode;
+    glGetIntegerv(GL_CULL_FACE_MODE, &oldCullFaceMode);
+    GLint oldDepthFunc;
+    glGetIntegerv(GL_DEPTH_FUNC, &oldDepthFunc);
+    GLboolean oldDepthMask;
+    glGetBooleanv(GL_DEPTH_WRITEMASK, &oldDepthMask);
+
+    glCullFace(GL_FRONT);
+    glDepthFunc(GL_LEQUAL);
+    glDepthMask(GL_FALSE);
+
+    skybox.rootComponent->SetPosition(camera->GetGlobalPosition());
+    skybox.rootComponent->SetRotation(glm::vec3(0, 0, 180));
+    skybox.rootComponent->SetScale(glm::vec3(2));
+    skybox.Render();
+
+    glCullFace(oldCullFaceMode);
+    glDepthFunc(oldDepthFunc);
+    glDepthMask(oldDepthMask);
+}
+
+glm::mat4 Pipeline::GetModel(const Transform& transform) const
+{
+    glm::mat4 scaleMatrix = glm::scale(transform.GetScale());
+    glm::mat4 rotateMatrix = glm::mat4_cast(transform.GetRotation());
+    glm::mat4 translationMatrix = glm::translate(transform.GetPosition());
+
+    return translationMatrix * rotateMatrix * scaleMatrix;
+}
+
+void Pipeline::UpdatePV() {
+    PV = ProjTrans * View;
+}
+
+void Pipeline::UpdateProj(bool perspective) {
+    if (perspective)
+        UpdatePerspective();
+    else
+        UpdateOrthographic();
+}
+
+void Pipeline::UpdateView() {
+    if (camera == nullptr) return;
+    const auto& c = camera->camera;
+
+    View = glm::lookAt(
+        camera->GetGlobalPosition(),
+        camera->GetGlobalPosition() + c.Params.Target,
+        c.Params.Up
+    );
+}
+
+void Pipeline::UpdatePerspective() {
+    if (camera == nullptr) return;
+    const auto& c = camera->camera;
+
+    View = glm::lookAt(
+        camera->GetGlobalPosition(),
+        camera->GetGlobalPosition() + c.Params.Target,
+        c.Params.Up
+    );
+
+    ProjTrans = glm::perspective(
+        glm::radians(c.PersProj.FOV),
+        static_cast<float>(c.PersProj.Width) / c.PersProj.Height,
+        c.PersProj.zNear,
+        c.PersProj.zFar
+    );
+
+    PV = ProjTrans * View;
+}
+
+void Pipeline::UpdateOrthographic() {
+    if (camera == nullptr) return;
+    const auto& c = camera->camera;
+
+    float halfW = c.PersProj.Width / 2.0f;
+    float halfH = c.PersProj.Height / 2.0f;
+
+    ProjTrans = glm::ortho(
+        -halfW, halfW,
+        -halfH, halfH,
+        c.PersProj.zNear, c.PersProj.zFar
+    );
+
+    PV = ProjTrans * View;
+}
+
+
+Листинг A.55 – Файл include\threads\thread_pool.hpp
+
+#pragma once
+
+#include <vector>
+#include <queue>
+#include <thread>
+#include <mutex>
+#include <condition_variable>
+#include <functional>
+#include <atomic>
+
+class ThreadPool {
+public:
+    explicit ThreadPool(size_t thread_count, size_t max_number_tasks);
+    ~ThreadPool();
+
+    void enqueue(std::function<void()> task);
+    void shutdown();
+    bool available() const;
+
+private:
+    std::vector<std::thread> workers;
+    std::queue<std::function<void()>> tasks;
+
+    size_t max_number_tasks;
+    std::mutex queue_mutex;
+    std::condition_variable condition;
+    std::atomic<bool> stop{false};
+
+    void worker();
+};
+
+
+Листинг A.56 – Файл src\threads\thread_pool.cpp
+
+#include <threads/thread_pool.hpp>
+
+ThreadPool::ThreadPool(size_t thread_count, size_t max_number_tasks)
+    : max_number_tasks(max_number_tasks)
+{
+    for (size_t i = 0; i < thread_count; ++i) {
+        workers.emplace_back([this]() { this->worker(); });
+    }
+}
+
+ThreadPool::~ThreadPool() {
+    shutdown();
+}
+
+void ThreadPool::enqueue(std::function<void()> task) {
+    {
+        std::unique_lock lock(queue_mutex);
+        tasks.emplace(std::move(task));
+    }
+    condition.notify_one();
+}
+
+void ThreadPool::shutdown() {
+    stop.store(true);
+    condition.notify_all();
+
+    for (auto &thread : workers) {
+        if (thread.joinable()) {
+            thread.join();
+        }
+    }
+}
+
+bool ThreadPool::available() const {
+    return tasks.size() < max_number_tasks;
+}
+
+void ThreadPool::worker() {
+    while (true) {
+        std::function<void()> task;
+
+        {
+            std::unique_lock lock(queue_mutex);
+            condition.wait(lock, [this]() { return stop || !tasks.empty(); });
+
+            if (stop && tasks.empty()) {
+                return;
+            }
+
+            task = std::move(tasks.front());
+            tasks.pop();
+        }
+
+        task();
+    }
+}
+
+
+Листинг A.57 – Файл include\entities\actor.hpp
+
+#pragma once
+
+#include <iostream>
+#include "../object/component/component.hpp"
+
+class Actor
+{
+public:
+    Actor();
+    ~Actor();
+
+    virtual std::string GetName() const = 0;
+
+    void Render() const;
+    void updateAnimation();
+
+    void Spawn(Transform &startTransform);
+    glm::vec3 GetDirection() const; // направление объекта не зависимо от направления модели
+    void SetDirection(const glm::vec3 &_direction);
+
+    void Teleport(const glm::vec3 newPosition);
+    void Move(const glm::vec3 offset);
+    void Move(const glm::vec3 direction, const float distance);
+    void MoveForward(const float distance);
+    void MoveForward();
+    void MoveTowards(const glm::vec3 target, const float distance);
+    void Rotate(const glm::vec3 rotate);
+    void AddRotate(const glm::vec3 rotate);
+    void SetScale(const glm::vec3 scale);
+    void MultiplyScale(const glm::vec3 scale);
+    float GetSpeed() const;
+
+    Component *rootComponent = nullptr;
+protected:
+    glm::vec3 direction = {0, 0, 0};
+    float speed;
+    inline static std::string name = "NONE";
+};
+
+
+Листинг A.58 – Файл src\entities\actor.cpp
+
+#include <entities/actor.hpp>
+#include <managers/time_manager.hpp>
+
+Actor::Actor() {
+    speed = 5.0;
+}
+Actor::~Actor() {};
+
+void Actor::Render() const {
+    if (rootComponent != nullptr) {
+        rootComponent->UpdateMatrixTree();
+        rootComponent->RenderTree();
+    }
+}
+
+void Actor::updateAnimation() {}
+
+void Actor::Spawn(Transform& startTransform)
+{
+    if (rootComponent == nullptr) return;
+    rootComponent->Spawn(startTransform);
+}
+
+
+glm::vec3 Actor::GetDirection() const
+{
+    return direction;
+}
+
+void Actor::SetDirection(const glm::vec3 &_direction)
+{
+    direction = _direction;
+}
+
+void Actor::Teleport(const glm::vec3 newPosition) {
+    if (rootComponent != nullptr)
+        rootComponent->SetPosition(newPosition);
+}
+
+void Actor::Move(const glm::vec3 offset) {
+    if (rootComponent != nullptr)
+        rootComponent->Move(offset);
+}
+
+void Actor::Move(const glm::vec3 direction, const float distance) {
+    if (rootComponent != nullptr) 
+        rootComponent->Move(direction, distance);
+}
+
+void Actor::MoveForward(const float distance) {
+    Move(direction, distance);
+}
+
+void Actor::MoveForward() {
+    MoveForward(speed * TimeManager::GetDeltaTime());
+}
+
+void Actor::MoveTowards(const glm::vec3 target, const float distance) {
+    if (rootComponent != nullptr) {
+        glm::vec3 direction = target - rootComponent->GetPosition();
+        Move(direction, distance);
+    }
+}
+
+void Actor::Rotate(const glm::vec3 rotate) {
+    if (rootComponent != nullptr)
+        rootComponent->SetRotation(rotate);
+}
+
+void Actor::AddRotate(const glm::vec3 rotate) {
+    if (rootComponent != nullptr) {
+        glm::quat currentRotation = rootComponent->GetRotation();
+        glm::quat deltaRotation = glm::quat(glm::radians(rotate));
+        glm::quat newRotation = deltaRotation * currentRotation;
+        rootComponent->SetRotation(glm::normalize(newRotation));
+    }
+}
+
+void Actor::SetScale(const glm::vec3 scale) {
+    if (rootComponent != nullptr)
+        rootComponent->SetScale(scale);
+}
+
+void Actor::MultiplyScale(const glm::vec3 scale) {
+    if (rootComponent != nullptr)
+        rootComponent->SetScale(rootComponent->GetScale() * scale);
+}
+
+float Actor::GetSpeed() const {
+    return speed;
+}
+
+
+Листинг A.59 – Файл include\entities\templates\decor\brick_sphere.hpp
+
+#pragma once
+
+#include "../../actor.hpp"
+#include <object/geometry/primitive/sphere.hpp>
+
+class BrickSphere : public Actor
+{
+public:
+    BrickSphere();
+    ~BrickSphere();
+    
+    static void Initialize();
+
+    std::string GetName() const override;
+
+protected:
+    inline static std::string name;
+};
+
+
+Листинг A.60 – Файл src\entities\templates\decor\brick_sphere.cpp
+
+#include <entities/templates/decor/brick_sphere.hpp>
+#include <managers/render_manager.hpp> 
+#include <object/component/template/shape.hpp>
+#include <object/component/template/component_physics.hpp>
+
+BrickSphere::BrickSphere()
+{
+    std::cout << name << std::endl;
+    btScalar radius = 1.0f;
+    btScalar mass = 5.0f;
+    glm::vec3 scale(radius);
+    btCollisionShape* colliderShape = new btSphereShape(radius);
+    RigidTransform * rigidBody = new RigidTransform(colliderShape, mass, scale);
+    ComponentPhysics *body = CreateComponent<ComponentPhysics>(rigidBody);
+
+    Transform *transform1 = new Transform();
+    ComponentShape *shape1 = CreateComponent<ComponentShape>(transform1);
+    shape1->shape = RenderManager::primitives.sphere;
+    shape1->material = Material::Find("BrickSphere");
+
+    body->AddChild(shape1);
+
+    rootComponent = body;
+}
+
+BrickSphere::~BrickSphere() {}
+
+void BrickSphere::Initialize()
+{
+    BrickSphere::name = "BrickSphere";
+    auto shader = Shader::Create("sprite", "shaders/sprite_fs.glsl", "shaders/sprite_vs.glsl");
+    // auto texture_wooden_box = Texture::Create("brick_wall", "img/white.png");
+    auto texture_wooden_box = Texture::Create("brick_wall", "img/brick_wall_10_diff_1k.jpg");
+    
+    auto shader_cube = Shader::Create("cube", "shaders/cube_fs.glsl", "shaders/cube_vs.glsl");
+
+
+    auto init_sprite = new Material::InitFunction([](Material& m) {
+        std::vector<std::string> str = {"gWorld", "textureSampler"};
+        for (auto s : str) {
+            auto it = m.values.find(s);
+            if (it != m.values.end()) {
+                delete static_cast<glm::mat4*>(it->second.second);
+                m.values.erase(it);
+            }
+        }
+        m.values["gWorld"] = {glGetUniformLocation(m.GetShader()->GetID(), "gWorld"), new glm::mat4};
+        m.values["textureSampler"] = {glGetUniformLocation(m.GetShader()->GetID(), "textureSampler"), nullptr};
+    });
+    auto apply_sprite = new Material::ApplyFunction([](const Material& m) {
+        glActiveTexture(GL_TEXTURE0);
+
+        GLint texLoc = m.values.at("textureSampler").first;
+        glUniform1i(texLoc, 0);
+        GLint matLoc = m.values.at("gWorld").first;
+        glm::mat4* matPtr = static_cast<glm::mat4*>(m.values.at("gWorld").second);
+        glUniformMatrix4fv(matLoc, 1, GL_FALSE, glm::value_ptr(*matPtr));
+
+    });
+
+    auto material_wooden_box = Material::Create("BrickSphere", shader, init_sprite, apply_sprite);
+    material_wooden_box->PushTexture(texture_wooden_box);
+}
+
+std::string BrickSphere::GetName() const {
+    return BrickSphere::name;
+}
+
+
+Листинг A.61 – Файл include\entities\templates\decor\grass.hpp
+
+#pragma once
+
+#include "../../actor.hpp"
+#include <object/geometry/primitive/sprite.hpp>
+#include <object/component/template/shape.hpp>
+
+class Grass : public Actor
+{
+public:
+    Grass();
+    ~Grass();
+    
+    static void Initialize();
+
+    std::string GetName() const override;
+
+protected:
+    inline static std::string name;
+};
+
+
+Листинг A.62 – Файл src\entities\templates\decor\grass.cpp
+
+#include <entities/templates/decor/grass.hpp>
+#include <managers/render_manager.hpp> 
+
+Grass::Grass()
+{
+    std::cout << name << std::endl;
+    Transform *transform = new Transform();
+    ComponentShape *shape = CreateComponent<ComponentShape>(transform);
+    shape->shape = RenderManager::primitives.sprite;
+    shape->material = Material::Find("grass");
+    rootComponent = shape;
+}
+
+Grass::~Grass() {}
+
+void Grass::Initialize()
+{
+    Grass::name = "Grass";
+    
+    auto shader_cube = Shader::Create("sprite", "shaders/sprite_fs.glsl", "shaders/sprite_vs.glsl");
+    auto texture_skybox = Texture::Create("grass", "img/grass.png");
+    
+    auto init_sprite = new Material::InitFunction([](Material& m) {
+        std::vector<std::string> str = {"gWorld", "textureSampler"};
+        for (auto s : str) {
+            auto it = m.values.find(s);
+            if (it != m.values.end()) {
+                delete static_cast<glm::mat4*>(it->second.second);
+                m.values.erase(it);
+            }
+        }
+        m.values["gWorld"] = {glGetUniformLocation(m.GetShader()->GetID(), "gWorld"), new glm::mat4};
+        m.values["textureSampler"] = {glGetUniformLocation(m.GetShader()->GetID(), "textureSampler"), nullptr};
+
+        for (const auto& it : m.values) {
+            if (it.second.first < 0) {
+                std::cout << "init: " << it.first << " " << it.second.first << std::endl;
+            }
+            
+        }
+    });
+    auto apply_sprite = new Material::ApplyFunction([](const Material& m) {
+        glActiveTexture(GL_TEXTURE0);
+
+        GLint texLoc = m.values.at("textureSampler").first;
+        glUniform1i(texLoc, 0);
+        GLint matLoc = m.values.at("gWorld").first;
+        glm::mat4* matPtr = static_cast<glm::mat4*>(m.values.at("gWorld").second);
+        glUniformMatrix4fv(matLoc, 1, GL_FALSE, glm::value_ptr(*matPtr));
+
+    });
+
+    auto material_skybox = Material::Create("grass", shader_cube, init_sprite, apply_sprite);
+    material_skybox->PushTexture(texture_skybox);
+}
+
+std::string Grass::GetName() const {
+    return Grass::name;
+}
+
+
+Листинг A.63 – Файл include\entities\templates\decor\skybox.hpp
+
+#pragma once
+
+#include "../../actor.hpp"
+#include <object/geometry/primitive/cube.hpp>
+#include <object/component/template/shape.hpp>
+
+class Skybox : public Actor
+{
+public:
+    Skybox();
+    ~Skybox();
+    
+    static void Initialize();
+
+    std::string GetName() const override;
+
+protected:
+    inline static std::string name;
+};
+
+
+Листинг A.64 – Файл src\entities\templates\decor\skybox.cpp
+
+#include <entities/templates/decor/skybox.hpp>
+#include <managers/render_manager.hpp> 
+
+Skybox::Skybox()
+{
+    std::cout << name << std::endl;
+    Transform *transform = new Transform();
+    ComponentShape *shape = CreateComponent<ComponentShape>(transform);
+    shape->shape = RenderManager::primitives.cube;
+    shape->material = Material::Find("skybox");
+    rootComponent = shape;
+}
+
+Skybox::~Skybox() {}
+
+void Skybox::Initialize()
+{
+    Skybox::name = "skybox";
+    
+    auto shader_cube = Shader::Create("cube", "shaders/cube_fs.glsl", "shaders/cube_vs.glsl");
+    auto texture_skybox = Texture::Create("skybox", "img/skybox.png");
+    
+    auto init_sprite = new Material::InitFunction([](Material& m) {
+        std::vector<std::string> str = {"gWorld", "textureSampler"};
+        for (auto s : str) {
+            auto it = m.values.find(s);
+            if (it != m.values.end()) {
+                delete static_cast<glm::mat4*>(it->second.second);
+                m.values.erase(it);
+            }
+        }
+        m.values["gWorld"] = {glGetUniformLocation(m.GetShader()->GetID(), "gWorld"), new glm::mat4};
+        m.values["textureSampler"] = {glGetUniformLocation(m.GetShader()->GetID(), "textureSampler"), nullptr};
+
+        for (const auto& it : m.values) {
+            if (it.second.first < 0) {
+                std::cout << "init: " << it.first << " " << it.second.first << std::endl;
+            }
+            
+        }
+    });
+    auto apply_sprite = new Material::ApplyFunction([](const Material& m) {
+        glActiveTexture(GL_TEXTURE0);
+
+        GLint texLoc = m.values.at("textureSampler").first;
+        glUniform1i(texLoc, 0);
+        GLint matLoc = m.values.at("gWorld").first;
+        glm::mat4* matPtr = static_cast<glm::mat4*>(m.values.at("gWorld").second);
+        glUniformMatrix4fv(matLoc, 1, GL_FALSE, glm::value_ptr(*matPtr));
+
+    });
+
+    auto material_skybox = Material::Create("skybox", shader_cube, init_sprite, apply_sprite);
+    material_skybox->PushTexture(texture_skybox);
+}
+
+std::string Skybox::GetName() const {
+    return Skybox::name;
+}
+
+
+Листинг A.65 – Файл include\entities\templates\decor\stone_floor.hpp
+
+#pragma once
+
+#include "../../actor.hpp"
+#include <object/geometry/primitive/sprite.hpp>
+#include <object/component/template/shape.hpp>
+
+class StoneFloor : public Actor
+{
+public:
+    StoneFloor();
+    ~StoneFloor();
+    
+    static void Initialize();
+
+    std::string GetName() const override;
+
+protected:
+    inline static std::string name;
+};
+
+
+Листинг A.66 – Файл src\entities\templates\decor\stone_floor.cpp
+
+#include <entities/templates/decor/stone_floor.hpp>
+#include <managers/render_manager.hpp> 
+#include <object/component/template/component_physics.hpp>
+
+StoneFloor::StoneFloor()
+{
+    std::cout << name << std::endl;
+
+    btScalar mass = 0.0f;
+    glm::vec3 scale(10, 10, 0.001f);
+    btCollisionShape* colliderShape = new btBoxShape(btVector3(scale.x, scale.y, scale.z));
+    RigidTransform * rigidBody = new RigidTransform(colliderShape, mass, scale);
+    ComponentPhysics *body = CreateComponent<ComponentPhysics>(rigidBody);
+    body->SetRotation({-90, 0, 0});
+
+    Transform *transform = new Transform();
+    ComponentShape *shape = CreateComponent<ComponentShape>(transform);
+    body->AddChild(shape);
+    shape->shape = RenderManager::primitives.sprite;
+    shape->SetScale(scale);
+    shape->SetRotation({-90, 0, 0});
+    shape->material = Material::Find("stone_floor");
+
+    rootComponent = body;
+}
+
+StoneFloor::~StoneFloor() {}
+
+void StoneFloor::Initialize()
+{
+    StoneFloor::name = "StoneFloor";
+    
+    auto shader = Shader::Create("sprite", "shaders/sprite_fs.glsl", "shaders/sprite_vs.glsl");
+    auto texture = Texture::Create("stone_floor", "img/floor.jpg");
+    
+    auto init_sprite = new Material::InitFunction([](Material& m) {
+        std::vector<std::string> str = {"gWorld", "textureSampler"};
+        for (auto s : str) {
+            auto it = m.values.find(s);
+            if (it != m.values.end()) {
+                delete static_cast<glm::mat4*>(it->second.second);
+                m.values.erase(it);
+            }
+        }
+        m.values["gWorld"] = {glGetUniformLocation(m.GetShader()->GetID(), "gWorld"), new glm::mat4};
+        m.values["textureSampler"] = {glGetUniformLocation(m.GetShader()->GetID(), "textureSampler"), nullptr};
+    });
+    auto apply_sprite = new Material::ApplyFunction([](const Material& m) {
+        glActiveTexture(GL_TEXTURE0);
+
+        GLint texLoc = m.values.at("textureSampler").first;
+        glUniform1i(texLoc, 0);
+        GLint matLoc = m.values.at("gWorld").first;
+        glm::mat4* matPtr = static_cast<glm::mat4*>(m.values.at("gWorld").second);
+        glUniformMatrix4fv(matLoc, 1, GL_FALSE, glm::value_ptr(*matPtr));
+
+    });
+
+    auto material = Material::Create("stone_floor", shader, init_sprite, apply_sprite);
+    material->PushTexture(texture);
+}
+
+std::string StoneFloor::GetName() const {
+    return StoneFloor::name;
+}
+
+
+Листинг A.67 – Файл include\entities\templates\decor\tree.hpp
+
+#pragma once
+
+#include "../../actor.hpp"
+#include <object/geometry/primitive/cube.hpp>
+#include <object/component/template/shape.hpp>
+
+class Tree : public Actor
+{
+public:
+    Tree();
+    ~Tree();
+    
+    static void Initialize();
+
+    std::string GetName() const override;
+
+protected:
+    inline static std::string name;
+};
+
+
+Листинг A.68 – Файл src\entities\templates\decor\tree.cpp
+
+#include <entities/templates/decor/tree.hpp>
+#include <managers/render_manager.hpp> 
+#include <object/component/template/component_physics.hpp>
+#include <object/component/template/point.hpp>
+
+Tree::Tree()
+{
+    std::cout << name << std::endl;
+    ComponentShape *root = CreateComponent<ComponentShape>(new Transform());
+    root->shape = RenderManager::primitives.cube;
+    root->SetScale(glm::vec3(0.2, 1.0, 0.2));
+    root->material = Material::Find("Tree");
+
+// добавление веток 1
+    ComponentPoint *point_1_1 = CreateComponent<ComponentPoint>(new Transform());
+    root->AddChild(point_1_1);
+    point_1_1->SetPosition(glm::vec3(0.0, 1.0, 0));
+
+
+    ComponentShape *branch_1_1 = CreateComponent<ComponentShape>(new Transform());
+    point_1_1->AddChild(branch_1_1);
+    branch_1_1->shape = RenderManager::primitives.cube;
+    branch_1_1->SetPosition(glm::vec3(0.0, 2.0, 0));
+    branch_1_1->SetScale(glm::vec3(0.15, 1, 0.15));
+    branch_1_1->material = Material::Find("Tree");   
+
+// листья
+    ComponentPoint *point_leaf_1 = CreateComponent<ComponentPoint>(new Transform());
+    branch_1_1->AddChild(point_leaf_1);
+    point_leaf_1->SetPosition(glm::vec3(0.0, 3.0, 0));
+
+    ComponentShape *branch_3_2 = CreateComponent<ComponentShape>(new Transform());
+    point_leaf_1->AddChild(branch_3_2);
+    branch_3_2->shape = RenderManager::primitives.cube;
+    branch_3_2->SetPosition(glm::vec3(0.0, 3 + 0.75, 0));
+    branch_3_2->SetScale(glm::vec3(0.1, 0.75, 0.1));
+    branch_3_2->material = Material::Find("Tree"); 
+
+    ComponentShape *leaf1 = CreateComponent<ComponentShape>(new Transform());
+    branch_3_2->AddChild(leaf1);
+    leaf1->shape = RenderManager::primitives.sphere;
+    leaf1->SetPosition(glm::vec3(0.3, 4.5 + 0.6, -0.2));
+    leaf1->SetScale(glm::vec3(0.8, 0.7, 0.8));
+    leaf1->material = Material::Find("Leaf"); 
+    ComponentShape *leaf11 = CreateComponent<ComponentShape>(new Transform());
+    branch_3_2->AddChild(leaf11);
+    leaf11->shape = RenderManager::primitives.sphere;
+    leaf11->SetPosition(glm::vec3(-0.1, 4.5 + 0.4, 0.2));
+    leaf11->SetScale(glm::vec3(0.8, 0.7, 0.8));
+    leaf11->material = Material::Find("Leaf");
+    ComponentShape *leaf111 = CreateComponent<ComponentShape>(new Transform());
+    branch_3_2->AddChild(leaf111);
+    leaf111->shape = RenderManager::primitives.sphere;
+    leaf111->SetPosition(glm::vec3(0.5, 4.5 + 0.7, 0.4));
+    leaf111->SetScale(glm::vec3(0.9, 0.9, 0.9));
+    leaf111->material = Material::Find("Leaf");
+
+    //branch_1_1->SetGlobalTransform(branch_1_1->globalTransform->GetMatrix());
+
+// 1
+    ComponentPoint *point_1_2 = CreateComponent<ComponentPoint>(new Transform());
+    branch_1_1->AddChild(point_1_2);
+    point_1_2->SetPosition(glm::vec3(0.0, 3.0, 0));
+
+    ComponentShape *branch_1_2 = CreateComponent<ComponentShape>(new Transform());
+    point_1_2->AddChild(branch_1_2);
+    branch_1_2->shape = RenderManager::primitives.cube;
+    branch_1_2->SetPosition(glm::vec3(0.0, 4.0, 0));
+    branch_1_2->SetScale(glm::vec3(0.1, 01, 0.1));
+    branch_1_2->material = Material::Find("Tree");
+
+// 2
+    ComponentPoint *point_2_1 = CreateComponent<ComponentPoint>(new Transform());
+    branch_1_2->AddChild(point_2_1);
+    point_2_1->SetPosition(glm::vec3(0.0, 5.0, 0));
+
+    ComponentShape *branch_2_1 = CreateComponent<ComponentShape>(new Transform());
+    point_2_1->AddChild(branch_2_1);
+    branch_2_1->shape = RenderManager::primitives.cube;
+    branch_2_1->SetPosition(glm::vec3(0.0, 5.5, 0));
+    branch_2_1->SetScale(glm::vec3(0.1, 0.5, 0.1));
+    branch_2_1->material = Material::Find("Tree");  
+
+
+    ComponentPoint *point_2_2 = CreateComponent<ComponentPoint>(new Transform());
+    branch_1_2->AddChild(point_2_2);
+    point_2_2->SetPosition(glm::vec3(0.0, 5.0, 0));
+
+    ComponentShape *branch_2_2 = CreateComponent<ComponentShape>(new Transform());
+    point_2_2->AddChild(branch_2_2);
+    branch_2_2->shape = RenderManager::primitives.cube;
+    branch_2_2->SetPosition(glm::vec3(0.0, 5.5, 0));
+    branch_2_2->SetScale(glm::vec3(0.1, 0.5, 0.1));
+    branch_2_2->material = Material::Find("Tree"); 
+
+    glm::vec3 basePos = glm::vec3(0.0f, 6.6f, 0.0f);
+    ComponentShape* leaf2 = CreateComponent<ComponentShape>(new Transform());
+    branch_2_2->AddChild(leaf2);
+    leaf2->shape = RenderManager::primitives.sphere;
+    leaf2->SetPosition(basePos);
+    leaf2->SetScale(glm::vec3(0.9f, 0.7f, 1.1f));
+    leaf2->material = Material::Find("Leaf");
+
+    ComponentShape* leaf2a = CreateComponent<ComponentShape>(new Transform());
+    branch_2_2->AddChild(leaf2a);
+    leaf2a->shape = RenderManager::primitives.sphere;
+    leaf2a->SetPosition(basePos + glm::vec3(0.3f, 0.2f, -0.2f));
+    leaf2a->SetScale(glm::vec3(0.8f, 0.6f, 0.9f));
+    leaf2a->material = Material::Find("Leaf");
+    ComponentShape* leaf2b = CreateComponent<ComponentShape>(new Transform());
+    branch_2_2->AddChild(leaf2b);
+    leaf2b->shape = RenderManager::primitives.sphere;
+    leaf2b->SetPosition(basePos + glm::vec3(-0.2f, 0.1f, 0.3f));
+    leaf2b->SetScale(glm::vec3(0.85f, 0.7f, 0.85f));
+    leaf2b->material = Material::Find("Leaf");
+
+    
+
+// 3
+    ComponentPoint *point_3_1 = CreateComponent<ComponentPoint>(new Transform());
+    branch_2_1->AddChild(point_3_1);
+    point_3_1->SetPosition(glm::vec3(0.0, 6.0, 0));
+
+    ComponentShape *branch_3_1 = CreateComponent<ComponentShape>(new Transform());
+    point_3_1->AddChild(branch_3_1);
+    branch_3_1->shape = RenderManager::primitives.cube;
+    branch_3_1->SetPosition(glm::vec3(0.0, 6.5, 0));
+    branch_3_1->SetScale(glm::vec3(0.1, 0.5, 0.1));
+    branch_3_1->material = Material::Find("Tree");  
+
+    glm::vec3 basePos3 = glm::vec3(0.0f, 7.6f, 0.0f);
+    ComponentShape *leaf3 = CreateComponent<ComponentShape>(new Transform());
+    branch_3_1->AddChild(leaf3);
+    leaf3->shape = RenderManager::primitives.sphere;
+    leaf3->SetPosition(basePos3);
+    leaf3->SetScale(glm::vec3(1.2, 1, 1.5));
+    leaf3->SetRotation(glm::vec3(0, 60, 0));
+    leaf3->material = Material::Find("Leaf"); 
+
+// Дополнительные листья вокруг basePos3
+ComponentShape* leaf3a = CreateComponent<ComponentShape>(new Transform());
+branch_3_1->AddChild(leaf3a);
+leaf3a->shape = RenderManager::primitives.sphere;
+leaf3a->SetPosition(basePos3 + glm::vec3(0.4f, 0.2f, -0.3f));
+leaf3a->SetScale(glm::vec3(1.0f, 0.9f, 1.2f));
+leaf3a->material = Material::Find("Leaf");
+
+ComponentShape* leaf3b = CreateComponent<ComponentShape>(new Transform());
+branch_3_1->AddChild(leaf3b);
+leaf3b->shape = RenderManager::primitives.sphere;
+leaf3b->SetPosition(basePos3 + glm::vec3(-0.3f, 0.1f, 0.4f));
+leaf3b->SetScale(glm::vec3(1.1f, 0.8f, 1.0f));
+leaf3b->material = Material::Find("Leaf");
+
+ComponentShape* leaf3c = CreateComponent<ComponentShape>(new Transform());
+branch_3_1->AddChild(leaf3c);
+leaf3c->shape = RenderManager::primitives.sphere;
+leaf3c->SetPosition(basePos3 + glm::vec3(0.2f, 0.3f, 0.3f));
+leaf3c->SetScale(glm::vec3(0.9f, 0.9f, 1.1f));
+leaf3c->material = Material::Find("Leaf");
+// вращение
+    point_1_1->SetRotation(glm::vec3(30.0, 0, 0));
+    point_1_2->SetRotation(glm::vec3(30.0, 0, 0));
+
+    point_leaf_1->SetRotation(glm::vec3(-45.0, 30, 0));
+
+
+    point_2_1->SetRotation(glm::vec3(45.0, -30, 0));
+    point_2_2->SetRotation(glm::vec3(65.0, 120, 0));
+
+    point_3_1->SetRotation(glm::vec3(-45.0, 0, 0));
+
+
+    rootComponent = root;
+}
+
+Tree::~Tree() {}
+
+void Tree::Initialize()
+{
+    Tree::name = "Tree";
+    auto shader_tree = Shader::Create("cube", "shaders/cube_fs.glsl", "shaders/cube_vs.glsl");
+    auto shader_leaf = Shader::Create("sprite", "shaders/sprite_fs.glsl", "shaders/sprite_vs.glsl");
+    auto texture_tree = Texture::Create("tree", "img/tree.jpg");
+    auto texture_leafs = Texture::Create("leafs", "img/leaf.jpg");
+    
+    auto init_tree = new Material::InitFunction([](Material& m) {
+        std::vector<std::string> str = {"gWorld", "textureSampler"};
+        for (auto s : str) {
+            auto it = m.values.find(s);
+            if (it != m.values.end()) {
+                delete static_cast<glm::mat4*>(it->second.second);
+                m.values.erase(it);
+            }
+        }
+        m.values["gWorld"] = {glGetUniformLocation(m.GetShader()->GetID(), "gWorld"), new glm::mat4};
+        m.values["textureSampler"] = {glGetUniformLocation(m.GetShader()->GetID(), "textureSampler"), nullptr};
+    });
+    auto apply_tree = new Material::ApplyFunction([](const Material& m) {
+        glActiveTexture(GL_TEXTURE0);
+
+        GLint texLoc = m.values.at("textureSampler").first;
+        glUniform1i(texLoc, 0);
+        GLint matLoc = m.values.at("gWorld").first;
+        glm::mat4* matPtr = static_cast<glm::mat4*>(m.values.at("gWorld").second);
+        glUniformMatrix4fv(matLoc, 1, GL_FALSE, glm::value_ptr(*matPtr));
+    });
+
+    auto init_leaf = init_tree;
+    auto apply_leaf = apply_tree;
+
+    auto material_tree = Material::Create("Tree", shader_tree, init_tree, apply_tree);
+    auto material_leaf = Material::Create("Leaf", shader_leaf, init_leaf, apply_leaf);
+    material_tree->PushTexture(texture_tree);
+    material_leaf->PushTexture(texture_leafs);
+}
+
+std::string Tree::GetName() const {
+    return Tree::name;
+}
+
+
+Листинг A.69 – Файл include\entities\templates\decor\wooden_box.hpp
+
+#pragma once
+
+#include "../../actor.hpp"
+#include <object/geometry/primitive/cube.hpp>
+#include <object/component/template/shape.hpp>
+
+class WoodenBox : public Actor
+{
+public:
+    WoodenBox();
+    ~WoodenBox();
+    
+    static void Initialize();
+
+    std::string GetName() const override;
+
+protected:
+    inline static std::string name;
+};
+
+
+Листинг A.70 – Файл src\entities\templates\decor\wooden_box.cpp
+
+#include <entities/templates/decor/wooden_box.hpp>
+#include <managers/render_manager.hpp> 
+#include <object/component/template/component_physics.hpp>
+
+WoodenBox::WoodenBox()
+{
+    std::cout << name << std::endl;
+
+    glm::vec3 scale(1.f);
+    btScalar mass = 2.0f;
+    btCollisionShape* colliderShape = new btBoxShape(btVector3(
+        scale.x, 
+        scale.y, 
+        scale.z
+    ));
+    
+    RigidTransform* rigidBody = new RigidTransform(
+        colliderShape, 
+        mass, 
+        scale
+    );
+
+    ComponentPhysics *body = CreateComponent<ComponentPhysics>(rigidBody);
+
+    ComponentShape *shape1 = CreateComponent<ComponentShape>(new Transform());
+    body->AddChild(shape1);
+    shape1->shape = RenderManager::primitives.cube;
+    shape1->SetScale(scale);
+    shape1->material = Material::Find("WoodenBox");
+
+    rootComponent = body;
+}
+
+WoodenBox::~WoodenBox() {}
+
+void WoodenBox::Initialize()
+{
+    WoodenBox::name = "WoodenBox";
+    auto shader_cube = Shader::Create("cube", "shaders/cube_fs.glsl", "shaders/cube_vs.glsl");
+    auto texture_wooden_box = Texture::Create("wooden_box", "img/box.jpg");
+    
+    auto init_sprite = new Material::InitFunction([](Material& m) {
+        std::vector<std::string> str = {"gWorld", "textureSampler"};
+        for (auto s : str) {
+            auto it = m.values.find(s);
+            if (it != m.values.end()) {
+                delete static_cast<glm::mat4*>(it->second.second);
+                m.values.erase(it);
+            }
+        }
+        m.values["gWorld"] = {glGetUniformLocation(m.GetShader()->GetID(), "gWorld"), new glm::mat4};
+        m.values["textureSampler"] = {glGetUniformLocation(m.GetShader()->GetID(), "textureSampler"), nullptr};
+    });
+    auto apply_sprite = new Material::ApplyFunction([](const Material& m) {
+        glActiveTexture(GL_TEXTURE0);
+
+        GLint texLoc = m.values.at("textureSampler").first;
+        glUniform1i(texLoc, 0);
+        GLint matLoc = m.values.at("gWorld").first;
+        glm::mat4* matPtr = static_cast<glm::mat4*>(m.values.at("gWorld").second);
+        glUniformMatrix4fv(matLoc, 1, GL_FALSE, glm::value_ptr(*matPtr));
+    });
+
+    auto material_wooden_box = Material::Create("WoodenBox", shader_cube, init_sprite, apply_sprite);
+    material_wooden_box->PushTexture(texture_wooden_box);
+}
+
+std::string WoodenBox::GetName() const {
+    return WoodenBox::name;
+}
+
+
+Листинг A.71 – Файл include\entities\templates\mobs\Female.hpp
+
+#pragma once
+#include "../../actor.hpp"
+#include <object/geometry/skeletal_mesh.hpp>
+
+class Female : public Actor
+{
+public:
+    Female();
+    ~Female();
+    
+    static void Initialize();
+
+    std::string GetName() const override;
+
+protected:
+    inline static std::string name;
+};
+
+
+Листинг A.72 – Файл src\entities\templates\mobs\Female.cpp
+
+#include <entities/templates/mobs/Female.hpp>
+#include <object/component/template/mesh.hpp>
+#include <object/component/template/skeletal_mesh.hpp>
+#include <object/transform/transform.hpp>
+
+
+Female::Female()
+{
+    std::cout << name << std::endl;
+    Transform *transform = new Transform();
+    ComponentSkeletalMesh *shape = CreateComponent<ComponentSkeletalMesh>(transform);
+    shape->SetSkeletalMesh(GeometrySkeletalMesh::Find("Female"));
+    shape->animator->SetAnimation("Take 001");
+    shape->material = Material::Find("female");
+
+    rootComponent = shape;
+}
+
+Female::~Female()
+{}
+
+void Female::Initialize()
+{
+    Female::name = "Female";
+    std::string path("assets/model/female/female.glb");
+    auto mesh = GeometrySkeletalMesh::Create("Female", path);
+
+    auto shader_mesh = Shader::Create("mesh", "shaders/sprite_fs.glsl", "shaders/skeletal_mesh_vs.glsl");
+    auto init_sprite = new Material::InitFunction([](Material& m) {
+        std::vector<std::string> str = {"Projection", "View", "Model","textureSampler", "gBones"};
+        for (auto s : str) {
+            auto it = m.values.find(s);
+            if (it != m.values.end()) {
+                delete static_cast<glm::mat4*>(it->second.second);
+                m.values.erase(it);
+            }
+        }
+        m.values["Projection"] = {glGetUniformLocation(m.GetShader()->GetID(), "Projection"), new glm::mat4};
+        m.values["View"] = {glGetUniformLocation(m.GetShader()->GetID(), "View"), new glm::mat4};
+        // m.values["Model"] = {glGetUniformLocation(m.GetShader()->GetID(), "Model"), new glm::mat4};
+        m.values["textureSampler"] = {glGetUniformLocation(m.GetShader()->GetID(), "textureSampler"), nullptr};
+        m.values["gBones"] = {glGetUniformLocation(m.GetShader()->GetID(), "gBones"), nullptr};
+    });
+    auto apply_sprite = new Material::ApplyFunction([](const Material& m) {
+        glUseProgram(m.GetShader()->GetID());
+        glActiveTexture(GL_TEXTURE0);
+
+        GLint texLoc = m.values.at("textureSampler").first;
+        glUniform1i(texLoc, 0);
+
+        glm::mat4* matPtr;
+        GLint matLoc;
+
+        matLoc = m.values.at("Projection").first;
+        matPtr = static_cast<glm::mat4*>(m.values.at("Projection").second);
+        glUniformMatrix4fv(matLoc, 1, GL_FALSE, glm::value_ptr(*matPtr));
+
+        matLoc = m.values.at("View").first;
+        matPtr = static_cast<glm::mat4*>(m.values.at("View").second);
+        glUniformMatrix4fv(matLoc, 1, GL_FALSE, glm::value_ptr(*matPtr));
+
+        // matLoc = m.values.at("Model").first;
+        // matPtr = static_cast<glm::mat4*>(m.values.at("Model").second);
+        // glUniformMatrix4fv(matLoc, 1, GL_FALSE, glm::value_ptr(*matPtr));
+    });
+
+    auto material_wooden_box = Material::Create("female", shader_mesh, init_sprite, apply_sprite);
+    material_wooden_box->SetTexture(mesh->m_Textures);
+    std::cout << mesh->m_Textures.size() << std::endl;
+}
+
+std::string Female::GetName() const {
+    return Female::name;
+}
+
+
+Листинг A.73 – Файл include\entities\templates\playable\Ghost.hpp
+
+#pragma once
+
+#include "../../actor.hpp"
+
+class Ghost : public Actor
+{
+public:
+    Ghost();
+    ~Ghost();
+    
+    static void Initialize();
+
+    std::string GetName() const override;
+    
+protected:
+    inline static std::string name;
+};
+
+
+Листинг A.74 – Файл src\entities\templates\playable\Ghost.cpp
+
+#include <entities/templates/playable/Ghost.hpp>
+#include <object/component/template/point.hpp>
+#include <object/component/template/camera.hpp>
+#include <managers/render_manager.hpp> 
+
+Ghost::Ghost() {
+    std::cout << name << std::endl;
+    Transform *transformPoint = new Transform();
+    ComponentPoint *point = CreateComponent<ComponentPoint>(transformPoint);
+
+    Transform *transformCamera = new Transform();
+    ComponentCamera *camera = CreateComponent<ComponentCamera>(transformCamera);
+    camera->camera.PersProj = RenderManager::PersProj;
+    RenderManager::pipeline.camera = camera;
+
+    point->AddChild(camera);
+
+    rootComponent = point;
+}
+
+Ghost::~Ghost() {}
+
+void Ghost::Initialize() {
+    name = "Ghost";
+}
+
+std::string Ghost::GetName() const {
+    return name;
+}
+
+
+Листинг A.75 – Файл include\object\scene.hpp
+
+#pragma once
+#include "../entities/actor.hpp"
+// #include <game/bulletManager.hpp>
+
+class Scene 
+{
+public:
+    ~Scene() {
+        for (auto& it : actors) delete it;
+    };
+    void pushObject(Actor* actor) { actors.push_back(actor); };
+    
+    std::vector<Actor*> actors;
+    Actor* skybox;
+};
+
+
