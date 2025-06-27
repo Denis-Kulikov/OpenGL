@@ -7,9 +7,9 @@ BrickSphere::BrickSphere()
 {
     std::cout << name << std::endl;
     btScalar radius = 1.0f;
-    btScalar mass = 5.0f;
+    btScalar mass = 150.0f;
     glm::vec3 scale(radius);
-    btCollisionShape* colliderShape = new btSphereShape(radius);
+    btCollisionShape* colliderShape = new btSphereShape(radius / 2);
     RigidTransform * rigidBody = new RigidTransform(colliderShape, mass, scale);
     ComponentPhysics *body = CreateComponent<ComponentPhysics>(rigidBody);
 

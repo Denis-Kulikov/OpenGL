@@ -15,8 +15,6 @@ public:
     void UpdateInverseTree();
     virtual void UpdateMatrix();
     virtual void UpdateMatrixTree(const glm::mat4x4& parentTR = glm::mat4(1.0f), const glm::mat4x4& parentS = glm::mat4(1.0f));
-    // void UpdateMatrixTree();
-    void Spawn(const Transform &startTransform);
 
     virtual void Render() const {};
     void RenderTree() const;
@@ -24,16 +22,17 @@ public:
     glm::vec3 GetPosition() const;
     glm::quat GetRotation() const;
     glm::vec3 GetScale() const;
+    glm::vec3 GetLocalScale() const;
 
     glm::vec3 GetGlobalPosition() const;
     glm::quat GetGlobalRotation() const;
     glm::vec3 GetGlobalScale() const;
 
-    void FixPosition(const glm::vec3& scale);
+    void FixPosition(const glm::vec3& scaleChange);
     void SetPosition(const glm::vec3& position);
     void SetRotation(const glm::vec3& rotation);
     void SetRotation(const glm::quat& rotation);
-    void SetScale(glm::vec3 scale);
+    void SetScale(const glm::vec3& scale);
 
     void Move(const glm::vec3& offset);
     void Move(glm::vec3 direction, float distance);
@@ -54,9 +53,8 @@ public:
 // protected:
     Transformable *globalTransform = nullptr;
     Transformable *localTransform = nullptr;
-    glm::quat invRot;
+    glm::vec3 scale;
     glm::vec3 invScale;
-    glm::vec3 invOffset;
 };
 
 

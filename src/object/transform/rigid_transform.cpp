@@ -121,14 +121,10 @@ void RigidTransform::SetScale(const glm::vec3& scale)
         Scale = scale;
         
         rigidBody->getCollisionShape()->setLocalScaling(btVector3(
-            scale.x,
-            scale.y,
-            scale.z
+            scale.x / 2,
+            scale.y / 2,
+            scale.z / 2
         ));
-        
-        if (rigidBody->isStaticObject()) {
-            BulletManager::UpdateSingleAabb(rigidBody);
-        }
     }
 }
 
@@ -139,10 +135,6 @@ void RigidTransform::SetPosition(const glm::vec3& position)
     transform.setOrigin(btVector3(position.x, position.y, position.z));
     rigidBody->getMotionState()->setWorldTransform(transform);
     rigidBody->setWorldTransform(transform);
-
-    if (rigidBody->isStaticObject()) {
-        BulletManager::UpdateSingleAabb(rigidBody);
-    }
 }
 
 void RigidTransform::SetRotation(const glm::quat& rotation)
@@ -152,10 +144,6 @@ void RigidTransform::SetRotation(const glm::quat& rotation)
     transform.setRotation(btQuaternion(rotation.x, rotation.y, rotation.z, rotation.w));
     rigidBody->getMotionState()->setWorldTransform(transform);
     rigidBody->setWorldTransform(transform);
-
-    if (rigidBody->isStaticObject()) {
-        BulletManager::UpdateSingleAabb(rigidBody);
-    }
 }
 
 void RigidTransform::Move(const glm::vec3& offset)

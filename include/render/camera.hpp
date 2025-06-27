@@ -20,7 +20,7 @@ public:
     }
     Camera()
     {
-        Params.Target      = glm::vec3(0.0f, 0.0f, 1.0f);
+        Params.Target      = glm::vec3(0.0f, 0.0f, -1.0f);
         Params.Up          = glm::vec3(0.0f, 1.0f, 0.0f);
     }
 
@@ -83,6 +83,6 @@ public:
         GLfloat zFar;
     } PersProj;
 
-    GLfloat yaw;
-    GLfloat pitch;
+    GLfloat yaw = -180;
+    GLfloat pitch = 0;
 };

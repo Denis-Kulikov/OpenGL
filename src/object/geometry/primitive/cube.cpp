@@ -10,7 +10,7 @@ Cube::Cube() {
         glm::vec2 texCoord;
     };
 
-    const float size = 1.f;
+    const float size = .5f;
     std::vector<Vertex> vertices = {
         // передняя грань (начало: ближний сверху справа)
         {{ size,  size,  size}, {0.5f, 2.0f / 3.0f}},  {{-size,  size,  size}, {0.25f, 2.0f / 3.0f}},  {{-size, -size,  size}, {0.25f, 1.0f / 3.0f}},  {{ size, -size,  size}, {0.5f, 1.0f / 3.0f}},

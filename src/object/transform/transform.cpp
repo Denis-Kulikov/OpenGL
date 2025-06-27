@@ -1,8 +1,5 @@
 #include <object/transform/transform.hpp>
 
-Transform::Transform(const Transform &transform)
-    : Position(transform.GetPosition()), Rotation(transform.GetRotation()), Scale(transform.GetScale()), Transformable(transform.matrix)
-{}
 
 Transform::Transform() : Position(0.0f), Rotation(glm::quat(1, 0, 0, 0)), Scale(1.0f) {}
 

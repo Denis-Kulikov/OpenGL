@@ -13,15 +13,6 @@ void Actor::Render() const {
     }
 }
 
-void Actor::updateAnimation() {}
-
-void Actor::Spawn(Transform& startTransform)
-{
-    if (rootComponent == nullptr) return;
-    rootComponent->Spawn(startTransform);
-}
-
-
 glm::vec3 Actor::GetDirection() const
 {
     return direction;
@@ -62,7 +53,7 @@ void Actor::MoveTowards(const glm::vec3 target, const float distance) {
     }
 }
 
-void Actor::Rotate(const glm::vec3 rotate) {
+void Actor::SetRotation(const glm::vec3 rotate) {
     if (rootComponent != nullptr)
         rootComponent->SetRotation(rotate);
 }

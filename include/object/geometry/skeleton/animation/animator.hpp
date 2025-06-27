@@ -34,8 +34,7 @@ public:
     void ApplyAnimation(std::vector<glm::mat4x4>& transforms, glm::mat4x4 parentTransform) const {
         transforms.resize(skeleton.BoneLocal.size());
         if (!HasAnimation()) {
-            for (auto& it : transforms)
-                it = 1;
+            ApplyTPose(transforms, parentTransform);
             return;
         }
 
@@ -79,6 +78,21 @@ private:
             for (const auto& child : node.Children) {
                 ReadNodeHierarchy(child, parentTransform, transforms, AnimationTime);
             }
+        }
+    }
+
+    void ApplyTPose(std::vector<glm::mat4x4>& transforms, const glm::mat4x4& parentTransform) const {
+        transforms.resize(skeleton.BoneLocal.size());
+        ApplyTPoseRecursive(skeleton.BoneTree, parentTransform, transforms);
+    }
+
+    void ApplyTPoseRecursive(const BoneNode& node, const glm::mat4x4& parentTransform, std::vector<glm::mat4x4>& transforms) const {
+        if (node.Index >= 0) {
+            transforms[node.Index] = parentTransform ;
+        } 
+        
+        for (const auto& child : node.Children) {
+            ApplyTPoseRecursive(child, parentTransform, transforms);
         }
     }
 

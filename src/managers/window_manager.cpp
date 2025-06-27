@@ -46,8 +46,6 @@ void WindowManager::SwapBuffer() {
 }
 
 void WindowManager::MouseCB(GLFWwindow* window, double xpos, double ypos) {
-    static float yaw = 0.0f;
-    static float pitch = 0.0f;
     const float sensitivity = 20.0f;
 
     if (buttons.firstMouse) {
@@ -67,15 +65,20 @@ void WindowManager::MouseCB(GLFWwindow* window, double xpos, double ypos) {
     xOffset *= sensitivity * TimeManager::GetDeltaTime();
     yOffset *= sensitivity * TimeManager::GetDeltaTime();
 
-    yaw -= xOffset;
-    pitch += yOffset;
+    if (RenderManager::pipeline.camera == nullptr)
+        return;
+    
+    Camera& camera = RenderManager::pipeline.camera->camera;
+    
+    camera.yaw += xOffset;
+    camera.pitch -= yOffset;
 
-    if (pitch > 89.0f) pitch = 89.0f;
-    if (pitch < -89.0f) pitch = -89.0f;
+    if (camera.pitch > 89.0f) camera.pitch = 89.0f;
+    if (camera.pitch < -89.0f) camera.pitch = -89.0f;
 
     if (RenderManager::pipeline.camera == nullptr) return;
-    RenderManager::pipeline.camera->camera.SetYaw(yaw);
-    RenderManager::pipeline.camera->camera.SetPitch(pitch);
+    RenderManager::pipeline.camera->camera.SetYaw(camera.yaw);
+    RenderManager::pipeline.camera->camera.SetPitch(camera.pitch);
 }
 
 void WindowManager::KeyboardCB(GLFWwindow* window, int key, int scancode, int action, int mods)
@@ -107,11 +110,11 @@ void WindowManager::KeyboardCB(GLFWwindow* window, int key, int scancode, int ac
     }
     
     if (RenderManager::pipeline.camera == nullptr) return;
-    glm::vec3 front = RenderManager::pipeline.camera->camera.Params.Target;
+    glm::vec3 front = -RenderManager::pipeline.camera->camera.Params.Target;
     front.y = 0.0f;
     front = glm::normalize(front);
 
-    glm::vec3 right = glm::normalize(glm::cross(front, glm::vec3(0.0f, 1.0f, 0.0f)));
+    glm::vec3 right = glm::normalize(glm::cross(front, glm::vec3(0.0f, -1.0f, 0.0f)));
 
     glm::vec3 direction(0.0f);
 
@@ -119,8 +122,8 @@ void WindowManager::KeyboardCB(GLFWwindow* window, int key, int scancode, int ac
     if (keys[GLFW_KEY_S]) direction -= front;
     if (keys[GLFW_KEY_D]) direction += right;
     if (keys[GLFW_KEY_A]) direction -= right;
-    if (keys[GLFW_KEY_SPACE]) direction += glm::vec3(0.0f, 1.0f, 0.0f);
-    if (keys[GLFW_KEY_LEFT_CONTROL]) direction -= glm::vec3(0.0f, 1.0f, 0.0f);
+    if (keys[GLFW_KEY_SPACE]) direction.y += 1.0f;
+    if (keys[GLFW_KEY_LEFT_CONTROL]) direction.y -= 1.0f;
 
     if (glm::length(direction) > 0.0f) {
         direction = glm::normalize(direction);

@@ -18,6 +18,17 @@
 
 #include <stb_image_write.h>
 
+void PrintMatrix(const glm::mat4& matrix) {
+    for (int row = 0; row < 4; ++row) {
+        std::cout << "| ";
+        for (int col = 0; col < 4; ++col) {
+            std::cout << matrix[col][row] << "\t";
+        }
+        std::cout << "|\n";
+    }
+    std::cout << std::endl;
+}
+
 std::string printVec3(const glm::vec3& v) {
     return "(" + std::to_string(v.x) + ", " + std::to_string(v.y) + ", " + std::to_string(v.z) + ")";
 }
@@ -47,7 +58,7 @@ void flipVertically(unsigned char* data, int width, int height, int channels) {
 }
 
 Tree* tree;
-float GetBranchSwingValue(float frequency = 0.7f, float amplitude = 10.0f) {
+float GetBranchSwingValue(float frequency = 0.7f, float amplitude = 5.0f) {
     using namespace std::chrono;
     static auto startTime = high_resolution_clock::now();
     
@@ -75,8 +86,10 @@ void Callback(Scene *scene) {
     // tree->rootComponent->children[0]->SetRotation(glm::vec3(GetBranchSwingValue(), 0.f, 0.f));
     // tree->rootComponent->children[0]->children[0]->children[1]->SetRotation(glm::vec3(GetBranchSwingValue(), 0.f, 0.f));
 
-    for (auto &it : scene->actors)
+    for (auto &it : scene->actors) {
         it->Render();
+        // std::cout << printVec3(it->rootComponent->GetPosition()) << std::endl;
+    }
 
 
     if (GlobalState::fScreenshot || GlobalState::FPS) {
@@ -102,7 +115,7 @@ void Callback(Scene *scene) {
             std::vector<unsigned char> pixelsCopy = pixels;
             snprintf(filename, sizeof(filename), "data/frames/frame_%04d.jpg", GlobalState::FrameCounter++);
             threadPool.enqueue([pixelsCopy = std::move(pixelsCopy), width, height, filename]() mutable {
-                saveFrameAsJPEG(pixelsCopy.data(), width, height, filename);
+                saveFrameAsPNG(pixelsCopy.data(), width, height, filename);
             });
         }
     }
@@ -110,6 +123,7 @@ void Callback(Scene *scene) {
     WindowManager::SwapBuffer();
 }
 
+bool fIsInit = false;
 Scene *createScene()
 {
     Ghost::Initialize();
@@ -121,21 +135,25 @@ Scene *createScene()
     Female::Initialize();
     BrickSphere::Initialize();
 
+
     auto *scene = new Scene();
 
     Actor *character = new Ghost();
-    character->Teleport(glm::vec3(0, 0, -2.5));
+    // character->Teleport(glm::vec3(-10, 3, 5.5));
+    // RenderManager::pipeline.camera->camera.yaw = 90;
+    // RenderManager::pipeline.camera->camera.pitch = 60;
     scene->pushObject(character);
 
 
     // tree = new Tree();
     // tree->Teleport(glm::vec3(0, -0.0, 4));
+    // tree->MultiplyScale(glm::vec3(.5));
     // scene->pushObject(tree);
 
 
     // auto grass = new Grass();
-    // grass->Teleport(glm::vec3(1, -1.0, 5.5));
-    // grass->rootComponent->SetScale(glm::vec3(5.3));
+    // grass->Teleport(glm::vec3(0, -.5, 4));
+    // grass->rootComponent->SetScale(glm::vec3(1.5));
     // grass->rootComponent->SetRotation(glm::vec3(90, 0, 0));
     // scene->pushObject(grass);
 
@@ -143,20 +161,24 @@ Scene *createScene()
     // cubeX->Teleport(glm::vec3(0, 2.3, 10));
     // scene->pushObject(cubeX);
 
-    float boxHeight = 2.0f;
-    float startY = -4.0f;
+    // float boxHeight = 2.0f;
+    // float startY = -4.0f;
 
-    for (int i = 0; i < 5; i++) {
-        auto box = new WoodenBox();
-        box->Teleport(glm::vec3(0, startY + i * boxHeight, 10));
-        scene->pushObject(box);
-    }
+    // for (int i = 0; i < 5; i++) {
+    //     auto box = new WoodenBox();
+    //     box->Teleport(glm::vec3(0, startY + i * boxHeight, 10));
+    //     scene->pushObject(box);
+    // }
 
 
     auto sphere = new BrickSphere();
-    sphere->Teleport(glm::vec3(10, 3, 10));
-    static_cast<RigidTransform*>(sphere->rootComponent->localTransform)->ApplyImpulse(glm::vec3(-50, 0, 0)); // Импульс влево (к ящикам)
+    sphere->Teleport(glm::vec3(5, 3, 10));
+    sphere->SetRotation(glm::vec3(45, 0, 0));
+    // static_cast<RigidTransform*>(sphere->rootComponent->localTransform)->ApplyImpulse(glm::vec3(-500, 0, 0));
     scene->pushObject(sphere);
+    BulletManager::StepSimulation(TimeManager::GetDeltaTime());
+
+    std::cout << printVec3(sphere->rootComponent->GetPosition()) << std::endl;
 
     auto floor = new StoneFloor();
     floor->Teleport(glm::vec3(0, -5, 10));
@@ -164,7 +186,7 @@ Scene *createScene()
 
     // auto female = new Female();
     // female->rootComponent->SetRotation(glm::vec3(-90, 180 + 30, 0));
-    // female->rootComponent->SetPosition(glm::vec3(0, 0, 7));
+    // female->rootComponent->SetPosition(glm::vec3(3, -0.85, 2.6));
     // female->rootComponent->SetScale(glm::vec3(0.01));
     // scene->pushObject(female);
 
@@ -184,7 +206,6 @@ int main(int argc, char** argv)
     RenderManager::Initialize(70.0f, width, height, 0.1f, 1000.0f);
     BulletManager::Initialize();
     TimeManager::Initialize();
-    GlobalState::FPS = 45;
 
     Scene *scene(createScene());
     WindowManager::SwapBuffer();

@@ -6,7 +6,6 @@
 class Transform : public Transformable
 {
 public:
-    Transform(const Transform &transform);
     Transform();
 
     void UpdateMatrix() override;

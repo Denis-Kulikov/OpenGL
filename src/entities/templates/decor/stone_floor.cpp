@@ -8,7 +8,7 @@ StoneFloor::StoneFloor()
 
     btScalar mass = 0.0f;
     glm::vec3 scale(10, 10, 0.001f);
-    btCollisionShape* colliderShape = new btBoxShape(btVector3(scale.x, scale.y, scale.z));
+    btCollisionShape* colliderShape = new btBoxShape(btVector3(scale.x / 2, scale.y / 2, scale.z / 2));
     RigidTransform * rigidBody = new RigidTransform(colliderShape, mass, scale);
     ComponentPhysics *body = CreateComponent<ComponentPhysics>(rigidBody);
     body->SetRotation({-90, 0, 0});

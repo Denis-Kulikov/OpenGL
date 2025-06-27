@@ -8,7 +8,7 @@ Tree::Tree()
     std::cout << name << std::endl;
     ComponentShape *root = CreateComponent<ComponentShape>(new Transform());
     root->shape = RenderManager::primitives.cube;
-    root->SetScale(glm::vec3(0.2, 1.0, 0.2));
+    root->SetScale(glm::vec3(0.2, 2.0, 0.2));
     root->material = Material::Find("Tree");
 
 // добавление веток 1
@@ -20,80 +20,80 @@ Tree::Tree()
     ComponentShape *branch_1_1 = CreateComponent<ComponentShape>(new Transform());
     point_1_1->AddChild(branch_1_1);
     branch_1_1->shape = RenderManager::primitives.cube;
-    branch_1_1->SetPosition(glm::vec3(0.0, 2.0, 0));
-    branch_1_1->SetScale(glm::vec3(0.15, 1, 0.15));
+    branch_1_1->SetPosition(glm::vec3(0.0, 1.0, 0));
+    branch_1_1->SetScale(glm::vec3(0.15, 2, 0.15));
     branch_1_1->material = Material::Find("Tree");   
 
 // листья
     ComponentPoint *point_leaf_1 = CreateComponent<ComponentPoint>(new Transform());
     branch_1_1->AddChild(point_leaf_1);
-    point_leaf_1->SetPosition(glm::vec3(0.0, 3.0, 0));
+    point_leaf_1->SetPosition(glm::vec3(0.0, 1.0, 0));
 
     ComponentShape *branch_3_2 = CreateComponent<ComponentShape>(new Transform());
     point_leaf_1->AddChild(branch_3_2);
     branch_3_2->shape = RenderManager::primitives.cube;
-    branch_3_2->SetPosition(glm::vec3(0.0, 3 + 0.75, 0));
+    branch_3_2->SetPosition(glm::vec3(0.0, 0.75 / 2, 0));
     branch_3_2->SetScale(glm::vec3(0.1, 0.75, 0.1));
     branch_3_2->material = Material::Find("Tree"); 
 
     ComponentShape *leaf1 = CreateComponent<ComponentShape>(new Transform());
     branch_3_2->AddChild(leaf1);
     leaf1->shape = RenderManager::primitives.sphere;
-    leaf1->SetPosition(glm::vec3(0.3, 4.5 + 0.6, -0.2));
+    leaf1->SetPosition(glm::vec3(0.0, 0.75 / 2 + 0.7 / 2 + 0., -0.0));
     leaf1->SetScale(glm::vec3(0.8, 0.7, 0.8));
     leaf1->material = Material::Find("Leaf"); 
     ComponentShape *leaf11 = CreateComponent<ComponentShape>(new Transform());
     branch_3_2->AddChild(leaf11);
     leaf11->shape = RenderManager::primitives.sphere;
-    leaf11->SetPosition(glm::vec3(-0.1, 4.5 + 0.4, 0.2));
+    leaf11->SetPosition(glm::vec3(-0.1, 0.75 / 2 + 0.7 / 2, 0.2));
     leaf11->SetScale(glm::vec3(0.8, 0.7, 0.8));
     leaf11->material = Material::Find("Leaf");
     ComponentShape *leaf111 = CreateComponent<ComponentShape>(new Transform());
     branch_3_2->AddChild(leaf111);
     leaf111->shape = RenderManager::primitives.sphere;
-    leaf111->SetPosition(glm::vec3(0.5, 4.5 + 0.7, 0.4));
+    leaf111->SetPosition(glm::vec3(0.2, 0.75 / 2 + 0.7 / 2, 0.1));
     leaf111->SetScale(glm::vec3(0.9, 0.9, 0.9));
     leaf111->material = Material::Find("Leaf");
 
-    //branch_1_1->SetGlobalTransform(branch_1_1->globalTransform->GetMatrix());
+//     //branch_1_1->SetGlobalTransform(branch_1_1->globalTransform->GetMatrix());
 
-// 1
+// // 1
     ComponentPoint *point_1_2 = CreateComponent<ComponentPoint>(new Transform());
     branch_1_1->AddChild(point_1_2);
-    point_1_2->SetPosition(glm::vec3(0.0, 3.0, 0));
+    point_1_2->SetPosition(glm::vec3(0.0, 1., 0));
 
     ComponentShape *branch_1_2 = CreateComponent<ComponentShape>(new Transform());
     point_1_2->AddChild(branch_1_2);
     branch_1_2->shape = RenderManager::primitives.cube;
-    branch_1_2->SetPosition(glm::vec3(0.0, 4.0, 0));
-    branch_1_2->SetScale(glm::vec3(0.1, 01, 0.1));
+    branch_1_2->SetPosition(glm::vec3(0.0, 1.0, 0));
+    branch_1_2->SetScale(glm::vec3(0.1, 2., 0.1));
     branch_1_2->material = Material::Find("Tree");
 
-// 2
+// // 2
     ComponentPoint *point_2_1 = CreateComponent<ComponentPoint>(new Transform());
     branch_1_2->AddChild(point_2_1);
-    point_2_1->SetPosition(glm::vec3(0.0, 5.0, 0));
+    point_2_1->SetPosition(glm::vec3(0.0, 1.0, 0));
 
     ComponentShape *branch_2_1 = CreateComponent<ComponentShape>(new Transform());
     point_2_1->AddChild(branch_2_1);
     branch_2_1->shape = RenderManager::primitives.cube;
-    branch_2_1->SetPosition(glm::vec3(0.0, 5.5, 0));
-    branch_2_1->SetScale(glm::vec3(0.1, 0.5, 0.1));
+    branch_2_1->SetPosition(glm::vec3(0.0, 0.5, 0));
+    branch_2_1->SetScale(glm::vec3(0.1, 1, 0.1));
     branch_2_1->material = Material::Find("Tree");  
 
 
     ComponentPoint *point_2_2 = CreateComponent<ComponentPoint>(new Transform());
     branch_1_2->AddChild(point_2_2);
-    point_2_2->SetPosition(glm::vec3(0.0, 5.0, 0));
+    point_2_2->SetPosition(glm::vec3(0.0, 1., 0));
 
     ComponentShape *branch_2_2 = CreateComponent<ComponentShape>(new Transform());
     point_2_2->AddChild(branch_2_2);
     branch_2_2->shape = RenderManager::primitives.cube;
-    branch_2_2->SetPosition(glm::vec3(0.0, 5.5, 0));
-    branch_2_2->SetScale(glm::vec3(0.1, 0.5, 0.1));
+    branch_2_2->SetPosition(glm::vec3(0.0, .5, 0));
+    branch_2_2->SetScale(glm::vec3(0.1, 1., 0.1));
     branch_2_2->material = Material::Find("Tree"); 
 
-    glm::vec3 basePos = glm::vec3(0.0f, 6.6f, 0.0f);
+    glm::vec3 basePos = glm::vec3(0.0f, .6f, 0.0f);
     ComponentShape* leaf2 = CreateComponent<ComponentShape>(new Transform());
     branch_2_2->AddChild(leaf2);
     leaf2->shape = RenderManager::primitives.sphere;
@@ -116,28 +116,20 @@ Tree::Tree()
 
     
 
-// 3
+// // 3
     ComponentPoint *point_3_1 = CreateComponent<ComponentPoint>(new Transform());
     branch_2_1->AddChild(point_3_1);
-    point_3_1->SetPosition(glm::vec3(0.0, 6.0, 0));
+    point_3_1->SetPosition(glm::vec3(0.0, .5, 0));
 
     ComponentShape *branch_3_1 = CreateComponent<ComponentShape>(new Transform());
     point_3_1->AddChild(branch_3_1);
     branch_3_1->shape = RenderManager::primitives.cube;
-    branch_3_1->SetPosition(glm::vec3(0.0, 6.5, 0));
-    branch_3_1->SetScale(glm::vec3(0.1, 0.5, 0.1));
+    branch_3_1->SetPosition(glm::vec3(0.0, .5, 0));
+    branch_3_1->SetScale(glm::vec3(0.1, 1., 0.1));
     branch_3_1->material = Material::Find("Tree");  
 
-    glm::vec3 basePos3 = glm::vec3(0.0f, 7.6f, 0.0f);
-    ComponentShape *leaf3 = CreateComponent<ComponentShape>(new Transform());
-    branch_3_1->AddChild(leaf3);
-    leaf3->shape = RenderManager::primitives.sphere;
-    leaf3->SetPosition(basePos3);
-    leaf3->SetScale(glm::vec3(1.2, 1, 1.5));
-    leaf3->SetRotation(glm::vec3(0, 60, 0));
-    leaf3->material = Material::Find("Leaf"); 
-
 // Дополнительные листья вокруг basePos3
+    glm::vec3 basePos3 = glm::vec3(0.0f, .6f, 0.0f);
 ComponentShape* leaf3a = CreateComponent<ComponentShape>(new Transform());
 branch_3_1->AddChild(leaf3a);
 leaf3a->shape = RenderManager::primitives.sphere;
@@ -158,6 +150,7 @@ leaf3c->shape = RenderManager::primitives.sphere;
 leaf3c->SetPosition(basePos3 + glm::vec3(0.2f, 0.3f, 0.3f));
 leaf3c->SetScale(glm::vec3(0.9f, 0.9f, 1.1f));
 leaf3c->material = Material::Find("Leaf");
+
 // вращение
     point_1_1->SetRotation(glm::vec3(30.0, 0, 0));
     point_1_2->SetRotation(glm::vec3(30.0, 0, 0));

@@ -23,7 +23,7 @@ public:
         int numLat = N; // количество широт
         int numLon = N; // количество долгот
 
-        const float RADIUS = 1.f;
+        const float RADIUS = .5f;
         for (int lat = 0; lat <= numLat; ++lat) {
             float theta = lat * glm::pi<float>() / numLat; // угол широты
             float sinTheta = sin(theta);

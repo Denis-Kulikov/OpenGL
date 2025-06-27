@@ -7,11 +7,11 @@ WoodenBox::WoodenBox()
     std::cout << name << std::endl;
 
     glm::vec3 scale(1.f);
-    btScalar mass = 2.0f;
+    btScalar mass = 200.0f;
     btCollisionShape* colliderShape = new btBoxShape(btVector3(
-        scale.x, 
-        scale.y, 
-        scale.z
+        scale.x / 2, 
+        scale.y / 2, 
+        scale.z / 2
     ));
     
     RigidTransform* rigidBody = new RigidTransform(
