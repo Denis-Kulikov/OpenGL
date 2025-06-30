@@ -4,26 +4,18 @@
 
 class Transformable {
 public:
-    Transformable(const glm::mat4x4& mat) { matrix = mat; }
+    Transformable(const glm::mat4x3& mat) { matrix = mat; }
     Transformable() {}
-    const glm::mat4 &GetMatrix() const { return matrix; };
+    const glm::mat4x3 &GetMatrix() const { return matrix; };
     virtual void UpdateMatrix() = 0;
     virtual void UpdateTransform() = 0;
-    Transformable& operator=(const glm::mat4x4& matrix_) {
-        matrix = matrix_;
-        UpdateTransform();
-        return *this;
-    }
-    Transformable& operator=(const Transformable& transform) {
-        *this = transform.GetMatrix();
-        return *this;
-    }
-
-    virtual bool isMoving() const = 0;
 
     virtual glm::vec3 GetPosition() const = 0;
     virtual glm::quat GetRotation() const = 0;
     virtual glm::vec3 GetScale() const = 0;
+
+
+    virtual void SetMatrix(const glm::mat4x3& mat) { matrix = mat; };
 
     virtual void SetPosition(const glm::vec3& position) = 0;
     virtual void SetRotation(const glm::quat& rotation) = 0;
@@ -39,5 +31,5 @@ public:
     virtual glm::vec3 GetRightVector() const = 0;
 
 protected:
-    glm::mat4x4 matrix;
+    glm::mat4x3 matrix;
 };

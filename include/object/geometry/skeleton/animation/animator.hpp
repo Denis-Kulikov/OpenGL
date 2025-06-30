@@ -31,10 +31,12 @@ public:
 
     bool HasAnimation() const { return animation != nullptr; }
 
-    void ApplyAnimation(std::vector<glm::mat4x4>& transforms, glm::mat4x4 parentTransform) const {
+    void ApplyAnimation(std::vector<glm::mat4x3>& transforms, glm::mat4 parentTransform) const {
         transforms.resize(skeleton.BoneLocal.size());
         if (!HasAnimation()) {
-            ApplyTPose(transforms, parentTransform);
+            for (auto &t : transforms) {
+                t = glm::mat4x4(1.f);
+            }
             return;
         }
 
@@ -49,7 +51,7 @@ public:
 
 private:
     void Animator::ReadNodeHierarchy(const BoneNode& node, const glm::mat4& parentTransform,
-                                    std::vector<glm::mat4x4>& transforms, float AnimationTime) const
+                                    std::vector<glm::mat4x3>& transforms, float AnimationTime) const
     {
         glm::mat4 localTransform = glm::mat4(1.0f);
 
@@ -69,7 +71,8 @@ private:
             }
 
             glm::mat4 globalTransform = parentTransform * localTransform;
-            transforms[node.Index] = globalTransform * skeleton.BoneLocal[node.Index];
+            glm::mat4 boneTransform = globalTransform * skeleton.BoneLocal[node.Index];
+            transforms[node.Index] = glm::mat4x3(boneTransform);
 
             for (const auto& child : node.Children) {
                 ReadNodeHierarchy(child, globalTransform, transforms, AnimationTime);
@@ -81,24 +84,8 @@ private:
         }
     }
 
-    void ApplyTPose(std::vector<glm::mat4x4>& transforms, const glm::mat4x4& parentTransform) const {
-        transforms.resize(skeleton.BoneLocal.size());
-        ApplyTPoseRecursive(skeleton.BoneTree, parentTransform, transforms);
-    }
-
-    void ApplyTPoseRecursive(const BoneNode& node, const glm::mat4x4& parentTransform, std::vector<glm::mat4x4>& transforms) const {
-        if (node.Index >= 0) {
-            transforms[node.Index] = parentTransform ;
-        } 
-        
-        for (const auto& child : node.Children) {
-            ApplyTPoseRecursive(child, parentTransform, transforms);
-        }
-    }
-
 private:
     const Skeleton& skeleton;
     const SkeletalAnimation* animation = nullptr;
-    std::vector<glm::mat4x4>* transforms;
     float startTime;
 };

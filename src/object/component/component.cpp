@@ -55,18 +55,11 @@ void Component::UpdateMatrixTree(const glm::mat4x4& parentTR, const glm::mat4x4&
         S = parentS * S;
     }
 
-    *globalTransform = TR * S;
+    globalTransform->SetMatrix(TR * S);
 
     for (Component* child : children) {
         child->UpdateMatrixTree(TR, S);
     }
-}
-
-void Component::UpdateMatrix() {
-    // localTransform->UpdateMatrix();
-    // *globalTransform = parent ? parent->GetMatrix() * localTransform->GetMatrix(): 
-    //                             localTransform->GetMatrix();
-    // globalTransform->UpdateTransform();
 }
 
 void Component::RenderTree() const {
@@ -85,7 +78,6 @@ glm::quat Component::GetRotation() const {
 glm::vec3 Component::GetScale() const {
     return scale;
 }
-
 glm::vec3 Component::GetLocalScale() const {
     return localTransform->GetScale();
 }

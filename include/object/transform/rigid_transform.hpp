@@ -9,14 +9,11 @@ class RigidTransform : public Transformable
 {
 public:
     RigidTransform(btCollisionShape* baseShape, btScalar mass, const glm::vec3& scale);
-    RigidTransform(const RigidTransform &other);
-    RigidTransform &operator=(const RigidTransform &other);
     ~RigidTransform();
 
     void UpdateMatrix() override;
     void UpdateTransform() override;
     // void SetMatrix(const glm::mat4x4 &matrix_) override;
-    bool isMoving() const override { return true; };
 
     glm::vec3 GetPosition() const override;
     glm::quat GetRotation() const override;

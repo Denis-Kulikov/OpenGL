@@ -1,25 +1,44 @@
 #include <entities/templates/decor/stone_floor.hpp>
 #include <managers/render_manager.hpp> 
 #include <object/component/template/component_physics.hpp>
+#include <object/component/template/point.hpp>
+
+std::string printVec3(const glm::vec3& v);
+glm::vec3 quatToEuler(const glm::quat& q);
 
 StoneFloor::StoneFloor()
 {
     std::cout << name << std::endl;
 
     btScalar mass = 0.0f;
-    glm::vec3 scale(10, 10, 0.001f);
+    glm::vec3 scale(10, 10, 0.1f);
     btCollisionShape* colliderShape = new btBoxShape(btVector3(scale.x / 2, scale.y / 2, scale.z / 2));
     RigidTransform * rigidBody = new RigidTransform(colliderShape, mass, scale);
     ComponentPhysics *body = CreateComponent<ComponentPhysics>(rigidBody);
     body->SetRotation({-90, 0, 0});
+
+    // std::cout << "Rotate: " << printVec3(quatToEuler(body->localTransform->GetRotation())) << std::endl;
 
     Transform *transform = new Transform();
     ComponentShape *shape = CreateComponent<ComponentShape>(transform);
     body->AddChild(shape);
     shape->shape = RenderManager::primitives.sprite;
     shape->SetScale(scale);
-    shape->SetRotation({-90, 0, 0});
     shape->material = Material::Find("stone_floor");
+
+    // btScalar radius = 1.0f;
+    // btScalar mass = 10.0f;
+    // glm::vec3 scale(radius);
+    // btCollisionShape* colliderShape = new btSphereShape(radius / 2);
+    // RigidTransform * rigidBody = new RigidTransform(colliderShape, mass, scale);
+    // ComponentPhysics *body = CreateComponent<ComponentPhysics>(rigidBody);
+
+    // Transform *transform1 = new Transform();
+    // ComponentShape *shape1 = CreateComponent<ComponentShape>(transform1);
+    // shape1->shape = RenderManager::primitives.sphere;
+    // shape1->material = Material::Find("stone_floor");
+
+    // body->AddChild(shape1);
 
     rootComponent = body;
 }

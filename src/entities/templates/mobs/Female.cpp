@@ -10,7 +10,7 @@ Female::Female()
     Transform *transform = new Transform();
     ComponentSkeletalMesh *shape = CreateComponent<ComponentSkeletalMesh>(transform);
     shape->SetSkeletalMesh(GeometrySkeletalMesh::Find("Female"));
-    // shape->animator->SetAnimation("Take 001");
+    shape->animator->SetAnimation("Take 001");
     shape->material = Material::Find("female");
 
     rootComponent = shape;

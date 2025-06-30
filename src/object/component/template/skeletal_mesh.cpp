@@ -12,10 +12,10 @@ void ComponentSkeletalMesh::Render() const {
     material->Bind();
     mesh->Bind();
 
-    std::vector<glm::mat4x4> mats;
+    std::vector<glm::mat4x3> mats;
     animator->ApplyAnimation(mats, GetMatrix());
     int location = it->second.first;
-    glUniformMatrix4fv(location, mats.size(), GL_FALSE, glm::value_ptr(mats[0]));
+    glUniformMatrix4x3fv(location, mats.size(), GL_FALSE, glm::value_ptr(mats[0]));
 
     for (int i = 0; i < mesh->size(); ++i) {
         if (!material->GetTexture().empty()) {

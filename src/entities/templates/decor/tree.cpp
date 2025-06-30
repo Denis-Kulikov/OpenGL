@@ -6,6 +6,21 @@
 Tree::Tree()
 {
     std::cout << name << std::endl;
+
+    // ComponentShape *root = CreateComponent<ComponentShape>(new Transform());
+    // root->shape = RenderManager::primitives.cube;
+    // root->SetScale(glm::vec3(0.3, .5, 0.4));
+    // root->SetRotation(glm::vec3(0.0, 0, -90.0));
+    // root->material = Material::Find("Tree");
+
+    // ComponentShape *box = CreateComponent<ComponentShape>(new Transform());
+    // root->AddChild(box);
+    // box->shape = RenderManager::primitives.cube;
+    // box->SetPosition(glm::vec3(0.0, .5, 0.0));
+    // box->SetScale(glm::vec3(0.3, .5, 0.4));
+    // box->SetRotation(glm::vec3(0.0, 15, 0.0));
+    // box->material = Material::Find("Tree");
+
     ComponentShape *root = CreateComponent<ComponentShape>(new Transform());
     root->shape = RenderManager::primitives.cube;
     root->SetScale(glm::vec3(0.2, 2.0, 0.2));

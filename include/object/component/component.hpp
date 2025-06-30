@@ -13,7 +13,6 @@ public:
 
     virtual void UpdateInverse();
     void UpdateInverseTree();
-    virtual void UpdateMatrix();
     virtual void UpdateMatrixTree(const glm::mat4x4& parentTR = glm::mat4(1.0f), const glm::mat4x4& parentS = glm::mat4(1.0f));
 
     virtual void Render() const {};

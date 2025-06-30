@@ -4,18 +4,24 @@
 Transform::Transform() : Position(0.0f), Rotation(glm::quat(1, 0, 0, 0)), Scale(1.0f) {}
 
 void Transform::UpdateTransform() {
+    glm::mat3 fullMatrix = glm::mat3(
+        glm::vec3(matrix[0]),
+        glm::vec3(matrix[1]),
+        glm::vec3(matrix[2])
+    );
+
     Transform::SetPosition(glm::vec3(matrix[3]));
-    Transform::SetRotation(glm::quat_cast(matrix));
+    Transform::SetRotation(glm::quat_cast(fullMatrix));
     Transform::SetScale(glm::vec3(glm::length(matrix[0]),
-                        glm::length(matrix[1]),
-                        glm::length(matrix[2])));
+                                  glm::length(matrix[1]),
+                                  glm::length(matrix[2])));
 }
 
 void Transform::UpdateMatrix() {
     if (!dirty) return;
-    glm::mat4 T = glm::translate(glm::mat4(1.0f), Transform::GetPosition());
-    glm::mat4 R = glm::mat4_cast(Transform::GetRotation());
-    glm::mat4 S = glm::scale(glm::mat4(1.0f), Transform::GetScale());
+    glm::mat4 T = glm::translate(glm::mat4(1.0f), GetPosition());
+    glm::mat4 R = glm::mat4_cast(GetRotation());
+    glm::mat4 S = glm::scale(glm::mat4(1.0f), GetScale());
     matrix = T * R * S;
     dirty = false;
 }
@@ -23,6 +29,8 @@ void Transform::UpdateMatrix() {
 glm::vec3 Transform::GetPosition() const { return Position; }
 glm::quat Transform::GetRotation() const { return Rotation; }
 glm::vec3 Transform::GetScale()    const { return Scale; }
+
+void Transform::SetMatrix(const glm::mat4x3& mat) { matrix = mat; UpdateTransform(); }
 
 void Transform::SetPosition(const glm::vec3& position) { moved(); Position = position; }
 void Transform::SetRotation(const glm::quat& rotation) { moved(); Rotation = rotation; }

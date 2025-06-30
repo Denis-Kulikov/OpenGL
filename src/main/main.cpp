@@ -81,16 +81,17 @@ void Callback(Scene *scene) {
     RenderManager::pipeline.drawSkybox(*scene->skybox);
     GlobalState::GetPlayer()->MoveForward();
 
-    static ThreadPool threadPool(8, 24);
+    static ThreadPool threadPool(1, 3);
 
-    // tree->rootComponent->children[0]->SetRotation(glm::vec3(GetBranchSwingValue(), 0.f, 0.f));
-    // tree->rootComponent->children[0]->children[0]->children[1]->SetRotation(glm::vec3(GetBranchSwingValue(), 0.f, 0.f));
+
+    tree->rootComponent->children[0]->SetRotation(glm::vec3(GetBranchSwingValue(), 0.f, 0.f));
+    tree->rootComponent->children[0]->children[0]->children[1]->SetRotation(glm::vec3(GetBranchSwingValue(), 0.f, 0.f));
 
     for (auto &it : scene->actors) {
         it->Render();
+        // std::cout << "Rotate: " << printVec3(quatToEuler(it->rootComponent->localTransform->GetRotation())) << std::endl;
         // std::cout << printVec3(it->rootComponent->GetPosition()) << std::endl;
     }
-
 
     if (GlobalState::fScreenshot || GlobalState::FPS) {
         int width = RenderManager::PersProj.Width;
@@ -139,16 +140,16 @@ Scene *createScene()
     auto *scene = new Scene();
 
     Actor *character = new Ghost();
-    // character->Teleport(glm::vec3(-10, 3, 5.5));
+    character->Teleport(glm::vec3(0, 3, 0));
     // RenderManager::pipeline.camera->camera.yaw = 90;
     // RenderManager::pipeline.camera->camera.pitch = 60;
     scene->pushObject(character);
 
 
-    // tree = new Tree();
-    // tree->Teleport(glm::vec3(0, -0.0, 4));
-    // tree->MultiplyScale(glm::vec3(.5));
-    // scene->pushObject(tree);
+    tree = new Tree();
+    tree->Teleport(glm::vec3(-3, -0.0, 6));
+    tree->MultiplyScale(glm::vec3(.5));
+    scene->pushObject(tree);
 
 
     // auto grass = new Grass();
@@ -161,34 +162,35 @@ Scene *createScene()
     // cubeX->Teleport(glm::vec3(0, 2.3, 10));
     // scene->pushObject(cubeX);
 
-    // float boxHeight = 2.0f;
-    // float startY = -4.0f;
 
-    // for (int i = 0; i < 5; i++) {
-    //     auto box = new WoodenBox();
-    //     box->Teleport(glm::vec3(0, startY + i * boxHeight, 10));
-    //     scene->pushObject(box);
-    // }
+    float boxHeight = 1.1f;
+    float startY = 0.6f;
+
+    for (int i = 0; i < 5; i++) {
+        auto box = new WoodenBox();
+        box->Teleport(glm::vec3(0, startY + i * boxHeight, 10));
+        scene->pushObject(box);
+    }
 
 
     auto sphere = new BrickSphere();
-    sphere->Teleport(glm::vec3(5, 3, 10));
-    sphere->SetRotation(glm::vec3(45, 0, 0));
-    // static_cast<RigidTransform*>(sphere->rootComponent->localTransform)->ApplyImpulse(glm::vec3(-500, 0, 0));
+    sphere->Teleport(glm::vec3(15, 4, 10));
+    sphere->SetRotation(glm::vec3(45.777, 0, 0));
     scene->pushObject(sphere);
-    BulletManager::StepSimulation(TimeManager::GetDeltaTime());
+    static_cast<RigidTransform*>(sphere->rootComponent->localTransform)->ApplyImpulse(glm::vec3(-800, 0, 0));
 
-    std::cout << printVec3(sphere->rootComponent->GetPosition()) << std::endl;
 
     auto floor = new StoneFloor();
-    floor->Teleport(glm::vec3(0, -5, 10));
+    floor->Teleport(glm::vec3(0, 0, 10));
+    // floor->SetRotation(glm::vec3(-90, 0, 0));
     scene->pushObject(floor);
 
-    // auto female = new Female();
-    // female->rootComponent->SetRotation(glm::vec3(-90, 180 + 30, 0));
-    // female->rootComponent->SetPosition(glm::vec3(3, -0.85, 2.6));
-    // female->rootComponent->SetScale(glm::vec3(0.01));
-    // scene->pushObject(female);
+
+    auto female = new Female();
+    female->rootComponent->SetRotation(glm::vec3(-90, 180 + 30, 0));
+    female->rootComponent->SetPosition(glm::vec3(4, 0.85, 4.6));
+    female->rootComponent->SetScale(glm::vec3(0.01));
+    scene->pushObject(female);
 
     scene->skybox = new Skybox();
 
@@ -211,6 +213,7 @@ int main(int argc, char** argv)
     WindowManager::SwapBuffer();
 
     RenderManager::pipeline.UpdatePerspective();
+    
     TimeManager::Update();
     while (GlobalState::fIsAppRunning) {
         Callback(scene);

@@ -7,68 +7,20 @@ RigidTransform::RigidTransform(btCollisionShape* baseShape, btScalar mass, const
     if (mass != 0.f && baseShape)
         baseShape->calculateLocalInertia(mass, localInertia);
 
+    // if (baseShape)
+        // baseShape->setLocalScaling(btVector3(scale.x, scale.y, scale.z));
+
     btDefaultMotionState* motionState = new btDefaultMotionState();
 
     btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, motionState, baseShape, localInertia);
     rigidBody = new btRigidBody(rbInfo);
+
+    if (mass == 0.0f) {
+        rigidBody->setCollisionFlags(rigidBody->getCollisionFlags() | btCollisionObject::CF_KINEMATIC_OBJECT);
+        rigidBody->setActivationState(DISABLE_DEACTIVATION);
+    }
+
     BulletManager::AddRigidBody(rigidBody);
-}
-
-RigidTransform::RigidTransform(const RigidTransform &other)
-    : Scale(other.Scale) {
-    if (other.rigidBody) {
-        btCollisionShape *shape = other.rigidBody->getCollisionShape();
-        btScalar mass = 1.0f / other.rigidBody->getInvMass();
-
-        btVector3 localInertia(0, 0, 0);
-        if (mass > 0.0f) {
-            shape->calculateLocalInertia(mass, localInertia);
-        }
-
-        btTransform initialTransform;
-        other.rigidBody->getMotionState()->getWorldTransform(initialTransform);
-        btMotionState *motionState = new btDefaultMotionState(initialTransform);
-
-        btRigidBody::btRigidBodyConstructionInfo rigidBodyCI(
-            mass, motionState, shape, localInertia);
-        rigidBody = new btRigidBody(rigidBodyCI);
-
-        BulletManager::AddRigidBody(rigidBody);
-    }
-}
-
-RigidTransform &RigidTransform::operator=(const RigidTransform &other) {
-    if (this == &other) return *this;
-
-    if (rigidBody) {
-        BulletManager::RemoveRigidBody(rigidBody);
-        delete rigidBody->getMotionState();
-        delete rigidBody;
-    }
-
-    Scale = other.Scale;
-
-    if (other.rigidBody) {
-        btCollisionShape *shape = other.rigidBody->getCollisionShape();
-        btScalar mass = 1.0f / other.rigidBody->getInvMass(); 
-
-        btVector3 localInertia(0, 0, 0);
-        if (mass > 0.0f) {
-            shape->calculateLocalInertia(mass, localInertia);
-        }
-
-        btTransform initialTransform;
-        other.rigidBody->getMotionState()->getWorldTransform(initialTransform);
-        btMotionState *motionState = new btDefaultMotionState(initialTransform);
-
-        btRigidBody::btRigidBodyConstructionInfo rigidBodyCI(
-            mass, motionState, shape, localInertia);
-        rigidBody = new btRigidBody(rigidBodyCI);
-
-        BulletManager::AddRigidBody(rigidBody);
-    }
-
-    return *this;
 }
 
 RigidTransform::~RigidTransform()
@@ -79,17 +31,23 @@ RigidTransform::~RigidTransform()
 }
 
 void RigidTransform::UpdateTransform() {
+    glm::mat3 fullMatrix = glm::mat3(
+        glm::vec3(matrix[0]),
+        glm::vec3(matrix[1]),
+        glm::vec3(matrix[2])
+    );
+
     RigidTransform::SetPosition(glm::vec3(matrix[3]));
-    RigidTransform::SetRotation(glm::quat_cast(matrix));
+    RigidTransform::SetRotation(glm::quat_cast(fullMatrix));
     RigidTransform::SetScale(glm::vec3(glm::length(matrix[0]),
                         glm::length(matrix[1]),
                         glm::length(matrix[2])));
 }
 
 void RigidTransform::UpdateMatrix() {
-    glm::mat4 translate = glm::translate(glm::mat4(1.0f), RigidTransform::GetPosition());
-    glm::mat4 rotate = glm::mat4_cast(RigidTransform::GetRotation());
-    glm::mat4 scale = glm::scale(glm::mat4(1.0f), RigidTransform::GetScale());
+    glm::mat4 translate = glm::translate(glm::mat4(1.0f), GetPosition());
+    glm::mat4 rotate = glm::mat4_cast(GetRotation());
+    glm::mat4 scale = glm::scale(glm::mat4(1.0f), GetScale());
     matrix = translate * rotate * scale;
 }
 
@@ -117,15 +75,7 @@ glm::vec3 RigidTransform::GetScale() const
 
 void RigidTransform::SetScale(const glm::vec3& scale)
 {
-    if (rigidBody && rigidBody->getCollisionShape()) {
-        Scale = scale;
-        
-        rigidBody->getCollisionShape()->setLocalScaling(btVector3(
-            scale.x / 2,
-            scale.y / 2,
-            scale.z / 2
-        ));
-    }
+    Scale = scale;
 }
 
 void RigidTransform::SetPosition(const glm::vec3& position)
