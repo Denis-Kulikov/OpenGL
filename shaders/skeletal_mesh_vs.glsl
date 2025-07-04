@@ -8,20 +8,66 @@ layout (location = 4) in vec4 aWeights;
 
 out vec2 TexCoord;
 
-uniform mat4x3 gBones[128];
+// uniform mat4 gBones[128];
+uniform mat4 Model;
 uniform mat4 Projection;
 uniform mat4 View;
 
+uniform vec4 gBoneRotations[128];    // q_real
+uniform vec4 gBoneTranslations[128]; // q_dual
+
+// Кватернионное произведение
+vec4 quat_mul(vec4 q1, vec4 q2) {
+    return vec4(
+        q1.w * q2.xyz + q2.w * q1.xyz + cross(q1.xyz, q2.xyz),
+        q1.w * q2.w - dot(q1.xyz, q2.xyz)
+    );
+}
+
+// Смешивание dual quaternion'ов
+void dual_quat_blend(
+    in ivec4 boneIDs,
+    in vec4 weights,
+    out vec4 blend_real,
+    out vec4 blend_dual
+) {
+    blend_real = vec4(0.0);
+    blend_dual = vec4(0.0);
+
+    for (int i = 0; i < 4; ++i) {
+        int id = boneIDs[i];
+        float w = weights[i];
+
+        vec4 qr = gBoneRotations[id];
+        // Убедимся, что смешиваем в одном полушарии
+        if (dot(blend_real, qr) < 0.0)
+            qr = -qr;
+
+        vec4 qd = gBoneTranslations[id];
+
+        blend_real += qr * w;
+        blend_dual += qd * w;
+    }
+
+    // Нормализация
+    float norm = length(blend_real);
+    blend_real /= norm;
+    blend_dual /= norm;
+}
+
+// Применение dual quaternion к точке
+vec3 transform_position(vec3 pos, vec4 qr, vec4 qd) {
+    vec3 t = 2.0 * (qd.xyz * qr.w - qr.xyz * qd.w + cross(qr.xyz, qd.xyz));
+    return pos + t;
+}
+
 void main()
 {
-    mat4x3 BoneTransform = gBones[aBoneIDs[0]] * aWeights[0];
-    BoneTransform     += gBones[aBoneIDs[1]] * aWeights[1];
-    BoneTransform     += gBones[aBoneIDs[2]] * aWeights[2];
-    BoneTransform     += gBones[aBoneIDs[3]] * aWeights[3];
+    vec4 blend_real, blend_dual;
+    dual_quat_blend(aBoneIDs, aWeights, blend_real, blend_dual);
 
+    vec3 skinnedPos = transform_position(aPosition, blend_real, blend_dual);
+
+    gl_Position = Projection * View * Model * vec4(skinnedPos, 1.0);
     TexCoord = aTexCoords;
-
-    vec3 skinnedPos = BoneTransform * vec4(aPosition, 1.0);
-    vec4 worldPosition = vec4(skinnedPos, 1.0);
-    gl_Position = Projection * View * worldPosition;
 }

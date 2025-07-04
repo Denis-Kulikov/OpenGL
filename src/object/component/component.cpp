@@ -69,6 +69,13 @@ void Component::RenderTree() const {
     }
 }
 
+void Component::UpdateTree(float deltaTime) {
+    Update(deltaTime);
+    for (Component* child : children) {
+        child->Update(deltaTime);
+    }
+}
+
 glm::vec3 Component::GetPosition() const {
     return localTransform->GetPosition();
 }

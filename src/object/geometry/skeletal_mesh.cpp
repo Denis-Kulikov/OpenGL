@@ -1,5 +1,9 @@
 #include <object/geometry/skeletal_mesh.hpp>
 
+std::string printVec3(const glm::vec3& v);
+std::string printQuat(const glm::quat& q);
+glm::vec3 quatToEuler(const glm::quat& q);
+
 
 GeometrySkeletalMesh::GeometrySkeletalMesh(const std::string& Filename) 
     : GeometryMesh()
@@ -93,6 +97,8 @@ void GeometrySkeletalMesh::LoadBones(unsigned int MeshIndex, const aiMesh* pMesh
     auto NumBones = pMesh->mNumBones;
     skeleton.BoneMap.reserve(pMesh->mNumBones);
     skeleton.BoneLocal.resize(pMesh->mNumBones, glm::mat4(1.0f));
+    skeleton.inverseBindRots.resize(pMesh->mNumBones, glm::quat(1.0f, 0.0f, 0.0f, 0.0f));
+    skeleton.inverseBindDuals.resize(pMesh->mNumBones, glm::quat(1.0f, 0.0f, 0.0f, 0.0f));
 
     for (unsigned int i = 0; i < NumBones; i++) {
         std::string BoneName(pMesh->mBones[i]->mName.data);
@@ -112,6 +118,16 @@ void GeometrySkeletalMesh::LoadBones(unsigned int MeshIndex, const aiMesh* pMesh
             m.a3, m.b3, m.c3, m.d3,
             m.a4, m.b4, m.c4, m.d4
         );
+
+        glm::quat q_real = glm::quat_cast(skeleton.BoneLocal[i]);
+        glm::vec3 t = glm::vec3(skeleton.BoneLocal[i][3]);
+        glm::quat t_quat(0, t.x, t.y, t.z);
+        glm::quat q_dual = 0.5f * (t_quat * q_real);
+
+        skeleton.inverseBindRots[i] = q_real;
+        skeleton.inverseBindDuals[i] = q_dual;
+
+        std::cout << printVec3(skeleton.BoneLocal[i][3]) << " | " << printQuat(q_dual) << std::endl;
 
         for (unsigned int j = 0; j < pMesh->mBones[i]->mNumWeights; j++) {
             unsigned int VertexID = m_Entries[MeshIndex].BaseVertex + pMesh->mBones[i]->mWeights[j].mVertexId;

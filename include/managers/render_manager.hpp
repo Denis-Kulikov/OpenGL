@@ -10,7 +10,7 @@ public:
     static void Initialize(GLfloat FOV, GLfloat Width, GLfloat Height, GLfloat zNear, GLfloat zFar);
     static void Dispose();
 
-    static void PushCamera(ComponentCamera* camera);
+    static void SetCamera(ComponentCamera* camera);
     static void UpdateCamera();
 
     static void initializePrimitive();

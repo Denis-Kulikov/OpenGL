@@ -14,6 +14,8 @@ public:
     virtual void UpdateInverse();
     void UpdateInverseTree();
     virtual void UpdateMatrixTree(const glm::mat4x4& parentTR = glm::mat4(1.0f), const glm::mat4x4& parentS = glm::mat4(1.0f));
+    virtual void Update(float deltaTime) {};
+    virtual void UpdateTree(float deltaTime);
 
     virtual void Render() const {};
     void RenderTree() const;
@@ -41,7 +43,7 @@ public:
     Transformable *GetTransform() { return globalTransform; }
     Transformable *GetLocalTransform() { return localTransform; }
     void SetTransform(Transform &new_transformable) { *localTransform = new_transformable; }
-    const glm::mat4 &GetMatrix() const { return globalTransform->GetMatrix(); }
+    const glm::mat4x3 &GetMatrix() const { return globalTransform->GetMatrix(); }
     Component *GetParent() const { return parent; }
     std::vector<Component*>& GetChildren() { return children; }
     void AddChild(Component* child);

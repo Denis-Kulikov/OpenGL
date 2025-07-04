@@ -33,6 +33,10 @@ std::string printVec3(const glm::vec3& v) {
     return "(" + std::to_string(v.x) + ", " + std::to_string(v.y) + ", " + std::to_string(v.z) + ")";
 }
 
+std::string printQuat(const glm::quat& q) {
+    return "(" + std::to_string(q.x) + ", " + std::to_string(q.y) + ", " + std::to_string(q.z) + ", " + std::to_string(q.w) + ")";
+}
+
 glm::vec3 quatToEuler(const glm::quat& q) {
     glm::vec3 euler = glm::eulerAngles(q);
     return glm::degrees(euler);
@@ -88,9 +92,8 @@ void Callback(Scene *scene) {
     tree->rootComponent->children[0]->children[0]->children[1]->SetRotation(glm::vec3(GetBranchSwingValue(), 0.f, 0.f));
 
     for (auto &it : scene->actors) {
+        it->rootComponent->UpdateTree(TimeManager::GetDeltaTime());
         it->Render();
-        // std::cout << "Rotate: " << printVec3(quatToEuler(it->rootComponent->localTransform->GetRotation())) << std::endl;
-        // std::cout << printVec3(it->rootComponent->GetPosition()) << std::endl;
     }
 
     if (GlobalState::fScreenshot || GlobalState::FPS) {
@@ -210,11 +213,7 @@ int main(int argc, char** argv)
     TimeManager::Initialize();
 
     Scene *scene(createScene());
-    WindowManager::SwapBuffer();
-
-    RenderManager::pipeline.UpdatePerspective();
     
-    TimeManager::Update();
     while (GlobalState::fIsAppRunning) {
         Callback(scene);
     }

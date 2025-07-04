@@ -1,4 +1,5 @@
 #include <managers/render_manager.hpp> 
+#include <managers/window_manager.hpp> 
 
 void RenderManager::Initialize(GLfloat FOV, GLfloat Width, GLfloat Height, GLfloat zNear, GLfloat zFar)
 {
@@ -10,16 +11,18 @@ void RenderManager::Initialize(GLfloat FOV, GLfloat Width, GLfloat Height, GLflo
     PersProj = {FOV, Width, Height, zNear, zFar};
     glEnable(GL_DEPTH_TEST);
     glClearColor(0.12f, 0.12f, 0.12f, 0.0f);
-    initializePrimitive();
+    WindowManager::SwapBuffer();
 
+    initializePrimitive();
     Texture::Create("white", "img/white.png");
 }
 
 void RenderManager::Dispose() {}
 
-void RenderManager::PushCamera(ComponentCamera* camera)
+void RenderManager::SetCamera(ComponentCamera* camera)
 {
     pipeline.camera = camera;
+    pipeline.UpdatePerspective();
 }
 
 void RenderManager::UpdateCamera()
