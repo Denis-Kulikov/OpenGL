@@ -25,20 +25,16 @@ void ComponentDualQuat::UpdateQuats(TransformDualQuat* parentTransform) {
     // DQ.SetRotation(parentTransform->GetRotation() * GetRotation());
     // DQ.SetPosition(glm::quat(0, globalTransVec3.x, globalTransVec3.y, globalTransVec3.z));
 
-    // glm::quat dq_real = DQ.GetRotation();
-    // glm::quat dq_dual = 0.5f * (DQ.GetPosition() * DQ.GetRotation());
+    // glm::quat dq.real = DQ.GetRotation();
+    // glm::quat dq.dual = 0.5f * (DQ.GetPosition() * DQ.GetRotation());
 
-    // globalTransform->SetRotation(dq_real);
-    // globalTransform->SetPosition(dq_dual);
+    // globalTransform->SetRotation(dq.real);
+    // globalTransform->SetPosition(dq.dual);
 
     if (!parentTransform) {
-        globalTransform->dq_real = localTransform->dq_real;
-        globalTransform->dq_dual = localTransform->dq_dual;
+        globalTransform->dq = localTransform->dq;
     } else {
-        globalTransform->dq_real = parentTransform->dq_real * localTransform->dq_real;
-        globalTransform->dq_dual = 
-            parentTransform->dq_real * localTransform->dq_dual +
-            parentTransform->dq_dual * localTransform->dq_real;
+        globalTransform->dq = parentTransform->dq * localTransform->dq;
     }
 
     for (ComponentDualQuat* child : children) {

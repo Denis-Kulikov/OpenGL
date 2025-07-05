@@ -8,18 +8,12 @@ void ComponentSkeletalMesh::Render() const {
     // }
     // int boneLocation = it->second.first;
 
-    const auto q_real_it = material->values.find("gBoneRotations");
-    const auto q_dual_it = material->values.find("gBoneTranslations");
-    if (q_real_it == material->values.end() || q_dual_it == material->values.end()) {
-        std::cout << "Error (ComponentSkeletalMesh::Render): \
-                      q_real_it == material->values.end() || q_dual_it == material->values.end()" << std::endl;
+    const auto it_dq = material->values.find("gDQ");
+    if (it_dq == material->values.end()) {
+        std::cout << "Error (ComponentSkeletalMesh::Render): it_dq == material->values.end()" << std::endl;
         return;
     }
-    int q_real = q_real_it->second.first;
-    int q_dual = q_dual_it->second.first;
-
-    material->UpdateValue("Projection", RenderManager::pipeline.ProjTrans);
-    material->UpdateValue("View", RenderManager::pipeline.View);
+    int loc_dq = it_dq->second.first;
 
     auto model_mats4x4 = glm::mat4(
         glm::vec4(GetMatrix()[0], 0.0f),
@@ -27,8 +21,14 @@ void ComponentSkeletalMesh::Render() const {
         glm::vec4(GetMatrix()[2], 0.0f),
         glm::vec4(GetMatrix()[3], 1.0f)
     );
+
+    material->UpdateValue("Projection", RenderManager::pipeline.ProjTrans);
+    material->UpdateValue("View", RenderManager::pipeline.View);
     material->UpdateValue("Model", model_mats4x4);
     material->Bind();
+
+    glUniform4fv(loc_dq, boneTransforms.size() * 2, glm::value_ptr(boneTransforms.data()[0].real));
+
     mesh->Bind();
 
     // glUniformMatrix4x3fv(boneLocation, boneTransforms.size(), GL_FALSE, glm::value_ptr(boneTransforms[0]));
@@ -44,8 +44,6 @@ void ComponentSkeletalMesh::Render() const {
     // }
     // glUniformMatrix4fv(boneLocation, mats4x4.size(), GL_FALSE, glm::value_ptr(mats4x4[0]));
 
-    glUniform4fv(q_real, boneRotations.size(), glm::value_ptr(boneRotations[0]));
-    glUniform4fv(q_dual, boneTranslations.size(), glm::value_ptr(boneTranslations[0]));
 
     for (int i = 0; i < mesh->size(); ++i) {
         if (!material->GetTexture().empty()) {
@@ -58,7 +56,7 @@ void ComponentSkeletalMesh::Render() const {
 
 void ComponentSkeletalMesh::Update(float deltaTime) {
     // animator->ApplyAnimation(boneTransforms, deltaTime);
-    animator->ApplyAnimationDQ(boneRotations, boneTranslations, deltaTime);
+    animator->ApplyAnimationDQ(boneTransforms, deltaTime);
 }
 
 void ComponentSkeletalMesh::SetSkeletalMesh(GeometrySkeletalMesh *new_mesh) {

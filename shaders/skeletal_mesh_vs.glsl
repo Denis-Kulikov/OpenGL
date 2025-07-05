@@ -13,10 +13,9 @@ uniform mat4 Model;
 uniform mat4 Projection;
 uniform mat4 View;
 
-uniform vec4 gBoneRotations[128];    // q_real
-uniform vec4 gBoneTranslations[128]; // q_dual
+const int MAX_BONES = 128; 
+uniform vec4 gDQ[MAX_BONES * 2];
 
-// Кватернионное произведение
 vec4 quat_mul(vec4 q1, vec4 q2) {
     return vec4(
         q1.w * q2.xyz + q2.w * q1.xyz + cross(q1.xyz, q2.xyz),
@@ -38,12 +37,12 @@ void dual_quat_blend(
         int id = boneIDs[i];
         float w = weights[i];
 
-        vec4 qr = gBoneRotations[id];
+        vec4 qr = gDQ[id * 2];
         // Убедимся, что смешиваем в одном полушарии
         if (dot(blend_real, qr) < 0.0)
             qr = -qr;
 
-        vec4 qd = gBoneTranslations[id];
+        vec4 qd = gDQ[id * 2 + 1];
 
         blend_real += qr * w;
         blend_dual += qd * w;

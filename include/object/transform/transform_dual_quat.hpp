@@ -1,7 +1,9 @@
 #pragma once
 #include "transformable.hpp"
 #include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/quaternion.hpp>
+
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/dual_quaternion.hpp>
 
 class TransformDualQuat : public Transformable
 {
@@ -25,7 +27,6 @@ public:
 // protected:
     void moved() {dirty = true;}
 
-    glm::quat dq_real;
-    glm::quat dq_dual;
+    glm::dualquat dq;
     bool dirty = true;
 };

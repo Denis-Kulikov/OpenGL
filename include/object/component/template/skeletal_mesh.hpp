@@ -16,7 +16,6 @@ public:
     Animator* animator;
     GeometrySkeletalMesh *mesh;
     Material* material = nullptr;
-    std::vector<glm::mat4x3> boneTransforms;
-    std::vector<glm::quat> boneRotations;     // q_real
-    std::vector<glm::quat> boneTranslations;  // q_dual
+    // std::vector<glm::mat4x3> boneTransforms;
+    std::vector<glm::dualquat> boneTransforms;
 };

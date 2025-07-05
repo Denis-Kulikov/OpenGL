@@ -89,7 +89,7 @@ void Callback(Scene *scene) {
 
     static ThreadPool threadPool(1, 3);
 
-    // testDQ->rootDualQuat->SetRotation(glm::vec3(0, 30.f, 0.f));
+    testDQ->rootDualQuat->SetRotation(glm::vec3(TimeManager::GetCurrentTime() * 10, 30.f, TimeManager::GetCurrentTime() * 6));
     // tree->rootComponent->children[0]->SetRotation(glm::vec3(GetBranchSwingValue(), 0.f, 0.f));
     // tree->rootComponent->children[0]->children[0]->children[1]->SetRotation(glm::vec3(GetBranchSwingValue(), 0.f, 0.f));
 

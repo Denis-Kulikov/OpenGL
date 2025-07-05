@@ -1,8 +1,7 @@
 #version 330 core
 
 uniform mat4 PV;
-uniform vec4 dq_real;
-uniform vec4 dq_dual;
+uniform vec4 gDQ[2];
 
 layout (location = 0) in vec3 aPosition;
 layout (location = 1) in vec2 aTexCoord;
@@ -29,7 +28,7 @@ vec3 transform_position(vec3 pos, vec4 qr, vec4 qd) {
 
 void main()
 {
-    vec3 transformed = transform_position(aPosition, dq_real, dq_dual);
+    vec3 transformed = transform_position(aPosition, gDQ[0], gDQ[1]);
     gl_Position = PV * vec4(transformed, 1.0);
     TexCoordOut = aTexCoord;
 }

@@ -4,6 +4,10 @@
 #include "animation/skeletal_animation.hpp"
 #include "bone/bone_node.hpp"
 
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/dual_quaternion.hpp>
+
+
 class Skeleton {
 public:
     void BuildBoneTree(const aiNode* node) {
@@ -43,6 +47,6 @@ public:
     std::unordered_map<std::string, int> BoneMap;
     std::unordered_map<std::string, SkeletalAnimation> AnimationMap;
     std::vector<glm::mat4x4> BoneLocal;
-    std::vector<glm::quat> inverseBindRots, inverseBindDuals;
+    std::vector<glm::dualquat> inverseBind;
     BoneNode BoneTree;
 };

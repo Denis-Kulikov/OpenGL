@@ -8,8 +8,7 @@ void ComponentDQShape::Render() const {
     // std::cout << "dq_dual: " << material->values["dq_dual"].first << " " << printQuat(globalTransform->dq_dual) << std::endl;
     // std::cout << std::endl;
     material->UpdateValue("PV", RenderManager::pipeline.PV);
-    material->UpdateValue("dq_real", globalTransform->dq_real);
-    material->UpdateValue("dq_dual", globalTransform->dq_dual);
+    material->UpdateValue("gDQ", globalTransform->dq);
     material->Bind();
     if (!material->GetTexture().empty())
         material->GetTexture()[0]->Bind();

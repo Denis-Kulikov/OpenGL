@@ -42,8 +42,9 @@ void Female::Initialize()
         m.values["View"]        = {glGetUniformLocation(id, "View"), new glm::mat4};
         m.values["Model"]       = {glGetUniformLocation(id, "Model"), new glm::mat4x3};
         
-        m.values["gBoneRotations"]  = {glGetUniformLocation(id, "gBoneRotations"), nullptr};
-        m.values["gBoneTranslations"] = {glGetUniformLocation(id, "gBoneTranslations"), nullptr};
+        m.values["gDQ"]  = {glGetUniformLocation(id, "gDQ"), nullptr};
+        // m.values["gBoneRotations"]  = {glGetUniformLocation(id, "gBoneRotations"), nullptr};
+        // m.values["gBoneTranslations"] = {glGetUniformLocation(id, "gBoneTranslations"), nullptr};
         
         m.values["textureSampler"] = {glGetUniformLocation(id, "textureSampler"), nullptr};
         m.values["gBones"]         = {glGetUniformLocation(id, "gBones"), nullptr};

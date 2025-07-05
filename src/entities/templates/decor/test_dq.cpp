@@ -44,7 +44,7 @@ void TestDQ::Initialize()
     glm::vec4 qq;
 
     auto init_tree = new Material::InitFunction([](Material& m) {
-        std::vector<std::string> str = {"PV" ,"dq_real", "dq_real", "textureSampler"};
+        std::vector<std::string> str = {"PV" ,"gDQ", "textureSampler"};
         for (auto s : str) {
             auto it = m.values.find(s);
             if (it != m.values.end()) {
@@ -53,8 +53,8 @@ void TestDQ::Initialize()
             }
         }
         m.values["PV"] = {glGetUniformLocation(m.GetShader()->GetID(), "PV"), new glm::mat4};
-        m.values["dq_real"] = {glGetUniformLocation(m.GetShader()->GetID(), "dq_real"), new glm::quat};
-        m.values["dq_dual"] = {glGetUniformLocation(m.GetShader()->GetID(), "dq_dual"), new glm::quat};
+        m.values["gDQ"] = {glGetUniformLocation(m.GetShader()->GetID(), "gDQ"), new glm::dualquat};
+        assert(m.values["gDQ"].first >= 0 );
         m.values["textureSampler"] = {glGetUniformLocation(m.GetShader()->GetID(), "textureSampler"), nullptr};
     });
     auto apply_tree = new Material::ApplyFunction([](const Material& m) {
@@ -64,11 +64,9 @@ void TestDQ::Initialize()
         glUniform1i(texLoc, 0);
 
         glm::mat4* PV = static_cast<glm::mat4*>(m.values.at("PV").second);
-        glm::quat* dq_real = static_cast<glm::quat*>(m.values.at("dq_real").second);
-        glm::quat* dq_dual = static_cast<glm::quat*>(m.values.at("dq_dual").second);
+        glm::dualquat* dq = static_cast<glm::dualquat*>(m.values.at("gDQ").second);
         glUniformMatrix4fv(m.values.at("PV").first, 1, GL_FALSE, glm::value_ptr(*PV));
-        glUniform4fv(m.values.at("dq_real").first, 1, glm::value_ptr(*dq_real));
-        glUniform4fv(m.values.at("dq_dual").first, 1, glm::value_ptr(*dq_dual));
+        glUniform4fv(m.values.at("gDQ").first, 2, glm::value_ptr(dq->real));
     });
 
     auto init_leaf = init_tree;
