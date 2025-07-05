@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include "../object/component/component.hpp"
+#include "../object/component/component_dual_quat.hpp"
 
 class Actor
 {
@@ -29,6 +30,7 @@ public:
     float GetSpeed() const;
 
     Component *rootComponent = nullptr;
+    ComponentDualQuat *rootDualQuat = nullptr;
 protected:
     glm::vec3 direction = {0, 0, 0};
     float speed;

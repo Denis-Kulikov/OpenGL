@@ -25,7 +25,7 @@ private:
     void ReadNodeHierarchy(const BoneNode& node, const glm::mat4& parentTransform,
                            std::vector<glm::mat4x3>& transforms, float AnimationTime) const;
     void ReadNodeHierarchyDQ(const BoneNode& node, 
-                             const glm::quat& parentRot, const glm::vec3& parentDuals,
+                             const glm::quat& parentRot, const glm::vec3& parentTrans,
                              std::vector<glm::quat>& rotations, std::vector<glm::quat>& duals,
                              float AnimationTime) const;
 

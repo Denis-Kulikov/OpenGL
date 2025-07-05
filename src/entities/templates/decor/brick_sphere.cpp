@@ -1,7 +1,7 @@
 #include <entities/templates/decor/brick_sphere.hpp>
 #include <managers/render_manager.hpp> 
 #include <object/component/template/shape.hpp>
-#include <object/component/template/component_physics.hpp>
+#include <object/component/component_physics.hpp>
 
 BrickSphere::BrickSphere()
 {

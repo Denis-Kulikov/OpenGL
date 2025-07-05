@@ -127,7 +127,7 @@ void GeometrySkeletalMesh::LoadBones(unsigned int MeshIndex, const aiMesh* pMesh
         skeleton.inverseBindRots[i] = q_real;
         skeleton.inverseBindDuals[i] = q_dual;
 
-        std::cout << printVec3(skeleton.BoneLocal[i][3]) << " | " << printQuat(q_dual) << std::endl;
+        // std::cout << printVec3(skeleton.BoneLocal[i][3]) << " | " << printQuat(q_dual) << std::endl;
 
         for (unsigned int j = 0; j < pMesh->mBones[i]->mNumWeights; j++) {
             unsigned int VertexID = m_Entries[MeshIndex].BaseVertex + pMesh->mBones[i]->mWeights[j].mVertexId;

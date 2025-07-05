@@ -4,14 +4,14 @@
 Transform::Transform() : Position(0.0f), Rotation(glm::quat(1, 0, 0, 0)), Scale(1.0f) {}
 
 void Transform::UpdateTransform() {
-    glm::mat3 fullMatrix = glm::mat3(
+    glm::mat3 rotMat = glm::mat3(
         glm::vec3(matrix[0]),
         glm::vec3(matrix[1]),
         glm::vec3(matrix[2])
     );
 
     Transform::SetPosition(glm::vec3(matrix[3]));
-    Transform::SetRotation(glm::quat_cast(fullMatrix));
+    Transform::SetRotation(glm::quat_cast(rotMat));
     Transform::SetScale(glm::vec3(glm::length(matrix[0]),
                                   glm::length(matrix[1]),
                                   glm::length(matrix[2])));

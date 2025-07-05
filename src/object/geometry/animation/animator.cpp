@@ -83,7 +83,7 @@ void Animator::ApplyAnimationDQ(std::vector<glm::quat>& rotations, std::vector<g
 }
 
 void Animator::ReadNodeHierarchyDQ(const BoneNode& node, 
-                                   const glm::quat& parentRot, const glm::vec3& parentDuals,
+                                   const glm::quat& parentRot, const glm::vec3& parentTrans,
                                    std::vector<glm::quat>& rotations, std::vector<glm::quat>& duals,
                                    float AnimationTime) const
 {
@@ -91,39 +91,44 @@ void Animator::ReadNodeHierarchyDQ(const BoneNode& node,
         glm::vec3 translation(0.0f);
         glm::quat rotation(1.0f, 0.0f, 0.0f, 0.0f);
 
-        // auto it = animation->Tracks.find(node.Index);
-        // if (it != animation->Tracks.end()) {
-        //     const auto& track = it->second;
-        //     translation = track.CalcInterpolatedPosition(AnimationTime);
-        //     rotation = track.CalcInterpolatedRotation(AnimationTime);
-        // }
-
+        auto it = animation->Tracks.find(node.Index);
+        if (it != animation->Tracks.end()) {
+            const auto& track = it->second;
+            translation = track.CalcInterpolatedPosition(AnimationTime);
+            rotation = track.CalcInterpolatedRotation(AnimationTime);
+        }
+        // 2. Вычисляем глобальную позицию и вращение
         glm::quat globalRot = parentRot * rotation;
-        glm::vec3 globalTrans = parentDuals + parentRot * translation;
-        glm::quat transQuat(0, globalTrans.x, globalTrans.y, globalTrans.z);
+        glm::vec3 globalTrans = parentTrans + parentRot * translation;
 
-        glm::quat dq_anim_real = globalRot;
-        glm::quat dq_anim_dual = 0.5f * (transQuat * globalRot);
+        // 3. Строим dual-кватернион для этой кости
+        glm::quat dq_anim_real = glm::normalize(globalRot);
+        glm::quat t_quat(0.0f, globalTrans.x, globalTrans.y, globalTrans.z);
+        glm::quat dq_anim_dual = 0.5f * t_quat * dq_anim_real;
 
+        // 4. Получаем инверсную bind-позу
         const glm::quat& bind_real = skeleton.inverseBindRots[node.Index];
         const glm::quat& bind_dual = skeleton.inverseBindDuals[node.Index];
 
-        rotations[node.Index] = bind_real;
-        duals[node.Index] = dq_anim_dual;
-        
-        // rotations[node.Index] = dq_anim_real * bind_real;
-        // duals[node.Index] = dq_anim_dual * bind_real + dq_anim_real * bind_dual;
+        // 
+        glm::quat q_b_inv = glm::conjugate(bind_real); // т.к. q нормализован, conj == inverse
+        glm::quat d_b = 0.5f * bind_dual * bind_real;
 
-        // rotations[node.Index] = globalRot * skeleton.inverseBindRots[node.Index];
-        // duals[node.Index] = 0.5f * (transQuat * globalRot) * skeleton.inverseBindDuals[node.Index];
+        glm::quat d_b_inv = -q_b_inv * d_b * q_b_inv;
 
+        // 5. Умножение анимации на инверсную bind-позу
+        glm::quat final_real = dq_anim_real * bind_real;
+        glm::quat final_dual = dq_anim_real * bind_dual + dq_anim_dual * bind_real;
+
+        rotations[node.Index] = final_real;
+        duals[node.Index]     = final_dual;
 
         for (const auto& child : node.Children) {
             ReadNodeHierarchyDQ(child, globalRot, globalTrans, rotations, duals, AnimationTime);
         }
     } else {
         for (const auto& child : node.Children) {
-            ReadNodeHierarchyDQ(child, parentRot, parentDuals, rotations, duals, AnimationTime);
+            ReadNodeHierarchyDQ(child, parentRot, parentTrans, rotations, duals, AnimationTime);
         }
     }
 }

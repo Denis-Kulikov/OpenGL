@@ -4,7 +4,8 @@
 
 class ComponentCamera : public Component {
 public:
-    ComponentCamera(Transform *transform);
+    ComponentCamera(TransformableMatrix *transform)
+        : Component(transform) {}
 
     Camera camera;
 };

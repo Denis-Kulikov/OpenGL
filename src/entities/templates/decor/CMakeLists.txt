@@ -7,6 +7,7 @@ add_library(${target} STATIC
 	brick_sphere.cpp
 	stone_floor.cpp
 	tree.cpp
+	test_dq.cpp
 )
 
 target_link_libraries(
@@ -14,4 +15,5 @@ target_link_libraries(
   PRIVATE
 	lib-entities
 	lib-component-template
+	lib-component-template-dual-quat
 )

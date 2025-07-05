@@ -15,7 +15,7 @@ Component::Component(RigidTransform *transform)
     invScale = glm::vec3(1.f);
 }
 
-Component::Component(Transform *transform)
+Component::Component(TransformableMatrix *transform)
     : localTransform(transform), globalTransform(new Transform()) 
 {
     scale = glm::vec3(1.f);

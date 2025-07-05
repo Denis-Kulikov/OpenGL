@@ -1,11 +1,11 @@
 #pragma once
 #include <managers/bullet_manager.hpp>
 #include <btBulletDynamicsCommon.h>
-#include "transformable.hpp"
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
+#include "transformable_matrix.hpp"
 
-class RigidTransform : public Transformable
+class RigidTransform : public TransformableMatrix
 {
 public:
     RigidTransform(btCollisionShape* baseShape, btScalar mass, const glm::vec3& scale);

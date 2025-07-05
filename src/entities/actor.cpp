@@ -11,6 +11,11 @@ void Actor::Render() const {
         rootComponent->UpdateMatrixTree();
         rootComponent->RenderTree();
     }
+
+    if (rootDualQuat != nullptr) {
+        rootDualQuat->UpdateQuats();
+        rootDualQuat->RenderTree();
+    }
 }
 
 glm::vec3 Actor::GetDirection() const

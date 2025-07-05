@@ -1,5 +1,5 @@
 #pragma once
-#include "../component.hpp"
+#include "component.hpp"
 
 class ComponentPhysics : public Component {
 public:

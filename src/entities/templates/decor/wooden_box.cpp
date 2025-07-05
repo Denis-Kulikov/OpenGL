@@ -1,6 +1,6 @@
 #include <entities/templates/decor/wooden_box.hpp>
 #include <managers/render_manager.hpp> 
-#include <object/component/template/component_physics.hpp>
+#include <object/component/component_physics.hpp>
 
 WoodenBox::WoodenBox()
 {

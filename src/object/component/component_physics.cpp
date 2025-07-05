@@ -1,4 +1,4 @@
-#include <object/component/template/component_physics.hpp>
+#include <object/component/component_physics.hpp>
 
 
 ComponentPhysics::ComponentPhysics(RigidTransform *transform)

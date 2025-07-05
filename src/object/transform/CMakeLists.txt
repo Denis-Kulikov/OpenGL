@@ -1,8 +1,9 @@
 set(target lib-transform)
 
 add_library(${target} STATIC
-	rigid_transform.cpp
 	transform.cpp
+	rigid_transform.cpp
+	transform_dual_quat.cpp
 )
 
 if(WIN32)

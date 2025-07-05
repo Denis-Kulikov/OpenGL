@@ -6,7 +6,7 @@
 
 class ComponentSkeletalMesh : public Component {
 public:
-    ComponentSkeletalMesh(Transform *transform)
+    ComponentSkeletalMesh(TransformableMatrix *transform)
         : Component(transform) {}
 
     void Render() const override;

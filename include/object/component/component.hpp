@@ -8,7 +8,7 @@ protected:
     Component(RigidTransform *transform);
 
 public:
-    Component(Transform *transform);
+    Component(TransformableMatrix *transform);
     ~Component();
 
     virtual void UpdateInverse();
@@ -40,8 +40,8 @@ public:
     void Rotate(const glm::quat& deltaRotation);
     void RotateAround(const glm::vec3& axis, float angle);
 
-    Transformable *GetTransform() { return globalTransform; }
-    Transformable *GetLocalTransform() { return localTransform; }
+    TransformableMatrix *GetTransform() { return globalTransform; }
+    TransformableMatrix *GetLocalTransform() { return localTransform; }
     void SetTransform(Transform &new_transformable) { *localTransform = new_transformable; }
     const glm::mat4x3 &GetMatrix() const { return globalTransform->GetMatrix(); }
     Component *GetParent() const { return parent; }
@@ -52,8 +52,8 @@ public:
     Component *parent = nullptr;
 
 // protected:
-    Transformable *globalTransform = nullptr;
-    Transformable *localTransform = nullptr;
+    TransformableMatrix *globalTransform = nullptr;
+    TransformableMatrix *localTransform = nullptr;
     glm::vec3 scale;
     glm::vec3 invScale;
 };
@@ -62,7 +62,7 @@ public:
 template <typename C, typename T>
 C* CreateComponent(T *transform) {
     static_assert(std::is_base_of_v<Component, C>, "T must derive from Component");
-    static_assert(std::is_base_of_v<Transformable, T>, "TransformType must derive from Transformable");
+    static_assert(std::is_base_of_v<TransformableMatrix, T>, "TransformType must derive from Transformable");
 
     return new C(transform);
 }

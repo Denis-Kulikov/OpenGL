@@ -11,6 +11,7 @@
 #include <entities/templates/decor/wooden_box.hpp>
 #include <entities/templates/decor/tree.hpp>
 #include <entities/templates/decor/skybox.hpp>
+#include <entities/templates/decor/test_dq.hpp>
 #include <entities/templates/mobs/female.hpp>
 #include <entities/templates/playable/Ghost.hpp>
 
@@ -62,6 +63,7 @@ void flipVertically(unsigned char* data, int width, int height, int channels) {
 }
 
 Tree* tree;
+TestDQ* testDQ;
 float GetBranchSwingValue(float frequency = 0.7f, float amplitude = 5.0f) {
     using namespace std::chrono;
     static auto startTime = high_resolution_clock::now();
@@ -87,12 +89,14 @@ void Callback(Scene *scene) {
 
     static ThreadPool threadPool(1, 3);
 
-
-    tree->rootComponent->children[0]->SetRotation(glm::vec3(GetBranchSwingValue(), 0.f, 0.f));
-    tree->rootComponent->children[0]->children[0]->children[1]->SetRotation(glm::vec3(GetBranchSwingValue(), 0.f, 0.f));
+    // testDQ->rootDualQuat->SetRotation(glm::vec3(0, 30.f, 0.f));
+    // tree->rootComponent->children[0]->SetRotation(glm::vec3(GetBranchSwingValue(), 0.f, 0.f));
+    // tree->rootComponent->children[0]->children[0]->children[1]->SetRotation(glm::vec3(GetBranchSwingValue(), 0.f, 0.f));
 
     for (auto &it : scene->actors) {
-        it->rootComponent->UpdateTree(TimeManager::GetDeltaTime());
+        if (it->rootComponent) {
+            it->rootComponent->UpdateTree(TimeManager::GetDeltaTime());
+        }
         it->Render();
     }
 
@@ -138,6 +142,7 @@ Scene *createScene()
     Tree::Initialize();
     Female::Initialize();
     BrickSphere::Initialize();
+    TestDQ::Initialize();
 
 
     auto *scene = new Scene();
@@ -153,6 +158,11 @@ Scene *createScene()
     tree->Teleport(glm::vec3(-3, -0.0, 6));
     tree->MultiplyScale(glm::vec3(.5));
     scene->pushObject(tree);
+
+    testDQ = new TestDQ();
+    // tree->Teleport(glm::vec3(-3, -0.0, 6));
+    // tree->MultiplyScale(glm::vec3(.5));
+    scene->pushObject(testDQ);
 
 
     // auto grass = new Grass();

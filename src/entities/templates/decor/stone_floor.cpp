@@ -1,6 +1,6 @@
 #include <entities/templates/decor/stone_floor.hpp>
 #include <managers/render_manager.hpp> 
-#include <object/component/template/component_physics.hpp>
+#include <object/component/component_physics.hpp>
 #include <object/component/template/point.hpp>
 
 std::string printVec3(const glm::vec3& v);

@@ -31,14 +31,14 @@ RigidTransform::~RigidTransform()
 }
 
 void RigidTransform::UpdateTransform() {
-    glm::mat3 fullMatrix = glm::mat3(
+    glm::mat3 rotMat = glm::mat3(
         glm::vec3(matrix[0]),
         glm::vec3(matrix[1]),
         glm::vec3(matrix[2])
     );
 
     RigidTransform::SetPosition(glm::vec3(matrix[3]));
-    RigidTransform::SetRotation(glm::quat_cast(fullMatrix));
+    RigidTransform::SetRotation(glm::quat_cast(rotMat));
     RigidTransform::SetScale(glm::vec3(glm::length(matrix[0]),
                         glm::length(matrix[1]),
                         glm::length(matrix[2])));

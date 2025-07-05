@@ -1,6 +1,6 @@
 #include <entities/templates/decor/tree.hpp>
 #include <managers/render_manager.hpp> 
-#include <object/component/template/component_physics.hpp>
+#include <object/component/component_physics.hpp>
 #include <object/component/template/point.hpp>
 
 Tree::Tree()

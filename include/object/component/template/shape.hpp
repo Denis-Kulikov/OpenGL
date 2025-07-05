@@ -4,7 +4,7 @@
 
 class ComponentShape : public Component {
 public:
-    ComponentShape(Transform *transform)
+    ComponentShape(TransformableMatrix *transform)
         : Component(transform) {}
 
     void Render() const override;

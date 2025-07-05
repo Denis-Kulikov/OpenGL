@@ -5,7 +5,7 @@
 
 class ComponentMesh : public Component {
 public:
-    ComponentMesh(Transform *transform)
+    ComponentMesh(TransformableMatrix *transform)
         : Component(transform) {}
 
     void Render() const override;
