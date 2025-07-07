@@ -89,7 +89,7 @@ void Callback(Scene *scene) {
 
     static ThreadPool threadPool(1, 3);
 
-    testDQ->rootDualQuat->SetRotation(glm::vec3(TimeManager::GetCurrentTime() * 10, 30.f, TimeManager::GetCurrentTime() * 6));
+    // testDQ->rootDualQuat->SetRotation(glm::vec3(TimeManager::GetCurrentTime() * 10, 30.f, TimeManager::GetCurrentTime() * 6));
     // tree->rootComponent->children[0]->SetRotation(glm::vec3(GetBranchSwingValue(), 0.f, 0.f));
     // tree->rootComponent->children[0]->children[0]->children[1]->SetRotation(glm::vec3(GetBranchSwingValue(), 0.f, 0.f));
 
@@ -160,7 +160,7 @@ Scene *createScene()
     scene->pushObject(tree);
 
     testDQ = new TestDQ();
-    // tree->Teleport(glm::vec3(-3, -0.0, 6));
+    tree->Teleport(glm::vec3(-3, -0.0, 6));
     // tree->MultiplyScale(glm::vec3(.5));
     scene->pushObject(testDQ);
 
@@ -200,9 +200,10 @@ Scene *createScene()
 
 
     auto female = new Female();
-    female->rootComponent->SetRotation(glm::vec3(-90, 180 + 30, 0));
-    female->rootComponent->SetPosition(glm::vec3(4, 0.85, 4.6));
-    female->rootComponent->SetScale(glm::vec3(0.01));
+    female->rootComponent->SetRotation(glm::vec3(-90, 0, 0));
+    female->rootComponent->SetPosition(glm::vec3(5, 1.0, 3.0));
+    // female->rootComponent->SetScale(glm::vec3(10));
+    // female->rootComponent->SetScale(glm::vec3(0.01));
     scene->pushObject(female);
 
     scene->skybox = new Skybox();

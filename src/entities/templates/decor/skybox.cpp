@@ -18,7 +18,7 @@ void Skybox::Initialize()
     Skybox::name = "skybox";
     
     auto shader_cube = Shader::Create("cube", "shaders/cube_fs.glsl", "shaders/cube_vs.glsl");
-    auto texture_skybox = Texture::Create("skybox", "img/skybox.png");
+    auto texture_skybox = Texture::Create("skybox", "assets/img/skybox.png");
     
     auto init_sprite = new Material::InitFunction([](Material& m) {
         std::vector<std::string> str = {"gWorld", "textureSampler"};

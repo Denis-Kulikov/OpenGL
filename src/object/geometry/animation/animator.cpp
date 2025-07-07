@@ -1,8 +1,20 @@
 #include <object/geometry/skeleton/animation/animator.hpp>
 
+std::string printVec3(const glm::vec3& v);
+std::string printQuat(const glm::quat& q);
+glm::vec3 quatToEuler(const glm::quat& q);
+
 Animator::Animator(const Skeleton& skeleton)
     : skeleton(skeleton)
 {}
+
+void Animator::SetAnimationAny() {
+    if (!skeleton.AnimationMap.empty()) {
+        animation = &skeleton.AnimationMap.begin()->second;
+        std::cout << "Animation name: " << skeleton.AnimationMap.begin()->first << std::endl;
+    }
+    animationTime = 0.f;
+}
 
 void Animator::SetAnimation(const std::string& animationName) {
     auto it = skeleton.AnimationMap.find(animationName);
@@ -12,8 +24,6 @@ void Animator::SetAnimation(const std::string& animationName) {
         return;
     }
 
-    animation = &it->second;
-    animationTime = 0.f;
 }
 
 void Animator::ApplyAnimation(std::vector<glm::mat4x3>& transforms, float deltaTime) {
@@ -102,8 +112,7 @@ void Animator::ReadNodeHierarchyDQ(const BoneNode& node,
         glm::dualquat dq_anim = glm::dualquat(globalRot, globalTrans);
         dq_anim = glm::normalize(dq_anim);
 
-        const glm::dualquat& inv_bind = skeleton.inverseBind[node.Index];
-        dualQuats[node.Index] = dq_anim * inv_bind;
+        dualQuats[node.Index] = dq_anim * skeleton.inverseBind[node.Index];
 
         for (const auto& child : node.Children) {
             ReadNodeHierarchyDQ(child, globalRot, globalTrans, dualQuats, AnimationTime);

@@ -15,6 +15,7 @@ class Animator {
 public:
     Animator(const Skeleton& skeleton);
 
+    void SetAnimationAny();
     void SetAnimation(const std::string& animationName);
     void ApplyAnimation(std::vector<glm::mat4x3>& transforms, float deltaTime);
     void ApplyAnimationDQ(std::vector<glm::dualquat>& dualQuats, float deltaTime);

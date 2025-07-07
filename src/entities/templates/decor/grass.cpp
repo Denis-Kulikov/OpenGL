@@ -26,7 +26,7 @@ void Grass::Initialize()
     Grass::name = "Grass";
     
     auto shader_cube = Shader::Create("sprite", "shaders/sprite_fs.glsl", "shaders/sprite_vs.glsl");
-    auto texture_skybox = Texture::Create("grass", "img/grass.png");
+    auto texture_skybox = Texture::Create("grass", "assets/img/grass.png");
     
     auto init_sprite = new Material::InitFunction([](Material& m) {
         std::vector<std::string> str = {"gWorld", "textureSampler"};

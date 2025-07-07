@@ -30,7 +30,7 @@ void BrickSphere::Initialize()
     BrickSphere::name = "BrickSphere";
     auto shader = Shader::Create("sprite", "shaders/sprite_fs.glsl", "shaders/sprite_vs.glsl");
     // auto texture_wooden_box = Texture::Create("brick_wall", "img/white.png");
-    auto texture_wooden_box = Texture::Create("brick_wall", "img/brick_wall_10_diff_1k.jpg");
+    auto texture_wooden_box = Texture::Create("brick_wall", "assets/img/brick_wall_10_diff_1k.jpg");
     
     auto shader_cube = Shader::Create("cube", "shaders/cube_fs.glsl", "shaders/cube_vs.glsl");
 

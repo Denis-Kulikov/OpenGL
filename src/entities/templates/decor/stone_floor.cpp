@@ -50,7 +50,7 @@ void StoneFloor::Initialize()
     StoneFloor::name = "StoneFloor";
     
     auto shader = Shader::Create("sprite", "shaders/sprite_fs.glsl", "shaders/sprite_vs.glsl");
-    auto texture = Texture::Create("stone_floor", "img/floor.jpg");
+    auto texture = Texture::Create("stone_floor", "assets/img/floor.jpg");
     
     auto init_sprite = new Material::InitFunction([](Material& m) {
         std::vector<std::string> str = {"gWorld", "textureSampler"};

@@ -13,8 +13,8 @@ void BulletManager::Initialize() {
 void BulletManager::Dispose() {
     delete dynamicsWorld;
     delete solver;
-    delete broadphase;
     delete dispatcher;
+    delete broadphase;
     delete collisionConfiguration;
 }
 

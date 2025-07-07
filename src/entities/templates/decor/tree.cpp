@@ -189,8 +189,8 @@ void Tree::Initialize()
     Tree::name = "Tree";
     auto shader_tree = Shader::Create("cube", "shaders/cube_fs.glsl", "shaders/cube_vs.glsl");
     auto shader_leaf = Shader::Create("sprite", "shaders/sprite_fs.glsl", "shaders/sprite_vs.glsl");
-    auto texture_tree = Texture::Create("tree", "img/tree.jpg");
-    auto texture_leafs = Texture::Create("leafs", "img/leaf.jpg");
+    auto texture_tree = Texture::Create("tree", "assets/img/tree.jpg");
+    auto texture_leafs = Texture::Create("leafs", "assets/img/leaf.jpg");
     
     auto init_tree = new Material::InitFunction([](Material& m) {
         std::vector<std::string> str = {"gWorld", "textureSampler"};

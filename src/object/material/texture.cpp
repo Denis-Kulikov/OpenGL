@@ -67,8 +67,8 @@ void Texture::ClearСache() {
 
 void Texture::Load(std::string path) {
     int x, y, n;
-    path = std::string("assets/") + path;
     unsigned char *img = stbi_load(path.c_str(), &x, &y, &n, 0);
+    std::cout << path << std::endl;
     assert(img != nullptr);
 
     int new_x = 1 << (int)std::ceil(std::log2(x));

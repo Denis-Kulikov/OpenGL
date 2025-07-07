@@ -10,7 +10,9 @@ Female::Female()
     Transform *transform = new Transform();
     ComponentSkeletalMesh *shape = CreateComponent<ComponentSkeletalMesh>(transform);
     shape->SetSkeletalMesh(GeometrySkeletalMesh::Find("Female"));
-    shape->animator->SetAnimation("Take 001");
+    // shape->animator->SetAnimation("Take 001");
+    // shape->animator->SetAnimation("Object_0");
+    shape->animator->SetAnimationAny();
     shape->material = Material::Find("female");
 
     rootComponent = shape;
@@ -22,7 +24,9 @@ Female::~Female()
 void Female::Initialize()
 {
     Female::name = "Female";
-    std::string path("assets/model/female/female.glb");
+    // std::string path("assets/model/female/female.glb");
+    // std::string path("assets/model/horse_trot/scene.gltf");
+    std::string path("assets/model/my_model_no_rotated.dae");
     auto mesh = GeometrySkeletalMesh::Create("Female", path);
 
     auto shader_mesh = Shader::Create("mesh", "shaders/sprite_fs.glsl", "shaders/skeletal_mesh_vs.glsl");
@@ -40,7 +44,7 @@ void Female::Initialize()
 
         m.values["Projection"]  = {glGetUniformLocation(id, "Projection"), new glm::mat4};
         m.values["View"]        = {glGetUniformLocation(id, "View"), new glm::mat4};
-        m.values["Model"]       = {glGetUniformLocation(id, "Model"), new glm::mat4x3};
+        m.values["Model"]       = {glGetUniformLocation(id, "Model"), new glm::mat4};
         
         m.values["gDQ"]  = {glGetUniformLocation(id, "gDQ"), nullptr};
         // m.values["gBoneRotations"]  = {glGetUniformLocation(id, "gBoneRotations"), nullptr};
@@ -74,7 +78,6 @@ void Female::Initialize()
 
     auto material_wooden_box = Material::Create("female", shader_mesh, init_sprite, apply_sprite);
     material_wooden_box->SetTexture(mesh->m_Textures);
-    std::cout << mesh->m_Textures.size() << std::endl;
 }
 
 std::string Female::GetName() const {

@@ -55,7 +55,7 @@ bool GeometrySkeletalMesh::InitFromScene(const aiScene* m_pScene, const std::str
         LoadBones(i, paiMesh, Bones);
     }
 
-    if (!InitMaterials(m_pScene, Filename)) {
+    if (!InitMaterials(m_pScene, Filename.substr(0, Filename.find_last_of("/\\")))) {
         return false;
     }
 
@@ -123,7 +123,11 @@ void GeometrySkeletalMesh::LoadBones(unsigned int MeshIndex, const aiMesh* pMesh
         glm::quat t_quat(0, t.x, t.y, t.z);
         glm::quat q_dual = 0.5f * t_quat * q_real;
 
-        skeleton.inverseBind[i] = {q_real, q_dual};
+        std::cout << "glm::vec3 t = " << printVec3(t) << std::endl;
+        std::cout << "glm::quat q_real = " << printQuat(q_real) << std::endl;
+
+        // skeleton.inverseBind[i] = {q_real, q_dual};
+        skeleton.inverseBind[i] = {q_real, glm::quat(0.f, 0.f, 0.f, 0.f)};
 
         // std::cout << printVec3(skeleton.BoneLocal[i][3]) << " | " << printQuat(q_dual) << std::endl;
 
@@ -131,6 +135,10 @@ void GeometrySkeletalMesh::LoadBones(unsigned int MeshIndex, const aiMesh* pMesh
             unsigned int VertexID = m_Entries[MeshIndex].BaseVertex + pMesh->mBones[i]->mWeights[j].mVertexId;
             float Weight = pMesh->mBones[i]->mWeights[j].mWeight;
             Bones[VertexID].AddBoneData(i, Weight);
+        }
+
+        for (auto& it : Bones) {
+            it.NormalizeWeights();
         }
     }
 }
@@ -148,7 +156,8 @@ bool GeometrySkeletalMesh::LoadAnimations(const aiScene* scene) {
         if (animName.empty()) {
             animName = "Animation_" + std::to_string(i);
         }
-        std::cout << "GeometrySkeletalMesh::LoadAnimations:" << animName << std::endl; 
+        // Вывод загруженных анимаций
+        // std::cout << "GeometrySkeletalMesh::LoadAnimations:" << animName << std::endl; 
 
         skeleton.AnimationMap.emplace(std::move(animName), SkeletalAnimation(anim, skeleton.BoneMap));
     }

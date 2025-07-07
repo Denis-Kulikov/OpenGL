@@ -38,7 +38,7 @@ void TestDQ::Initialize()
 {
     TestDQ::name = "TestDQ";
     auto shader_tree = Shader::Create("DQ_shader", "shaders/cube_fs.glsl", "shaders/dual_quat_vs.glsl");
-    auto texture_tree = Texture::Create("tree", "img/tree.jpg");
+    auto texture_tree = Texture::Create("tree", "assets/img/tree.jpg");
 
     glm::mat4 mm;
     glm::vec4 qq;

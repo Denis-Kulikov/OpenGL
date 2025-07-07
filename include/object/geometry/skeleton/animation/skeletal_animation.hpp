@@ -150,6 +150,9 @@ public:
         Duration = anim->mDuration;
         TicksPerSecond = anim->mTicksPerSecond != 0.0 ? anim->mTicksPerSecond : 25.0;
 
+        std::cout << "Duration = " << Duration << std::endl;
+        std::cout << "TicksPerSecond = " << TicksPerSecond << std::endl;
+
         for (unsigned int i = 0; i < anim->mNumChannels; ++i) {
             aiNodeAnim* channel = anim->mChannels[i];
             std::string boneName(channel->mNodeName.C_Str());
@@ -174,6 +177,8 @@ public:
             } else {
                 std::cerr << "Bone name not found in BoneMap: " << boneName << std::endl;
             }
+            std::cout << "keyframes.Positions.size = " << keyframes.Positions.size() << std::endl;
+            std::cout << "keyframes.Rotations.size = " << keyframes.Rotations.size() << std::endl;
         }
     }
 };

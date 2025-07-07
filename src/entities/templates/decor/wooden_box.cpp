@@ -37,7 +37,7 @@ void WoodenBox::Initialize()
 {
     WoodenBox::name = "WoodenBox";
     auto shader_cube = Shader::Create("cube", "shaders/cube_fs.glsl", "shaders/cube_vs.glsl");
-    auto texture_wooden_box = Texture::Create("wooden_box", "img/box.jpg");
+    auto texture_wooden_box = Texture::Create("wooden_box", "assets/img/box.jpg");
     
     auto init_sprite = new Material::InitFunction([](Material& m) {
         std::vector<std::string> str = {"gWorld", "textureSampler"};

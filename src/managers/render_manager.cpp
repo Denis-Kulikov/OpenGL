@@ -14,7 +14,7 @@ void RenderManager::Initialize(GLfloat FOV, GLfloat Width, GLfloat Height, GLflo
     WindowManager::SwapBuffer();
 
     initializePrimitive();
-    Texture::Create("white", "img/white.png");
+    Texture::Create("white", "assets/img/white.png");
 }
 
 void RenderManager::Dispose() {}
