@@ -19,8 +19,8 @@ void ComponentSkeletalMesh::Render() const {
     material->UpdateValue("Projection", RenderManager::pipeline.ProjTrans);
     material->UpdateValue("View", RenderManager::pipeline.View);
     material->UpdateValue("Model", model_mats4x4);
-    glUniform4fv(loc_dq, boneTransforms.size() * 2, glm::value_ptr(boneTransforms.data()[0].real));
     material->Bind();
+    glUniform4fv(loc_dq, boneTransforms.size() * 2, glm::value_ptr(boneTransforms.data()[0].real));
     mesh->Bind();
 
     for (int i = 0; i < mesh->size(); ++i) {

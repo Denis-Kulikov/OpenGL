@@ -27,6 +27,7 @@ void Female::Initialize()
     // std::string path("assets/model/female/female.glb");
     // std::string path("assets/model/horse_trot/scene.gltf");
     std::string path("assets/model/my_model_no_rotated.dae");
+    // std::string path("assets/model/my_model_rotated.dae");
     auto mesh = GeometrySkeletalMesh::Create("Female", path);
 
     auto shader_mesh = Shader::Create("mesh", "shaders/sprite_fs.glsl", "shaders/skeletal_mesh_vs.glsl");

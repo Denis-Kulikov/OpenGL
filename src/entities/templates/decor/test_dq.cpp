@@ -16,8 +16,15 @@ TestDQ::TestDQ()
     root->AddChild(shape1);
     shape1->shape = RenderManager::primitives.cube;
     shape1->SetPosition(glm::vec3(0.5, 1.0, 0.25));
-    // root->SetRotation(glm::vec3(0.0, 0, -90.0));
+    shape1->SetRotation(glm::vec3(0.0, 22, 0.0));
     shape1->material = Material::Find("TestDQ");
+
+    ComponentDQShape *shape2 = new ComponentDQShape(new TransformDualQuat());
+    shape1->AddChild(shape2);
+    shape2->shape = RenderManager::primitives.cube;
+    shape2->SetPosition(glm::vec3(0.5, 1.0, 0.25));
+    shape2->SetRotation(glm::vec3(0.0, 44, 0.0));
+    shape2->material = Material::Find("TestDQ");
 
     // ComponentShape *box = CreateComponent<ComponentShape>(new Transform());
     // root->AddChild(box);

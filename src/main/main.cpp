@@ -89,7 +89,7 @@ void Callback(Scene *scene) {
 
     static ThreadPool threadPool(1, 3);
 
-    // testDQ->rootDualQuat->SetRotation(glm::vec3(TimeManager::GetCurrentTime() * 10, 30.f, TimeManager::GetCurrentTime() * 6));
+    testDQ->rootDualQuat->SetRotation(glm::vec3(TimeManager::GetCurrentTime() * 10, 30.f, TimeManager::GetCurrentTime() * 5));
     // tree->rootComponent->children[0]->SetRotation(glm::vec3(GetBranchSwingValue(), 0.f, 0.f));
     // tree->rootComponent->children[0]->children[0]->children[1]->SetRotation(glm::vec3(GetBranchSwingValue(), 0.f, 0.f));
 
@@ -160,7 +160,7 @@ Scene *createScene()
     scene->pushObject(tree);
 
     testDQ = new TestDQ();
-    tree->Teleport(glm::vec3(-3, -0.0, 6));
+    testDQ->rootDualQuat->SetPosition(glm::vec3(-7, -0.0, 8));
     // tree->MultiplyScale(glm::vec3(.5));
     scene->pushObject(testDQ);
 

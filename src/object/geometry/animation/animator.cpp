@@ -4,6 +4,8 @@ std::string printVec3(const glm::vec3& v);
 std::string printQuat(const glm::quat& q);
 glm::vec3 quatToEuler(const glm::quat& q);
 
+static bool f = true;
+
 Animator::Animator(const Skeleton& skeleton)
     : skeleton(skeleton)
 {}
@@ -23,7 +25,7 @@ void Animator::SetAnimation(const std::string& animationName) {
         animation = nullptr;
         return;
     }
-
+    animationTime = 0.f;
 }
 
 void Animator::ApplyAnimation(std::vector<glm::mat4x3>& transforms, float deltaTime) {
@@ -88,10 +90,12 @@ void Animator::ApplyAnimationDQ(std::vector<glm::dualquat>& dualQuats, float del
     float TimeInTicks = animationTime * TicksPerSecond;
     float AnimationTime = fmod(TimeInTicks, animation->Duration);
 
-    ReadNodeHierarchyDQ(skeleton.BoneTree, glm::quat(1.0f, 0.0f, 0.0f, 0.0f), glm::vec3(0.0f), dualQuats, AnimationTime);
+    ReadNodeHierarchyDQ(skeleton.BoneTree, {glm::quat(1, 0, 0, 0), glm::quat(0, 0, 0, 0)}, 
+                        glm::quat(1.0f, 0.0f, 0.0f, 0.0f), glm::vec3(0.0f), dualQuats, 0);
+    f = false;
 }
 
-void Animator::ReadNodeHierarchyDQ(const BoneNode& node, 
+void Animator::ReadNodeHierarchyDQ(const BoneNode& node, const glm::dualquat& parentTransform,
                                    const glm::quat& parentRot, const glm::vec3& parentTrans,
                                    std::vector<glm::dualquat>& dualQuats, float AnimationTime) const
 {
@@ -111,15 +115,29 @@ void Animator::ReadNodeHierarchyDQ(const BoneNode& node,
 
         glm::dualquat dq_anim = glm::dualquat(globalRot, globalTrans);
         dq_anim = glm::normalize(dq_anim);
+        dq_anim = dq_anim * skeleton.inverseBind[node.Index];
 
-        dualQuats[node.Index] = dq_anim * skeleton.inverseBind[node.Index];
+        dualQuats[node.Index] = dq_anim;
+
+        // Вращение res относительно родителя корректно
+        // Смещение global в глобальных координатах корректно
+        if (f) {
+            glm::vec3 angles = glm::degrees(glm::eulerAngles(globalRot));
+            std::cout << "global: " << printVec3(globalTrans) << " | " << printVec3(angles) << std::endl;
+
+            // glm::vec3 anglesInv = glm::degrees(glm::eulerAngles(skeleton.inverseBind[node.Index].real));
+            // std::cout << "inv: " << printQuat(skeleton.inverseBind[node.Index].dual) << " | " << printVec3(anglesInv) << std::endl;
+
+            glm::vec3 anglesRes = glm::degrees(glm::eulerAngles(dualQuats[node.Index].real));
+            std::cout << "res: " << printQuat(dualQuats[node.Index].dual) << " | " << printVec3(anglesRes) << std::endl;
+        }
 
         for (const auto& child : node.Children) {
-            ReadNodeHierarchyDQ(child, globalRot, globalTrans, dualQuats, AnimationTime);
+            ReadNodeHierarchyDQ(child, dualQuats[node.Index], globalRot, globalTrans, dualQuats, AnimationTime);
         }
     } else {
         for (const auto& child : node.Children) {
-            ReadNodeHierarchyDQ(child, parentRot, parentTrans, dualQuats, AnimationTime);
+            ReadNodeHierarchyDQ(child, parentTransform, parentRot, parentTrans, dualQuats, AnimationTime);
         }
     }
 }
