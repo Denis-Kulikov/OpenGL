@@ -1,18 +1,16 @@
 #pragma once
 
-#include "../../character.hpp"
+#include "../../actor.hpp"
 
-class Ghost : public Character
+class Ghost : public Actor
 {
 public:
     Ghost();
     ~Ghost();
     
     static void Initialize();
-    static void SetMotion();
 
-    virtual std::string GetName() const override;
-    Mesh *GetMesh() const override;
+    std::string GetName() const override;
     
 protected:
     inline static std::string name;

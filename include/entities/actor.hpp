@@ -1,39 +1,38 @@
 #pragma once
 
-#include <filesystem>
-#include "../lib-project/lib.hpp"
-#include "../object/objectTransform.hpp"
-#include "../object/renderableObject.hpp"
-#include "../mesh/mesh.hpp"
+#include <iostream>
+#include "../object/component/component.hpp"
+#include "../object/component/component_dual_quat.hpp"
 
-class Actor : public RenderableObject
+class Actor
 {
 public:
-    Actor(const std::string &path);
+    Actor();
     ~Actor();
 
-    struct Actor_rdata {
-        std::vector<aiMatrix4x4> *BonesTransforms;
-        Mesh *mesh;
-    };
-
     virtual std::string GetName() const = 0;
-    virtual Mesh *GetMesh() const = 0;
 
-    void Render(void *RenderData) const override;
-    void updateAnimation();
+    void Render() const;
 
-    objectTransform *GetTransform();
-    glm::vec3 GetDirection() const;
+    glm::vec3 GetDirection() const; // направление объекта не зависимо от направления модели
     void SetDirection(const glm::vec3 &_direction);
 
+    void Teleport(const glm::vec3 newPosition);
+    void Move(const glm::vec3 offset);
+    void Move(const glm::vec3 direction, const float distance);
+    void MoveForward(const float distance);
+    void MoveForward();
+    void MoveTowards(const glm::vec3 target, const float distance);
+    void SetRotation(const glm::vec3 rotate);
+    void AddRotate(const glm::vec3 rotate);
+    void SetScale(const glm::vec3 scale);
+    void MultiplyScale(const glm::vec3 scale);
+    float GetSpeed() const;
 
+    Component *rootComponent = nullptr;
+    ComponentDualQuat *rootDualQuat = nullptr;
 protected:
-    bool loadActor(const std::string &path);
-
     glm::vec3 direction = {0, 0, 0};
-    objectTransform transform;
-
-    inline static Mesh *mesh = nullptr;
+    float speed;
     inline static std::string name = "NONE";
 };

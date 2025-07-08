@@ -1,23 +1,29 @@
 #include <entities/templates/playable/Ghost.hpp>
+#include <object/component/template/point.hpp>
+#include <object/component/template/camera.hpp>
+#include <managers/render_manager.hpp> 
 
-Ghost::Ghost()
-    : Character(std::string("player/Ghost"))
-{
+Ghost::Ghost() {
+    std::cout << name << std::endl;
+    Transform *transformPoint = new Transform();
+    ComponentPoint *point = CreateComponent<ComponentPoint>(transformPoint);
+
+    Transform *transformCamera = new Transform();
+    ComponentCamera *camera = CreateComponent<ComponentCamera>(transformCamera);
+    camera->camera.PersProj = RenderManager::PersProj;
+    RenderManager::SetCamera(camera);
+
+    point->AddChild(camera);
+
+    rootComponent = point;
 }
 
-Ghost::~Ghost()
-{}
+Ghost::~Ghost() {}
 
-void Ghost::Initialize()
-{
-    std::string path("player/Ghost");
+void Ghost::Initialize() {
     name = "Ghost";
 }
 
 std::string Ghost::GetName() const {
     return name;
-}
-
-Mesh *Ghost::GetMesh() const {
-    return nullptr;
 }

@@ -3,17 +3,16 @@ set(target lib-render)
 add_library(${target} STATIC
 	stb_image_impl.cpp
 	pipeline.cpp
-	render.cpp
 )
+
 
 if(WIN32)
     target_link_libraries(${target}
         PRIVATE
-        glfw3
+        glfw
         glew32
         opengl32
-	assimp-vc143-mtd
-        lib-threads
+	lib-decor
 	lib-mobs
         lib-playable
     )
@@ -24,7 +23,7 @@ else()
         GL
         GLEW
         assimp
-        lib-threads
+	lib-decor
 	lib-mobs
         lib-playable
     )

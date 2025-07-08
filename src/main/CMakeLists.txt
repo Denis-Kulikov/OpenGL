@@ -1,7 +1,5 @@
 set(target openGL)
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
-
 add_executable(${target})
 
 target_sources(
@@ -10,11 +8,9 @@ target_sources(
     main.cpp
 )
 
-find_package(Threads REQUIRED)
-
 target_link_libraries(
   ${target}
   PRIVATE
-	lib-render
-	lib-game
+	lib-manager
+	lib-threads
 )

@@ -1,5 +1,5 @@
 {
-  "version": 3,
+  "version": 4,
   "cmakeMinimumRequired": {
     "major": 3,
     "minor": 22,
@@ -39,11 +39,14 @@
     },
     {
       "name": "win",
-        "generator": "Visual Studio 17 2022",
-        "displayName": "win",
-        "cacheVariables": {
-          "CMAKE_BUILD_TYPE": "Release"
-        }
+      "displayName": "Windows Release",
+      "description": "Release конфигурация под Windows с Visual Studio 2022",
+      "generator": "Visual Studio 17 2022",
+      "architecture": "x64",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
     }
   ],
     "buildPresets": [
@@ -69,8 +72,10 @@
       }, 
       {
         "name": "win",
+        "displayName": "Build Windows Release",
+        "description": "Сборка под Windows в режиме Release",
         "configurePreset": "win",
-        "jobs": 8
+        "configuration": "Release"
       }
     ]
 }

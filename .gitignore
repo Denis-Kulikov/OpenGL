@@ -3,7 +3,10 @@ bin/*
 
 build
 assimp
+bullet3-master
 lib
+data
+out
 
 callgrind.*
 
