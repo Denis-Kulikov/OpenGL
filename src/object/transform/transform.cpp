@@ -10,11 +10,9 @@ void Transform::UpdateTransform() {
         glm::vec3(matrix[2])
     );
 
-    Transform::SetPosition(glm::vec3(matrix[3]));
-    Transform::SetRotation(glm::quat_cast(rotMat));
-    Transform::SetScale(glm::vec3(glm::length(matrix[0]),
-                                  glm::length(matrix[1]),
-                                  glm::length(matrix[2])));
+    SetPosition(glm::vec3(matrix[3]));
+    SetRotation(glm::quat_cast(rotMat));
+    SetScale(glm::vec3(glm::length(matrix[0]), glm::length(matrix[1]), glm::length(matrix[2])));
 }
 
 void Transform::UpdateMatrix() {

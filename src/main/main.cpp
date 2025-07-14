@@ -12,13 +12,25 @@
 #include <entities/templates/decor/tree.hpp>
 #include <entities/templates/decor/skybox.hpp>
 #include <entities/templates/decor/test_dq.hpp>
+
 #include <entities/templates/mobs/female.hpp>
+#include <entities/templates/mobs/dual_quat_skining.hpp>
 #include <entities/templates/playable/Ghost.hpp>
 
 #include <threads/thread_pool.hpp>
 
 #include <stb_image_write.h>
 
+void PrintMatrix(const glm::mat4x3& matrix) {
+    for (int row = 0; row < 3; ++row) {
+        std::cout << "| ";
+        for (int col = 0; col < 4; ++col) {
+            std::cout << matrix[col][row] << "\t";
+        }
+        std::cout << "|\n";
+    }
+    std::cout << std::endl;
+}
 void PrintMatrix(const glm::mat4& matrix) {
     for (int row = 0; row < 4; ++row) {
         std::cout << "| ";
@@ -89,7 +101,7 @@ void Callback(Scene *scene) {
 
     static ThreadPool threadPool(1, 3);
 
-    testDQ->rootDualQuat->SetRotation(glm::vec3(TimeManager::GetCurrentTime() * 10, 30.f, TimeManager::GetCurrentTime() * 5));
+    //testDQ->rootDualQuat->SetRotation(glm::vec3(TimeManager::GetCurrentTime() * 10, 30.f, TimeManager::GetCurrentTime() * 5));
     // tree->rootComponent->children[0]->SetRotation(glm::vec3(GetBranchSwingValue(), 0.f, 0.f));
     // tree->rootComponent->children[0]->children[0]->children[1]->SetRotation(glm::vec3(GetBranchSwingValue(), 0.f, 0.f));
 
@@ -128,6 +140,8 @@ void Callback(Scene *scene) {
         }
     }
 
+    // GlobalState::fIsAppRunning = false;
+
     WindowManager::SwapBuffer();
 }
 
@@ -135,13 +149,14 @@ bool fIsInit = false;
 Scene *createScene()
 {
     Ghost::Initialize();
-    Grass::Initialize();
-    StoneFloor::Initialize();
+    // Grass::Initialize();
+    // StoneFloor::Initialize();
     Skybox::Initialize();
-    WoodenBox::Initialize();
-    Tree::Initialize();
+    // WoodenBox::Initialize();
+    // Tree::Initialize();
     Female::Initialize();
-    BrickSphere::Initialize();
+    DualQuatSkining::Initialize();
+    // BrickSphere::Initialize();
     TestDQ::Initialize();
 
 
@@ -153,58 +168,64 @@ Scene *createScene()
     // RenderManager::pipeline.camera->camera.pitch = 60;
     scene->pushObject(character);
 
+// {   
+//     tree = new Tree();
+//     tree->Teleport(glm::vec3(-3, -0.0, 6));
+//     tree->MultiplyScale(glm::vec3(.5));
+//     scene->pushObject(tree);
 
-    tree = new Tree();
-    tree->Teleport(glm::vec3(-3, -0.0, 6));
-    tree->MultiplyScale(glm::vec3(.5));
-    scene->pushObject(tree);
-
-    testDQ = new TestDQ();
-    testDQ->rootDualQuat->SetPosition(glm::vec3(-7, -0.0, 8));
-    // tree->MultiplyScale(glm::vec3(.5));
-    scene->pushObject(testDQ);
-
-
-    // auto grass = new Grass();
-    // grass->Teleport(glm::vec3(0, -.5, 4));
-    // grass->rootComponent->SetScale(glm::vec3(1.5));
-    // grass->rootComponent->SetRotation(glm::vec3(90, 0, 0));
-    // scene->pushObject(grass);
-
-    // auto cubeX = new WoodenBox();
-    // cubeX->Teleport(glm::vec3(0, 2.3, 10));
-    // scene->pushObject(cubeX);
+//     testDQ = new TestDQ();
+//     testDQ->rootDualQuat->SetPosition(glm::vec3(-7, -0.0, 8));
+//     // tree->MultiplyScale(glm::vec3(.5));
+//     scene->pushObject(testDQ);
 
 
-    float boxHeight = 1.1f;
-    float startY = 0.6f;
+//     auto grass = new Grass();
+//     grass->Teleport(glm::vec3(5, 1.0, 3.0));
+//     grass->rootComponent->SetScale(glm::vec3(2.5));
+//     // grass->rootComponent->SetRotation(glm::vec3(90, 0, 0));
+//     // scene->pushObject(grass);
 
-    for (int i = 0; i < 5; i++) {
-        auto box = new WoodenBox();
-        box->Teleport(glm::vec3(0, startY + i * boxHeight, 10));
-        scene->pushObject(box);
-    }
-
-
-    auto sphere = new BrickSphere();
-    sphere->Teleport(glm::vec3(15, 4, 10));
-    sphere->SetRotation(glm::vec3(45.777, 0, 0));
-    scene->pushObject(sphere);
-    static_cast<RigidTransform*>(sphere->rootComponent->localTransform)->ApplyImpulse(glm::vec3(-800, 0, 0));
+//     // auto cubeX = new WoodenBox();
+//     // cubeX->Teleport(glm::vec3(0, 2.3, 10));
+//     // scene->pushObject(cubeX);
 
 
-    auto floor = new StoneFloor();
-    floor->Teleport(glm::vec3(0, 0, 10));
-    // floor->SetRotation(glm::vec3(-90, 0, 0));
-    scene->pushObject(floor);
+//     float boxHeight = 1.1f;
+//     float startY = 0.6f;
 
+//     for (int i = 0; i < 5; i++) {
+//         auto box = new WoodenBox();
+//         box->Teleport(glm::vec3(0, startY + i * boxHeight, 10));
+//         scene->pushObject(box);
+//     }
+
+
+//     auto sphere = new BrickSphere();
+//     sphere->Teleport(glm::vec3(15, 4, 10));
+//     sphere->SetRotation(glm::vec3(45.777, 0, 0));
+//     scene->pushObject(sphere);
+//     static_cast<RigidTransform*>(sphere->rootComponent->localTransform)->ApplyImpulse(glm::vec3(-800, 0, 0));
+
+
+//     auto floor = new StoneFloor();
+//     floor->Teleport(glm::vec3(0, 0, 10));
+//     // floor->SetRotation(glm::vec3(-90, 0, 0));
+//     scene->pushObject(floor);
+// }
 
     auto female = new Female();
     female->rootComponent->SetRotation(glm::vec3(-90, 0, 0));
     female->rootComponent->SetPosition(glm::vec3(5, 1.0, 3.0));
-    // female->rootComponent->SetScale(glm::vec3(10));
-    // female->rootComponent->SetScale(glm::vec3(0.01));
+    female->rootComponent->SetScale(glm::vec3(0.01));
     scene->pushObject(female);
+
+    auto dq = new DualQuatSkining();
+    dq->rootComponent->SetRotation(glm::vec3(-90, 0, 0));
+    dq->rootComponent->SetPosition(glm::vec3(-4, 1.0, 3.0));
+    // dq->rootComponent->SetScale(glm::vec3(0.01));
+    scene->pushObject(dq);
+
 
     scene->skybox = new Skybox();
 
@@ -224,7 +245,32 @@ int main(int argc, char** argv)
     TimeManager::Initialize();
 
     Scene *scene(createScene());
-    
+
+// glm::vec3 P = glm::vec3(0, 0.509412, 0.860523);
+// glm::quat Q = glm::angleAxis(glm::radians(112.1078f), glm::vec3(1.0f, 0.0f, 0.0f));
+// // glm::quat Q = glm::quat_cast(rotX(112.1078°));
+// glm::vec3 invT = glm::vec3(0, -1, 0);
+// glm::vec3 delta = Q * invT;
+// glm::vec3 finalPos = P + delta;
+// std::cout << "delta" << printVec3(delta) << std::endl;
+// std::cout << "finalPos" << printVec3(finalPos) << std::endl;
+
+{
+    glm::quat q1 = glm::quat(glm::radians(glm::vec3(-90.000000, -89.980217, -90.000000)));
+    glm::quat q2 = glm::quat(glm::radians(glm::vec3(-152.927917, -90.000000, 62.927921)));
+    float dot = glm::dot(glm::normalize(q1), glm::normalize(q2));
+    std::cout << "dot: " << dot << std::endl;
+}
+
+{
+    glm::quat q1 = glm::quat(glm::radians(glm::vec3(-0.000000, -0.000000, -89.999908)));
+    glm::quat q2 = glm::quat(glm::radians(glm::vec3(-90.000000, -90.000000, 0.000000)));
+    glm::quat q3 = q1 * q2;
+
+    std::cout << "rot: " << printVec3(quatToEuler(q3)) << std::endl;
+}
+
+
     while (GlobalState::fIsAppRunning) {
         Callback(scene);
     }

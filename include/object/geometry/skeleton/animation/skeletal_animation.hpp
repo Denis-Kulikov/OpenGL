@@ -177,8 +177,6 @@ public:
             } else {
                 std::cerr << "Bone name not found in BoneMap: " << boneName << std::endl;
             }
-            std::cout << "keyframes.Positions.size = " << keyframes.Positions.size() << std::endl;
-            std::cout << "keyframes.Rotations.size = " << keyframes.Rotations.size() << std::endl;
         }
     }
 };

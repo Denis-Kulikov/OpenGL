@@ -5,6 +5,8 @@ add_library(${target} STATIC
 	shape.cpp
 	mesh.cpp
 	skeletal_mesh.cpp
+	skeletal_matrix_mesh.cpp
+	skeletal_dq_mesh.cpp
 )
 
 target_link_libraries(${target}

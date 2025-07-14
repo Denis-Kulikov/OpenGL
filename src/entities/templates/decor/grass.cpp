@@ -4,10 +4,10 @@
 Grass::Grass()
 {
     std::cout << name << std::endl;
-    // TransformDQ *transform = new TransformDQ();
-    // ComponentShape *shape = CreateComponent<ComponentShape>(transform);
-    // shape->shape = RenderManager::primitives.sprite;
-    // shape->material = Material::Find("grass");
+    Transform *transform = new Transform();
+    ComponentShape *shape = CreateComponent<ComponentShape>(transform);
+    shape->shape = RenderManager::primitives.sprite;
+    shape->material = Material::Find("grass");
 
     // TransformDQ *transform2 = new TransformDQ();
     // ComponentShape *shape2 = CreateComponent<ComponentShape>(transform2);
@@ -16,7 +16,7 @@ Grass::Grass()
     // shape2->material = Material::Find("grass");
     // shape2->SetPosition({0, 1, 0});
 
-    //rootComponent = shape;
+    rootComponent = shape;
 }
 
 Grass::~Grass() {}

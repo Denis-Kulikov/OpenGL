@@ -123,9 +123,6 @@ void GeometrySkeletalMesh::LoadBones(unsigned int MeshIndex, const aiMesh* pMesh
         glm::quat t_quat(0, t.x, t.y, t.z);
         glm::quat q_dual = 0.5f * t_quat * q_real;
 
-        std::cout << "glm::vec3 t = " << printVec3(t) << std::endl;
-        std::cout << "glm::quat q_real = " << printQuat(q_real) << std::endl;
-
         skeleton.inverseBind[i] = {q_real, q_dual};
 
         for (unsigned int j = 0; j < pMesh->mBones[i]->mNumWeights; j++) {

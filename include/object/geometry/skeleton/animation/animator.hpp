@@ -17,13 +17,13 @@ public:
 
     void SetAnimationAny();
     void SetAnimation(const std::string& animationName);
-    void ApplyAnimation(std::vector<glm::mat4x3>& transforms, float deltaTime);
+    void ApplyAnimation(std::vector<glm::mat4x4>& transforms, float deltaTime);
     void ApplyAnimationDQ(std::vector<glm::dualquat>& dualQuats, float deltaTime);
 
 private:
     void ReadNodeHierarchy(const BoneNode& node, const glm::mat4& parentTransform,
-                           std::vector<glm::mat4x3>& transforms, float AnimationTime) const;
-    void ReadNodeHierarchyDQ(const BoneNode& node, const glm::dualquat& parentTransform,
+                           std::vector<glm::mat4x4>& transforms, float AnimationTime) const;
+    void ReadNodeHierarchyDQ(const BoneNode& node,
                              const glm::quat& parentRot, const glm::vec3& parentTrans,
                              std::vector<glm::dualquat>& dualQuats, float AnimationTime) const;
 
