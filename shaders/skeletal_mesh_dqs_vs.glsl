@@ -32,8 +32,10 @@ void dual_quat_blend(
             vec4 qr = gDQ[id * 2];
             vec4 qd = gDQ[id * 2 + 1];
 
-            if (dot(blend_real, qr) < 0.0)
-                qr = -qr, qd = -qd;
+            if (dot(blend_real, qr) < 0.0) {
+                w = -w;
+                // qr = -qr, qd = -qd; // равносильно
+            }
 
             blend_real += qr * w;
             blend_dual += qd * w;
@@ -42,6 +44,7 @@ void dual_quat_blend(
 
     float norm = length(blend_real);
     blend_real /= norm;
+    blend_dual /= norm;
     blend_dual = blend_dual - blend_real * dot(blend_real, blend_dual);
 }
 
