@@ -23,6 +23,7 @@ void Female::Initialize()
 {
     Female::name = "Female";
     std::string path("assets/model/female/female.glb");
+    // std::string path("assets/model/my_model_no_rotated.dae");
     auto mesh = GeometrySkeletalMesh::Create("Female", path);
 
     auto shader_mesh = Shader::Create("mesh", "shaders/sprite_fs.glsl", "shaders/skeletal_mesh_vs.glsl");

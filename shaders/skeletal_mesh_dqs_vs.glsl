@@ -28,31 +28,30 @@ void dual_quat_blend(
         int id = boneIDs[i];
         float w = weights[i];
 
-        vec4 qr = gDQ[id * 2];
-        if (dot(blend_real, qr) < 0.0)
-            qr = -qr;
+        if (w > 0.) {
+            vec4 qr = gDQ[id * 2];
+            vec4 qd = gDQ[id * 2 + 1];
 
-        vec4 qd = gDQ[id * 2 + 1];
+            if (dot(blend_real, qr) < 0.0)
+                qr = -qr, qd = -qd;
 
-        blend_real += qr * w;
-        blend_dual += qd * w;
+            blend_real += qr * w;
+            blend_dual += qd * w;
+        }
     }
 
     float norm = length(blend_real);
     blend_real /= norm;
-    blend_dual /= norm;
+    blend_dual = blend_dual - blend_real * dot(blend_real, blend_dual);
 }
 
 vec3 rotate_vector(vec3 v, vec4 q) {
-    vec3 u = q.xyz;
-    float s = q.w;
-    return 2.0 * dot(u, v) * u + (s*s - dot(u, u)) * v + 2.0 * s * cross(u, v);
+    return v + 2.0f * cross(q.xyz, q.w * v + cross(q.xyz, v));
 }
 
 vec3 transform_position(vec3 pos, vec4 qr, vec4 qd) {
-    vec3 rotated = rotate_vector(pos, qr);
     vec3 t = 2.0 * (qd.xyz * qr.w - qr.xyz * qd.w + cross(qr.xyz, qd.xyz));
-    return rotated + t;
+    return rotate_vector(pos, qr) + t;
 }
 
 

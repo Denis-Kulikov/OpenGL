@@ -22,7 +22,8 @@ DualQuatSkining::~DualQuatSkining()
 void DualQuatSkining::Initialize()
 {
     DualQuatSkining::name = "DualQuatSkining";
-    std::string path("assets/model/my_model_no_rotated.dae");
+    // std::string path("assets/model/my_model_no_rotated.dae");
+    std::string path("assets/model/female/female.glb");
     // std::string path("assets/model/my_model_no_rotated_move.dae");
     // std::string path("assets/model/my_model_rotated.dae");
     auto mesh = GeometrySkeletalMesh::Create("DualQuatSkining", path);

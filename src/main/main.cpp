@@ -21,6 +21,11 @@
 
 #include <stb_image_write.h>
 
+glm::vec3 ExtractTranslation(const glm::dualquat& dq) {
+    glm::quat t_quat = dq.dual * glm::conjugate(dq.real);
+    return 2.0f * glm::vec3(t_quat.x, t_quat.y, t_quat.z);
+}
+
 void PrintMatrix(const glm::mat4x3& matrix) {
     for (int row = 0; row < 3; ++row) {
         std::cout << "| ";
@@ -222,8 +227,8 @@ Scene *createScene()
 
     auto dq = new DualQuatSkining();
     dq->rootComponent->SetRotation(glm::vec3(-90, 0, 0));
-    dq->rootComponent->SetPosition(glm::vec3(-4, 1.0, 3.0));
-    // dq->rootComponent->SetScale(glm::vec3(0.01));
+    dq->rootComponent->SetPosition(glm::vec3(0, 1.0, 3.0));
+    dq->rootComponent->SetScale(glm::vec3(0.01));
     scene->pushObject(dq);
 
 
@@ -233,7 +238,6 @@ Scene *createScene()
 
     return scene;
 }
-
 
 int main(int argc, char** argv)
 {
@@ -245,31 +249,6 @@ int main(int argc, char** argv)
     TimeManager::Initialize();
 
     Scene *scene(createScene());
-
-// glm::vec3 P = glm::vec3(0, 0.509412, 0.860523);
-// glm::quat Q = glm::angleAxis(glm::radians(112.1078f), glm::vec3(1.0f, 0.0f, 0.0f));
-// // glm::quat Q = glm::quat_cast(rotX(112.1078°));
-// glm::vec3 invT = glm::vec3(0, -1, 0);
-// glm::vec3 delta = Q * invT;
-// glm::vec3 finalPos = P + delta;
-// std::cout << "delta" << printVec3(delta) << std::endl;
-// std::cout << "finalPos" << printVec3(finalPos) << std::endl;
-
-{
-    glm::quat q1 = glm::quat(glm::radians(glm::vec3(-90.000000, -89.980217, -90.000000)));
-    glm::quat q2 = glm::quat(glm::radians(glm::vec3(-152.927917, -90.000000, 62.927921)));
-    float dot = glm::dot(glm::normalize(q1), glm::normalize(q2));
-    std::cout << "dot: " << dot << std::endl;
-}
-
-{
-    glm::quat q1 = glm::quat(glm::radians(glm::vec3(-0.000000, -0.000000, -89.999908)));
-    glm::quat q2 = glm::quat(glm::radians(glm::vec3(-90.000000, -90.000000, 0.000000)));
-    glm::quat q3 = q1 * q2;
-
-    std::cout << "rot: " << printVec3(quatToEuler(q3)) << std::endl;
-}
-
 
     while (GlobalState::fIsAppRunning) {
         Callback(scene);
