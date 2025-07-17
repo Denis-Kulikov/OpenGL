@@ -43,11 +43,5 @@ void ComponentSkeletalMatrixMesh::Render() const {
 }
 
 void ComponentSkeletalMatrixMesh::Update(float deltaTime) {
-    // animator->ApplyAnimation(boneTransforms, deltaTime);
-    animator->ApplyAnimationDQ(boneTransformsDQS, deltaTime);
-
-    boneTransforms.resize(boneTransformsDQS.size());
-    for (int i = 0 ; i < boneTransforms.size(); ++i) {
-        boneTransforms[i] = dq2mat(boneTransformsDQS[i]);
-    }
+    animator->ApplyAnimation(boneTransforms, deltaTime);
 }

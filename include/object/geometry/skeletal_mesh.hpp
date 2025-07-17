@@ -15,13 +15,9 @@ public:
     static void ClearСache();
 
 
-protected:
+// protected:
     #define BONE_ID_LOCATION     3
     #define BONE_WEIGHT_LOCATION 4
-
-    virtual bool InitFromScene(const aiScene* m_pScene, const std::string& Filename);
-    void LoadBones(unsigned int MeshIndex, const aiMesh* pMesh, std::vector<VertexBoneData>& Bones);
-    bool LoadAnimations(const aiScene* m_pScene);
 
     Skeleton skeleton;
     inline static std::unordered_map<std::string, GeometrySkeletalMesh> cache;

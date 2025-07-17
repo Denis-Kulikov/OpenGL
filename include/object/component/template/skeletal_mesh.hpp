@@ -8,9 +8,7 @@
 class ComponentSkeletalMesh : public Component {
 public:
     ComponentSkeletalMesh(TransformableMatrix *transform)
-        : Component(transform) {      
-            debug = new TestDQ();
-        }
+        : Component(transform) {}
 
     void Render() const = 0;
     virtual void Update(float deltaTime) = 0;
@@ -19,5 +17,4 @@ public:
     Animator* animator;
     GeometrySkeletalMesh *mesh;
     Material* material = nullptr;
-    Actor* debug = nullptr;
 };

@@ -1,5 +1,6 @@
 #pragma once
 #include "../entities/actor.hpp"
+#include <object/geometry/loader/assimp_mesh_loader.hpp>
 
 class GlobalState  
 {
@@ -8,6 +9,7 @@ public:
     static void SetPlayer(Actor* newPlayer);
     static Actor* GetPlayer();
 
+    inline static IMeshLoader* MeshLoader = new AssimpMeshLoader;
     inline static Actor* player = nullptr;
     inline static bool fIsAppRunning = true;
     inline static bool fScreenshot = false;

@@ -222,13 +222,13 @@ Scene *createScene()
     auto female = new Female();
     female->rootComponent->SetRotation(glm::vec3(-90, 0, 0));
     female->rootComponent->SetPosition(glm::vec3(5, 1.0, 3.0));
-    female->rootComponent->SetScale(glm::vec3(0.01));
+    female->rootComponent->SetScale(glm::vec3(0.03));
     scene->pushObject(female);
 
     auto dq = new DualQuatSkining();
     dq->rootComponent->SetRotation(glm::vec3(-90, 0, 0));
     dq->rootComponent->SetPosition(glm::vec3(0, 1.0, 3.0));
-    dq->rootComponent->SetScale(glm::vec3(0.01));
+    dq->rootComponent->SetScale(glm::vec3(0.03));
     scene->pushObject(dq);
 
 

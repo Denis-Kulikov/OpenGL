@@ -23,21 +23,6 @@ public:
     static void Delete(const std::string &name);
     static void ClearСache();
 
-    struct MeshEntry {
-        MeshEntry() {
-            NumIndices = 0;
-            MaterialIndex = -1;
-            BaseVertex = 0;
-            BaseIndex = 0;
-        }
-
-        unsigned int NumIndices;
-        unsigned int BaseVertex;
-        unsigned int BaseIndex;
-        unsigned int MaterialIndex;
-    };
-
-protected:
     #define POSITION_LOCATION    0
     #define TEX_COORD_LOCATION   1
     #define NORMAL_LOCATION      2 // нужно изменить шейдеры
@@ -53,19 +38,22 @@ protected:
         NUM_skeletal_VBs
     };
 
+    struct MeshEntry {
+        MeshEntry() {
+            NumIndices = 0;
+            MaterialIndex = -1;
+            BaseVertex = 0;
+            BaseIndex = 0;
+        }
 
-    void InitBuffers();
-    bool LoadMesh(const std::string& Filename);
-    virtual bool InitFromScene(const aiScene* m_pScene, const std::string& Filename);
-    bool InitMaterials(const aiScene* scene, const std::string& directory);
-    void InitMesh(unsigned int MeshIndex, const aiMesh* paiMesh,
-                std::vector<glm::vec3>& Positions, std::vector<glm::vec3>& Normals,
-                std::vector<glm::vec2>& TexCoords, std::vector<unsigned int>& Indices);
+        unsigned int NumIndices;
+        unsigned int BaseVertex;
+        unsigned int BaseIndex;
+        unsigned int MaterialIndex;
+    };
 
-    inline static std::unordered_map<std::string, GeometryMesh> cache;
+    std::vector<Texture*> m_Textures;
     std::vector<GLuint> buffers;
     std::vector<MeshEntry> m_Entries;
-
-public:
-    std::vector<Texture*> m_Textures;
+    inline static std::unordered_map<std::string, GeometryMesh> cache;
 };

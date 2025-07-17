@@ -10,5 +10,4 @@ public:
     virtual void Update(float deltaTime) override;
 
     std::vector<glm::mat4> boneTransforms;
-    std::vector<glm::dualquat> boneTransformsDQS;
 };

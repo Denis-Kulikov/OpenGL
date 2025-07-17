@@ -22,7 +22,9 @@ Female::~Female()
 void Female::Initialize()
 {
     Female::name = "Female";
-    std::string path("assets/model/female/female.glb");
+    // std::string path("assets/model/female/female.glb");
+    // std::string path("assets/model/rotate_test.glb");
+    std::string path("assets/model/an_animated_cat.glb");
     // std::string path("assets/model/my_model_no_rotated.dae");
     auto mesh = GeometrySkeletalMesh::Create("Female", path);
 

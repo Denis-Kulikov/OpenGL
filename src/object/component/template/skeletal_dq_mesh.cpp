@@ -16,11 +16,6 @@ void ComponentSkeletalDQMesh::Render() const {
         glm::vec4(GetMatrix()[3], 1.0f)
     );
 
-    debug->rootDualQuat->globalTransform->dq = boneTransforms[0];
-    debug->rootDualQuat->children[0]->globalTransform->dq = boneTransforms[1];
-    debug->rootDualQuat->children[0]->children[0]->globalTransform->dq = boneTransforms[2];
-    // debug->rootDualQuat->RenderTree();
-
     material->UpdateValue("Projection", RenderManager::pipeline.ProjTrans);
     material->UpdateValue("View", RenderManager::pipeline.View);
     material->UpdateValue("Model", model_mats4x4);

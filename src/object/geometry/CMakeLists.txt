@@ -1,4 +1,5 @@
 add_subdirectory(primitive)
+add_subdirectory(loader)
 add_subdirectory(animation)
 
 set(target lib-geometry)
@@ -11,6 +12,6 @@ add_library(${target} STATIC
 
 target_link_libraries(${target}
     PRIVATE	
-	assimp-vc143-mtd
+	lib-mesh-loader
 	lib-animation
 )
