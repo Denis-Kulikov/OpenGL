@@ -10,10 +10,6 @@ out
 callgrind.*
 
 _deps
-external/CMakeLists.txt
-external/stb_image
-external/pugixml
-external/boost_statechart
 
 CMakeFiles
 cmake_install.cmake

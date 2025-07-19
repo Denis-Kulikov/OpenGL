@@ -4,53 +4,34 @@ std::string printVec3(const glm::vec3& v);
 std::string printQuat(const glm::quat& q);
 glm::vec3 quatToEuler(const glm::quat& q);
 
-bool AssimpMeshLoader::LoadMesh(const std::string& Filename, GeometryMesh& mesh) {
+bool AssimpMeshLoader::LoadMesh(const std::string& fileName, GeometryMesh& mesh) {
     Assimp::Importer Importer;
-    const aiScene* m_pScene = Importer.ReadFile(Filename.c_str(), aiProcess_Triangulate | aiProcess_GenSmoothNormals| aiProcess_FlipUVs);
-
-    InitBuffers(mesh);
+    const aiScene* m_pScene = Importer.ReadFile(fileName.c_str(), aiProcess_Triangulate | aiProcess_GenSmoothNormals| aiProcess_FlipUVs);
 
     if (m_pScene) {
-        InitFromScene(mesh, m_pScene, Filename);
+        InitFromScene(mesh, m_pScene, fileName);
     } else {
-        printf("Error parsing '%s': '%s'\n", Filename.c_str(), Importer.GetErrorString());
+        printf("Error parsing '%s': '%s'\n", fileName.c_str(), Importer.GetErrorString());
         return false;
     }
 
     return false;
 }
-bool AssimpMeshLoader::LoadMesh(const std::string& Filename, GeometrySkeletalMesh& mesh) {
+bool AssimpMeshLoader::LoadMesh(const std::string& fileName, GeometrySkeletalMesh& mesh) {
     Assimp::Importer Importer;
-    const aiScene* m_pScene = Importer.ReadFile(Filename.c_str(), aiProcess_Triangulate | aiProcess_GenSmoothNormals| aiProcess_FlipUVs);
-
-    InitBuffers(mesh);
+    const aiScene* m_pScene = Importer.ReadFile(fileName.c_str(), aiProcess_Triangulate | aiProcess_GenSmoothNormals| aiProcess_FlipUVs);
 
     if (m_pScene) {
-        InitFromScene(mesh, m_pScene, Filename);
+        InitFromScene(mesh, m_pScene, fileName);
     } else {
-        printf("Error parsing '%s': '%s'\n", Filename.c_str(), Importer.GetErrorString());
+        printf("Error parsing '%s': '%s'\n", fileName.c_str(), Importer.GetErrorString());
         return false;
     }
 
     return false;
 }
 
-void AssimpMeshLoader::InitBuffers(GeometryMesh& mesh) {
-    auto& buffers = mesh.buffers;
-    buffers.resize(GeometryMesh::NUM_VBs, 0);
-    glGenVertexArrays(1, &buffers[0]);   
-    glBindVertexArray(buffers[0]);
-    glGenBuffers(buffers.size() - 1, buffers.data() + 1);
-}
-void AssimpMeshLoader::InitBuffers(GeometrySkeletalMesh& mesh) {
-    auto& buffers = mesh.buffers;
-    buffers.resize(GeometrySkeletalMesh::NUM_skeletal_VBs, 0);
-    glGenVertexArrays(1, &buffers[0]);   
-    glBindVertexArray(buffers[0]);
-    glGenBuffers(buffers.size() - 1, buffers.data() + 1);
-}
-
-bool AssimpMeshLoader::InitFromScene(GeometryMesh& mesh, const aiScene* m_pScene, const std::string& Filename) {
+bool AssimpMeshLoader::InitFromScene(GeometryMesh& mesh, const aiScene* m_pScene, const std::string& fileName) {
     mesh.m_Entries.resize(m_pScene->mNumMeshes);
     mesh.m_Textures.resize(m_pScene->mNumMaterials);
 
@@ -83,7 +64,7 @@ bool AssimpMeshLoader::InitFromScene(GeometryMesh& mesh, const aiScene* m_pScene
         InitMesh(mesh, i, paiMesh, Positions, Normals, TexCoords, Indices);
     }
 
-    if (!InitMaterials(mesh, m_pScene, Filename.substr(0, Filename.find_last_of("/\\")))) {
+    if (!InitMaterials(mesh, m_pScene, fileName.substr(0, fileName.find_last_of("/\\")))) {
         return false;
     }
 
@@ -167,7 +148,7 @@ bool AssimpMeshLoader::InitMaterials(GeometryMesh& mesh, const aiScene* scene, c
 }
 
 
-bool AssimpMeshLoader::InitFromScene(GeometrySkeletalMesh& mesh, const aiScene* m_pScene, const std::string& Filename) {
+bool AssimpMeshLoader::InitFromScene(GeometrySkeletalMesh& mesh, const aiScene* m_pScene, const std::string& fileName) {
     mesh.m_Entries.resize(m_pScene->mNumMeshes);
     mesh.m_Textures.resize(m_pScene->mNumMaterials);
 
@@ -202,7 +183,7 @@ bool AssimpMeshLoader::InitFromScene(GeometrySkeletalMesh& mesh, const aiScene* 
         LoadBones(mesh, i, paiMesh, Bones);
     }
 
-    if (!InitMaterials(mesh, m_pScene, Filename.substr(0, Filename.find_last_of("/\\")))) {
+    if (!InitMaterials(mesh, m_pScene, fileName.substr(0, fileName.find_last_of("/\\")))) {
         return false;
     }
 

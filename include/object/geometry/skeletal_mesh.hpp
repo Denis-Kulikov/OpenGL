@@ -7,6 +7,7 @@ class GeometrySkeletalMesh : public GeometryMesh {
 public:
     GeometrySkeletalMesh(const std::string& Filename);
 
+    void InitBuffers();
     const Skeleton& GetSkeleton() const;
     
     static GeometrySkeletalMesh* Create(const std::string& name, const std::string& path);

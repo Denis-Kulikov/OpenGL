@@ -5,9 +5,17 @@
 GeometrySkeletalMesh::GeometrySkeletalMesh(const std::string& Filename) 
     : GeometryMesh()
 {
+    InitBuffers();
     GlobalState::MeshLoader->LoadMesh(Filename, *this);
     SetType(SKELETAL_MESH);
     glBindVertexArray(0);	
+}
+
+void GeometrySkeletalMesh::InitBuffers() {
+    buffers.resize(GeometrySkeletalMesh::NUM_skeletal_VBs, 0);
+    glGenVertexArrays(1, &buffers[0]);   
+    glBindVertexArray(buffers[0]);
+    glGenBuffers(buffers.size() - 1, buffers.data() + 1);
 }
 
 const Skeleton& GeometrySkeletalMesh::GetSkeleton() const {

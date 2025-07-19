@@ -4,17 +4,22 @@
 #include <cmath>
 #include <cassert>
 
+#include <tiny_gltf.h>
+
 #include <stb_image.h>
 #include <stb_image_resize.h>
 
-Texture::Texture(const aiTexture* texture) 
-{
-    Load(texture);
-}
 
 Texture::Texture(const std::string& path)
 {
     Load(path);
+}
+Texture::Texture(const aiTexture* texture) 
+{
+    Load(texture);
+}
+Texture::Texture(const tinygltf::Image& texture) {
+    Load(texture);
 }
 
 void Texture::Bind() const {
@@ -38,6 +43,11 @@ Texture* Texture::Create(const std::string& name, const aiTexture* texture) {
     auto [it, inserted] = cache.try_emplace(name, texture);
     return &it->second;
 }
+Texture* Texture::Create(const std::string& name, const tinygltf::Image& texture) {
+    auto [it, inserted] = cache.try_emplace(name, texture);
+    return &it->second;
+}
+
 Texture* Texture::Find(const std::string& name) {
     auto it = cache.find(name);
     return it != cache.end() ? &it->second : nullptr;
@@ -143,6 +153,34 @@ void Texture::Load(const aiTexture* texture) {
     glGenerateMipmap(GL_TEXTURE_2D);
 
     stbi_image_free(data);
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+void Texture::Load(const tinygltf::Image& texture) {
+    int width = texture.width;
+    int height = texture.height;
+    int channels = texture.component;
+    const unsigned char* data = texture.image.data();
+    
+    scale = height > 0? static_cast<GLfloat>(width) / static_cast<GLfloat>(height) : 0;
+
+    GLenum format = GL_RGB;
+    if (channels == 4) format = GL_RGBA;
+    else if (channels == 3) format = GL_RGB;
+    else if (channels == 1) format = GL_RED;
+
+    glGenTextures(1, &textureID);
+    glBindTexture(GL_TEXTURE_2D, textureID);
+
+    glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    glGenerateMipmap(GL_TEXTURE_2D);
 
     glBindTexture(GL_TEXTURE_2D, 0);
 }

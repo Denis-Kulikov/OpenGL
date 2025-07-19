@@ -15,6 +15,7 @@
 
 #include <entities/templates/mobs/female.hpp>
 #include <entities/templates/mobs/dual_quat_skining.hpp>
+#include <entities/templates/mobs/matrix_skining.hpp>
 #include <entities/templates/playable/Ghost.hpp>
 
 #include <threads/thread_pool.hpp>
@@ -160,9 +161,10 @@ Scene *createScene()
     // WoodenBox::Initialize();
     // Tree::Initialize();
     Female::Initialize();
-    DualQuatSkining::Initialize();
     // BrickSphere::Initialize();
-    TestDQ::Initialize();
+    DualQuatSkining::Initialize();
+    MatrixSkining::Initialize();
+    // TestDQ::Initialize();
 
 
     auto *scene = new Scene();
@@ -220,16 +222,22 @@ Scene *createScene()
 // }
 
     auto female = new Female();
-    female->rootComponent->SetRotation(glm::vec3(-90, 0, 0));
-    female->rootComponent->SetPosition(glm::vec3(5, 1.0, 3.0));
+    // female->rootComponent->SetRotation(glm::vec3(-90, 0, 0));
+    female->rootComponent->SetPosition(glm::vec3(1, 1.0, 5.0));
     female->rootComponent->SetScale(glm::vec3(0.03));
     scene->pushObject(female);
 
-    auto dq = new DualQuatSkining();
-    dq->rootComponent->SetRotation(glm::vec3(-90, 0, 0));
-    dq->rootComponent->SetPosition(glm::vec3(0, 1.0, 3.0));
-    dq->rootComponent->SetScale(glm::vec3(0.03));
-    scene->pushObject(dq);
+    // auto ms = new MatrixSkining();
+    // ms->rootComponent->SetRotation(glm::vec3(-90, 0, 0));
+    // ms->rootComponent->SetPosition(glm::vec3(5, 1.0, 3.0));
+    // ms->rootComponent->SetScale(glm::vec3(0.03));
+    // scene->pushObject(ms);
+
+    // auto dq = new DualQuatSkining();
+    // dq->rootComponent->SetRotation(glm::vec3(-90, 0, 0));
+    // dq->rootComponent->SetPosition(glm::vec3(0, 1.0, 3.0));
+    // dq->rootComponent->SetScale(glm::vec3(0.03));
+    // scene->pushObject(dq);
 
 
     scene->skybox = new Skybox();

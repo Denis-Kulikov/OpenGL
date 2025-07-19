@@ -16,6 +16,7 @@ else()
 endif()
 
 include_directories(build/_deps/stb_image-src)
+include_directories(build/_deps/tinygltf-src)
 include_directories(build/_deps/glm-src)
 
 link_directories(lib)

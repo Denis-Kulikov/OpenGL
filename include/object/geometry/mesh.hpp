@@ -1,10 +1,7 @@
 #pragma once
 #include "geometry.hpp"
-#include <assimp/scene.h>
-#include <assimp/Importer.hpp>
-#include <assimp/postprocess.h>
 #include <object/material/texture.hpp>
-#include <iostream>
+#include <iostream> // !!!
 
 class GeometryMesh : public Geometry {
 protected:
@@ -13,6 +10,7 @@ protected:
 public:
     GeometryMesh(const std::string& Filename);
 
+    void InitBuffers();
     virtual void Bind() const override;
     virtual void Draw(void* data = nullptr) const override;
     std::size_t size() {return m_Entries.size();}

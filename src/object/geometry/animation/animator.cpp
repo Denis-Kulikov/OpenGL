@@ -127,7 +127,7 @@ void Animator::ReadNodeHierarchyDQ(const BoneNode& node,
         glm::dualquat dq_anim = glm::dualquat(globalRot, d_global);
         dq_anim = dq_anim * skeleton.inverseBind[node.Index];
 
-        dualQuats[node.Index] = glm::normalize(dq_anim);;
+        dualQuats[node.Index] = glm::normalize(dq_anim);
     } 
 
     for (const auto& child : node.Children) {

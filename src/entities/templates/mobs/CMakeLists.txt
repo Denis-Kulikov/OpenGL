@@ -1,8 +1,9 @@
 set(target lib-mobs)
 
 add_library(${target} STATIC
-	Female.cpp
+	female.cpp
   dual_quat_skining.cpp
+  matrix_skining.cpp
 )
 
 target_link_libraries(

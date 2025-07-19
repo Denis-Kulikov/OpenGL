@@ -31,6 +31,6 @@ struct VertexBoneData {
     }
 
     static const int size = NUM_BONES_PER_VEREX;
-    unsigned int IDs[size];
+    int IDs[size];
     float Weights[size];
 };

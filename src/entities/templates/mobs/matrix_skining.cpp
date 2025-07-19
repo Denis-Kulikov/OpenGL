@@ -1,30 +1,34 @@
-#include <entities/templates/mobs/female.hpp>
+#include <entities/templates/mobs/matrix_skining.hpp>
 #include <object/component/template/mesh.hpp>
-#include <object/component/template/mesh.hpp>
+#include <object/component/template/skeletal_matrix_mesh.hpp>
 #include <object/transform/transform.hpp>
 
 
-Female::Female()
+MatrixSkining::MatrixSkining()
 {
     std::cout << name << std::endl;
     Transform *transform = new Transform();
-    ComponentMesh *shape = CreateComponent<ComponentMesh>(transform);
-    shape->mesh = GeometryMesh::Find("Female");
-    shape->material = Material::Find("female");
+    ComponentSkeletalMatrixMesh *shape = CreateComponent<ComponentSkeletalMatrixMesh>(transform);
+    shape->SetSkeletalMesh(GeometrySkeletalMesh::Find("MatrixSkining"));
+    shape->animator->SetAnimationAny();
+    shape->material = Material::Find("MatrixSkining");
 
     rootComponent = shape;
 }
 
-Female::~Female()
+MatrixSkining::~MatrixSkining()
 {}
 
-void Female::Initialize()
+void MatrixSkining::Initialize()
 {
-    Female::name = "Female";
-    std::string path("assets/model/female/female.glb");
-    auto mesh = GeometryMesh::Create("Female", path);
+    MatrixSkining::name = "MatrixSkining";
+    // std::string path("assets/model/female/female.glb");
+    // std::string path("assets/model/rotate_test.glb");
+    std::string path("assets/model/an_animated_cat.glb");
+    // std::string path("assets/model/my_model_no_rotated.dae");
+    auto mesh = GeometrySkeletalMesh::Create("MatrixSkining", path);
 
-    auto shader_mesh = Shader::Create("mesh", "shaders/sprite_fs.glsl", "shaders/mesh_vs.glsl");
+    auto shader_mesh = Shader::Create("skeletal_mesh", "shaders/sprite_fs.glsl", "shaders/skeletal_mesh_vs.glsl");
     auto init_sprite = new Material::InitFunction([](Material& m) {
         auto id = m.GetShader()->GetID();
 
@@ -33,6 +37,7 @@ void Female::Initialize()
         m.values["Model"]       = {glGetUniformLocation(id, "Model"), new glm::mat4};
         
         m.values["textureSampler"] = {glGetUniformLocation(id, "textureSampler"), nullptr};
+        m.values["gBones"]         = {glGetUniformLocation(id, "gBones"), nullptr};
     });
     auto apply_sprite = new Material::ApplyFunction([](const Material& m) {
         glUseProgram(m.GetShader()->GetID());
@@ -57,10 +62,10 @@ void Female::Initialize()
         glUniformMatrix4fv(matLoc, 1, GL_FALSE, glm::value_ptr(*matPtr));
     });
 
-    auto material_wooden_box = Material::Create("female", shader_mesh, init_sprite, apply_sprite);
+    auto material_wooden_box = Material::Create("MatrixSkining", shader_mesh, init_sprite, apply_sprite);
     material_wooden_box->SetTexture(mesh->m_Textures);
 }
 
-std::string Female::GetName() const {
-    return Female::name;
+std::string MatrixSkining::GetName() const {
+    return MatrixSkining::name;
 }

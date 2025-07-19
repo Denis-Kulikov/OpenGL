@@ -4,6 +4,7 @@
 
 GeometryMesh::GeometryMesh(const std::string& Filename)
 {
+    InitBuffers();
     GlobalState::MeshLoader->LoadMesh(Filename, *this);
     SetType(MESH);
     glBindVertexArray(0);	
@@ -11,6 +12,13 @@ GeometryMesh::GeometryMesh(const std::string& Filename)
 
 void GeometryMesh::Bind() const {
     glBindVertexArray(buffers[VAO]);
+}
+
+void GeometryMesh::InitBuffers() {
+    buffers.resize(GeometryMesh::NUM_VBs, 0);
+    glGenVertexArrays(1, &buffers[0]);   
+    glBindVertexArray(buffers[0]);
+    glGenBuffers(buffers.size() - 1, buffers.data() + 1);
 }
 
 void GeometryMesh::Draw(void* data) const {
