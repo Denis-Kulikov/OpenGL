@@ -1,6 +1,9 @@
 #pragma once
 #include "mesh_loader.hpp"
-#include <tiny_gltf.h>
+
+namespace tinygltf {
+    class Model;
+};
 
 class TinygltfMeshLoader : public IMeshLoader {
 public:
@@ -11,5 +14,4 @@ protected:
     bool GetModel(const std::string& fileName, tinygltf::Model& model);
 
     bool TinygltfMeshLoader::InitFromScene(GeometryMesh& mesh, const tinygltf::Model& model, const std::string& fileName);
-    bool TinygltfMeshLoader::InitFromScene(GeometrySkeletalMesh& mesh, const tinygltf::Model& model, const std::string& fileName);
 };

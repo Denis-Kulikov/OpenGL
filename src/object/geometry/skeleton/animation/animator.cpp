@@ -7,9 +7,9 @@ std::string printQuat(const glm::quat& q);
 glm::vec3 quatToEuler(const glm::quat& q);
 glm::vec3 ExtractTranslation(const glm::dualquat& dq);
 
-static bool f = true;
-static int iMat = 0;
-static int iDQ = 0;
+// static bool f = true;
+// static int iMat = 0;
+// static int iDQ = 0;
 
 Animator::Animator(const Skeleton& skeleton)
     : skeleton(skeleton)
@@ -70,6 +70,11 @@ void Animator::ReadNodeHierarchy(const BoneNode& node, const glm::mat4& parentTr
             localTransform = T * R;
             // localTransform = T * R * S;
         }
+
+        // Transform t;
+        // t.SetMatrix(localTransform);
+        // t.UpdateTransform();
+        // std::cout << "Pos: " << printVec3(t.GetPosition()) << " | Rot: " << printVec3(quatToEuler(t.GetRotation())) << std::endl;
 
         glm::mat4 globalTransform = parentTransform * localTransform;
         transforms[node.Index] = glm::mat4x4(globalTransform * skeleton.BoneLocal[node.Index]);

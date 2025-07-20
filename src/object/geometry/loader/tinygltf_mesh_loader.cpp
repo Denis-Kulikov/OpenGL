@@ -1,6 +1,37 @@
 #pragma once
 #include <object/geometry/loader/tinygltf_mesh_loader.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <tiny_gltf.h>
+
+void PrintMatrix(const glm::mat4& matrix);
+
+int FindSkeletonRoot(const tinygltf::Model& model) {
+    const tinygltf::Skin* skin;
+    for (const auto& node : model.nodes) {
+        if (node.skin >= 0) {
+            skin = &model.skins[node.skin];
+        }
+    }
+
+    std::unordered_set<int> jointSet(skin->joints.begin(), skin->joints.end());
+    std::unordered_set<int> childSet;
+
+    for (int jointIndex : skin->joints) {
+        const auto& node = model.nodes[jointIndex];
+        for (int child : node.children) {
+            childSet.insert(child);
+        }
+    }
+
+    for (int jointIndex : skin->joints) {
+        if (childSet.find(jointIndex) == childSet.end()) {
+            return jointIndex;
+        }
+    }
+
+    return -1;
+}
+
 
 bool TinygltfMeshLoader::LoadMesh(const std::string& fileName, GeometryMesh& mesh) {
     tinygltf::Model model;
@@ -50,9 +81,14 @@ bool TinygltfMeshLoader::InitFromScene(GeometryMesh& mesh, const tinygltf::Model
     std::vector<glm::vec2> TexCoords;
     std::vector<glm::vec3> Normals;
     std::vector<VertexBoneData> Bones;
+    std::vector<int> BoneIndexes;
+    std::unordered_map<int, int> BoneIndexesMap;
+
+    auto* skeletalMesh = dynamic_cast<GeometrySkeletalMesh*>(&mesh);
     
     int NumIndices = 0;
     int NumVertices = 0;
+    int numBones = 0;
 
     for (const auto& mesh : model.meshes) {
         for (const auto& primitive : mesh.primitives) {
@@ -69,13 +105,38 @@ bool TinygltfMeshLoader::InitFromScene(GeometryMesh& mesh, const tinygltf::Model
         }
     }
 
+    if (skeletalMesh != nullptr && !model.skins.empty()) {
+        for (const auto& jointIndex : model.skins[0].joints) {
+            if (jointIndex >= 0 && jointIndex < model.nodes.size()) {
+                ++numBones;
+            }
+        }
+
+        BoneIndexes.reserve(numBones);
+        BoneIndexesMap.reserve(numBones);
+        for (const auto& jointIndex : model.skins[0].joints) {
+            if (jointIndex >= 0 && jointIndex < model.nodes.size()) {
+                BoneIndexes.emplace_back(jointIndex);
+            }
+        }
+
+        int index = 0;
+        for (auto i : BoneIndexes) {
+            BoneIndexesMap.insert({i, index++});
+        }
+    }
+
     Indices.reserve(NumIndices);
     Positions.reserve(NumVertices);
     TexCoords.reserve(NumVertices);
     Normals.reserve(NumVertices);
 
-    if (auto* skeletalMesh = dynamic_cast<GeometrySkeletalMesh*>(&mesh))
+    if (skeletalMesh != nullptr) {
         Bones.resize(NumVertices);
+        skeletalMesh->skeleton.BoneMap.reserve(numBones);
+        skeletalMesh->skeleton.BoneLocal.resize(numBones, glm::mat4(1.0f));
+        skeletalMesh->skeleton.inverseBind.resize(numBones, {glm::quat(1, 0, 0, 0), glm::quat(0, 0, 0, 0)});
+    }
 
     mesh.m_Entries.resize(model.meshes.size());
     mesh.m_Textures.resize(model.textures.size());
@@ -160,12 +221,8 @@ bool TinygltfMeshLoader::InitFromScene(GeometryMesh& mesh, const tinygltf::Model
 
             mesh.m_Entries[meshIndex] = subEntry;
 
-            baseVertex += Positions.size() - verticesStart;
-            baseIndex  += accessor.count;
-
-
-            // // --- SKINNING ---
-            if (auto* skeletalMesh = dynamic_cast<GeometrySkeletalMesh*>(&mesh)) {
+            // --- SKINNING ---
+            if (skeletalMesh != nullptr) {
                 auto jointsIter = primitive.attributes.find("JOINTS_0");
                 auto weightsIter = primitive.attributes.find("WEIGHTS_0");
 
@@ -201,14 +258,61 @@ bool TinygltfMeshLoader::InitFromScene(GeometryMesh& mesh, const tinygltf::Model
                         glm::vec4 boneWeights = glm::make_vec4(weightsData + i * 4);
 
                         for (int j = 0; j < 4; ++j) {
-                            Bones[baseVertex + i].IDs[j] = boneIDs[j];
-                            Bones[baseVertex + i].Weights[j] = boneWeights[j];
+                            auto it = BoneIndexesMap.find(boneIDs[j]);
+                            if (it != BoneIndexesMap.end()) {
+                                Bones[baseVertex + i].IDs[j] = it->second;
+                                Bones[baseVertex + i].Weights[j] = boneWeights[j];
+                            }
                         }
                     }
                 }
             }
+
+            // --- UPDATE BASE INDEXES ---
+            baseVertex += Positions.size() - verticesStart;
+            baseIndex  += accessor.count;
         }
     }
+
+    if (skeletalMesh != nullptr) {
+        // === ANIMATION ===
+        for (size_t i = 0; i < model.animations.size(); ++i) {
+            const tinygltf::Animation& gltfAnim = model.animations[i];
+            std::string animName = gltfAnim.name.empty() ? "Anim_" + std::to_string(i) : gltfAnim.name;
+            skeletalMesh->skeleton.AnimationMap.insert({animName, SkeletalAnimation(model, gltfAnim, BoneIndexesMap)});
+        }
+
+        // === INVERSE BIND ===
+        if (!model.skins.empty()) {
+            const tinygltf::Skin& skin = model.skins[0];
+
+            if (skin.inverseBindMatrices >= 0) {
+                const auto& accessor = model.accessors[skin.inverseBindMatrices];
+                const auto& bufferView = model.bufferViews[accessor.bufferView];
+                const float* matrixData = reinterpret_cast<const float*>(
+                    model.buffers[bufferView.buffer].data.data() +
+                    accessor.byteOffset + bufferView.byteOffset
+                );
+                const auto& jointIndices = model.skins[0].joints;
+                for (size_t i = 0; i < accessor.count; ++i) {
+                    int nodeIndex = jointIndices[i];
+
+                    auto it = BoneIndexesMap.find(nodeIndex);
+                    if (it == BoneIndexesMap.end()) {
+                        continue;
+                    }
+                    glm::mat4 mat = glm::make_mat4(matrixData + i * 16);
+                    skeletalMesh->skeleton.BoneLocal[it->second] = mat;
+                }
+            }
+        }
+
+        // === BONE TREE ===
+        int skin = FindSkeletonRoot(model);
+        if (skin >= 0)
+            skeletalMesh->skeleton.BuildBoneTree(model, BoneIndexesMap, skin);
+    }
+
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.buffers[GeometryMesh::EBO]);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(Indices[0]) * Indices.size(), &Indices[0], GL_STATIC_DRAW);
@@ -228,7 +332,7 @@ bool TinygltfMeshLoader::InitFromScene(GeometryMesh& mesh, const tinygltf::Model
     glEnableVertexAttribArray(NORMAL_LOCATION);
     glVertexAttribPointer(NORMAL_LOCATION, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
-    if (auto* skeletalMesh = dynamic_cast<GeometrySkeletalMesh*>(&mesh)) {
+    if (skeletalMesh != nullptr) {
         glBindBuffer(GL_ARRAY_BUFFER, mesh.buffers[GeometrySkeletalMesh::BONE_VB]);
         glBufferData(GL_ARRAY_BUFFER, sizeof(Bones[0]) * Bones.size(), &Bones[0], GL_STATIC_DRAW);
         glEnableVertexAttribArray(BONE_ID_LOCATION);
@@ -240,21 +344,3 @@ bool TinygltfMeshLoader::InitFromScene(GeometryMesh& mesh, const tinygltf::Model
     return true;
 }
 
-bool TinygltfMeshLoader::InitFromScene(GeometrySkeletalMesh& mesh, const tinygltf::Model& model, const std::string& fileName) {
-    // const auto& skins = model.skins;
-    // if (skins.empty()) return false;
-
-
-
-    // for (size_t meshIndex = 0; meshIndex < model.meshes.size(); ++meshIndex) {
-    //     const auto& m = model.meshes[meshIndex];
-    //     GeometryMesh::MeshEntry& entry = mesh.m_Entries[meshIndex];
-
-    //     for (const auto& primitive : m.primitives) {
-
-    //     }
-    // }
-
-
-    return true;
-}

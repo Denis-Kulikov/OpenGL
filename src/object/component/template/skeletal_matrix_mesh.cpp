@@ -1,21 +1,6 @@
 #include <managers/render_manager.hpp>
 #include <object/component/template/skeletal_matrix_mesh.hpp>
 
-glm::mat4 dq2mat(const glm::dualquat& dq) {
-    glm::dualquat normDQ = glm::normalize(dq);
-
-    glm::quat rotation = normDQ.real;
-
-    glm::quat t_quat = normDQ.dual * glm::conjugate(normDQ.real);
-    glm::vec3 translation = 2.0f * glm::vec3(t_quat.x, t_quat.y, t_quat.z);
-
-    glm::mat4 T = glm::translate(glm::mat4(1.0f), translation);
-    glm::mat4 R = glm::mat4_cast(rotation);
-
-    return T * R;
-}
-
-
 void ComponentSkeletalMatrixMesh::Render() const {
     auto model_mats4x4 = glm::mat4(
         glm::vec4(GetMatrix()[0], 0.0f),

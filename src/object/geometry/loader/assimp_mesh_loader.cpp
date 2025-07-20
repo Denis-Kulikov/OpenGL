@@ -1,5 +1,6 @@
 #include <object/geometry/loader/assimp_mesh_loader.hpp>
 
+void PrintMatrix(const glm::mat4& matrix);
 std::string printVec3(const glm::vec3& v);
 std::string printQuat(const glm::quat& q);
 glm::vec3 quatToEuler(const glm::quat& q);
@@ -245,6 +246,10 @@ void AssimpMeshLoader::LoadBones(GeometrySkeletalMesh& mesh, unsigned int MeshIn
             m.a3, m.b3, m.c3, m.d3,
             m.a4, m.b4, m.c4, m.d4
         );
+
+        std::cout << "i = " << i << std::endl;
+        PrintMatrix(mesh.skeleton.BoneLocal[i]);
+
 
         glm::quat q_real = glm::normalize(glm::quat_cast(mesh.skeleton.BoneLocal[i]));
         glm::vec3 t = glm::vec3(mesh.skeleton.BoneLocal[i][3]);

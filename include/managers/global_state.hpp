@@ -10,6 +10,7 @@ public:
     static void SetPlayer(Actor* newPlayer);
     static Actor* GetPlayer();
 
+    // inline static IMeshLoader* MeshLoader = new AssimpMeshLoader;
     inline static IMeshLoader* MeshLoader = new TinygltfMeshLoader;
     inline static Actor* player = nullptr;
     inline static bool fIsAppRunning = true;

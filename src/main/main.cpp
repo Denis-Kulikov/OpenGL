@@ -162,7 +162,7 @@ Scene *createScene()
     // Tree::Initialize();
     Female::Initialize();
     // BrickSphere::Initialize();
-    DualQuatSkining::Initialize();
+    // DualQuatSkining::Initialize();
     MatrixSkining::Initialize();
     // TestDQ::Initialize();
 
@@ -227,11 +227,11 @@ Scene *createScene()
     female->rootComponent->SetScale(glm::vec3(0.03));
     scene->pushObject(female);
 
-    // auto ms = new MatrixSkining();
-    // ms->rootComponent->SetRotation(glm::vec3(-90, 0, 0));
-    // ms->rootComponent->SetPosition(glm::vec3(5, 1.0, 3.0));
-    // ms->rootComponent->SetScale(glm::vec3(0.03));
-    // scene->pushObject(ms);
+    auto ms = new MatrixSkining();
+    ms->rootComponent->SetRotation(glm::vec3(-90, 0, 0));
+    ms->rootComponent->SetPosition(glm::vec3(5, 1.0, 3.0));
+    ms->rootComponent->SetScale(glm::vec3(0.03));
+    scene->pushObject(ms);
 
     // auto dq = new DualQuatSkining();
     // dq->rootComponent->SetRotation(glm::vec3(-90, 0, 0));
