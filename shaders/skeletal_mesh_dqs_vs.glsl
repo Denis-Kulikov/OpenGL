@@ -34,7 +34,7 @@ void dual_quat_blend(
 
             if (dot(blend_real, qr) < 0.0) {
                 w = -w;
-                // qr = -qr, qd = -qd; // равносильно
+                // qr = -qr, qd = -qd; // равносильно w = -w;
             }
 
             blend_real += qr * w;
@@ -43,9 +43,13 @@ void dual_quat_blend(
     }
 
     float norm = length(blend_real);
-    blend_real /= norm;
-    blend_dual /= norm;
-    blend_dual = blend_dual - blend_real * dot(blend_real, blend_dual);
+    if (norm > 0.0) {
+        blend_real /= norm;
+        blend_dual /= norm;
+    } else {
+        blend_real = vec4(0, 0, 0, 1);
+        blend_dual = vec4(0);
+    }
 }
 
 vec3 rotate_vector(vec3 v, vec4 q) {
@@ -56,7 +60,6 @@ vec3 transform_position(vec3 pos, vec4 qr, vec4 qd) {
     vec3 t = 2.0 * (qd.xyz * qr.w - qr.xyz * qd.w + cross(qr.xyz, qd.xyz));
     return rotate_vector(pos, qr) + t;
 }
-
 
 void main()
 {

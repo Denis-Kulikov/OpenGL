@@ -3,12 +3,11 @@
 
 struct VertexBoneData {
     VertexBoneData() {
-        for (unsigned int i = 0 ; i < size ; i++) {
-            IDs[i] = 0;
-            Weights[i] = 0;
-        }
+        std::memset(IDs, 0, sizeof(IDs));
+        std::memset(Weights, 0, sizeof(Weights));
     }
 
+    // Добавление кости в первую свободную ячейку
     void AddBoneData(unsigned int BoneID, float Weight) {
         for (unsigned int i = 0 ; i < size ; i++) {
             if (Weights[i] == 0.0) {
@@ -17,6 +16,17 @@ struct VertexBoneData {
                 return;
             }
         }
+    
+        // иначе заменяем минимальный
+        // int   minIndex = 0;
+        // float minW = Weights[0];
+        // for (int i = 1; i < size; ++i) {
+        //     if (Weights[i] < minW) { minW = Weights[i]; minIndex = i; }
+        // }
+        // if (Weight > minW) {
+        //     IDs[minIndex]     = (int)BoneID;
+        //     Weights[minIndex] = Weight;
+        // }
     }
 
     void NormalizeWeights() {

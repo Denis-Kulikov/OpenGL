@@ -24,7 +24,7 @@ private:
 public:
     std::unordered_map<std::string, int> BoneMap;
     std::unordered_map<std::string, SkeletalAnimation> AnimationMap;
-    std::vector<glm::mat4x4> BoneLocal;
-    std::vector<glm::dualquat> inverseBind;
+    std::vector<glm::mat4x4> inverseBindMat;
+    std::vector<glm::dualquat> inverseBindDQ;
     BoneNode BoneTree;
 };

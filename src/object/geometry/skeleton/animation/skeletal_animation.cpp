@@ -165,7 +165,7 @@ SkeletalAnimation::SkeletalAnimation(const tinygltf::Model& model, const tinyglt
         for (int j = 0; j < count; ++j) {
             float time = inputData[j];
 
-            if (path == "translation") {
+            if (path == "translation") { // НЕ СЧИТЫВАЕТ СМЕЩЕНИЕ
                 glm::vec3 pos(outputData[j * 3 + 0], outputData[j * 3 + 1], outputData[j * 3 + 2]);
                 keyframes.Positions.emplace_back(time, pos);
             }

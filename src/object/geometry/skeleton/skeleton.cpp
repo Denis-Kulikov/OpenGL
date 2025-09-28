@@ -61,6 +61,8 @@ void Skeleton::BuildBoneTree(const tinygltf::Model& model, const std::unordered_
     for (int childIndex : node.children) {
         BuildBoneTreeRecursive(model, BoneIndexesMap, childIndex, &BoneTree);
     }
+
+    // PrintBoneTree(BoneTree);
 }
 
 void Skeleton::BuildBoneTreeRecursive(const tinygltf::Model& model, const std::unordered_map<int, int>& BoneIndexesMap,

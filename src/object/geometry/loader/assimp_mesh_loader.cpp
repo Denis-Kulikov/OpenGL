@@ -1,6 +1,5 @@
 #include <object/geometry/loader/assimp_mesh_loader.hpp>
 
-void PrintMatrix(const glm::mat4& matrix);
 std::string printVec3(const glm::vec3& v);
 std::string printQuat(const glm::quat& q);
 glm::vec3 quatToEuler(const glm::quat& q);
@@ -194,6 +193,20 @@ bool AssimpMeshLoader::InitFromScene(GeometrySkeletalMesh& mesh, const aiScene* 
         return false;
     }
 
+    // int start = 800;
+    // for (int i = start; i < start + 100; ++i) {
+    //     std::cout << "IDs: ";
+    //     for (int j = 0; j < 4; ++j) {
+    //         std::cout << Bones[i].IDs[j] << " ";
+    //     }
+    //     std::cout << std::endl;
+    //     std::cout << "boneWeights: ";
+    //     for (int j = 0; j < 4; ++j) {
+    //         std::cout << Bones[i].Weights[j] << " ";
+    //     }
+    //     std::cout << std::endl;
+    // }
+
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.buffers[GeometrySkeletalMesh::EBO]);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(Indices[0]) * Indices.size(), &Indices[0], GL_STATIC_DRAW);
 
@@ -213,11 +226,14 @@ bool AssimpMeshLoader::InitFromScene(GeometrySkeletalMesh& mesh, const aiScene* 
     glVertexAttribPointer(NORMAL_LOCATION, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
     glBindBuffer(GL_ARRAY_BUFFER, mesh.buffers[GeometrySkeletalMesh::BONE_VB]);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(Bones[0]) * Bones.size(), &Bones[0], GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, Bones.size() * sizeof(VertexBoneData), Bones.data(), GL_STATIC_DRAW);
+
     glEnableVertexAttribArray(BONE_ID_LOCATION);
-    glVertexAttribIPointer(BONE_ID_LOCATION, 4, GL_INT, sizeof(VertexBoneData), (const GLvoid*)0);
+    glVertexAttribIPointer(BONE_ID_LOCATION, 4, GL_INT, sizeof(VertexBoneData), 
+                            (const GLvoid*)offsetof(VertexBoneData, IDs));
     glEnableVertexAttribArray(BONE_WEIGHT_LOCATION);    
-    glVertexAttribPointer(BONE_WEIGHT_LOCATION, 4, GL_FLOAT, GL_FALSE, sizeof(VertexBoneData), (const GLvoid*)16);
+    glVertexAttribPointer(BONE_WEIGHT_LOCATION, 4, GL_FLOAT, GL_FALSE, sizeof(VertexBoneData), 
+                            (const GLvoid*)offsetof(VertexBoneData, Weights));
 
     return true;
 }
@@ -225,13 +241,12 @@ bool AssimpMeshLoader::InitFromScene(GeometrySkeletalMesh& mesh, const aiScene* 
 void AssimpMeshLoader::LoadBones(GeometrySkeletalMesh& mesh, unsigned int MeshIndex, const aiMesh* pMesh, std::vector<VertexBoneData>& Bones) {
     auto NumBones = pMesh->mNumBones;
     mesh.skeleton.BoneMap.reserve(pMesh->mNumBones);
-    mesh.skeleton.BoneLocal.resize(pMesh->mNumBones, glm::mat4(1.0f));
-    mesh.skeleton.inverseBind.resize(pMesh->mNumBones, {glm::quat(1, 0, 0, 0), glm::quat(0, 0, 0, 0)});
+    mesh.skeleton.inverseBindMat.resize(pMesh->mNumBones, glm::mat4(1.0f));
+    mesh.skeleton.inverseBindDQ.resize(pMesh->mNumBones, {glm::quat(1, 0, 0, 0), glm::quat(0, 0, 0, 0)});
 
     for (unsigned int i = 0; i < NumBones; i++) {
         std::string BoneName(pMesh->mBones[i]->mName.data);
         std::string UniqueName = BoneName;
-        int Index;
 
         int suffix = 1;
         while (mesh.skeleton.BoneMap.find(UniqueName) != mesh.skeleton.BoneMap.end()) {
@@ -240,23 +255,19 @@ void AssimpMeshLoader::LoadBones(GeometrySkeletalMesh& mesh, unsigned int MeshIn
 
         mesh.skeleton.BoneMap[UniqueName] = i;
         auto m = pMesh->mBones[i]->mOffsetMatrix;
-        mesh.skeleton.BoneLocal[i] = glm::mat4(
+        mesh.skeleton.inverseBindMat[i] = glm::mat4(
             m.a1, m.b1, m.c1, m.d1,
             m.a2, m.b2, m.c2, m.d2,
             m.a3, m.b3, m.c3, m.d3,
             m.a4, m.b4, m.c4, m.d4
         );
 
-        std::cout << "i = " << i << std::endl;
-        PrintMatrix(mesh.skeleton.BoneLocal[i]);
-
-
-        glm::quat q_real = glm::normalize(glm::quat_cast(mesh.skeleton.BoneLocal[i]));
-        glm::vec3 t = glm::vec3(mesh.skeleton.BoneLocal[i][3]);
+        glm::quat q_real = glm::normalize(glm::quat_cast(mesh.skeleton.inverseBindMat[i]));
+        glm::vec3 t = glm::vec3(mesh.skeleton.inverseBindMat[i][3]);
         glm::quat t_quat(0, t.x, t.y, t.z);
         glm::quat q_dual = 0.5f * t_quat * q_real;
 
-        mesh.skeleton.inverseBind[i] = {q_real, q_dual};
+        mesh.skeleton.inverseBindDQ[i] = {q_real, q_dual};
 
         for (unsigned int j = 0; j < pMesh->mBones[i]->mNumWeights; j++) {
             unsigned int VertexID = mesh.m_Entries[MeshIndex].BaseVertex + pMesh->mBones[i]->mWeights[j].mVertexId;
@@ -264,9 +275,9 @@ void AssimpMeshLoader::LoadBones(GeometrySkeletalMesh& mesh, unsigned int MeshIn
             Bones[VertexID].AddBoneData(i, Weight);
         }
 
-        for (auto& it : Bones) {
-            it.NormalizeWeights();
-        }
+        // for (auto& it : Bones) {
+        //     it.NormalizeWeights();
+        // }
     }
 }
 
