@@ -12,7 +12,7 @@ void ComponentShape::Render() const {
     );
 
     auto mat4x4 = RenderManager::pipeline.PV * mat4;
-    material->UpdateValue("gWorld", mat4x4);
+    material->Set("gWorld", mat4x4);
     material->Bind();
     if (!material->GetTexture().empty())
         material->GetTexture()[0]->Bind();

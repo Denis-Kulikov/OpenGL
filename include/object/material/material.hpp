@@ -2,23 +2,25 @@
 #include "shader.hpp"
 #include "texture.hpp"
 #include <functional>
+#include <variant>
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/dual_quaternion.hpp>
 
 class Material {
 public:
-    using InitFunction   = std::function<void(Material&)>;
-    using ApplyFunction  = std::function<void(const Material&)>;
+    using MaterialValue = std::variant<
+        int, float, GLuint,
+        glm::vec2, glm::vec3, glm::vec4, glm::dualquat,
+        glm::mat4,
+        std::vector<glm::dualquat>, std::vector<glm::mat4>
+    >;
 
-    Material(Shader *shader, InitFunction* initializer, ApplyFunction* applier);
+    Material(Shader *shader);
 
-
-    template<typename T>
-    void UpdateValue(const std::string &uniform_name, const T& new_value) {
-        void* ptr = values[uniform_name].second;
-        if (ptr) {
-            *static_cast<T*>(ptr) = new_value;
-        }
-    }
+    void Set(const std::string& name, const MaterialValue& v);
+    void Apply() const;
 
     void Bind() const;
     Shader* GetShader() const;
@@ -27,20 +29,27 @@ public:
     void PushTexture(Texture *new_texture);
     void SetTexture(std::vector<Texture*>& new_texture);
 
-    static Material* Create(const std::string& name, Shader *shader, InitFunction* initializer, ApplyFunction* applier);
+    static Material* Create(const std::string& name, Shader *shader);
     static Material* Find(const std::string &name);
     static void Delete(const std::string &name);
     static void ClearСache();
 
-    std::unordered_map<std::string, std::pair<GLint, void*>> values;
+    std::unordered_map<std::string, MaterialValue> values;
 
 private:
-    void UpdateUniforms();
+    void UploadUniform(const GLint loc, const int v) const;
+    void UploadUniform(const GLint loc, const float v) const;
+    void UploadUniform(const GLint loc, const GLuint v) const;
+    void UploadUniform(const GLint loc, const glm::vec2& v) const;
+    void UploadUniform(const GLint loc, const glm::vec3& v) const;
+    void UploadUniform(const GLint loc, const glm::vec4& v) const;
+    void UploadUniform(const GLint loc, const glm::dualquat& v) const;
+    void UploadUniform(const GLint loc, const glm::mat4& v) const;
+    void UploadUniform(const GLint loc, const std::vector<glm::mat4>& v) const;
+    void UploadUniform(const GLint loc, const std::vector<glm::dualquat>& v) const;
 
     Shader* shader = nullptr;
     std::vector<Texture*> texture;
-    InitFunction* initializer = nullptr; // утечка памяти
-    ApplyFunction* applier = nullptr; // утечка памяти
 
     inline static std::unordered_map<std::string, Material> cache;
 };

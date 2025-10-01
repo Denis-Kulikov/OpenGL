@@ -3,7 +3,6 @@
 #include <object/geometry/skeletal_mesh.hpp>
 #include <object/geometry/skeleton/animation/animator.hpp>
 #include "../component.hpp"
-#include <entities/templates/decor/test_dq.hpp>
 
 class ComponentSkeletalMesh : public Component {
 public:

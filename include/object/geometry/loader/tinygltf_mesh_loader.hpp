@@ -5,6 +5,7 @@ namespace tinygltf {
     class Model;
 };
 
+// НЕ РАБОТАЕТ ДЛЯ АНИМИРОВАННЫХ МОДЕЛЕЙ
 class TinygltfMeshLoader : public IMeshLoader {
 public:
     bool LoadMesh(const std::string& fileName, GeometryMesh& mesh) override;

@@ -6,26 +6,27 @@
 Shader::Shader(const std::string& FS, const std::string& VS)
 {
     Link(FS, VS);
+    RegisterUniforms();
 }
 
 void Shader::Link(const std::string &FS, const std::string &VS) {
-    shaderProgram = glCreateProgram();
+    id = glCreateProgram();
 
     GLuint fragmentShader;
     GLuint vertexShader;
     fragmentShader = Compile(FS, GL_FRAGMENT_SHADER);
     vertexShader = Compile(VS, GL_VERTEX_SHADER);
-    glAttachShader(shaderProgram, fragmentShader);
-    glAttachShader(shaderProgram, vertexShader);
-    glLinkProgram(shaderProgram);
+    glAttachShader(id, fragmentShader);
+    glAttachShader(id, vertexShader);
+    glLinkProgram(id);
 
     GLint ok;
     GLchar log[2000];
-    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &ok);
+    glGetProgramiv(id, GL_LINK_STATUS, &ok);
     if (!ok) {
         GLint infoLogLength;
         GLchar* infoLog;
-        glGetProgramInfoLog(shaderProgram, 2000, NULL, log);
+        glGetProgramInfoLog(id, 2000, NULL, log);
         std::cout << "Shader (" << FS << ", " << VS << ") compilation Log:\n" << log << std::endl;
     
         glGetShaderiv(fragmentShader, GL_INFO_LOG_LENGTH, &infoLogLength);
@@ -88,12 +89,32 @@ GLuint Shader::Compile(const std::string &ShaderPath, GLuint type)
     return Shader;
 }
 
+void Shader::RegisterUniforms() {
+    GLint count;
+    glGetProgramiv(id, GL_ACTIVE_UNIFORMS, &count);
+    uniforms.reserve(count);
+    for (int i = 0; i < count; i++) {
+        GLchar name[256];
+        GLenum type;
+        GLint size;
+        glGetActiveUniform(id, i, sizeof(name), nullptr, &size, &type, name);
+        std::string uniformName = name;
+        if (uniformName.size() > 3) {
+            if (uniformName.substr(uniformName.size() - 3) == "[0]") {
+                uniformName = uniformName.substr(0, uniformName.size() - 3);
+            }
+        }
+        GLint loc = glGetUniformLocation(id, uniformName.c_str());
+        uniforms[uniformName] = {loc, type, size};
+    }
+}
+
 void Shader::Bind() const {
     glUseProgram(GetID());
 }
 
 GLuint Shader::GetID() const {
-    return shaderProgram;
+    return id;
 }
 
 Shader* Shader::Create(const std::string& name, const std::string& FS, const std::string& VS) {

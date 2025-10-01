@@ -9,13 +9,11 @@ void ComponentSkeletalMatrixMesh::Render() const {
         glm::vec4(GetMatrix()[3], 1.0f)
     );
 
-    material->UpdateValue("Projection", RenderManager::pipeline.ProjTrans);
-    material->UpdateValue("View", RenderManager::pipeline.View);
-    material->UpdateValue("Model", model_mats4x4);
+    material->Set("Projection", RenderManager::pipeline.ProjTrans);
+    material->Set("View", RenderManager::pipeline.View);
+    material->Set("Model", model_mats4x4);
+    material->Set("gBones", boneTransforms);
     material->Bind();
-
-    const auto it_mats = material->values.find("gBones");
-    glUniformMatrix4fv(it_mats->second.first, boneTransforms.size(), GL_FALSE, glm::value_ptr(*boneTransforms.data()));
     mesh->Bind();
 
     for (int i = 0; i < mesh->size(); ++i) {

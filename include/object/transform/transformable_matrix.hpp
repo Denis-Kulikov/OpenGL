@@ -1,7 +1,5 @@
 #pragma once
 #include "transformable.hpp"
-#include <glm/glm.hpp>
-#define GLM_ENABLE_EXPERIMENTAL
 
 class TransformableMatrix : public Transformable {
 public:

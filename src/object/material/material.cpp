@@ -1,9 +1,71 @@
 #include <object/material/material.hpp>
 
-Material::Material(Shader *shader, InitFunction* initializer, ApplyFunction* applier)
-    : shader(shader), initializer(initializer), applier(applier)
-{}
+Material::Material(Shader* shader)
+    : shader(shader)
+{
+    for (const auto& [name, info] : shader->uniforms)
+    {
+        std::string uniformName = name;
+        if (uniformName.size() > 3) {
+            if (uniformName.substr(uniformName.size() - 3) == "[0]") {
+                uniformName = uniformName.substr(0, uniformName.size() - 3);
+            }
+        }
 
+        std::cout << "Name: " << uniformName << std::endl;
+        switch (info.type)
+        {
+            case GL_INT:
+            case GL_BOOL:
+                values[uniformName] = int(0);
+                break;
+
+            case GL_FLOAT:
+                values[uniformName] = float(0.0f);
+                break;
+
+            case GL_SAMPLER_2D:
+            case GL_SAMPLER_CUBE:
+                values[uniformName] = GLuint(0); // texture unit index
+                break;
+
+            case GL_FLOAT_VEC2:
+                values[uniformName] = glm::vec2(0.0f);
+                break;
+
+            case GL_FLOAT_VEC3:
+                values[uniformName] = glm::vec3(0.0f);
+                break;
+
+            case GL_FLOAT_VEC4:
+                values[uniformName] = glm::vec4(0.0f);
+                break;
+
+            case GL_FLOAT_MAT4:
+                if (info.size > 1) {
+                    std::cout << "vector<mat4>" << std::endl;
+                    values[uniformName] = std::vector<glm::mat4>(info.size, glm::mat4(1.0f));
+                } else {
+                    values[uniformName] = glm::mat4(1.0f);
+                }
+                break;
+
+            // расширяемость: свои семантики
+            case GL_FLOAT_VEC4 + 100: // допустим, особый код для dualquat
+                if (info.size > 1) {
+                    values[uniformName] = std::vector<glm::dualquat>(info.size, glm::dualquat({glm::quat(1, 0, 0, 0), glm::quat(0, 0, 0, 0)}));
+                } else {
+                    values[uniformName] = glm::dualquat({glm::quat(1, 0, 0, 0), glm::quat(0, 0, 0, 0)});
+                }
+                break;
+
+            default:
+                std::cerr << "[Material] Unsupported uniform type for " << uniformName << " (GLenum=" << info.type << ")\n";
+                break;
+        }
+    }
+    std::cout << std::endl;
+}
 
 Shader* Material::GetShader() const {
     return shader;
@@ -27,16 +89,28 @@ void Material::SetTexture(std::vector<Texture*>& new_texture) {
 }
 
 void Material::Bind() const {
-    shader->Bind();
-    (*applier)(*this);
+    GetShader()->Bind();
+    glActiveTexture(GL_TEXTURE0);
+    Apply();
 }
 
-void Material::UpdateUniforms() {
-    (*initializer)(*this);
+void Material::Set(const std::string& name, const MaterialValue& v) {
+    values[name] = v;
 }
 
-Material* Material::Create(const std::string& name, Shader *shader, InitFunction* initializer, ApplyFunction* applier) {
-    auto [it, inserted] = cache.try_emplace(name, shader, initializer, applier);
+void Material::Apply() const {
+    glUseProgram(shader->GetID());
+    for (auto& [name, val] : values) {
+        if (auto u = shader->FindUniform(name)) {
+            std::visit([&](auto&& v) {
+                UploadUniform(u->location, v);
+            }, val);
+        }
+    }
+}
+
+Material* Material::Create(const std::string& name, Shader *shader) {
+    auto [it, inserted] = cache.try_emplace(name, shader);
     
     if (inserted) {
         it->second.SetShader(shader);
@@ -44,6 +118,22 @@ Material* Material::Create(const std::string& name, Shader *shader, InitFunction
 
     return &it->second;
 }
+
+void Material::UploadUniform(const GLint loc, const int v) const { glUniform1i(loc, v); }
+void Material::UploadUniform(const GLint loc, const float v) const { glUniform1f(loc, v); }
+void Material::UploadUniform(const GLint loc, const GLuint v) const { glUniform1i(loc, v); }
+void Material::UploadUniform(const GLint loc, const glm::vec2& v) const { glUniform2fv(loc, 1, glm::value_ptr(v)); }
+void Material::UploadUniform(const GLint loc, const glm::vec3& v) const { glUniform3fv(loc, 1, glm::value_ptr(v)); }
+void Material::UploadUniform(const GLint loc, const glm::vec4& v) const { glUniform4fv(loc, 1, glm::value_ptr(v)); }
+void Material::UploadUniform(const GLint loc, const glm::dualquat& v) const { glUniform4fv(loc, 2, glm::value_ptr(v.real)); }
+void Material::UploadUniform(const GLint loc, const glm::mat4& v) const { glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(v)); }
+void Material::UploadUniform(const GLint loc, const std::vector<glm::mat4>& v) const {
+    glUniformMatrix4fv(loc, v.size(), GL_FALSE, glm::value_ptr(v.data()[0]));
+}
+void Material::UploadUniform(const GLint loc, const std::vector<glm::dualquat>& v) const {
+    glUniform4fv(loc, v.size() * 2, glm::value_ptr(v.data()[0].real));
+}
+
 
 Material* Material::Find(const std::string &name) {
     auto it = cache.find(name);
@@ -53,19 +143,11 @@ Material* Material::Find(const std::string &name) {
 void Material::Delete(const std::string &name) {
     auto it = cache.find(name);
     if (it != cache.end()) {
-        if (it->second.initializer)
-            delete it->second.initializer;
-        if (it->second.applier)
-            delete it->second.applier;
         cache.erase(it); 
     }
 }
 
 void Material::ClearСache() {
     for (auto it = cache.begin(); it != cache.end(); ) {
-        if (it->second.initializer)
-            delete it->second.initializer;
-        if (it->second.applier)
-            delete it->second.applier;
     }
 }

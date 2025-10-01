@@ -1,6 +1,6 @@
 #pragma once
-#include <glm/glm.hpp>
 #define GLM_ENABLE_EXPERIMENTAL
+#include <glm/glm.hpp>
 
 class Transformable {
 public:

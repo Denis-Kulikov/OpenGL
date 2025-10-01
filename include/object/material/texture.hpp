@@ -1,9 +1,9 @@
 #pragma once
 #include <GL/glew.h>
-#include <glm/glm.hpp>
-#include <string>
 #include <assimp/scene.h>
 #include <iostream>
+#include <string>
+#include <unordered_map>
 
 namespace tinygltf {
     class Image;
