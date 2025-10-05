@@ -40,6 +40,7 @@ Texture* Texture::Create(const std::string& name, const std::string& path) {
 }
 
 Texture* Texture::Create(const std::string& name, const aiTexture* texture) {
+    std::cout << "Texture::Create: " << name << std::endl;
     auto [it, inserted] = cache.try_emplace(name, texture);
     return &it->second;
 }
@@ -78,7 +79,7 @@ void Texture::ClearСache() {
 void Texture::Load(std::string path) {
     int x, y, n;
     unsigned char *img = stbi_load(path.c_str(), &x, &y, &n, 0);
-    std::cout << path << std::endl;
+    std::cout << "Texture::Load inpute: " << path << std::endl;
     assert(img != nullptr);
 
     int new_x = 1 << (int)std::ceil(std::log2(x));

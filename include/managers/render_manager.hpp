@@ -3,6 +3,7 @@
 #include <object/geometry/primitive/sprite.hpp>
 #include <object/geometry/primitive/cube.hpp>
 #include <object/geometry/primitive/sphere.hpp>
+#include "render/buffer_manager.hpp"
 
 class RenderManager  
 {
@@ -24,4 +25,5 @@ public:
     } primitives;
 
     inline static Camera::struct_PersProj PersProj;
+    inline static BufferManager bufferManager;
 };

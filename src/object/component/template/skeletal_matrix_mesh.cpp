@@ -9,8 +9,6 @@ void ComponentSkeletalMatrixMesh::Render() const {
         glm::vec4(GetMatrix()[3], 1.0f)
     );
 
-    material->Set("Projection", RenderManager::pipeline.ProjTrans);
-    material->Set("View", RenderManager::pipeline.View);
     material->Set("Model", model_mats4x4);
     material->Set("gBones", boneTransforms);
     material->Bind();

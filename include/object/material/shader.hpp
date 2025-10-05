@@ -33,6 +33,7 @@ private:
     GLuint Compile(const std::string& ShaderPath, GLuint type);
     void Link(const std::string &FS, const std::string &VS);
     void RegisterUniforms();
+    void RegisterUBOs();
 
     GLuint id;
     inline static std::unordered_map<std::string, Shader> cache;

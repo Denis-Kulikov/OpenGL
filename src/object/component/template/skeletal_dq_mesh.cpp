@@ -9,12 +9,9 @@ void ComponentSkeletalDQMesh::Render() const {
         glm::vec4(GetMatrix()[3], 1.0f)
     );
 
-    material->Set("Projection", RenderManager::pipeline.ProjTrans);
-    material->Set("View", RenderManager::pipeline.View);
     material->Set("Model", model_mats4x4);
+    material->Set("DQ", boneTransforms);
     material->Bind();
-    // glUniform4fv(loc_dq, boneTransforms.size() * 2, glm::value_ptr(boneTransforms.data()[0].real));
-    material->Set("gDQ", boneTransforms);
     mesh->Bind();
 
     for (int i = 0; i < mesh->size(); ++i) {

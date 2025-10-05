@@ -8,11 +8,14 @@ add_library(${target} STATIC
 	bullet_manager.cpp
 )
 
+add_subdirectory(render)
+
 if(WIN32)
 target_link_libraries(
   ${target}
   PRIVATE
 	lib-render
+	lib-render-manager
 	BulletCollision_Debug
 	BulletDynamics_Debug
 	LinearMath_Debug

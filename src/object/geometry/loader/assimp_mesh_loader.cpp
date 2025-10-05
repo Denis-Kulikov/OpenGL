@@ -64,7 +64,7 @@ bool AssimpMeshLoader::InitFromScene(GeometryMesh& mesh, const aiScene* m_pScene
         InitMesh(mesh, i, paiMesh, Positions, Normals, TexCoords, Indices);
     }
 
-    if (!InitMaterials(mesh, m_pScene, fileName.substr(0, fileName.find_last_of("/\\")))) {
+    if (!InitMaterials(mesh, m_pScene, fileName)) {
         return false;
     }
 
@@ -88,65 +88,6 @@ bool AssimpMeshLoader::InitFromScene(GeometryMesh& mesh, const aiScene* m_pScene
 
     return true;
 }
-
-void AssimpMeshLoader::InitMesh(GeometryMesh& mesh,unsigned int MeshIndex, const aiMesh* paiMesh,
-                std::vector<glm::vec3>& Positions, std::vector<glm::vec3>& Normals,
-                std::vector<glm::vec2>& TexCoords, std::vector<unsigned int>& Indices)
-{
-    const aiVector3D Zero3D(0.0f, 0.0f, 0.0f);
-    
-    for (unsigned int i = 0 ; i < paiMesh->mNumVertices ; i++) {
-        const aiVector3D* pPos      = &(paiMesh->mVertices[i]);
-        const aiVector3D* pNormal   = &(paiMesh->mNormals[i]);
-        const aiVector3D* pTexCoord = paiMesh->HasTextureCoords(0) ? &(paiMesh->mTextureCoords[0][i]) : &Zero3D;
-
-        Positions.push_back(glm::vec3(pPos->x, pPos->y, pPos->z));
-        Normals.push_back(glm::vec3(pNormal->x, pNormal->y, pNormal->z));
-        TexCoords.push_back(glm::vec2(pTexCoord->x, pTexCoord->y));        
-    }
-    
-    for (unsigned int i = 0 ; i < paiMesh->mNumFaces ; i++) {
-        const aiFace& Face = paiMesh->mFaces[i];
-        assert(Face.mNumIndices == 3);
-        Indices.push_back(Face.mIndices[0]);
-        Indices.push_back(Face.mIndices[1]);
-        Indices.push_back(Face.mIndices[2]);
-    }
-}
-
-bool AssimpMeshLoader::InitMaterials(GeometryMesh& mesh, const aiScene* scene, const std::string& directory) {
-    mesh.m_Textures.resize(scene->mNumMaterials);
-
-    for (unsigned int i = 0; i < scene->mNumMaterials; ++i) {
-        const aiMaterial* mat = scene->mMaterials[i];
-
-        // Используем только первый диффузный слот
-        if (mat->GetTextureCount(aiTextureType_DIFFUSE) > 0) {
-            aiString path;
-            if (mat->GetTexture(aiTextureType_DIFFUSE, 0, &path) == AI_SUCCESS) {
-                std::string texPath = path.C_Str();
-
-                // Встроенная текстура (embedded) начинается с '*'
-                if (texPath[0] == '*') {
-                    int texIndex = std::stoi(texPath.substr(1));
-                    aiTexture* texture = scene->mTextures[texIndex];
-
-                    std::string uniqueName = directory + "/embedded_" + std::to_string(texIndex);
-                    mesh.m_Textures[i] = Texture::Create(uniqueName, texture);
-                } else {
-                    // Внешняя текстура
-                    std::string fullPath = directory + "/" + texPath;
-                    mesh.m_Textures[i] = Texture::Create(fullPath, fullPath);
-                }
-            }
-        } else {
-            mesh.m_Textures[i] = Texture::Find("white");
-        }
-    }
-
-    return true;
-}
-
 
 bool AssimpMeshLoader::InitFromScene(GeometrySkeletalMesh& mesh, const aiScene* m_pScene, const std::string& fileName) {
     mesh.m_Entries.resize(m_pScene->mNumMeshes);
@@ -183,7 +124,7 @@ bool AssimpMeshLoader::InitFromScene(GeometrySkeletalMesh& mesh, const aiScene* 
         LoadBones(mesh, i, paiMesh, Bones);
     }
 
-    if (!InitMaterials(mesh, m_pScene, fileName.substr(0, fileName.find_last_of("/\\")))) {
+    if (!InitMaterials(mesh, m_pScene, fileName)) {
         return false;
     }
 
@@ -192,20 +133,6 @@ bool AssimpMeshLoader::InitFromScene(GeometrySkeletalMesh& mesh, const aiScene* 
     if (!LoadAnimations(mesh, m_pScene)) {
         return false;
     }
-
-    // int start = 800;
-    // for (int i = start; i < start + 100; ++i) {
-    //     std::cout << "IDs: ";
-    //     for (int j = 0; j < 4; ++j) {
-    //         std::cout << Bones[i].IDs[j] << " ";
-    //     }
-    //     std::cout << std::endl;
-    //     std::cout << "boneWeights: ";
-    //     for (int j = 0; j < 4; ++j) {
-    //         std::cout << Bones[i].Weights[j] << " ";
-    //     }
-    //     std::cout << std::endl;
-    // }
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.buffers[GeometrySkeletalMesh::EBO]);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(Indices[0]) * Indices.size(), &Indices[0], GL_STATIC_DRAW);
@@ -234,6 +161,68 @@ bool AssimpMeshLoader::InitFromScene(GeometrySkeletalMesh& mesh, const aiScene* 
     glEnableVertexAttribArray(BONE_WEIGHT_LOCATION);    
     glVertexAttribPointer(BONE_WEIGHT_LOCATION, 4, GL_FLOAT, GL_FALSE, sizeof(VertexBoneData), 
                             (const GLvoid*)offsetof(VertexBoneData, Weights));
+
+    return true;
+}
+
+void AssimpMeshLoader::InitMesh(GeometryMesh& mesh,unsigned int MeshIndex, const aiMesh* paiMesh,
+                std::vector<glm::vec3>& Positions, std::vector<glm::vec3>& Normals,
+                std::vector<glm::vec2>& TexCoords, std::vector<unsigned int>& Indices)
+{
+    const aiVector3D Zero3D(0.0f, 0.0f, 0.0f);
+    
+    for (unsigned int i = 0 ; i < paiMesh->mNumVertices ; i++) {
+        const aiVector3D* pPos      = &(paiMesh->mVertices[i]);
+        const aiVector3D* pNormal   = &(paiMesh->mNormals[i]);
+        const aiVector3D* pTexCoord = paiMesh->HasTextureCoords(0) ? &(paiMesh->mTextureCoords[0][i]) : &Zero3D;
+
+        Positions.push_back(glm::vec3(pPos->x, pPos->y, pPos->z));
+        Normals.push_back(glm::vec3(pNormal->x, pNormal->y, pNormal->z));
+        TexCoords.push_back(glm::vec2(pTexCoord->x, pTexCoord->y));        
+    }
+    
+    for (unsigned int i = 0 ; i < paiMesh->mNumFaces ; i++) {
+        const aiFace& Face = paiMesh->mFaces[i];
+        assert(Face.mNumIndices == 3);
+        Indices.push_back(Face.mIndices[0]);
+        Indices.push_back(Face.mIndices[1]);
+        Indices.push_back(Face.mIndices[2]);
+    }
+}
+
+bool AssimpMeshLoader::InitMaterials(GeometryMesh& mesh, const aiScene* scene, const std::string& fileName) {
+
+    mesh.m_Textures.resize(scene->mNumMaterials);
+
+    std::cout << "scene->mNumMaterials: " << scene->mNumMaterials << std::endl;
+    for (unsigned int i = 0; i < scene->mNumMaterials; ++i) {
+        const aiMaterial* mat = scene->mMaterials[i];
+
+        // Используем только первый диффузный слот
+        if (mat->GetTextureCount(aiTextureType_DIFFUSE) > 0) {
+            aiString path;
+            if (mat->GetTexture(aiTextureType_DIFFUSE, 0, &path) == AI_SUCCESS) {
+                std::string texPath = path.C_Str();
+
+                // Встроенная текстура (embedded) начинается с '*'
+                if (texPath[0] == '*') {
+                    int texIndex = std::stoi(texPath.substr(1));
+                    aiTexture* texture = scene->mTextures[texIndex];
+
+                    std::string uniqueName = fileName + "/embedded_" + std::to_string(texIndex);
+                    mesh.m_Textures[i] = Texture::Create(uniqueName, texture);
+                } else {
+                    // Внешняя текстура
+                    auto directory = fileName.substr(0, fileName.find_last_of("/\\"));
+                    std::string fullPath = directory + "/" + texPath;
+                    mesh.m_Textures[i] = Texture::Create(fullPath, fullPath);
+                }
+            }
+        } else {
+            std::cout << "Texture not found" << std::endl;
+            mesh.m_Textures[i] = Texture::Find("white");
+        }
+    }
 
     return true;
 }
@@ -282,7 +271,7 @@ void AssimpMeshLoader::LoadBones(GeometrySkeletalMesh& mesh, unsigned int MeshIn
 }
 
 bool AssimpMeshLoader::LoadAnimations(GeometrySkeletalMesh& mesh, const aiScene* scene) {
-    if (!scene || !scene->HasAnimations()) {
+    if (!scene) {
         return false;
     }
 

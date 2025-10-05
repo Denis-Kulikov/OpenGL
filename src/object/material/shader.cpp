@@ -2,11 +2,13 @@
 #include <fstream>
 #include <object/material/shader.hpp>
 #include <sstream>
+#include <managers/render_manager.hpp>
 
 Shader::Shader(const std::string& FS, const std::string& VS)
 {
     Link(FS, VS);
     RegisterUniforms();
+    RegisterUBOs();
 }
 
 void Shader::Link(const std::string &FS, const std::string &VS) {
@@ -106,6 +108,35 @@ void Shader::RegisterUniforms() {
         }
         GLint loc = glGetUniformLocation(id, uniformName.c_str());
         uniforms[uniformName] = {loc, type, size};
+    }
+}
+
+void Shader::RegisterUBOs() {
+    const auto& buffers = RenderManager::bufferManager.buffers;
+    GLint numUniformBlocks, numStorageBlocks;
+    glGetProgramiv(id, GL_ACTIVE_UNIFORM_BLOCKS, &numUniformBlocks);
+    glGetProgramInterfaceiv(id, GL_SHADER_STORAGE_BLOCK, GL_ACTIVE_RESOURCES, &numStorageBlocks);
+     
+    // UBO
+    for (int i = 0; i < numUniformBlocks; ++i) {
+        char name[256];
+        glGetActiveUniformBlockName(id, i, sizeof(name), nullptr, name);
+        auto it = buffers.find(name);
+        // std::cout << "UBO: " << name << std::endl;
+        if (it != buffers.end() && it->second.type == BufferType::Uniform)
+            glUniformBlockBinding(id, i, (GLuint)it->second.binding);
+    }
+
+    // SSBO
+    for (int i = 0; i < numStorageBlocks; ++i) {
+        char name[256];
+        glGetProgramResourceName(id, GL_SHADER_STORAGE_BLOCK, i, sizeof(name), nullptr, name);
+        auto it = RenderManager::bufferManager.buffers.find(name);
+        // std::cout << "SSBO: " << name << std::endl;
+        if (it != buffers.end() && it->second.type == BufferType::Storage) {
+            GLuint blockIndex = glGetProgramResourceIndex(id, GL_SHADER_STORAGE_BLOCK, name);
+            glShaderStorageBlockBinding(id, blockIndex, (GLuint)it->second.binding);
+        }
     }
 }
 

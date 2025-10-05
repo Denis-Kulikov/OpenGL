@@ -12,9 +12,8 @@ class Material {
 public:
     using MaterialValue = std::variant<
         int, float, GLuint,
-        glm::vec2, glm::vec3, glm::vec4, glm::dualquat,
-        glm::mat4,
-        std::vector<glm::dualquat>, std::vector<glm::mat4>
+        glm::vec2, glm::vec3, glm::vec4, glm::dualquat, glm::mat4,
+        std::vector<glm::vec4>, std::vector<glm::dualquat>, std::vector<glm::mat4>
     >;
 
     Material(Shader *shader);
@@ -45,6 +44,7 @@ private:
     void UploadUniform(const GLint loc, const glm::vec4& v) const;
     void UploadUniform(const GLint loc, const glm::dualquat& v) const;
     void UploadUniform(const GLint loc, const glm::mat4& v) const;
+    void UploadUniform(const GLint loc, const std::vector<glm::vec4>& v) const;
     void UploadUniform(const GLint loc, const std::vector<glm::mat4>& v) const;
     void UploadUniform(const GLint loc, const std::vector<glm::dualquat>& v) const;
 

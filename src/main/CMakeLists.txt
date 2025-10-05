@@ -1,4 +1,4 @@
-set(target openGL)
+set(target Engine)
 
 add_executable(${target})
 

@@ -1,4 +1,4 @@
-#version 330 core
+#version 430 core
 
 layout (location = 0) in vec3 aPosition;
 layout (location = 1) in vec2 aTexCoords;
@@ -8,12 +8,15 @@ layout (location = 4) in vec4 aWeights;
 
 out vec2 TexCoord;
 
+layout (std140) uniform Matrices {
+    mat4 Projection;
+    mat4 View;
+};
+
 uniform mat4 Model;
-uniform mat4 Projection;
-uniform mat4 View;
 
 const int MAX_BONES = 128; 
-uniform vec4 gDQ[MAX_BONES * 2];
+uniform vec4 DQ[MAX_BONES * 2];
 
 void dual_quat_blend(
     in ivec4 boneIDs,
@@ -29,8 +32,8 @@ void dual_quat_blend(
         float w = weights[i];
 
         if (w > 0.) {
-            vec4 qr = gDQ[id * 2];
-            vec4 qd = gDQ[id * 2 + 1];
+            vec4 qr = DQ[id * 2];
+            vec4 qd = DQ[id * 2 + 1];
 
             if (dot(blend_real, qr) < 0.0) {
                 w = -w;
