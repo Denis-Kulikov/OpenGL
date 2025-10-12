@@ -1,8 +1,8 @@
 #pragma once
 
 #include "../../actor.hpp"
-#include <object/geometry/primitive/sprite.hpp>
-#include <object/component/template/shape.hpp>
+#include <object/mesh/primitive/sprite.hpp>
+#include <object/component/template/mesh.hpp>
 
 class StoneFloor : public Actor
 {

@@ -1,5 +1,6 @@
-#include <managers/render_manager.hpp>
 #include <object/component/template/skeletal_matrix_mesh.hpp>
+
+void PrintMatrix(const glm::mat4& matrix);
 
 void ComponentSkeletalMatrixMesh::Render() const {
     auto model_mats4x4 = glm::mat4(
@@ -9,17 +10,21 @@ void ComponentSkeletalMatrixMesh::Render() const {
         glm::vec4(GetMatrix()[3], 1.0f)
     );
 
-    material->Set("Model", model_mats4x4);
-    material->Set("gBones", boneTransforms);
-    material->Bind();
+    mesh->material.Set("Model", model_mats4x4);
+    mesh->material.Set("gBones", boneTransforms);
     mesh->Bind();
 
-    for (int i = 0; i < mesh->size(); ++i) {
-        if (!material->GetTexture().empty()) {
-            int index = mesh->GetTextureIndex(i);
-            material->GetTexture()[index]->Bind();
-        }
-        mesh->Draw(&i);
+    // static bool f = true;
+    // if (f)
+    //     for (auto& it : boneTransforms) {
+    //         PrintMatrix(it);
+    //         std::cout << std::endl;
+    //     }
+    // f = false;
+
+    for (const auto& m : mesh->m_Entries) {
+        m.Material.Bind(mesh->shader);
+        m.Draw();
     }
 }
 

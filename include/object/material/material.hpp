@@ -1,12 +1,12 @@
 #pragma once
-#include "shader.hpp"
-#include "texture.hpp"
 #include <functional>
-#include <variant>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/dual_quaternion.hpp>
+#include "shader.hpp"
+#include "texture_unit.hpp"
+#include <variant>
 
 class Material {
 public:
@@ -16,24 +16,17 @@ public:
         std::vector<glm::vec4>, std::vector<glm::dualquat>, std::vector<glm::mat4>
     >;
 
-    Material(Shader *shader);
-
+    void Bind(const Shader* shader) const;
     void Set(const std::string& name, const MaterialValue& v);
-    void Apply() const;
+    void Set(const std::string& name, Texture* t);
 
-    void Bind() const;
-    Shader* GetShader() const;
-    const std::vector<Texture*>& GetTexture() const;
-    void SetShader(Shader *new_shader);
-    void PushTexture(Texture *new_texture);
-    void SetTexture(std::vector<Texture*>& new_texture);
-
-    static Material* Create(const std::string& name, Shader *shader);
+    static Material* Create(const std::string& name);
     static Material* Find(const std::string &name);
     static void Delete(const std::string &name);
     static void ClearСache();
 
     std::unordered_map<std::string, MaterialValue> values;
+    std::vector<TextureUnit> textureUnits;
 
 private:
     void UploadUniform(const GLint loc, const int v) const;
@@ -47,9 +40,6 @@ private:
     void UploadUniform(const GLint loc, const std::vector<glm::vec4>& v) const;
     void UploadUniform(const GLint loc, const std::vector<glm::mat4>& v) const;
     void UploadUniform(const GLint loc, const std::vector<glm::dualquat>& v) const;
-
-    Shader* shader = nullptr;
-    std::vector<Texture*> texture;
 
     inline static std::unordered_map<std::string, Material> cache;
 };

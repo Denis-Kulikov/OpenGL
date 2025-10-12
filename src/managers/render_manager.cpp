@@ -36,7 +36,7 @@ void RenderManager::UpdateCamera()
 
 void RenderManager::initializePrimitive()
 {
-    primitives.sprite = new Sprite();
-    primitives.cube = new Cube();
-    primitives.sphere = new Sphere<16>();
+    // primitives.sprite = new Sprite();
+    // primitives.cube = new Cube();
+    // primitives.sphere = new Sphere<16>();
 }

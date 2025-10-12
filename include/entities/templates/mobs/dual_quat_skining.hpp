@@ -1,6 +1,6 @@
 #pragma once
 #include "../../actor.hpp"
-#include <object/geometry/skeletal_mesh.hpp>
+#include <object/mesh/skeletal_mesh.hpp>
 
 class DualQuatSkining : public Actor
 {

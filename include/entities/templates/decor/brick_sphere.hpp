@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../../actor.hpp"
-#include <object/geometry/primitive/sphere.hpp>
+#include <object/mesh/primitive/sphere.hpp>
 
 class BrickSphere : public Actor
 {

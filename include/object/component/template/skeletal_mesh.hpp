@@ -1,7 +1,7 @@
 #pragma once
 #include <managers/time_manager.hpp>
-#include <object/geometry/skeletal_mesh.hpp>
-#include <object/geometry/skeleton/animation/animator.hpp>
+#include <object/mesh/skeletal_mesh.hpp>
+#include <object/mesh/skeleton/animation/animator.hpp>
 #include "../component.hpp"
 
 class ComponentSkeletalMesh : public Component {
@@ -11,9 +11,8 @@ public:
 
     void Render() const = 0;
     virtual void Update(float deltaTime) = 0;
-    void SetSkeletalMesh(GeometrySkeletalMesh *new_mesh);
+    void SetSkeletalMesh(SkeletalMesh *new_mesh);
 
-    Animator* animator;
-    GeometrySkeletalMesh *mesh;
-    Material* material = nullptr;
+    Animator* animator = nullptr;
+    SkeletalMesh *mesh = nullptr;
 };

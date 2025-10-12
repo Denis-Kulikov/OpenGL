@@ -1,8 +1,8 @@
 #pragma once
 #include <render/pipeline.hpp>
-#include <object/geometry/primitive/sprite.hpp>
-#include <object/geometry/primitive/cube.hpp>
-#include <object/geometry/primitive/sphere.hpp>
+#include <object/mesh/primitive/sprite.hpp>
+#include <object/mesh/primitive/cube.hpp>
+#include <object/mesh/primitive/sphere.hpp>
 #include "render/buffer_manager.hpp"
 
 class RenderManager  
@@ -18,11 +18,11 @@ public:
 
     inline static Pipeline pipeline;
 
-    inline static struct {
-        Sprite* sprite = nullptr;
-        Cube* cube = nullptr;
-        Sphere<16>* sphere = nullptr;
-    } primitives;
+    // inline static struct {
+    //     Sprite* sprite = nullptr;
+    //     Cube* cube = nullptr;
+    //     Sphere<16>* sphere = nullptr;
+    // } primitives;
 
     inline static Camera::struct_PersProj PersProj;
     inline static BufferManager bufferManager;

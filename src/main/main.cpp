@@ -13,7 +13,7 @@
 #include <entities/templates/decor/skybox.hpp>
 #include <entities/templates/decor/test_dq.hpp>
 
-// #include <entities/templates/mobs/female.hpp>
+#include <entities/templates/mobs/female.hpp>
 #include <entities/templates/mobs/dual_quat_skining.hpp>
 #include <entities/templates/mobs/matrix_skining.hpp>
 #include <entities/templates/playable/Ghost.hpp>
@@ -66,7 +66,7 @@ void Callback(Scene *scene) {
     RenderManager::pipeline.UpdateView();
     RenderManager::pipeline.UpdatePV();
     RenderManager::bufferManager.Update();
-    RenderManager::pipeline.drawSkybox(*scene->skybox);
+    // RenderManager::pipeline.drawSkybox(*scene->skybox);
     GlobalState::GetPlayer()->MoveForward();
 
     for (auto &it : scene->actors) {
@@ -83,92 +83,37 @@ bool fIsInit = false;
 Scene *createScene()
 {
     Ghost::Initialize();
-    // Grass::Initialize();
-    // StoneFloor::Initialize();
-    Skybox::Initialize();
-    // WoodenBox::Initialize();
-    // Tree::Initialize();
-    // Female::Initialize();
-    // BrickSphere::Initialize();
-    DualQuatSkining::Initialize();
+    Female::Initialize();
+    // DualQuatSkining::Initialize();
     MatrixSkining::Initialize();
-    // TestDQ::Initialize();
-
 
     auto *scene = new Scene();
 
     Actor *character = new Ghost();
     character->Teleport(glm::vec3(0, 3, 0));
-    // RenderManager::pipeline.camera->camera.yaw = 90;
-    // RenderManager::pipeline.camera->camera.pitch = 60;
     scene->pushObject(character);
 
-// {   
-//     tree = new Tree();
-//     tree->Teleport(glm::vec3(-3, -0.0, 6));
-//     tree->MultiplyScale(glm::vec3(.5));
-//     scene->pushObject(tree);
-
-//     testDQ = new TestDQ();
-//     testDQ->rootDualQuat->SetPosition(glm::vec3(-7, -0.0, 8));
-//     // tree->MultiplyScale(glm::vec3(.5));
-//     scene->pushObject(testDQ);
-
-
-//     auto grass = new Grass();
-//     grass->Teleport(glm::vec3(5, 1.0, 3.0));
-//     grass->rootComponent->SetScale(glm::vec3(2.5));
-//     // grass->rootComponent->SetRotation(glm::vec3(90, 0, 0));
-//     // scene->pushObject(grass);
-
-//     // auto cubeX = new WoodenBox();
-//     // cubeX->Teleport(glm::vec3(0, 2.3, 10));
-//     // scene->pushObject(cubeX);
-
-
-//     float boxHeight = 1.1f;
-//     float startY = 0.6f;
-
-//     for (int i = 0; i < 5; i++) {
-//         auto box = new WoodenBox();
-//         box->Teleport(glm::vec3(0, startY + i * boxHeight, 10));
-//         scene->pushObject(box);
-//     }
-
-
-//     auto sphere = new BrickSphere();
-//     sphere->Teleport(glm::vec3(15, 4, 10));
-//     sphere->SetRotation(glm::vec3(45.777, 0, 0));
-//     scene->pushObject(sphere);
-//     static_cast<RigidTransform*>(sphere->rootComponent->localTransform)->ApplyImpulse(glm::vec3(-800, 0, 0));
-
-
-//     auto floor = new StoneFloor();
-//     floor->Teleport(glm::vec3(0, 0, 10));
-//     // floor->SetRotation(glm::vec3(-90, 0, 0));
-//     scene->pushObject(floor);
-// }
-
-    // auto female = new Female();
-    // female->rootComponent->SetRotation(glm::vec3(-90, 0, 0));
-    // female->rootComponent->SetPosition(glm::vec3(1, 1.0, 5.0));
-    // female->rootComponent->SetScale(glm::vec3(0.03));
-    // scene->pushObject(female);
+    auto female = new Female();
+    female->rootComponent->SetRotation(glm::vec3(0, 0, 0));
+    female->rootComponent->SetPosition(glm::vec3(1, 1.0, 5.0));
+    female->rootComponent->SetScale(glm::vec3(0.03));
+    scene->pushObject(female);
 
     auto ms = new MatrixSkining();
-    ms->rootComponent->SetRotation(glm::vec3(-90, 0, 0));
-    ms->rootComponent->SetPosition(glm::vec3(5, 1.0, 3.0));
-    ms->rootComponent->SetScale(glm::vec3(0.03));
+    ms->rootComponent->SetRotation(glm::vec3(0, 0, 0));
+    ms->rootComponent->SetPosition(glm::vec3(1, 1.0, 5.0));
+    // ms->rootComponent->SetScale(glm::vec3(0.03));
+    // ms->rootComponent->SetScale(glm::vec3(30));
     scene->pushObject(ms);
 
-    auto dq = new DualQuatSkining();
-    dq->rootComponent->SetRotation(glm::vec3(-90, 0, 0));
-    dq->rootComponent->SetPosition(glm::vec3(0, 1.0, 3.0));
-    dq->rootComponent->SetScale(glm::vec3(0.03));
-    scene->pushObject(dq);
+    // auto dq = new DualQuatSkining();
+    // dq->rootComponent->SetRotation(glm::vec3(-90, 0, 0));
+    // dq->rootComponent->SetPosition(glm::vec3(0, 1.0, 3.0));
+    // dq->rootComponent->SetScale(glm::vec3(0.03));
+    // scene->pushObject(dq);
 
 
-    scene->skybox = new Skybox();
+    // scene->skybox = new Skybox();
 
     GlobalState::SetPlayer(character);
 
@@ -180,7 +125,7 @@ int main(int argc, char** argv)
     const GLfloat width = 1600, height = 900;
 
     WindowManager::Initialize(width, height);
-    RenderManager::Initialize(70.0f, width, height, 0.1f, 1000.0f);
+    RenderManager::Initialize(70.0f, width, height, 0.1f, 3000.0f);
     BulletManager::Initialize();
     TimeManager::Initialize();
 

@@ -2,7 +2,6 @@ set(target lib-component-template)
 
 add_library(${target} STATIC
 	camera.cpp
-	shape.cpp
 	mesh.cpp
 	skeletal_mesh.cpp
 	skeletal_matrix_mesh.cpp
@@ -12,5 +11,5 @@ add_library(${target} STATIC
 target_link_libraries(${target}
     PRIVATE
 	lib-component
-	lib-geometry
+	lib-mesh
 )

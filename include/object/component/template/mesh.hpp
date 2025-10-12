@@ -1,6 +1,6 @@
 #pragma once
 #include <managers/time_manager.hpp>
-#include <object/geometry/mesh.hpp>
+#include <object/mesh/mesh.hpp>
 #include "../component.hpp"
 
 class ComponentMesh : public Component {
@@ -10,6 +10,5 @@ public:
 
     void Render() const override;
 
-    GeometryMesh *mesh;
-    Material* material = nullptr;
+    Mesh *mesh = nullptr;
 };

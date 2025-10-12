@@ -1,4 +1,3 @@
-#include <managers/render_manager.hpp>
 #include <object/component/template/skeletal_dq_mesh.hpp>
 
 void ComponentSkeletalDQMesh::Render() const {
@@ -9,17 +8,14 @@ void ComponentSkeletalDQMesh::Render() const {
         glm::vec4(GetMatrix()[3], 1.0f)
     );
 
-    material->Set("Model", model_mats4x4);
-    material->Set("DQ", boneTransforms);
-    material->Bind();
+    mesh->material.Set("Model", model_mats4x4);
+    mesh->material.Set("DQ", boneTransforms);
+    mesh->material.Bind(mesh->shader);
     mesh->Bind();
 
-    for (int i = 0; i < mesh->size(); ++i) {
-        if (!material->GetTexture().empty()) {
-            int index = mesh->GetTextureIndex(i);
-            material->GetTexture()[index]->Bind();
-        }
-        mesh->Draw(&i);
+    for (int i = 0; i < mesh->m_Entries.size(); ++i) {
+        mesh->m_Entries[i].Material.Bind(mesh->shader);
+        mesh->m_Entries[i].Draw();
     }
 }
 

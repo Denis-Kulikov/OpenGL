@@ -7,6 +7,7 @@
 Shader::Shader(const std::string& FS, const std::string& VS)
 {
     Link(FS, VS);
+    RegisterAttributes();
     RegisterUniforms();
     RegisterUBOs();
 }
@@ -91,14 +92,38 @@ GLuint Shader::Compile(const std::string &ShaderPath, GLuint type)
     return Shader;
 }
 
+void Shader::RegisterAttributes() {
+    GLint numAttribs = 0;
+    GLint maxNameLength = 0;
+    GLsizei length = 0;
+    GLint size = 0;
+    GLenum type = 0;
+    GLchar name[256];
+
+    glGetProgramiv(GetID(), GL_ACTIVE_ATTRIBUTES, &numAttribs);
+    glGetProgramiv(GetID(), GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &maxNameLength);
+
+    for (int i = 0; i < numAttribs; ++i) {
+        glGetActiveAttrib(GetID(), i, maxNameLength, &length, &size, &type, &name[0]);
+        std::string nameAttribute(&name[0], length);
+        GLint loc = glGetAttribLocation(GetID(), nameAttribute.c_str());
+        attributes[name] = {loc, size, type, i};
+        std::cout << "Attrib #" << i << " | name=" << name
+                << " | loc=" << loc
+                << " | type=" << std::hex << type
+                << " | size=" << std::dec << size << '\n';
+    }
+}
+
 void Shader::RegisterUniforms() {
     GLint count;
+    GLint size;
+    GLenum type;
+    GLchar name[256];
+
     glGetProgramiv(id, GL_ACTIVE_UNIFORMS, &count);
     uniforms.reserve(count);
     for (int i = 0; i < count; i++) {
-        GLchar name[256];
-        GLenum type;
-        GLint size;
         glGetActiveUniform(id, i, sizeof(name), nullptr, &size, &type, name);
         std::string uniformName = name;
         if (uniformName.size() > 3) {
@@ -106,8 +131,13 @@ void Shader::RegisterUniforms() {
                 uniformName = uniformName.substr(0, uniformName.size() - 3);
             }
         }
+        // std::cout << "Uniform: " << uniformName << " size: " << size << std::endl;
         GLint loc = glGetUniformLocation(id, uniformName.c_str());
-        uniforms[uniformName] = {loc, type, size};
+        std::cout << "Uniform " << uniformName
+                << " | loc=" << loc
+                << " | type=" << std::hex << type
+                << " | size=" << std::dec << size << '\n';
+        uniforms[uniformName] = {loc, size, type};
     }
 }
 
@@ -122,7 +152,7 @@ void Shader::RegisterUBOs() {
         char name[256];
         glGetActiveUniformBlockName(id, i, sizeof(name), nullptr, name);
         auto it = buffers.find(name);
-        // std::cout << "UBO: " << name << std::endl;
+        std::cout << "UBO: " << name << std::endl;
         if (it != buffers.end() && it->second.type == BufferType::Uniform)
             glUniformBlockBinding(id, i, (GLuint)it->second.binding);
     }
@@ -132,7 +162,7 @@ void Shader::RegisterUBOs() {
         char name[256];
         glGetProgramResourceName(id, GL_SHADER_STORAGE_BLOCK, i, sizeof(name), nullptr, name);
         auto it = RenderManager::bufferManager.buffers.find(name);
-        // std::cout << "SSBO: " << name << std::endl;
+        std::cout << "SSBO: " << name << std::endl;
         if (it != buffers.end() && it->second.type == BufferType::Storage) {
             GLuint blockIndex = glGetProgramResourceIndex(id, GL_SHADER_STORAGE_BLOCK, name);
             glShaderStorageBlockBinding(id, blockIndex, (GLuint)it->second.binding);
@@ -148,16 +178,19 @@ GLuint Shader::GetID() const {
     return id;
 }
 
+const UniformInfo* Shader::FindUniform(const std::string& name) const {
+    auto it = uniforms.find(name);
+    return it == uniforms.end() ? nullptr : &it->second;
+}
+
 Shader* Shader::Create(const std::string& name, const std::string& FS, const std::string& VS) {
     auto [it, inserted] = cache.try_emplace(name, FS, VS);
     return &it->second;
 }
-
 Shader* Shader::Find(const std::string &name) {
     auto it = cache.find(name);
     return it != cache.end() ? &it->second : nullptr;
 }
-
 void Shader::Delete(const std::string &name) {
     auto it = cache.find(name);
     if (it != cache.end()) {
@@ -167,7 +200,6 @@ void Shader::Delete(const std::string &name) {
         cache.erase(it); 
     }
 }
-
 void Shader::ClearСache() {
     for (auto it = cache.begin(); it != cache.end(); ) {
         if (glIsTexture(it->second.GetID())) {

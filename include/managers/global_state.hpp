@@ -1,7 +1,7 @@
 #pragma once
 #include "../entities/actor.hpp"
-#include <object/geometry/loader/assimp_mesh_loader.hpp>
-#include <object/geometry/loader/tinygltf_mesh_loader.hpp>
+#include <object/mesh/loader/assimp_mesh_loader.hpp>
+#include <object/mesh/loader/tinygltf_mesh_loader.hpp>
 
 class GlobalState  
 {

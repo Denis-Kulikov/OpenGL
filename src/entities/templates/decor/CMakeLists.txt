@@ -15,5 +15,4 @@ target_link_libraries(
   PRIVATE
 	lib-entities
 	lib-component-template
-	lib-component-template-dual-quat
 )
