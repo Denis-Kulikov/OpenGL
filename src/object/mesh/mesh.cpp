@@ -127,15 +127,17 @@ void Mesh::AddAttribute(const void* data, size_t size, const std::string& attrNa
     }
     
     auto attr = attrInfo->second.attribute;
+    auto loc = attrInfo->second.location;
 
     glBindBuffer(GL_ARRAY_BUFFER, buffers[attr]);
     glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
-    glEnableVertexAttribArray(attr);
+    glEnableVertexAttribArray(loc);
 
     if (type == GL_INT || type == GL_UNSIGNED_INT) {
-        glVertexAttribIPointer(attr, sizePerVertex, type, stride, (const GLvoid*)offset);
+        glVertexAttribIPointer(loc, sizePerVertex, type, stride, (const GLvoid*)offset);
     } else {
-        glVertexAttribPointer(attr, sizePerVertex, type, normalized, stride, (const GLvoid*)offset);
+        glVertexAttribPointer(loc, sizePerVertex, type, normalized, stride, (const GLvoid*)offset);
+
     }
 
     vbos.push_back({buffers[attr], attr, sizePerVertex, type, normalized, stride, offset});

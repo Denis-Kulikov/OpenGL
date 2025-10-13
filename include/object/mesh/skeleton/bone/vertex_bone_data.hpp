@@ -1,10 +1,11 @@
 #pragma once
+#include <array>
 #define NUM_BONES_PER_VEREX 4
 
 struct VertexBoneData {
     VertexBoneData() {
-        std::memset(IDs, 0, sizeof(IDs));
-        std::memset(Weights, 0, sizeof(Weights));
+        std::memset(IDs.data(), 0, sizeof(IDs));
+        std::memset(Weights.data(), 0, sizeof(Weights));
     }
 
     // Добавление кости в первую свободную ячейку
@@ -40,6 +41,6 @@ struct VertexBoneData {
         }
     }
 
-    int IDs[NUM_BONES_PER_VEREX];
-    float Weights[NUM_BONES_PER_VEREX];
+    std::array<int, NUM_BONES_PER_VEREX> IDs;
+    std::array<float, NUM_BONES_PER_VEREX> Weights;
 };

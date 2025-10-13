@@ -84,33 +84,32 @@ Scene *createScene()
 {
     Ghost::Initialize();
     Female::Initialize();
-    // DualQuatSkining::Initialize();
+    DualQuatSkining::Initialize();
     MatrixSkining::Initialize();
 
     auto *scene = new Scene();
 
     Actor *character = new Ghost();
-    character->Teleport(glm::vec3(0, 3, 0));
+    character->Teleport(glm::vec3(0, 2, 0));
     scene->pushObject(character);
 
     auto female = new Female();
-    female->rootComponent->SetRotation(glm::vec3(0, 0, 0));
-    female->rootComponent->SetPosition(glm::vec3(1, 1.0, 5.0));
-    female->rootComponent->SetScale(glm::vec3(0.03));
+    female->SetRotation(glm::vec3(0, 0, 0));
+    female->Teleport(glm::vec3(-3, 0.0, 4.0));
+    female->SetScale(glm::vec3(0.03));
     scene->pushObject(female);
 
     auto ms = new MatrixSkining();
-    ms->rootComponent->SetRotation(glm::vec3(0, 0, 0));
-    ms->rootComponent->SetPosition(glm::vec3(1, 1.0, 5.0));
-    // ms->rootComponent->SetScale(glm::vec3(0.03));
-    // ms->rootComponent->SetScale(glm::vec3(30));
+    ms->SetRotation(glm::vec3(-90, 0, 0));
+    ms->Teleport(glm::vec3(4, 0.0, 7.0));
+    ms->SetScale(glm::vec3(0.05));
     scene->pushObject(ms);
 
-    // auto dq = new DualQuatSkining();
-    // dq->rootComponent->SetRotation(glm::vec3(-90, 0, 0));
-    // dq->rootComponent->SetPosition(glm::vec3(0, 1.0, 3.0));
-    // dq->rootComponent->SetScale(glm::vec3(0.03));
-    // scene->pushObject(dq);
+    auto dq = new DualQuatSkining();
+    dq->SetRotation(glm::vec3(-90, 0, 0));
+    dq->Teleport(glm::vec3(0, 0.0, 7.0));
+    dq->SetScale(glm::vec3(0.05));
+    scene->pushObject(dq);
 
 
     // scene->skybox = new Skybox();
