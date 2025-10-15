@@ -12,9 +12,7 @@ if(WIN32)
         glfw
         glew32
         opengl32
-	lib-decor
-	lib-mobs
-        lib-playable
+        lib-entities
     )
 else()
     target_link_libraries(${target}
@@ -23,8 +21,6 @@ else()
         GL
         GLEW
         assimp
-	lib-decor
-	lib-mobs
-        lib-playable
+        lib-entities
     )
 endif()

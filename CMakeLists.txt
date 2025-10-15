@@ -15,6 +15,7 @@ else()
 	include_directories(/usr/include/bullet)
 endif()
 
+include_directories(build/_deps/imgui-src)
 include_directories(build/_deps/stb_image-src)
 include_directories(build/_deps/tinygltf-src)
 include_directories(build/_deps/glm-src)

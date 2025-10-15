@@ -7,6 +7,7 @@ layout (location = 2) in vec3 aNormal;
 layout (std140) uniform Matrices {
     mat4 Projection;
     mat4 View;
+    vec3 viewPos;
 };
 
 uniform mat4 Model;

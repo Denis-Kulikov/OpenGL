@@ -1,47 +1,38 @@
-#include <managers/render_manager.hpp>
 #include <object/mesh/primitive/sprite.hpp>
 
-// #include <stb_image.h>
-// #include <stb_image_resize.h>
-// #include <GLFW/glfw3.h>
+Sprite::Sprite()
+{
+    const float SIZE = 1.0f;
+    float h = SIZE * 0.5f;
 
+    Positions = {
+        { -h, -h, 0.0f }, // левый нижний
+        {  h, -h, 0.0f }, // правый нижний
+        {  h,  h, 0.0f }, // правый верхний
+        { -h,  h, 0.0f }  // левый верхний
+    };
 
-// Sprite::Sprite()
-// {
-//     // |2|3|
-//     // |1|4|
-//     const float SIZE = .5f;
-//     std::vector<GLfloat> vertices = {
-//         -SIZE, -SIZE, 0.0f, 0.0f, 0.0f,
-//         -SIZE,  SIZE, 0.0f, 0.0f, 1.0f,
-//         SIZE,  SIZE, 0.0f,  1.0f, 1.0f,
-//         SIZE, -SIZE, 0.0f,  1.0f, 0.0f
-//     };
+    TexCoords = {
+        { 0.0f, 0.0f },
+        { 1.0f, 0.0f },
+        { 1.0f, 1.0f },
+        { 0.0f, 1.0f }
+    };
 
-//     std::vector<GLuint> indices = {
-//         0, 1, 2,
-//         0, 2, 3
-//     };
+    Normals = {
+        { 0.0f, 0.0f, 1.0f },
+        { 0.0f, 0.0f, 1.0f },
+        { 0.0f, 0.0f, 1.0f },
+        { 0.0f, 0.0f, 1.0f }
+    };
 
-//     numVertices = vertices.size();
-//     numIndices = indices.size();
+    Indices = {
+        0, 1, 2,
+        2, 3, 0
+    };
 
-//     glGenVertexArrays(1, &VAO);
-//     glBindVertexArray(VAO);
-
-//     glGenBuffers(1, &VBO);
-//     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-//     glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(GLfloat), vertices.data(), GL_STATIC_DRAW);
-
-//     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)0);
-//     glEnableVertexAttribArray(0);
-
-//     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
-//     glEnableVertexAttribArray(1);
-
-//     glGenBuffers(1, &EBO);
-//     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-//     glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), indices.data(), GL_STATIC_DRAW);
-
-//     glBindVertexArray(0);
-// }
+    m_Entries.resize(1);
+    m_Entries[0].NumIndices = static_cast<unsigned int>(Indices.size());
+    m_Entries[0].BaseVertex = 0;
+    m_Entries[0].BaseIndex  = 0;
+}

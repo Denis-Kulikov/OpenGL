@@ -1,4 +1,4 @@
-#include <managers/render_manager.hpp>
+#include <managers/render/render.hpp>
 #include <object/component/template/mesh.hpp>
 
 void ComponentMesh::Render() const {

@@ -29,6 +29,8 @@ public:
     
     std::unordered_map<std::string, UniformInfo> uniforms;
     std::unordered_map<std::string, AttributeInfo> attributes;
+    
+    inline static std::unordered_map<std::string, Shader> cache;
 
 private:
     GLuint Compile(const std::string& ShaderPath, GLuint type);
@@ -38,5 +40,4 @@ private:
     void RegisterUBOs();
 
     GLuint id = 0;
-    inline static std::unordered_map<std::string, Shader> cache;
 };

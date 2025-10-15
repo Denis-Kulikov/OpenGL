@@ -9,12 +9,7 @@ layout (location = 4) in vec4 aWeights;
 layout (std140) uniform Matrices {
     mat4 Projection;
     mat4 View;
-};
-
-layout(std430, binding = 1) buffer Lights {
-    vec4 position[];
-    vec4 color[];
-    int count;
+    vec3 viewPos;
 };
 
 uniform mat4 gBones[128];

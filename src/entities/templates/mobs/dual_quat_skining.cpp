@@ -1,12 +1,13 @@
 #include <entities/templates/mobs/dual_quat_skining.hpp>
 #include <object/component/template/skeletal_dq_mesh.hpp>
 #include <object/transform/transform.hpp>
-#include <managers/global_state.hpp>
+#include <managers/global.hpp>
 
 
 DualQuatSkining::DualQuatSkining()
 {
-    std::cout << name << std::endl;
+    ACTOR_SET_NAME;
+
     Transform *transform = new Transform();
     ComponentSkeletalDQMesh *mesh = CreateComponent<ComponentSkeletalDQMesh>(transform);
     mesh->SetSkeletalMesh(SkeletalMesh::Find("DualQuatSkining"));
@@ -20,7 +21,7 @@ DualQuatSkining::~DualQuatSkining()
 
 void DualQuatSkining::Initialize()
 {
-    DualQuatSkining::name = "DualQuatSkining";
+    DualQuatSkining::originalName = "DualQuatSkining";
     // std::string path("assets/model/an_animated_cat.glb");
     std::string path("assets/model/female/female.glb");
     auto shader_mesh = Shader::Create("skeletal_mesh_dq", "shaders/sprite_fs.glsl", "shaders/skeletal_mesh_dqs_vs.glsl");
@@ -29,6 +30,4 @@ void DualQuatSkining::Initialize()
     SkeletalMesh::Create("DualQuatSkining", mDatal, shader_mesh);
 }
 
-std::string DualQuatSkining::GetName() const {
-    return DualQuatSkining::name;
-}
+ACTOR_BASE_CPP(DualQuatSkining);

@@ -3,6 +3,8 @@
 #include <object/transform/rigid_transform.hpp>
 #include <object/material/material.hpp>
 
+class Actor;
+
 class Component {
 protected:
     Component(RigidTransform *transform);
@@ -50,6 +52,7 @@ public:
 
     std::vector<Component*> children;
     Component *parent = nullptr;
+    Actor *owner = nullptr;
 
 // protected:
     TransformableMatrix *globalTransform = nullptr;
@@ -57,12 +60,3 @@ public:
     glm::vec3 scale;
     glm::vec3 invScale;
 };
-
-
-template <typename C, typename T>
-C* CreateComponent(T *transform) {
-    static_assert(std::is_base_of_v<Component, C>, "T must derive from Component");
-    static_assert(std::is_base_of_v<TransformableMatrix, T>, "TransformType must derive from Transformable");
-
-    return new C(transform);
-}

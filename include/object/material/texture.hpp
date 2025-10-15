@@ -25,6 +25,8 @@ public:
     static Texture* Find(const std::string& name);
     static void Delete(const std::string& path);
     static void ClearСache();
+    
+    inline static std::unordered_map<std::string, Texture> cache;
 
 private:
     void Load(std::string path);
@@ -33,5 +35,4 @@ private:
 
     GLuint textureID;
     float scale;
-    inline static std::unordered_map<std::string, Texture> cache;
 };

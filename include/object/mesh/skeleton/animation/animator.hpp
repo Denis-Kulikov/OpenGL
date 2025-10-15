@@ -8,7 +8,7 @@
 #include "skeletal_animation.hpp"
 #include <object/transform/transform.hpp>
 #include <object/component/component.hpp>
-#include <managers/time_manager.hpp>
+#include <managers/time.hpp>
 #include "../skeleton.hpp"
 
 class Animator {

@@ -1,5 +1,5 @@
 #pragma once
-#include <managers/time_manager.hpp>
+#include <managers/time.hpp>
 #include <object/mesh/skeletal_mesh.hpp>
 #include <object/mesh/skeleton/animation/animator.hpp>
 #include "../component.hpp"

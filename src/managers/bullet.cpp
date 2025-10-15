@@ -1,4 +1,4 @@
-#include <managers/bullet_manager.hpp>
+#include <managers/bullet.hpp>
 
 void BulletManager::Initialize() {
     collisionConfiguration = new btDefaultCollisionConfiguration();

@@ -2,7 +2,7 @@
 #include <fstream>
 #include <object/material/shader.hpp>
 #include <sstream>
-#include <managers/render_manager.hpp>
+#include <managers/render/render.hpp>
 
 Shader::Shader(const std::string& FS, const std::string& VS)
 {
@@ -108,10 +108,6 @@ void Shader::RegisterAttributes() {
         std::string nameAttribute(&name[0], length);
         GLint loc = glGetAttribLocation(GetID(), nameAttribute.c_str());
         attributes[name] = {loc, size, type, i};
-        std::cout << "Attrib #" << i << " | name=" << name
-                << " | loc=" << loc
-                << " | type=" << std::hex << type
-                << " | size=" << std::dec << size << '\n';
     }
 }
 
@@ -133,10 +129,6 @@ void Shader::RegisterUniforms() {
         }
         // std::cout << "Uniform: " << uniformName << " size: " << size << std::endl;
         GLint loc = glGetUniformLocation(id, uniformName.c_str());
-        std::cout << "Uniform " << uniformName
-                << " | loc=" << loc
-                << " | type=" << std::hex << type
-                << " | size=" << std::dec << size << '\n';
         uniforms[uniformName] = {loc, size, type};
     }
 }
@@ -152,7 +144,6 @@ void Shader::RegisterUBOs() {
         char name[256];
         glGetActiveUniformBlockName(id, i, sizeof(name), nullptr, name);
         auto it = buffers.find(name);
-        std::cout << "UBO: " << name << std::endl;
         if (it != buffers.end() && it->second.type == BufferType::Uniform)
             glUniformBlockBinding(id, i, (GLuint)it->second.binding);
     }
@@ -162,7 +153,6 @@ void Shader::RegisterUBOs() {
         char name[256];
         glGetProgramResourceName(id, GL_SHADER_STORAGE_BLOCK, i, sizeof(name), nullptr, name);
         auto it = RenderManager::bufferManager.buffers.find(name);
-        std::cout << "SSBO: " << name << std::endl;
         if (it != buffers.end() && it->second.type == BufferType::Storage) {
             GLuint blockIndex = glGetProgramResourceIndex(id, GL_SHADER_STORAGE_BLOCK, name);
             glShaderStorageBlockBinding(id, blockIndex, (GLuint)it->second.binding);

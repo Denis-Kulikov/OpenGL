@@ -4,10 +4,10 @@ out vec4 FragColor;
 
 in vec2 TexCoord;
 
-uniform sampler2D textureSampler;
+uniform sampler2D albedoMap;
 
 void main() {
-    vec4 texColor = texture(textureSampler, TexCoord);
+    vec4 texColor = texture(albedoMap, TexCoord);
     if (texColor.a < 0.1) discard;
     FragColor = texColor;
 }

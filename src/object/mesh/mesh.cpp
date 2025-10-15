@@ -1,5 +1,5 @@
 #include <object/mesh/mesh.hpp>
-#include <managers/global_state.hpp>
+#include <managers/global.hpp>
 
 
 Mesh::Mesh(const MeshData& meshData, Shader* shader)
@@ -122,7 +122,7 @@ void Mesh::AddAttribute(const void* data, size_t size, const std::string& attrNa
 
     auto attrInfo = shader->attributes.find(attrName);
     if (attrInfo == shader->attributes.end()) {
-        std::cout << "Error Mesh::AddAttribute(): " << attrName << " not found" << std::endl;
+        // std::cout << "Error Mesh::AddAttribute(): " << attrName << " not found" << std::endl;
         return;
     }
     

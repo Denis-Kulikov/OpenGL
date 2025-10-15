@@ -1,5 +1,4 @@
 #pragma once
-#include <managers/time_manager.hpp>
 #include <object/mesh/mesh.hpp>
 #include "../component.hpp"
 

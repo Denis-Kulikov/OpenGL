@@ -1,5 +1,5 @@
 #include <entities/actor.hpp>
-#include <managers/time_manager.hpp>
+#include <managers/time.hpp>
 
 Actor::Actor() {
     speed = 5.0;
@@ -17,6 +17,14 @@ void Actor::Render() const {
         rootDualQuat->RenderTree();
     }
 }
+
+void Actor::SetName(const std::string& newName) {
+    name = newName;
+}
+const std::string& Actor::GetName() const {
+    return name;
+}
+
 
 glm::vec3 Actor::GetDirection() const
 {

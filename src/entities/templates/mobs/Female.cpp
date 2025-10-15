@@ -1,12 +1,13 @@
 #include <entities/templates/mobs/female.hpp>
 #include <object/component/template/mesh.hpp>
 #include <object/transform/transform.hpp>
-#include <managers/global_state.hpp>
+#include <managers/global.hpp>
 
 
 Female::Female()
 {
-    std::cout << name << std::endl;
+    ACTOR_SET_NAME;
+
     Transform *transform = new Transform();
     ComponentMesh *mesh = CreateComponent<ComponentMesh>(transform);
     mesh->mesh = Mesh::Find("femele");
@@ -19,8 +20,7 @@ Female::~Female()
 
 void Female::Initialize()
 {
-    Female::name = "Female";
-    std::cout << "Initialize: " << name << std::endl;
+    Female::originalName = "Female";
     std::string path("assets/model/female/female.glb");
     auto shader_mesh = Shader::Create("mesh", "shaders/sprite_fs.glsl", "shaders/mesh_vs.glsl");
     MeshData mDatal;
@@ -28,6 +28,4 @@ void Female::Initialize()
     Mesh::Create("femele", mDatal, shader_mesh);
 }
 
-std::string Female::GetName() const {
-    return Female::name;
-}
+ACTOR_BASE_CPP(Female);

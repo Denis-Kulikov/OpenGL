@@ -21,31 +21,11 @@ public:
     };
 
 
-    TextureUnit(Texture* Texture, TextureType type)
-        : Texture(Texture), type(type)
-    {}
-    
-    void Bind() const {
-        glActiveTexture(GL_TEXTURE0 + unit);
-        Texture->Bind();
-    }
+    TextureUnit(Texture* texture, TextureType type);
+    void Bind() const;
+    bool Link(Shader* shader, GLuint i);
 
-    bool Link(Shader* shader, GLuint i) {
-        const auto& texName = Types.find(type);
-        if (texName == Types.end())
-            return false;
-
-        const auto& loc = shader->uniforms.find(texName->second);
-        if (loc == shader->uniforms.end())
-            return false;
-
-        unit = i;
-        glUniform1i(loc->second.location, unit);
-    
-        return true;
-    }
-
-    Texture* Texture;
+    Texture* texture;
     TextureType type;
     GLuint unit;
 };

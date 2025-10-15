@@ -1,62 +1,85 @@
-#include <managers/render_manager.hpp>
+#include <managers/render/render.hpp>
 #include <object/mesh/primitive/cube.hpp>
 
 
-// Cube::Cube() {
-//     SetType(PRIMITIVE);
+Cube::Cube() {
+    const float size = 1.0f;
+    float h = size * 0.5f;
 
-//     struct Vertex {
-//         glm::vec3 position;
-//         glm::vec2 texCoord;
-//     };
+    Positions = {
+        // Front face
+        { -h, -h,  h }, {  h, -h,  h }, {  h,  h,  h }, { -h,  h,  h },
+        // Back face
+        {  h, -h, -h }, { -h, -h, -h }, { -h,  h, -h }, {  h,  h, -h },
+        // Left face
+        { -h, -h, -h }, { -h, -h,  h }, { -h,  h,  h }, { -h,  h, -h },
+        // Right face
+        {  h, -h,  h }, {  h, -h, -h }, {  h,  h, -h }, {  h,  h,  h },
+        // Top face
+        { -h,  h,  h }, {  h,  h,  h }, {  h,  h, -h }, { -h,  h, -h },
+        // Bottom face
+        { -h, -h, -h }, {  h, -h, -h }, {  h, -h,  h }, { -h, -h,  h },
+    };
 
-//     const float size = .5f;
-//     std::vector<Vertex> vertices = {
-//         // передняя грань (начало: ближний сверху справа)
-//         {{ size,  size,  size}, {0.5f, 2.0f / 3.0f}},  {{-size,  size,  size}, {0.25f, 2.0f / 3.0f}},  {{-size, -size,  size}, {0.25f, 1.0f / 3.0f}},  {{ size, -size,  size}, {0.5f, 1.0f / 3.0f}},
-//         // задняя грань (начало: дальний сверху справа)
-//         {{ size,  size, -size}, {0.75f, 2.0f / 3.0f}}, {{-size,  size, -size}, {1.0f, 2.0f / 3.0f}}, {{-size, -size, -size}, {1.0f, 1.0f / 3.0f}}, {{ size, -size, -size}, {0.75f, 1.0f / 3.0f}},
+    // деление текстуры на крест
+    float x0 = 0.0f;
+    float x1 = 0.25f;
+    float x2 = 0.5f;
+    float x3 = 0.75f;
+    float x4 = 1.0f;
 
-//         // левая грань (начало: дальний сверху слева)
-//         {{-size,  size,  size}, {0.25f, 2.0f / 3.0f}}, {{-size,  size, -size}, {0.0f, 2.0f / 3.0f}}, {{-size, -size, -size}, {0.0f, 1.0f / 3.0f}}, {{-size, -size,  size}, {0.25f, 1.0f / 3.0f}},
-//         // правая грань (начало: ближний сверху справа)
-//         {{ size,  size,  size}, {0.5f, 2.0f / 3.0f}},  {{ size,  size, -size}, {0.75f, 2.0f / 3.0f}},  {{ size, -size, -size}, {0.75f, 1.0f / 3.0f}},  {{ size, -size,  size}, {0.5f, 1.0f / 3.0f}},
+    float y0 = 0.0f;
+    float y1 = 1.0f / 3.0f;
+    float y2 = 2.0f / 3.0f;
+    float y3 = 1.0f;
 
-//         // нижняя грань (начало: ближний снизу слева)
-//         {{-size, -size,  size}, {0.25f, 1.0f / 3.0f}}, {{ size, -size,  size}, {0.5f, 1.0f / 3.0f}}, {{ size, -size, -size}, {0.5f, 0.0f}},  {{-size, -size, -size}, {0.25f, 0.0f}},
-//         // верхняя грань (начало: ближний сверху слева)
-//         {{-size,  size,  size}, {0.25f, 2.0f / 3.0f}}, {{ size,  size,  size}, {0.5f, 2.0f / 3.0f}},   {{ size,  size, -size}, {0.5f, 1.0f}},   {{-size,  size, -size}, {0.25f, 1.0f}},
-//     };
+    TexCoords = {
+        // Front (+Z) — между 0.25 и 0.5 по X, и между 1/3 и 2/3 по Y
+        { x1, y1 }, { x2, y1 }, { x2, y2 }, { x1, y2 },
 
+        // Back (-Z) — между 0.75 и 1.0
+        { x3, y1 }, { x4, y1 }, { x4, y2 }, { x3, y2 },
 
-//     std::vector<GLuint> indices = {
-//         0,  1,  2,  0,  2,  3,   // передняя грань
-//         4,  5,  6,  4,  6,  7,   // задняя грань
-//         8,  9,  10, 8,  10, 11,  // левая грань
-//         12, 13, 14, 12, 14, 15,  // правая грань
-//         16, 17, 18, 16, 18, 19,  // нижняя грань
-//         20, 21, 22, 20, 22, 23   // верхняя грань
-//     };
+        // Left (-X) — между 0.0 и 0.25
+        { x0, y1 }, { x1, y1 }, { x1, y2 }, { x0, y2 },
 
-//     numVertices = vertices.size();
-//     numIndices = indices.size();
+        // Right (+X) — между 0.5 и 0.75
+        { x2, y1 }, { x3, y1 }, { x3, y2 }, { x2, y2 },
 
-//     glGenVertexArrays(1, &VAO);
-//     glBindVertexArray(VAO);
+        // Top (+Y) — между 0.25 и 0.5 по X, и между 2/3 и 1 по Y
+        { x1, y2 }, { x2, y2 }, { x2, y3 }, { x1, y3 },
 
-//     glGenBuffers(1, &VBO);
-//     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-//     glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), vertices.data(), GL_STATIC_DRAW);
+        // Bottom (-Y) — между 0.25 и 0.5 по X, и между 0 и 1/3
+        { x1, y0 }, { x2, y0 }, { x2, y1 }, { x1, y1 },
+    };
 
-//     glGenBuffers(1, &EBO);
-//     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-//     glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), indices.data(), GL_STATIC_DRAW);
+    // Нормали (по 1 направлению на грань)
+    Normals = {
+        // Front
+        { 0.0f,  0.0f,  1.0f }, { 0.0f,  0.0f,  1.0f }, { 0.0f,  0.0f,  1.0f }, { 0.0f,  0.0f,  1.0f },
+        // Back
+        { 0.0f,  0.0f, -1.0f }, { 0.0f,  0.0f, -1.0f }, { 0.0f,  0.0f, -1.0f }, { 0.0f,  0.0f, -1.0f },
+        // Left
+        { -1.0f,  0.0f,  0.0f }, { -1.0f,  0.0f,  0.0f }, { -1.0f,  0.0f,  0.0f }, { -1.0f,  0.0f,  0.0f },
+        // Right
+        { 1.0f,  0.0f,  0.0f }, { 1.0f,  0.0f,  0.0f }, { 1.0f,  0.0f,  0.0f }, { 1.0f,  0.0f,  0.0f },
+        // Top
+        { 0.0f,  1.0f,  0.0f }, { 0.0f,  1.0f,  0.0f }, { 0.0f,  1.0f,  0.0f }, { 0.0f,  1.0f,  0.0f },
+        // Bottom
+        { 0.0f, -1.0f,  0.0f }, { 0.0f, -1.0f,  0.0f }, { 0.0f, -1.0f,  0.0f }, { 0.0f, -1.0f,  0.0f },
+    };
 
-//     glEnableVertexAttribArray(0);
-//     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, position));
+    Indices = {
+        0, 1, 2, 2, 3, 0,       // front
+        4, 5, 6, 6, 7, 4,       // back
+        8, 9,10,10,11, 8,       // left
+        12,13,14,14,15,12,      // right
+        16,17,18,18,19,16,      // top
+        20,21,22,22,23,20       // bottom
+    };
 
-//     glEnableVertexAttribArray(1);
-//     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, texCoord));
-
-//     glBindVertexArray(0);
-// }
+    m_Entries.resize(1);
+    m_Entries[0].NumIndices = static_cast<unsigned int>(Indices.size());
+    m_Entries[0].BaseVertex = 0;
+    m_Entries[0].BaseIndex  = 0;
+}

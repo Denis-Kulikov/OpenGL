@@ -1,10 +1,11 @@
 #include <entities/templates/playable/Ghost.hpp>
 #include <object/component/template/point.hpp>
 #include <object/component/template/camera.hpp>
-#include <managers/render_manager.hpp> 
+#include <managers/render/render.hpp> 
 
 Ghost::Ghost() {
-    std::cout << name << std::endl;
+    ACTOR_SET_NAME;
+
     Transform *transformPoint = new Transform();
     ComponentPoint *point = CreateComponent<ComponentPoint>(transformPoint);
 
@@ -21,9 +22,7 @@ Ghost::Ghost() {
 Ghost::~Ghost() {}
 
 void Ghost::Initialize() {
-    name = "Ghost";
+    originalName = "Ghost";
 }
 
-std::string Ghost::GetName() const {
-    return name;
-}
+ACTOR_BASE_CPP(Ghost);

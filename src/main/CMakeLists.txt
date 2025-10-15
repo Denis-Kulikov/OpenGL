@@ -12,5 +12,5 @@ target_link_libraries(
   ${target}
   PRIVATE
 	lib-manager
-	lib-threads
+	imgui
 )

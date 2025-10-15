@@ -11,6 +11,7 @@ out vec2 TexCoord;
 layout (std140) uniform Matrices {
     mat4 Projection;
     mat4 View;
+    vec3 viewPos;
 };
 
 uniform mat4 Model;

@@ -1,27 +1,26 @@
 #include <entities/templates/decor/skybox.hpp>
-#include <managers/render_manager.hpp> 
+#include <managers/render/render.hpp> 
 
 Skybox::Skybox()
 {
-    std::cout << name << std::endl;
-    // Transform *transform = new Transform();
-    // ComponentMesh *mesh = CreateComponent<ComponentMesh>(transform);
-    // mesh->mesh = RenderManager::primitives.cube;
-    // mesh->material = Material::Find("skybox");
-    // rootComponent = mesh;
+    ACTOR_SET_NAME;
+
+    Transform *transform = new Transform();
+    ComponentMesh *mesh = CreateComponent<ComponentMesh>(transform);
+    mesh->mesh = Mesh::Find("skybox");
+    rootComponent = mesh;
 }
 
 Skybox::~Skybox() {}
 
 void Skybox::Initialize()
 {
-    Skybox::name = "skybox";
-    auto shader_cube = Shader::Create("cube", "shaders/cube_fs.glsl", "shaders/cube_vs.glsl");
-    auto texture_skybox = Texture::Create("skybox", "assets/img/skybox.png");
-    // auto material_skybox = Material::Create("skybox", shader_cube);
-    // material_skybox->PushTexture(texture_skybox);
+    Skybox::originalName = "skybox";
+    auto shader = Shader::Create("cube", "shaders/sprite_fs.glsl", "shaders/mesh_vs.glsl");
+    auto texture = Texture::Create("skybox", "assets/img/skybox.png");
+    MeshData& mDatal = RenderManager::primitives.cube;
+    auto m = Mesh::Create("skybox", mDatal, shader);
+    m->m_Entries.begin()->Material.textureUnits.push_back({texture, TextureUnit::DIFFUSE});
 }
 
-std::string Skybox::GetName() const {
-    return Skybox::name;
-}
+ACTOR_BASE_CPP(Skybox);

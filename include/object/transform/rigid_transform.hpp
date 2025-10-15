@@ -1,5 +1,5 @@
 #pragma once
-#include <managers/bullet_manager.hpp>
+#include <managers/bullet.hpp>
 #include <btBulletDynamicsCommon.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>

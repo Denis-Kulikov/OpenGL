@@ -18,7 +18,6 @@ Animator::Animator(const Skeleton& skeleton)
 void Animator::SetAnimationAny() {
     if (!skeleton.AnimationMap.empty()) {
         animation = &skeleton.AnimationMap.begin()->second;
-        std::cout << "Animation name: " << skeleton.AnimationMap.begin()->first << std::endl;
     }
     animationTime = 0.f;
 }
