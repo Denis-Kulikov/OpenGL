@@ -10,6 +10,11 @@ void Material::Bind(const Shader* shader) const {
         }
     }
 
+    if (textureUnits.empty()) {
+        glActiveTexture(GL_TEXTURE0);
+        Texture::Find("white")->Bind();
+    }
+
     for (const auto& u : textureUnits) {
         u.Bind();
     }
@@ -17,6 +22,26 @@ void Material::Bind(const Shader* shader) const {
 
 void Material::Set(const std::string& name, const MaterialValue& v) {
     values[name] = v;
+}
+
+bool Material::LinkTextureUnits(const Shader* shader) {
+    GLuint unitIndex = 0;
+    for (auto& t : textureUnits) {
+        const auto texName = TextureUnit::Types.find(t.type);
+        if (texName == TextureUnit::Types.end())
+            return false;
+
+        const auto loc = shader->uniforms.find(texName->second);
+        if (loc == shader->uniforms.end())
+            return false;
+
+        t.unit = unitIndex;
+        Set(texName->second, unitIndex);
+
+        ++unitIndex;
+    }
+
+    return true;
 }
 
 void Material::UploadUniform(const GLint loc, const int v) const { glUniform1i(loc, v); }

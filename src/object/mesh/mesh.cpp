@@ -25,11 +25,7 @@ Mesh::Mesh(const MeshData& meshData, Shader* shader)
     // AddAttribute(meshData.InstanceMatrix.data(), meshData.InstanceMatrix.size() * sizeof(glm::mat4), "aInstanceMatrix", 16);
 
     for (auto& m : m_Entries) {
-        GLuint unit = 0;
-        for (auto& t : m.Material.textureUnits) {
-            if (t.Link(GetShader(), unit))
-            ++unit;
-        }
+        m.material.LinkTextureUnits(shader);
     }
 
     glBindVertexArray(0);	

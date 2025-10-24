@@ -40,7 +40,7 @@ void WoodenBox::Initialize()
     auto texture = Texture::Create("WoodenBox", "assets/img/box.jpg");
     MeshData& mDatal = RenderManager::primitives.cube;
     auto m = Mesh::Create("WoodenBox", mDatal, shader);
-    m->m_Entries.begin()->Material.textureUnits.push_back({texture, TextureUnit::DIFFUSE});
+    m->m_Entries.begin()->material.textureUnits.push_back({texture, TextureUnit::DIFFUSE});
 }
 
 ACTOR_BASE_CPP(WoodenBox);

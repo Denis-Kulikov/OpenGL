@@ -11,6 +11,7 @@ public:
 
 protected:
     std::vector<int> InitVertexes(MeshData& mesh, const aiScene* m_pScene);
+    std::vector<int> InitVertexes(SkeletalMeshData& mesh, const aiScene* m_pScene);
     bool InitFromScene(MeshData& mesh, const aiScene* m_pScene, const std::string& fileName);
     bool InitFromScene(SkeletalMeshData& mesh, const aiScene* m_pScene, const std::string& fileName);
     bool InitMaterials(MeshData& mesh, std::vector<int>& MaterialIndex, const aiScene* scene, const std::string& directory);

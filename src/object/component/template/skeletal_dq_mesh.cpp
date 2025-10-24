@@ -14,7 +14,7 @@ void ComponentSkeletalDQMesh::Render() const {
     mesh->Bind();
 
     for (int i = 0; i < mesh->m_Entries.size(); ++i) {
-        mesh->m_Entries[i].Material.Bind(mesh->shader);
+        mesh->m_Entries[i].material.Bind(mesh->shader);
         mesh->m_Entries[i].Draw();
     }
 }

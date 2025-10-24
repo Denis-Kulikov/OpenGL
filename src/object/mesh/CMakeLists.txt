@@ -8,6 +8,7 @@ add_library(${target} STATIC
 	mesh.cpp
 	skeletal_mesh.cpp
 	loader/assimp_mesh_loader.cpp
+	loader/tinygltf_mesh_loader.cpp
 	primitive/sprite.cpp
 	primitive/cube.cpp
 	skeleton/skeleton.cpp

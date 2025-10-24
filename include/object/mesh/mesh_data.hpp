@@ -20,7 +20,7 @@ public:
         unsigned int NumIndices;
         unsigned int BaseVertex;
         unsigned int BaseIndex;
-        Material Material;
+        Material material;
     };
 
     std::vector<unsigned int> Indices;

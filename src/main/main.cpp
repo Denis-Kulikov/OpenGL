@@ -21,6 +21,15 @@
 
 #include <stb_image_write.h>
 
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
+#include <locale>
+#include <codecvt>
+
+
+
 glm::vec3 ExtractTranslation(const glm::dualquat& dq) {
     glm::quat t_quat = dq.dual * glm::conjugate(dq.real);
     return 2.0f * glm::vec3(t_quat.x, t_quat.y, t_quat.z);
@@ -63,9 +72,9 @@ Scene *createScene()
     Ghost::Initialize();
     Skybox::Initialize();
     StoneFloor::Initialize();
-    WoodenBox::Initialize();
+    // WoodenBox::Initialize();
     Female::Initialize();
-    DualQuatSkining::Initialize();
+    // DualQuatSkining::Initialize();
     MatrixSkining::Initialize();
 
     auto *scene = new Scene();
@@ -77,32 +86,33 @@ Scene *createScene()
     auto female = new Female();
     female->SetRotation(glm::vec3(0, 0, 0));
     female->Teleport(glm::vec3(-8, 0.0, 8.0));
-    female->SetScale(glm::vec3(0.03));
+    female->SetScale(glm::vec3(0.06));
     scene->pushObject(female);
 
     auto stoneFloor = new StoneFloor();
     stoneFloor->Teleport(glm::vec3(-3, 0.0, 4.0));
     scene->pushObject(stoneFloor);
 
-    float f = 0;
-    for (int i = 0; i < 3; i++) {
-        auto wBox = new WoodenBox();
-        wBox->Teleport(glm::vec3(-3, 2.0 + f, 4.0));
-        scene->pushObject(wBox);
-        f += 2.5;
-    }
+    // float f = 0;
+    // for (int i = 0; i < 3; i++) {
+    //     auto wBox = new WoodenBox();
+    //     wBox->Teleport(glm::vec3(-3, 2.0 + f, 4.0));
+    //     scene->pushObject(wBox);
+    //     f += 2.5;
+    // }
 
     auto ms = new MatrixSkining();
     ms->SetRotation(glm::vec3(-90, 0, 0));
     ms->Teleport(glm::vec3(4, 0.0, 8.0));
     ms->SetScale(glm::vec3(0.05));
+    // ms->SetScale(glm::vec3(50));
     scene->pushObject(ms);
 
-    auto dq = new DualQuatSkining();
-    dq->SetRotation(glm::vec3(-90, 0, 0));
-    dq->Teleport(glm::vec3(0, 0.0, 8.0));
-    dq->SetScale(glm::vec3(0.05));
-    scene->pushObject(dq);
+    // auto dq = new DualQuatSkining();
+    // dq->SetRotation(glm::vec3(-90, 0, 0));
+    // dq->Teleport(glm::vec3(0, 0.0, 8.0));
+    // dq->SetScale(glm::vec3(0.05));
+    // scene->pushObject(dq);
 
     scene->skybox = new Skybox();
 
@@ -131,6 +141,10 @@ void Callback(Scene *scene) {
 
 int main(int argc, char** argv)
 {
+    SetConsoleOutputCP(CP_UTF8);
+    SetConsoleCP(CP_UTF8);
+    std::locale::global(std::locale("en_US.UTF-8"));
+
     const GLfloat width = 1980, height = 1024;
 
     WindowManager::Initialize(width, height);

@@ -1,5 +1,5 @@
+#pragma once
 #include "texture.hpp"
-#include "shader.hpp"
 
 class TextureUnit {
 public:
@@ -20,10 +20,8 @@ public:
         { EMISSIVE, "emissiveMap" }
     };
 
-
     TextureUnit(Texture* texture, TextureType type);
     void Bind() const;
-    bool Link(Shader* shader, GLuint i);
 
     Texture* texture;
     TextureType type;

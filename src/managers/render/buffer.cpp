@@ -4,6 +4,9 @@
 void BufferManager::Init() {
     CreateBuffer("Matrices", BufferType::Uniform, BufferBinding::Matrices, sizeof(MatricesUBO));
     CreateBuffer("Lights", BufferType::Storage, BufferBinding::Lights, sizeof(LightsSSBO));
+    CreateBuffer("BonesData", BufferType::Storage, BufferBinding::BonesData, sizeof(BonesDataSSBO));
+
+    UpdateLightsSSBO();
 }
 
 void BufferManager::CreateBuffer(const std::string& name, BufferType type, BufferBinding binding, GLsizeiptr size) {
@@ -22,21 +25,42 @@ void BufferManager::CreateBuffer(const std::string& name, BufferType type, Buffe
     glBindBuffer(target, 0);
 
     buffers[name] = {buffer, type, binding, size};
-    binds[binding] = buffer;
+    binds[binding] = {buffer, type, binding, size};
 }
 
 void BufferManager::Update() {
     Update(BufferBinding::Matrices, 
         MatricesUBO(RenderManager::pipeline.ProjTrans,
-        RenderManager::pipeline.View,
-        RenderManager::pipeline.camera->GetPosition()
+                    RenderManager::pipeline.View,
+                    RenderManager::pipeline.camera->GetPosition()
     ));
 }
 
-GLuint BufferManager::GetBuffer(BufferBinding binding) {
+void BufferManager::UpdateLightsSSBO() {
+    std::array<PointLight, 128> pl;
+    std::array<DirectionalLight, 16> dl;
+    pl[0] = PointLight(glm::vec4(0.0f), glm::vec4(1.0f, 1.0f, 1.0f, 0.5f), 100.0f);
+    dl[0] = DirectionalLight(glm::vec4(0.0f, -1.0f, 0.0f, 0.0f), glm::vec3(1.0f), 0.5f);
+    Update(BufferBinding::Lights, LightsSSBO(1, 0, 0, pl, dl));
+}
+
+void BufferManager::UpdateBonesDataSSBO(const std::vector<glm::mat4>& vec) {
+    Update(BufferBinding::BonesData, vec.data(), std::min(vec.size(), BonesDataSSBO::SIZE) * sizeof(glm::mat4));
+}
+
+
+GLuint BufferManager::GetBuffer(BufferBinding binding) const {
     auto it = binds.find(binding);
     if (it != binds.end())
-        return (GLuint)it->second;
+        return (GLuint)it->second.id;
 
     return -1;
+}
+
+BufferInfo BufferManager::GetBufferInfo(BufferBinding binding) const {
+    auto it = binds.find(binding);
+    if (it != binds.end())
+        return it->second;
+
+    return BufferInfo();
 }

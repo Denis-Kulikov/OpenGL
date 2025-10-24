@@ -17,9 +17,15 @@ bool AssimpMeshLoader::LoadMesh(const std::string& fileName, MeshData& mesh) {
 
     return false;
 }
+#include <assimp/version.h>
 bool AssimpMeshLoader::LoadMesh(const std::string& fileName, SkeletalMeshData& mesh) {
     Assimp::Importer Importer;
-    const aiScene* m_pScene = Importer.ReadFile(fileName.c_str(), aiProcess_Triangulate | aiProcess_GenSmoothNormals| aiProcess_FlipUVs);
+    const aiScene* m_pScene = Importer.ReadFile(fileName.c_str(),
+    aiProcess_Triangulate | aiProcess_GenSmoothNormals| aiProcess_FlipUVs);
+
+std::cout << "Assimp version: " << aiGetVersionMajor() << "." 
+          << aiGetVersionMinor() << "." << aiGetVersionRevision() << std::endl;
+
     if (m_pScene) {
         InitFromScene(mesh, m_pScene, fileName);
     } else {
@@ -52,7 +58,42 @@ std::vector<int> AssimpMeshLoader::InitVertexes(MeshData& mesh, const aiScene* m
     mesh.Positions.reserve(NumVertices);
     mesh.TexCoords.reserve(NumVertices);
     mesh.Normals.reserve(NumVertices);
+
+    return MaterialIndex;
+}
+std::vector<int> AssimpMeshLoader::InitVertexes(SkeletalMeshData& mesh, const aiScene* m_pScene) {
+    std::vector<int> MaterialIndex(m_pScene->mNumMeshes);
+    mesh.m_Entries.resize(m_pScene->mNumMeshes);
+    mesh.skeleton = std::make_shared<Skeleton>();
+
+    unsigned int NumVertices = 0;
+    unsigned int NumIndices = 0;
+    unsigned int NumBones = 0;
     
+    for (unsigned int i = 0 ; i < mesh.m_Entries.size() ; i++) {
+        mesh.m_Entries[i].NumIndices = m_pScene->mMeshes[i]->mNumFaces * 3;
+        mesh.m_Entries[i].BaseVertex = NumVertices;
+        mesh.m_Entries[i].BaseIndex  = NumIndices;
+        
+        NumVertices += m_pScene->mMeshes[i]->mNumVertices;
+        NumIndices  += mesh.m_Entries[i].NumIndices;
+        NumBones    += m_pScene->mMeshes[i]->mNumBones;
+    
+        MaterialIndex[i] = m_pScene->mMeshes[i]->mMaterialIndex;        
+    }
+
+    mesh.Indices.reserve(NumIndices);
+    mesh.Positions.reserve(NumVertices);
+    mesh.TexCoords.reserve(NumVertices);
+    mesh.Normals.reserve(NumVertices);
+    mesh.Bones.resize(NumVertices);
+
+    mesh.skeleton.get()->BoneMap.reserve(NumBones);
+    mesh.skeleton.get()->inverseBindMat.resize(NumBones, glm::mat4(1.0f));
+    mesh.skeleton.get()->inverseBindDQ.resize(NumBones, {glm::quat(1, 0, 0, 0), glm::quat(0, 0, 0, 0)});
+    
+std::cout << "NumBones: " << NumBones << std::endl; 
+
     return MaterialIndex;
 }
 
@@ -74,9 +115,7 @@ bool AssimpMeshLoader::InitFromScene(MeshData& mesh, const aiScene* m_pScene, co
 bool AssimpMeshLoader::InitFromScene(SkeletalMeshData& mesh, const aiScene* m_pScene, const std::string& fileName) {
     std::vector<int> MaterialIndex(InitVertexes(mesh, m_pScene));
 
-    mesh.Bones.resize(mesh.Positions.capacity());
-    mesh.skeleton = std::make_shared<Skeleton>();
-
+    std::cout << "mesh.m_Entries.size(): " << mesh.m_Entries.size() << std::endl;
     for (unsigned int i = 0 ; i < mesh.m_Entries.size() ; i++) {
         const aiMesh* paiMesh = m_pScene->mMeshes[i];
         InitMesh(mesh, i, paiMesh);
@@ -122,6 +161,13 @@ void AssimpMeshLoader::InitMesh(MeshData& mesh,unsigned int MeshIndex, const aiM
     }
 }
 
+#include <locale>
+#include <codecvt>
+std::wstring utf8_to_wstring(const std::string& str) {
+    std::wstring_convert<std::codecvt_utf8<wchar_t>> myConv;
+    return myConv.from_bytes(str);
+}
+
 bool AssimpMeshLoader::InitMaterials(MeshData& mesh, std::vector<int>& MaterialIndex, const aiScene* scene, const std::string& fileName) {
     std::vector<Material> Materials(scene->mNumMaterials);
     aiString path;
@@ -139,21 +185,34 @@ bool AssimpMeshLoader::InitMaterials(MeshData& mesh, std::vector<int>& MaterialI
         return Texture::Create(fullPath, fullPath);
     };
 
+    std::cout << "mNumMaterials: " << scene->mNumMaterials << std::endl;
+    std::cout << "scene->mNumTextures: " << scene->mNumTextures << std::endl;
     for (unsigned int i = 0; i < scene->mNumMaterials; ++i) {
         const aiMaterial* mat = scene->mMaterials[i];
 
         if (mat->GetTextureCount(aiTextureType_DIFFUSE) > 0) {
             if (mat->GetTexture(aiTextureType_DIFFUSE, 0, &path) == AI_SUCCESS) {
                 texPath = path.C_Str();
+                std::cout << "Texture Path: " << texPath << "\n" << std::endl;
                 Texture* t = createTexture();
                 Materials[i].textureUnits.emplace_back(t, TextureUnit::DIFFUSE);
             }
         }
+
+        if (mat->GetTextureCount(aiTextureType_EMISSIVE) > 0) {
+            if (mat->GetTexture(aiTextureType_EMISSIVE, 0, &path) == AI_SUCCESS) {
+                texPath = path.C_Str();
+                std::cout << "Texture Path (EMISSIVE): " << texPath << "\n" << std::endl;
+                Texture* t = createTexture();
+                Materials[i].textureUnits.emplace_back(t, TextureUnit::DIFFUSE);
+            }
+        }
+
         // ...
     }
 
     for (size_t i = 0; i < mesh.m_Entries.size(); ++i) {
-        mesh.m_Entries[i].Material = Materials[MaterialIndex[i]];
+        mesh.m_Entries[i].material = Materials[MaterialIndex[i]];
     }
     
     return true;
@@ -161,9 +220,8 @@ bool AssimpMeshLoader::InitMaterials(MeshData& mesh, std::vector<int>& MaterialI
 
 void AssimpMeshLoader::LoadBones(SkeletalMeshData& mesh, unsigned int MeshIndex, const aiMesh* pMesh) {
     auto NumBones = pMesh->mNumBones;
-    mesh.skeleton.get()->BoneMap.reserve(pMesh->mNumBones);
-    mesh.skeleton.get()->inverseBindMat.resize(pMesh->mNumBones, glm::mat4(1.0f));
-    mesh.skeleton.get()->inverseBindDQ.resize(pMesh->mNumBones, {glm::quat(1, 0, 0, 0), glm::quat(0, 0, 0, 0)});
+
+    std::cout << "Found " << NumBones << " bones in mesh" << std::endl;
 
     for (unsigned int i = 0; i < NumBones; i++) {
         std::string BoneName(pMesh->mBones[i]->mName.data);

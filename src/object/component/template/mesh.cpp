@@ -10,10 +10,16 @@ void ComponentMesh::Render() const {
     );
 
     mesh->material.Set("Model", model_mats4x4);
+    mesh->material.Set("hasSpecularMap", bool(false));
+    mesh->material.Set("roughness", float(0.85f));
+    mesh->material.Set("metallic", float(0.1f));
+    mesh->material.Set("ambientStrength", float(0.25f));
+    mesh->material.Set("specularStrength", float(0.05f));
+    
     mesh->Bind();
 
     for (const auto& m : mesh->m_Entries) {
-        m.Material.Bind(mesh->shader);
+        m.material.Bind(mesh->shader);
         m.Draw();
     }
 }

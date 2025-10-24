@@ -18,7 +18,7 @@ public:
 
     void Bind(const Shader* shader) const;
     void Set(const std::string& name, const MaterialValue& v);
-    void Set(const std::string& name, Texture* t);
+    bool LinkTextureUnits(const Shader* shader);
 
     static Material* Create(const std::string& name);
     static Material* Find(const std::string &name);

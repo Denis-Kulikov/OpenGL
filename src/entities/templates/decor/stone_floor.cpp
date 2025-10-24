@@ -35,7 +35,7 @@ void StoneFloor::Initialize()
     auto texture = Texture::Create("floor", "assets/img/floor.jpg");
     MeshData& mDatal = RenderManager::primitives.sprite;
     auto m = Mesh::Create("stone_floor", mDatal, shader);
-    m->m_Entries.begin()->Material.textureUnits.push_back({texture, TextureUnit::DIFFUSE});
+    m->m_Entries.begin()->material.textureUnits.push_back({texture, TextureUnit::DIFFUSE});
 }
 
 ACTOR_BASE_CPP(StoneFloor);

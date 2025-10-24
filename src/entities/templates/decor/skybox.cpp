@@ -20,7 +20,7 @@ void Skybox::Initialize()
     auto texture = Texture::Create("skybox", "assets/img/skybox.png");
     MeshData& mDatal = RenderManager::primitives.cube;
     auto m = Mesh::Create("skybox", mDatal, shader);
-    m->m_Entries.begin()->Material.textureUnits.push_back({texture, TextureUnit::DIFFUSE});
+    m->m_Entries.begin()->material.textureUnits.push_back({texture, TextureUnit::DIFFUSE});
 }
 
 ACTOR_BASE_CPP(Skybox);
