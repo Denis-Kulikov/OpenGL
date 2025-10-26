@@ -4,5 +4,8 @@
 class ComponentPoint : public Component {
 public:
     ComponentPoint(TransformableMatrix *transform)
-        : Component(transform) {}
+        : Component(transform)
+    {
+        castsShadow = false;
+    }
 };

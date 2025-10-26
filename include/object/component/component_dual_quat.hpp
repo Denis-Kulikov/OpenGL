@@ -41,4 +41,5 @@ public:
     TransformDualQuat* globalTransform = nullptr;
     TransformDualQuat* localTransform = nullptr;
     glm::vec3 scale;
+    bool castsShadow = true; 
 };

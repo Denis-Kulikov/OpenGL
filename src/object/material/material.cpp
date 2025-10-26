@@ -24,7 +24,7 @@ void Material::Set(const std::string& name, const MaterialValue& v) {
     values[name] = v;
 }
 
-bool Material::LinkTextureUnits(const Shader* shader) {
+GLuint Material::LinkTextureUnits(const Shader* shader) {
     GLuint unitIndex = 0;
     for (auto& t : textureUnits) {
         const auto texName = TextureUnit::Types.find(t.type);
@@ -41,7 +41,7 @@ bool Material::LinkTextureUnits(const Shader* shader) {
         ++unitIndex;
     }
 
-    return true;
+    return unitIndex;
 }
 
 void Material::UploadUniform(const GLint loc, const int v) const { glUniform1i(loc, v); }

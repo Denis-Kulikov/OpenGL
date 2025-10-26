@@ -3,8 +3,7 @@
 #include <iostream>
 #include <array>
 #include <unordered_map>
-#include <object/light/point_light.hpp>
-#include <object/light/directional_light.hpp>
+#include <scene/light/scene_lighting.hpp>
 
 enum class BufferBinding : GLuint {
     Matrices = 0,
@@ -46,30 +45,6 @@ private:
         glm::vec3 viewPos;
     };
 
-    struct LightsSSBO {
-        LightsSSBO(int numPointLights,
-                   int numDirectionalLights,
-                   int numSpotLights,
-                   std::array<PointLight, 128> pointLights,
-                   std::array<DirectionalLight, 16> dirLights
-        )
-        :   numPointLights(numPointLights),
-            numDirectionalLights(numDirectionalLights),
-            numSpotLights(numSpotLights),
-            pointLights(pointLights),
-            dirLights(dirLights)
-        {}
-
-        int numPointLights;
-        int numDirectionalLights;
-        int numSpotLights;
-        int padding1;
-
-        std::array<PointLight, 128> pointLights;
-        std::array<DirectionalLight, 16> dirLights;
-        // SpotLight spotLights[32];
-    };
-
     struct BonesDataSSBO {
         static const std::size_t SIZE = 320;
 
@@ -95,7 +70,7 @@ public:
     void Init();
     void CreateBuffer(const std::string& name, BufferType type, BufferBinding binding, GLsizeiptr size);
     void Update();
-    void UpdateLightsSSBO();
+    void UpdateLightsSSBO(const SceneLighting& lighting);
     void UpdateBonesDataSSBO(const std::vector<glm::mat4>& vec);
     GLuint GetBuffer(BufferBinding binding) const;
     BufferInfo GetBufferInfo(BufferBinding binding) const;

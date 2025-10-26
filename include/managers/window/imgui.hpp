@@ -5,7 +5,7 @@
 #include <imgui.h>
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_opengl3.h>
-#include <object/scene.hpp>
+#include <scene/scene.hpp>
 
 class ImGuiManager  
 {

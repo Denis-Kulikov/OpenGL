@@ -1,9 +1,9 @@
 #pragma once
-#include <render/pipeline.hpp>
 #include <object/mesh/primitive/sprite.hpp>
 #include <object/mesh/primitive/cube.hpp>
 #include <object/mesh/primitive/sphere.hpp>
 #include "buffer.hpp"
+#include "pipeline.hpp"
 
 class RenderManager  
 {

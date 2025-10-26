@@ -37,6 +37,7 @@ public:
     virtual const std::string& GetOriginalName() const = 0;
 
     void Render() const;
+    void RenderShadowPass(const glm::mat4& shadowProj, ShadowMapType type) const;
 
     glm::vec3 GetDirection() const; // направление объекта не зависимо от направления модели
     void SetDirection(const glm::vec3 &_direction);
@@ -74,5 +75,6 @@ protected:
     glm::vec3 direction = {0, 0, 0};
     float speed;
     inline static std::string originalName = "NONE";
-    std::string name;    
+    std::string name;
+    bool castsShadow = true; 
 };

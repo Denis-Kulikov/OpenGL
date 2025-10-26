@@ -8,6 +8,7 @@ public:
         : Component(transform) {}
 
     void Render() const override;
+    virtual void RenderShadowPass(const glm::mat4& shadowProj, ShadowMapType type) const override;
 
     Mesh *mesh = nullptr;
 };

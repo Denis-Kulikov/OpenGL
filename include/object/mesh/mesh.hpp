@@ -17,6 +17,7 @@ public:
                    GLsizei stride = 0, size_t offset = 0);
     void LinkUniforms();
     void Bind() const;
+    void BindGeometry() const;
     Shader* GetShader() const;
 
     static Mesh* Create(const std::string& name, const MeshData& meshData, Shader* shader);
@@ -26,9 +27,9 @@ public:
 
     struct VertexBuffer {
         GLuint id;
-        GLint location;     // layout location в шейдере
-        GLint size;         // кол-во компонентов (3 для vec3)
-        GLenum type;        // GL_FLOAT, GL_INT и т.п.
+        GLint location;
+        GLint size;
+        GLenum type;
         GLboolean normalized;
         GLsizei stride;
         size_t offset;

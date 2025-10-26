@@ -12,5 +12,6 @@ target_link_libraries(
   ${target}
   PRIVATE
 	lib-manager
+	lib-scene
 	imgui
 )

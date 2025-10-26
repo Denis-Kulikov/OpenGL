@@ -1,12 +1,7 @@
 #include <object/component/component.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
-
-std::string printVec3(const glm::vec3& v);
-glm::vec3 quatToEuler(const glm::quat& q);
-
-extern bool fIsInit;
-
+#include <scene/shadow/shadow_map.hpp>
 
 Component::Component(RigidTransform *transform)
     : localTransform(transform), globalTransform(transform)
@@ -62,10 +57,18 @@ void Component::UpdateMatrixTree(const glm::mat4x4& parentTR, const glm::mat4x4&
     }
 }
 
+void Component::Render() const {}
+void Component::RenderShadowPass(const glm::mat4& shadowProj, ShadowMapType type) const {}
 void Component::RenderTree() const {
     Render();
     for (const Component* child : children) {
         child->RenderTree();
+    }
+}
+void Component::RenderTreeShadowPass(const glm::mat4& shadowProj, ShadowMapType type) const {
+    RenderShadowPass(shadowProj, type);
+    for (const Component* child : children) {
+        child->RenderTreeShadowPass(shadowProj, type);
     }
 }
 

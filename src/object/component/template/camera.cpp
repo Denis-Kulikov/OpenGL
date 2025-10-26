@@ -1,1 +1,1 @@
-// #include <object/component/template/camera.hpp>
+#include <object/component/template/camera.hpp>

@@ -3,10 +3,8 @@
 
 void BufferManager::Init() {
     CreateBuffer("Matrices", BufferType::Uniform, BufferBinding::Matrices, sizeof(MatricesUBO));
-    CreateBuffer("Lights", BufferType::Storage, BufferBinding::Lights, sizeof(LightsSSBO));
+    CreateBuffer("Lights", BufferType::Storage, BufferBinding::Lights, sizeof(SceneLighting::LightsSSBO));
     CreateBuffer("BonesData", BufferType::Storage, BufferBinding::BonesData, sizeof(BonesDataSSBO));
-
-    UpdateLightsSSBO();
 }
 
 void BufferManager::CreateBuffer(const std::string& name, BufferType type, BufferBinding binding, GLsizeiptr size) {
@@ -36,12 +34,8 @@ void BufferManager::Update() {
     ));
 }
 
-void BufferManager::UpdateLightsSSBO() {
-    std::array<PointLight, 128> pl;
-    std::array<DirectionalLight, 16> dl;
-    pl[0] = PointLight(glm::vec4(0.0f), glm::vec4(1.0f, 1.0f, 1.0f, 0.5f), 100.0f);
-    dl[0] = DirectionalLight(glm::vec4(0.0f, -1.0f, 0.0f, 0.0f), glm::vec3(1.0f), 0.5f);
-    Update(BufferBinding::Lights, LightsSSBO(1, 0, 0, pl, dl));
+void BufferManager::UpdateLightsSSBO(const SceneLighting& lighting) {
+    Update(BufferBinding::Lights, lighting.DataSSBO);
 }
 
 void BufferManager::UpdateBonesDataSSBO(const std::vector<glm::mat4>& vec) {

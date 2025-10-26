@@ -5,7 +5,7 @@
 #include <managers/window/window.hpp> 
 #include <managers/window/imgui.hpp> 
 
-#include <object/scene.hpp>
+#include <scene/scene.hpp>
 // #include <entities/templates/decor/grass.hpp>
 #include <entities/templates/decor/stone_floor.hpp>
 // #include <entities/templates/decor/brick_sphere.hpp>
@@ -67,6 +67,30 @@ glm::vec3 quatToEuler(const glm::quat& q) {
     return glm::degrees(euler);
 }
 
+
+void Callback(Scene *scene) {
+    TimeManager::Update();
+    BulletManager::StepSimulation(TimeManager::GetDeltaTime());
+    RenderManager::UpdateCamera();
+    RenderManager::pipeline.UpdateView();
+    RenderManager::pipeline.UpdatePV();
+    RenderManager::bufferManager.Update();
+    RenderManager::pipeline.drawSkybox(*scene->skybox);
+    GlobalState::GetPlayer()->MoveForward();
+
+    for (auto &it : scene->actors) {
+        if (it->rootComponent) {
+            it->rootComponent->UpdateTree(TimeManager::GetDeltaTime());
+        }
+    }
+
+    for (auto &it : scene->actors) {
+        it->Render();
+    }
+
+    scene->shadow.ShadowPass(scene);
+}
+
 Scene *createScene()
 {
     Ghost::Initialize();
@@ -80,17 +104,29 @@ Scene *createScene()
     auto *scene = new Scene();
 
     Actor *character = new Ghost();
-    character->Teleport(glm::vec3(0, 2, 0));
+    // character->Teleport(glm::vec3(0, 2, 0));
     scene->pushObject(character);
 
     auto female = new Female();
     female->SetRotation(glm::vec3(0, 0, 0));
-    female->Teleport(glm::vec3(-8, 0.0, 8.0));
+    female->Teleport(glm::vec3(4, 0.0, 3.0));
     female->SetScale(glm::vec3(0.06));
     scene->pushObject(female);
 
+    auto female2 = new Female();
+    female2->SetRotation(glm::vec3(0, 0, 0));
+    female2->Teleport(glm::vec3(0, 5.0, 0.0));
+    female2->SetScale(glm::vec3(0.06));
+    scene->pushObject(female2);
+
+    auto female3 = new Female();
+    female3->SetRotation(glm::vec3(0, 0, 0));
+    female3->Teleport(glm::vec3(-5, 0.0, 0.0));
+    female3->SetScale(glm::vec3(0.06));
+    scene->pushObject(female3);
+
     auto stoneFloor = new StoneFloor();
-    stoneFloor->Teleport(glm::vec3(-3, 0.0, 4.0));
+    stoneFloor->Teleport(glm::vec3(0, -0.5, 0.0));
     scene->pushObject(stoneFloor);
 
     // float f = 0;
@@ -121,34 +157,16 @@ Scene *createScene()
     return scene;
 }
 
-void Callback(Scene *scene) {
-    TimeManager::Update();
-    BulletManager::StepSimulation(TimeManager::GetDeltaTime());
-    RenderManager::UpdateCamera();
-    RenderManager::pipeline.UpdateView();
-    RenderManager::pipeline.UpdatePV();
-    RenderManager::bufferManager.Update();
-    RenderManager::pipeline.drawSkybox(*scene->skybox);
-    GlobalState::GetPlayer()->MoveForward();
-
-    for (auto &it : scene->actors) {
-        if (it->rootComponent) {
-            it->rootComponent->UpdateTree(TimeManager::GetDeltaTime());
-        }
-        it->Render();
-    }
-}
-
 int main(int argc, char** argv)
 {
     SetConsoleOutputCP(CP_UTF8);
     SetConsoleCP(CP_UTF8);
     std::locale::global(std::locale("en_US.UTF-8"));
 
-    const GLfloat width = 1980, height = 1024;
+    const GLfloat width = 1024, height = 1024;
 
     WindowManager::Initialize(width, height);
-    RenderManager::Initialize(70.0f, width, height, 0.1f, 3000.0f);
+    RenderManager::Initialize(90.0f, width, height, 0.1f, 128.0f);
     BulletManager::Initialize();
     TimeManager::Initialize();
     ImGuiManager::Initialize();

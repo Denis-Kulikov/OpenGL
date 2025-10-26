@@ -31,10 +31,11 @@ StoneFloor::~StoneFloor() {}
 void StoneFloor::Initialize()
 {
     StoneFloor::originalName = "StoneFloor";
-    auto shader = Shader::Create("sprite", "shaders/sprite_fs.glsl", "shaders/mesh_vs.glsl");
+    // auto shader = Shader::Create("sprite", "shaders/sprite_fs.glsl", "shaders/mesh_vs.glsl");
+    auto shader_mesh = Shader::Create("mesh", "shaders/forward/mesh_pbr_fs.glsl", "shaders/forward/mesh_vs.glsl");
     auto texture = Texture::Create("floor", "assets/img/floor.jpg");
     MeshData& mDatal = RenderManager::primitives.sprite;
-    auto m = Mesh::Create("stone_floor", mDatal, shader);
+    auto m = Mesh::Create("stone_floor", mDatal, shader_mesh);
     m->m_Entries.begin()->material.textureUnits.push_back({texture, TextureUnit::DIFFUSE});
 }
 

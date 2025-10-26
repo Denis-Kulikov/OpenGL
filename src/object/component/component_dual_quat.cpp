@@ -10,7 +10,9 @@ extern bool fIsInit;
 
 ComponentDualQuat::ComponentDualQuat(TransformDualQuat *transform)
     : localTransform(transform), globalTransform(new TransformDualQuat()) 
-{}
+{
+    castsShadow = false;
+}
 
 ComponentDualQuat::~ComponentDualQuat() {
     if (globalTransform != localTransform)

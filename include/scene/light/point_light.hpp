@@ -2,6 +2,8 @@
 #include <glm/glm.hpp>
 
 struct PointLight {
+    #define POINT_LIGHT_NUM 128
+
     PointLight(const glm::vec4 position, const glm::vec4& color, const float radius) 
         : position(position), color(color), radius(radius)
     {}

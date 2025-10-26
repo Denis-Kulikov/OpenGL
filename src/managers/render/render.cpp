@@ -15,6 +15,7 @@ void RenderManager::Initialize(GLfloat FOV, GLfloat Width, GLfloat Height, GLflo
 
     initializePrimitive();
     Texture::Create("white", "assets/img/white.png");
+    Shader::Create("ShadowMap", "shaders/shadow_map/shadow_map_fs.glsl", "shaders/shadow_map/shadow_map_vs.glsl");
 
     bufferManager.Init();
 }

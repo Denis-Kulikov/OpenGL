@@ -18,6 +18,18 @@ void Actor::Render() const {
     }
 }
 
+void Actor::RenderShadowPass(const glm::mat4& shadowProj, ShadowMapType type) const {
+    if (rootComponent != nullptr) {
+        rootComponent->UpdateMatrixTree();
+        rootComponent->RenderTreeShadowPass(shadowProj, type);
+    }
+
+    if (rootDualQuat != nullptr) {
+        rootDualQuat->UpdateQuats();
+        rootDualQuat->RenderTree();
+    }
+}
+
 void Actor::SetName(const std::string& newName) {
     name = newName;
 }

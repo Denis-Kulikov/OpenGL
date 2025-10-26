@@ -8,6 +8,7 @@ public:
     static void Initialize(int Width, int Height);
     static void Dispose();
 
+    static void BindFrameBuffer();
     static void SwapBuffer();
     static void MouseCB(GLFWwindow* window, double xpos, double ypos);
     static void KeyboardCB(GLFWwindow* window, int key, int scancode, int action, int mods);

@@ -24,8 +24,9 @@ Mesh::Mesh(const MeshData& meshData, Shader* shader)
     // AddAttribute(meshData.InstanceID.data(), meshData.InstanceID.size() * sizeof(float), "aInstanceID", 1);
     // AddAttribute(meshData.InstanceMatrix.data(), meshData.InstanceMatrix.size() * sizeof(glm::mat4), "aInstanceMatrix", 16);
 
+
     for (auto& m : m_Entries) {
-        m.material.LinkTextureUnits(shader);
+        GLuint unitIndex = m.material.LinkTextureUnits(shader);
     }
 
     glBindVertexArray(0);	
@@ -141,9 +142,13 @@ void Mesh::AddAttribute(const void* data, size_t size, const std::string& attrNa
 
 void Mesh::Bind() const {
     shader->Bind();
-    glBindVertexArray(vao);
+    BindGeometry();
     material.Bind(GetShader());
 }
+void Mesh::BindGeometry() const {
+    glBindVertexArray(vao);
+}
+
 
 Mesh* Mesh::Create(const std::string& name, const MeshData& meshData, Shader* shader) {
     auto [it, inserted] = cache.try_emplace(name, meshData, shader);

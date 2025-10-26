@@ -3,6 +3,8 @@
 #include <object/transform/rigid_transform.hpp>
 #include <object/material/material.hpp>
 
+enum ShadowMapType;
+
 class Actor;
 
 class Component {
@@ -19,8 +21,10 @@ public:
     virtual void Update(float deltaTime) {};
     virtual void UpdateTree(float deltaTime);
 
-    virtual void Render() const {};
+    virtual void Render() const;
+    virtual void RenderShadowPass(const glm::mat4& shadowProj, ShadowMapType type) const;
     void RenderTree() const;
+    void RenderTreeShadowPass(const glm::mat4& shadowProj, ShadowMapType type) const;
 
     glm::vec3 GetPosition() const;
     glm::quat GetRotation() const;
@@ -59,4 +63,5 @@ public:
     TransformableMatrix *localTransform = nullptr;
     glm::vec3 scale;
     glm::vec3 invScale;
+    bool castsShadow = true; 
 };

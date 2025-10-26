@@ -3,7 +3,9 @@
 
 ComponentPhysics::ComponentPhysics(RigidTransform *transform)
     : Component(transform)
-{}
+{
+    castsShadow = false;
+}
 
 // void ComponentPhysics::UpdateMatrix() {
 //     localTransform->UpdateMatrix();
