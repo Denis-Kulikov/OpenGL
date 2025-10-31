@@ -4,6 +4,51 @@
 #include <glm/gtx/transform.hpp>
 
 
+glm::mat4 LookAtLH(glm::vec3 eye, glm::vec3 center, glm::vec3 up) {
+    glm::vec3 F = glm::normalize(center - eye);
+    glm::vec3 R = glm::normalize(glm::cross(F, up));  // ← обратный порядок!
+    glm::vec3 U = glm::cross(R, F);
+
+    glm::mat4 result(1.0f);
+    result[0][0] = R.x; result[1][0] = R.y; result[2][0] = R.z;
+    result[0][1] = U.x; result[1][1] = U.y; result[2][1] = U.z;
+    result[0][2] =-F.x; result[1][2] =-F.y; result[2][2] =-F.z;
+    result[3][0] = -glm::dot(R, eye);
+    result[3][1] = -glm::dot(U, eye);
+    result[3][2] =  glm::dot(F, eye); // обратный знак
+
+    return result;
+}
+
+glm::mat4 PerspectiveLH(float fovY, float aspect, float near, float far) {
+    float f = 1.0f / tan(fovY / 2.0f);
+    glm::mat4 result(0.0f);
+
+    result[0][0] = f / aspect;
+    result[1][1] = f;
+    result[2][2] = far / (far - near);
+    result[2][3] = 1.0f;
+    result[3][2] = -(near * far) / (far - near);
+
+    return result;
+}
+
+glm::mat4 OrthoLH(float left, float right, float bottom, float top, float near, float far)
+{
+    glm::mat4 result(1.0f);
+
+    result[0][0] = 2.0f / (right - left);
+    result[1][1] = 2.0f / (top - bottom);
+    result[2][2] = 1.0f / (far - near); // отличие от RH: нет инверсии оси Z
+
+    result[3][0] = -(right + left) / (right - left);
+    result[3][1] = -(top + bottom) / (top - bottom);
+    result[3][2] = -near / (far - near); // отличие от RH
+
+    return result;
+}
+
+
 Pipeline::Pipeline() {}
 
 void Pipeline::drawSkybox(Actor &skybox) {
@@ -44,35 +89,6 @@ void Pipeline::UpdateProj(bool perspective) {
         UpdatePerspective();
     else
         UpdateOrthographic();
-}
-
-glm::mat4 LookAtLH(glm::vec3 eye, glm::vec3 center, glm::vec3 up) {
-    glm::vec3 F = glm::normalize(center - eye);
-    glm::vec3 R = glm::normalize(glm::cross(F, up));  // ← обратный порядок!
-    glm::vec3 U = glm::cross(R, F);
-
-    glm::mat4 result(1.0f);
-    result[0][0] = R.x; result[1][0] = R.y; result[2][0] = R.z;
-    result[0][1] = U.x; result[1][1] = U.y; result[2][1] = U.z;
-    result[0][2] =-F.x; result[1][2] =-F.y; result[2][2] =-F.z;
-    result[3][0] = -glm::dot(R, eye);
-    result[3][1] = -glm::dot(U, eye);
-    result[3][2] =  glm::dot(F, eye); // обратный знак
-
-    return result;
-}
-
-glm::mat4 PerspectiveLH(float fovY, float aspect, float near, float far) {
-    float f = 1.0f / tan(fovY / 2.0f);
-    glm::mat4 result(0.0f);
-
-    result[0][0] = f / aspect;
-    result[1][1] = f;
-    result[2][2] = far / (far - near);
-    result[2][3] = 1.0f;
-    result[3][2] = -(near * far) / (far - near);
-
-    return result;
 }
 
 void Pipeline::UpdateView() {

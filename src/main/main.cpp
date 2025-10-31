@@ -7,6 +7,7 @@
 
 #include <scene/scene.hpp>
 // #include <entities/templates/decor/grass.hpp>
+#include <entities/templates/decor/house.hpp>
 #include <entities/templates/decor/stone_floor.hpp>
 // #include <entities/templates/decor/brick_sphere.hpp>
 #include <entities/templates/decor/wooden_box.hpp>
@@ -84,24 +85,28 @@ void Callback(Scene *scene) {
         }
     }
 
+    scene->shadow.ShadowPass(scene);
+
     for (auto &it : scene->actors) {
+        // std::cout << "Name: " << it->GetName() << std::endl;
         it->Render();
     }
-
-    scene->shadow.ShadowPass(scene);
 }
 
 Scene *createScene()
 {
+    auto *scene = new Scene();
+
     Ghost::Initialize();
     Skybox::Initialize();
     StoneFloor::Initialize();
-    // WoodenBox::Initialize();
+    WoodenBox::Initialize();
+    House::Initialize();
     Female::Initialize();
     // DualQuatSkining::Initialize();
     MatrixSkining::Initialize();
 
-    auto *scene = new Scene();
+    scene->skybox = new Skybox();
 
     Actor *character = new Ghost();
     // character->Teleport(glm::vec3(0, 2, 0));
@@ -126,31 +131,39 @@ Scene *createScene()
     scene->pushObject(female3);
 
     auto stoneFloor = new StoneFloor();
-    stoneFloor->Teleport(glm::vec3(0, -0.5, 0.0));
+    stoneFloor->Teleport(glm::vec3(0, -0.5, -20.0));
     scene->pushObject(stoneFloor);
 
     // float f = 0;
-    // for (int i = 0; i < 3; i++) {
+    // for (int i = 0; i < 1; i++) {
     //     auto wBox = new WoodenBox();
-    //     wBox->Teleport(glm::vec3(-3, 2.0 + f, 4.0));
+    //     wBox->Teleport(glm::vec3(-3, 2.0 + f, -4.0));
     //     scene->pushObject(wBox);
     //     f += 2.5;
     // }
 
-    auto ms = new MatrixSkining();
-    ms->SetRotation(glm::vec3(-90, 0, 0));
-    ms->Teleport(glm::vec3(4, 0.0, 8.0));
-    ms->SetScale(glm::vec3(0.05));
-    // ms->SetScale(glm::vec3(50));
-    scene->pushObject(ms);
+        // auto wBox = new WoodenBox();
+        // wBox->Teleport(glm::vec3(0.0f, 8.0f, 1.0f));
+        // scene->pushObject(wBox);
+
+    // auto house = new House();
+    // house->Teleport(glm::vec3(0.0f, 8.0f, 1.0f));
+    // house->SetScale(glm::vec3(20.0f));
+    // scene->pushObject(house);
+
+
+    // auto ms = new MatrixSkining();
+    // ms->SetRotation(glm::vec3(-90, 0, 0));
+    // ms->Teleport(glm::vec3(4, 0.0, 8.0));
+    // ms->SetScale(glm::vec3(0.05));
+    // // ms->SetScale(glm::vec3(50));
+    // scene->pushObject(ms);
 
     // auto dq = new DualQuatSkining();
     // dq->SetRotation(glm::vec3(-90, 0, 0));
     // dq->Teleport(glm::vec3(0, 0.0, 8.0));
     // dq->SetScale(glm::vec3(0.05));
     // scene->pushObject(dq);
-
-    scene->skybox = new Skybox();
 
     GlobalState::SetPlayer(character);
 
@@ -163,7 +176,7 @@ int main(int argc, char** argv)
     SetConsoleCP(CP_UTF8);
     std::locale::global(std::locale("en_US.UTF-8"));
 
-    const GLfloat width = 1024, height = 1024;
+    const GLfloat width = 1600, height = 1024;
 
     WindowManager::Initialize(width, height);
     RenderManager::Initialize(90.0f, width, height, 0.1f, 128.0f);
@@ -171,11 +184,11 @@ int main(int argc, char** argv)
     TimeManager::Initialize();
     ImGuiManager::Initialize();
 
-    Scene *scene(createScene());
+    GlobalState::scene = createScene();
 
     while (GlobalState::fIsAppRunning) {
-        Callback(scene);
-        ImGuiManager::Render(scene);
+        Callback(GlobalState::scene);
+        ImGuiManager::Render(GlobalState::scene);
         
         WindowManager::SwapBuffer();
     }

@@ -1,3 +1,4 @@
+#include <iostream>
 #include <object/mesh/skeleton/animation/skeletal_animation.hpp>
 #include <tiny_gltf.h>
 

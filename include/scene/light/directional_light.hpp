@@ -2,15 +2,16 @@
 #include <glm/glm.hpp>
 
 struct DirectionalLight {
-    DirectionalLight(const glm::vec4& direction, const glm::vec3& color, float intensity)
+    DirectionalLight(const glm::vec3& direction, const glm::vec3& color, float intensity)
         : direction(direction), color(color), intensity(intensity)
     {}
 
     DirectionalLight()
-        : direction(glm::vec4(0)), color(glm::vec3(0)), intensity(0)
+        : direction(glm::vec3(0)), color(glm::vec3(0)), intensity(0)
     {}
 
-    glm::vec4 direction;
+    glm::vec3 direction;
+    float padding1;
     glm::vec3 color;
     float intensity;
 };

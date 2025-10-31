@@ -1,5 +1,6 @@
 #include <object/mesh/skeleton/skeleton.hpp>
 #include <tiny_gltf.h>
+#include <iostream>
 
 void PrintBoneTree(const BoneNode& node, int depth = 0) {
     // Печатаем отступы в зависимости от уровня

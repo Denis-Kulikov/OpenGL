@@ -14,6 +14,9 @@ Texture::Texture(const std::string& path)
 {
     Load(path);
 }
+Texture::Texture(const GLuint textureID, const float scale)
+    : textureID(textureID), scale(scale)
+{}
 Texture::Texture(const aiTexture* texture) 
 {
     Load(texture);
@@ -38,7 +41,10 @@ Texture* Texture::Create(const std::string& name, const std::string& path) {
     auto [it, inserted] = cache.try_emplace(name, path);
     return &it->second;
 }
-
+Texture* Texture::Create(const std::string& name, const GLuint texture, const float textureScale) {
+    auto [it, inserted] = cache.try_emplace(name, texture, textureScale);
+    return &it->second;
+}
 Texture* Texture::Create(const std::string& name, const aiTexture* texture) {
     auto [it, inserted] = cache.try_emplace(name, texture);
     return &it->second;

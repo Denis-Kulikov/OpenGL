@@ -1,12 +1,16 @@
 #pragma once
 #include <functional>
 #define GLM_ENABLE_EXPERIMENTAL
+#include <GL/glew.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/dual_quaternion.hpp>
-#include "shader.hpp"
 #include "texture_unit.hpp"
 #include <variant>
+#include <vector>
+
+class Shader;
+class TextureUnit;
 
 class Material {
 public:
@@ -17,8 +21,10 @@ public:
     >;
 
     void Bind(const Shader* shader) const;
+    void BindShadowPass(const Shader* shader, const glm::mat4& model, const glm::mat4& shadowProj) const;
     void Set(const std::string& name, const MaterialValue& v);
-    GLuint LinkTextureUnits(const Shader* shader);
+    GLuint LinkTextureUnits(GLuint unitIndex, const Shader* shader);
+    GLuint PushTextureUnits(GLuint unitIndex, TextureUnit* unit, const Shader* shader);
 
     static Material* Create(const std::string& name);
     static Material* Find(const std::string &name);

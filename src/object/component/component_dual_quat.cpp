@@ -2,9 +2,6 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
 
-std::string printVec3(const glm::vec3& v);
-glm::vec3 quatToEuler(const glm::quat& q);
-
 extern bool fIsInit;
 
 

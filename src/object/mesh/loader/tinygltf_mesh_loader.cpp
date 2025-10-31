@@ -2,6 +2,10 @@
 #include <object/mesh/loader/tinygltf_mesh_loader.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <tiny_gltf.h>
+#include <object/material/material.hpp>
+#include <object/material/texture.hpp>
+#include <object/material/texture_unit.hpp>
+
 
 void PrintMatrix(const glm::mat4& matrix);
 

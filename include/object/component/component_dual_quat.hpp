@@ -1,6 +1,5 @@
 #pragma once
 #include <object/transform/transform_dual_quat.hpp>
-#include <object/material/material.hpp>
 
 class ComponentDualQuat {
 public:

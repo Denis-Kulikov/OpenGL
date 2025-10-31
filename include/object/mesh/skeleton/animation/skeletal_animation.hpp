@@ -6,8 +6,6 @@
 #include <glm/gtc/quaternion.hpp>
 #include <assimp/scene.h>
 
-#include <iostream>
-
 namespace tinygltf {
     class Model;
     class Animation;

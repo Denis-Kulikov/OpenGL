@@ -42,6 +42,7 @@ void WindowManager::Dispose()
 void WindowManager::BindFrameBuffer() {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glViewport(0, 0, width, height);
+    glClearDepth(1.0f);
 }
 
 void WindowManager::SwapBuffer() {

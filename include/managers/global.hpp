@@ -3,6 +3,8 @@
 #include <object/mesh/loader/assimp_mesh_loader.hpp>
 #include <object/mesh/loader/tinygltf_mesh_loader.hpp>
 
+class Scene;
+
 class GlobalState  
 {
 public:
@@ -11,8 +13,9 @@ public:
     static Actor* GetPlayer();
 
     inline static IMeshLoader* MeshLoader = new AssimpMeshLoader;
-    inline static IMeshLoader* MeshLoaderTiny = new TinygltfMeshLoader;
+    // inline static IMeshLoader* MeshLoaderTiny = new TinygltfMeshLoader;
     inline static Actor* player = nullptr;
+    inline static Scene* scene = nullptr;
     inline static bool fIsAppRunning = true;
     inline static bool fScreenshot = false;
     inline static int ScreenshotCounter = 0;

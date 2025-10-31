@@ -1,4 +1,5 @@
 #include <object/mesh/skeleton/animation/animator.hpp>
+#include <iostream>
 
 void PrintMatrix(const glm::mat4& matrix);
 void PrintMatrix(const glm::mat4x3& matrix);
@@ -21,7 +22,7 @@ void Animator::SetAnimationAny() {
 void Animator::SetAnimation(const std::string& animationName) {
     auto it = skeleton.AnimationMap.find(animationName);
     if (it == skeleton.AnimationMap.end()) {
-        std::cerr << "Animation not found: " << animationName << std::endl;
+        std::cout << "Animation not found: " << animationName << std::endl;
         animation = nullptr;
         return;
     }

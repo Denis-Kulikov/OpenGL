@@ -13,7 +13,7 @@ public:
                    int numDirectionalLights,
                    int numSpotLights,
                    std::array<PointLight, POINT_LIGHT_NUM> pointLights,
-                   std::array<DirectionalLight, 16> dirLights
+                   DirectionalLight& dirLights
         )
         :   numPointLights(numPointLights),
             numDirectionalLights(numDirectionalLights),
@@ -23,13 +23,13 @@ public:
         {}
 
         int numPointLights;
-        int numDirectionalLights;
         int numSpotLights;
+        int numDirectionalLights;
         int padding1;
 
         std::array<PointLight, POINT_LIGHT_NUM> pointLights;
-        std::array<DirectionalLight, 16> dirLights;
         // SpotLight spotLights[32];
+        DirectionalLight dirLights;
     };
 
     void Initialize();

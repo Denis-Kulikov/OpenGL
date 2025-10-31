@@ -1,7 +1,6 @@
 #pragma once
 #include <object/transform/transform.hpp>
 #include <object/transform/rigid_transform.hpp>
-#include <object/material/material.hpp>
 
 enum ShadowMapType;
 

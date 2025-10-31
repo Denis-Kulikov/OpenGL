@@ -3,7 +3,8 @@
 
 void SceneShadow::ShadowPass(const Scene* scene) {
     glm::vec3 position = scene->lighting.DataSSBO.pointLights[0].position;
-    cubeMap.ShadowPass(scene, position);
+    pointLights.ShadowPass(scene, position);
+    directionalLight.ShadowPass(scene, &scene->lighting.DataSSBO.dirLights, glm::vec3(0.0f));
     WindowManager::BindFrameBuffer();
 }
     

@@ -2,6 +2,8 @@
 #include "mesh_data.hpp"
 #include <object/material/texture.hpp>
 
+class Shader;
+
 // Содержит массивы вершинных атрибутов
 // Имеет материал связанный с шейдером и имеющий настроенные параметры
 // В материалах подчастей модели указаны необходимые текстуры
@@ -40,7 +42,7 @@ public:
     std::vector<GLuint> buffers;
     std::vector<VertexBuffer> vbos;
     std::vector<MeshEntry> m_Entries;
-    Material material;
+    std::shared_ptr<Material> material;
     Shader* shader = nullptr;
     
     inline static std::unordered_map<std::string, Mesh> cache;

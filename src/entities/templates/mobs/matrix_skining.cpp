@@ -3,6 +3,7 @@
 #include <object/component/template/mesh.hpp>
 #include <object/transform/transform.hpp>
 #include <managers/global.hpp>
+#include <object/material/shader.hpp>
 
 MatrixSkining::MatrixSkining()
 {
@@ -23,6 +24,7 @@ MatrixSkining::~MatrixSkining() {}
 void MatrixSkining::Initialize()
 {
     MatrixSkining::originalName = "MatrixSkining";
+    std::cout << MatrixSkining::originalName << std::endl;
     // std::string path("assets/model/2B_stay.dae");
     // std::string path("assets/model/female/female.glb");
     // std::string path("assets/model/zhu/zhu.glb");

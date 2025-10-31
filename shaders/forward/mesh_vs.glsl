@@ -11,11 +11,13 @@ layout (std140) uniform Matrices {
 };
 
 uniform mat4 Model;
+uniform mat4 dirLightSpaceMatrix;
 
 out VS_OUT {
     vec3 FragPos;
     vec3 Normal;
     vec2 TexCoord;
+    vec4 FragPosDirLightSpace;
 } vs_out;
 
 void main()
@@ -27,6 +29,8 @@ void main()
     vs_out.Normal = normalize(normalMatrix * aNormal);
 
     vs_out.TexCoord = aTexCoord;
+
+    vs_out.FragPosDirLightSpace = dirLightSpaceMatrix * vec4(vs_out.FragPos, 1.0);
 
     gl_Position = Projection * View * worldPos;
 }

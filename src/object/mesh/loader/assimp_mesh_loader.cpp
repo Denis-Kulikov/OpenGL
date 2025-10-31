@@ -1,4 +1,7 @@
 #include <object/mesh/loader/assimp_mesh_loader.hpp>
+#include <object/material/material.hpp>
+#include <object/material/texture.hpp>
+#include <object/material/texture_unit.hpp>
 
 std::string printVec3(const glm::vec3& v);
 std::string printQuat(const glm::quat& q);
@@ -17,14 +20,10 @@ bool AssimpMeshLoader::LoadMesh(const std::string& fileName, MeshData& mesh) {
 
     return false;
 }
-#include <assimp/version.h>
 bool AssimpMeshLoader::LoadMesh(const std::string& fileName, SkeletalMeshData& mesh) {
     Assimp::Importer Importer;
     const aiScene* m_pScene = Importer.ReadFile(fileName.c_str(),
     aiProcess_Triangulate | aiProcess_GenSmoothNormals| aiProcess_FlipUVs);
-
-std::cout << "Assimp version: " << aiGetVersionMajor() << "." 
-          << aiGetVersionMinor() << "." << aiGetVersionRevision() << std::endl;
 
     if (m_pScene) {
         InitFromScene(mesh, m_pScene, fileName);
@@ -169,7 +168,8 @@ std::wstring utf8_to_wstring(const std::string& str) {
 }
 
 bool AssimpMeshLoader::InitMaterials(MeshData& mesh, std::vector<int>& MaterialIndex, const aiScene* scene, const std::string& fileName) {
-    std::vector<Material> Materials(scene->mNumMaterials);
+    std::vector<std::shared_ptr<Material>> Materials;
+    Materials.reserve(scene->mNumMaterials);
     aiString path;
     std::string texPath;
 
@@ -188,6 +188,7 @@ bool AssimpMeshLoader::InitMaterials(MeshData& mesh, std::vector<int>& MaterialI
     std::cout << "mNumMaterials: " << scene->mNumMaterials << std::endl;
     std::cout << "scene->mNumTextures: " << scene->mNumTextures << std::endl;
     for (unsigned int i = 0; i < scene->mNumMaterials; ++i) {
+        Materials.push_back(std::make_shared<Material>());
         const aiMaterial* mat = scene->mMaterials[i];
 
         if (mat->GetTextureCount(aiTextureType_DIFFUSE) > 0) {
@@ -195,7 +196,7 @@ bool AssimpMeshLoader::InitMaterials(MeshData& mesh, std::vector<int>& MaterialI
                 texPath = path.C_Str();
                 std::cout << "Texture Path: " << texPath << "\n" << std::endl;
                 Texture* t = createTexture();
-                Materials[i].textureUnits.emplace_back(t, TextureUnit::DIFFUSE);
+                Materials[i]->textureUnits.emplace_back(t, TextureUnit::ALBEDO);
             }
         }
 
@@ -204,7 +205,7 @@ bool AssimpMeshLoader::InitMaterials(MeshData& mesh, std::vector<int>& MaterialI
                 texPath = path.C_Str();
                 std::cout << "Texture Path (EMISSIVE): " << texPath << "\n" << std::endl;
                 Texture* t = createTexture();
-                Materials[i].textureUnits.emplace_back(t, TextureUnit::DIFFUSE);
+                Materials[i]->textureUnits.emplace_back(t, TextureUnit::ALBEDO);
             }
         }
 

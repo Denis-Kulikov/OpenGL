@@ -127,7 +127,7 @@ void Shader::RegisterUniforms() {
                 uniformName = uniformName.substr(0, uniformName.size() - 3);
             }
         }
-        // std::cout << "Uniform: " << uniformName << " size: " << size << std::endl;
+        std::cout << "Uniform: " << uniformName << " size: " << size << std::endl;
         GLint loc = glGetUniformLocation(id, uniformName.c_str());
         uniforms[uniformName] = {loc, size, type};
     }

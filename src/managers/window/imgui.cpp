@@ -4,6 +4,7 @@
 #include <managers/time.hpp> 
 #include <managers/window/window.hpp> 
 #include <GLFW/glfw3.h>
+#include <object/material/shader.hpp>
 
 void ImGuiManager::Initialize(const std::string& version_GLSL) {
     IMGUI_CHECKVERSION();
@@ -84,13 +85,13 @@ void ImGuiManager::DrawInspector(Scene* scene) {
 
     float v = 8.0f;
 
-    if (ImGui::DragFloat3("Position", &pos.x, v * 0.1f))
+    if (ImGui::DragFloat3("Position", &pos.x, v * 1.6f))
         comp->SetPosition(pos);
     if (ImGui::DragFloat3("Scale", &scl.x, v * 0.1f))
         comp->SetScale(scl);
 
     glm::vec3 euler = glm::degrees(glm::eulerAngles(rot));
-    if (ImGui::DragFloat3("Rotation", &euler.x, v * 1.0f)) {
+    if (ImGui::DragFloat3("Rotation", &euler.x, v * 4.0f)) {
         glm::quat newRot = glm::quat(glm::radians(euler));
         comp->SetRotation(newRot);
     }
@@ -131,7 +132,7 @@ void ShowResourceMapKeys(const char* title, std::unordered_map<std::string, Text
 
             ImGui::Image(
                 reinterpret_cast<void*>((intptr_t)tex.GetID()),
-                ImVec2(128, 128),
+                ImVec2(192, 192),
                 ImVec2(0, 1),
                 ImVec2(1, 0)
             );

@@ -3,6 +3,7 @@ set(target lib-entities)
 add_library(${target} STATIC
 	actor.cpp
 	templates/decor/skybox.cpp
+	templates/decor/house.cpp
 	templates/decor/stone_floor.cpp
 	templates/decor/wooden_box.cpp
 	templates/mobs/female.cpp

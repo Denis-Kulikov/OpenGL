@@ -1,6 +1,8 @@
 #pragma once
-#include "cube_map.hpp"
+#include "shadow_directional_light.hpp"
+#include "shadow_point_light.hpp"
 #include <managers/window/window.hpp>
+#include <array>
 
 class Scene;
 
@@ -8,5 +10,6 @@ class SceneShadow {
 public:
     void ShadowPass(const Scene* scene);
     
-    ShadowCubeMap cubeMap;
+    ShadowPointLight pointLights;
+    ShadowDirectionalLight directionalLight;
 };

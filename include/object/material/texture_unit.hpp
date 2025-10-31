@@ -1,23 +1,33 @@
 #pragma once
-#include "texture.hpp"
+#include <GL/glew.h>
+#include <string>
+#include <unordered_map>
+
+class Texture;
 
 class TextureUnit {
 public:
+    static const GLuint NotActivated = 0xFFFF;
+
     enum TextureType {
-        DIFFUSE,
+        ALBEDO,
         BASE_COLOR,
         SPECULAR,
         NORMALS,
         HEIGHT,
-        EMISSIVE
+        EMISSIVE,
+        SHADOW_MAP_CUBE,
+        SHADOW_MAP_DIR
     };
 
     inline static const std::unordered_map<TextureType, std::string> Types = {
-        { DIFFUSE,  "diffuseMap"  },
+        { ALBEDO,  "albedoMap"  },
         { SPECULAR, "specularMap" },
         { NORMALS,  "normalMap"   },
         { HEIGHT,   "heightMap"   },
-        { EMISSIVE, "emissiveMap" }
+        { EMISSIVE, "emissiveMap" },
+        { SHADOW_MAP_CUBE, "shadowCubeMap" },
+        { SHADOW_MAP_DIR, "shadowMapDirLight" }
     };
 
     TextureUnit(Texture* texture, TextureType type);
@@ -25,5 +35,5 @@ public:
 
     Texture* texture;
     TextureType type;
-    GLuint unit;
+    GLuint unit = NotActivated;
 };

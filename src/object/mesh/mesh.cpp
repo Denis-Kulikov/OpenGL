@@ -1,9 +1,12 @@
 #include <object/mesh/mesh.hpp>
 #include <managers/global.hpp>
+#include <object/material/shader.hpp>
+#include <object/material/material.hpp>
+#include <object/material/texture_unit.hpp>
 
 
 Mesh::Mesh(const MeshData& meshData, Shader* shader)
-    : m_Entries(meshData.m_Entries), shader(shader)
+    : shader(shader)
 {
     InitBuffers();
 
@@ -11,8 +14,6 @@ Mesh::Mesh(const MeshData& meshData, Shader* shader)
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(meshData.Indices[0]) * meshData.Indices.size(), meshData.Indices.data(), GL_STATIC_DRAW);
-
-    LinkUniforms();
 
     // Добавление массивов вершинных атрибутов
     AddAttribute(meshData.Positions.data(), meshData.Positions.size() * sizeof(glm::vec3), "aPosition", 3);
@@ -24,15 +25,53 @@ Mesh::Mesh(const MeshData& meshData, Shader* shader)
     // AddAttribute(meshData.InstanceID.data(), meshData.InstanceID.size() * sizeof(float), "aInstanceID", 1);
     // AddAttribute(meshData.InstanceMatrix.data(), meshData.InstanceMatrix.size() * sizeof(glm::mat4), "aInstanceMatrix", 16);
 
+    material = std::make_shared<Material>();
+    m_Entries.reserve(meshData.m_Entries.size());
+    for (const auto& m : meshData.m_Entries) {
+        m_Entries.emplace_back(m.NumIndices, m.BaseVertex, m.BaseIndex, m.material.get());
+    }
+    LinkUniforms();
+
+    GLuint unitIndex = 0;
+    Texture* tex = Texture::Find("ShadowMapPoint");
+    auto texName = TextureUnit::Types.at(TextureUnit::TextureType::SHADOW_MAP_CUBE);
+
+    auto loc = shader->FindUniform(texName);
+    if (loc == nullptr) {
+        std::cout << "Material::LinkTextureUnits(...): not found textre location \"" << texName << "\"" << std::endl;
+    } else {
+        TextureUnit tUnit(tex, TextureUnit::TextureType::SHADOW_MAP_CUBE);
+        tUnit.unit = unitIndex;
+        material->textureUnits.push_back(tUnit);
+        material->Set(texName, unitIndex);
+        ++unitIndex;
+    }
+
+    
+    tex = Texture::Find("ShadowMapDirLight");
+    texName = TextureUnit::Types.at(TextureUnit::TextureType::SHADOW_MAP_DIR);
+
+    loc = shader->FindUniform(texName);
+    if (loc == nullptr) {
+        std::cout << "Material::LinkTextureUnits(...): not found textre location \"" << texName << "\"" << std::endl;
+    } else {
+        TextureUnit tUnit(tex, TextureUnit::TextureType::SHADOW_MAP_DIR);
+        tUnit.unit = unitIndex;
+        material->textureUnits.push_back(tUnit);
+        material->Set(texName, unitIndex);
+        ++unitIndex;
+    }
 
     for (auto& m : m_Entries) {
-        GLuint unitIndex = m.material.LinkTextureUnits(shader);
+        m.material->LinkTextureUnits(unitIndex, shader);
     }
 
     glBindVertexArray(0);	
 }
 
 void Mesh::LinkUniforms() {
+    auto& values = material->values;
+
     for (const auto& [name, info] : shader->uniforms)
     {
         std::string uniformName = name;
@@ -46,38 +85,38 @@ void Mesh::LinkUniforms() {
         {
             case GL_INT:
             case GL_BOOL:
-                material.values[uniformName] = int(0);
+                values[uniformName] = int(0);
                 break;
 
             case GL_FLOAT:
-                material.values[uniformName] = float(0.0f);
+                values[uniformName] = float(0.0f);
                 break;
 
             case GL_SAMPLER_2D:
             case GL_SAMPLER_CUBE:
-                material.values[uniformName] = GLuint(0); // texture unit index
+                values[uniformName] = GLuint(0); // texture unit index
                 break;
 
             case GL_FLOAT_VEC2:
-                material.values[uniformName] = glm::vec2(0.0f);
+                values[uniformName] = glm::vec2(0.0f);
                 break;
 
             case GL_FLOAT_VEC3:
-                material.values[uniformName] = glm::vec3(0.0f);
+                values[uniformName] = glm::vec3(0.0f);
                 break;
 
             case GL_FLOAT_VEC4:
                 if (uniformName.size() >= 2 && uniformName.substr(0, 2) == "DQ") { // dualquat
                     if (info.size > 2) {
-                        material.values[uniformName] = std::vector<glm::dualquat>(info.size, glm::dualquat({1, 0, 0, 0}, {0, 0, 0, 0}));
+                        values[uniformName] = std::vector<glm::dualquat>(info.size, glm::dualquat({1, 0, 0, 0}, {0, 0, 0, 0}));
                     } else {
-                        material.values[uniformName] = glm::dualquat({1, 0, 0, 0}, {0, 0, 0, 0});
+                        values[uniformName] = glm::dualquat({1, 0, 0, 0}, {0, 0, 0, 0});
                     }
                 } else { // vec4
                     if (info.size > 1) {
-                        material.values[uniformName] = std::vector<glm::vec4>(info.size, glm::vec4(0.0f));
+                        values[uniformName] = std::vector<glm::vec4>(info.size, glm::vec4(0.0f));
                     } else {
-                        material.values[uniformName] = glm::vec4(0.0f);
+                        values[uniformName] = glm::vec4(0.0f);
                     }
                 }
 
@@ -86,9 +125,9 @@ void Mesh::LinkUniforms() {
 
             case GL_FLOAT_MAT4:
                 if (info.size > 1) {
-                    material.values[uniformName] = std::vector<glm::mat4>(info.size, glm::mat4(1.0f));
+                    values[uniformName] = std::vector<glm::mat4>(info.size, glm::mat4(1.0f));
                 } else {
-                    material.values[uniformName] = glm::mat4(1.0f);
+                    values[uniformName] = glm::mat4(1.0f);
                 }
                 break;
 
@@ -143,7 +182,7 @@ void Mesh::AddAttribute(const void* data, size_t size, const std::string& attrNa
 void Mesh::Bind() const {
     shader->Bind();
     BindGeometry();
-    material.Bind(GetShader());
+    material->Bind(GetShader());
 }
 void Mesh::BindGeometry() const {
     glBindVertexArray(vao);

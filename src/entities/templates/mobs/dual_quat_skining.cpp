@@ -2,6 +2,7 @@
 #include <object/component/template/skeletal_dq_mesh.hpp>
 #include <object/transform/transform.hpp>
 #include <managers/global.hpp>
+#include <object/material/shader.hpp>
 
 
 DualQuatSkining::DualQuatSkining()

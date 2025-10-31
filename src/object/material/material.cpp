@@ -1,4 +1,7 @@
 #include <object/material/material.hpp>
+#include <object/material/shader.hpp>
+#include <object/material/texture_unit.hpp>
+#include <object/material/texture.hpp>
 
 
 void Material::Bind(const Shader* shader) const {
@@ -16,24 +19,56 @@ void Material::Bind(const Shader* shader) const {
     }
 
     for (const auto& u : textureUnits) {
-        u.Bind();
+        // if (textureUnits.size() > 1) {
+        //     std::cout << "texture id: " <<  u.texture->GetID() << " | unit: " << u.unit << std::endl;
+        // }
+        // std::cout << "texture id: " <<  u.texture->GetID() << " | unit: " << u.unit << std::endl;
+
+        if (u.type == TextureUnit::TextureType::SHADOW_MAP_CUBE) {
+            glActiveTexture(GL_TEXTURE0 + u.unit);
+            glBindTexture(GL_TEXTURE_CUBE_MAP, u.texture->GetID());
+        } else {
+            u.Bind();
+        }
     }
+            // std::cout << std::endl;
+
+        // if (textureUnits.size() > 1) {
+        //     std::cout << std::endl;
+        // }
+}
+
+#include <managers/global.hpp> 
+#include <scene/scene.hpp>
+void Material::BindShadowPass(const Shader* shader, const glm::mat4& model, const glm::mat4& shadowProj) const {
+    auto mLoc = shader->FindUniform("Model")->location;
+    auto pLoc = shader->FindUniform("ShadowProj")->location;
+    auto lLoc = shader->FindUniform("lightPos")->location;
+    auto fLoc = shader->FindUniform("farPlane")->location;
+
+    UploadUniform(mLoc, model);
+    UploadUniform(pLoc, shadowProj);
+    UploadUniform(lLoc, GlobalState::scene->lighting.DataSSBO.pointLights[0].position);
+    UploadUniform(fLoc, GlobalState::scene->shadow.pointLights.GetFar());
 }
 
 void Material::Set(const std::string& name, const MaterialValue& v) {
     values[name] = v;
 }
 
-GLuint Material::LinkTextureUnits(const Shader* shader) {
-    GLuint unitIndex = 0;
+GLuint Material::LinkTextureUnits(GLuint unitIndex, const Shader* shader) {
     for (auto& t : textureUnits) {
+        if (t.unit != TextureUnit::NotActivated) continue;
+
         const auto texName = TextureUnit::Types.find(t.type);
         if (texName == TextureUnit::Types.end())
-            return false;
+            return unitIndex;
 
-        const auto loc = shader->uniforms.find(texName->second);
-        if (loc == shader->uniforms.end())
-            return false;
+        const auto loc = shader->FindUniform(texName->second);
+        if (loc == nullptr) {
+            std::cout << "Material::LinkTextureUnits(...): not found textre location \"" << texName->second << "\"" << std::endl;
+            return unitIndex;
+        }
 
         t.unit = unitIndex;
         Set(texName->second, unitIndex);
@@ -43,6 +78,29 @@ GLuint Material::LinkTextureUnits(const Shader* shader) {
 
     return unitIndex;
 }
+
+GLuint Material::PushTextureUnits(GLuint unitIndex, TextureUnit* unit, const Shader* shader) {
+    if (unit->unit != TextureUnit::NotActivated) return unitIndex;
+
+    const auto texName = TextureUnit::Types.find(unit->type);
+    if (texName == TextureUnit::Types.end())
+        return unitIndex;
+
+    const auto loc = shader->FindUniform(texName->second);
+    if (loc == nullptr) {
+        std::cout << "Material::LinkTextureUnits(...): not found textre location \"" << texName->second << "\"" << std::endl;
+        return unitIndex;
+    }
+
+    unit->unit = unitIndex;
+    Set(texName->second, unitIndex);
+    textureUnits.push_back(*unit);
+
+    ++unitIndex;
+
+    return unitIndex;
+}
+
 
 void Material::UploadUniform(const GLint loc, const int v) const { glUniform1i(loc, v); }
 void Material::UploadUniform(const GLint loc, const float v) const { glUniform1f(loc, v); }

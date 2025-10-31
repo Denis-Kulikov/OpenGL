@@ -4,17 +4,19 @@
 struct PointLight {
     #define POINT_LIGHT_NUM 128
 
-    PointLight(const glm::vec4 position, const glm::vec4& color, const float radius) 
-        : position(position), color(color), radius(radius)
+    PointLight(const glm::vec3 position, float radius, const glm::vec3& color, float intensity, int shadowIndex) 
+        : position(position), radius(radius), color(color), intensity(intensity), shadowIndex(shadowIndex)
     {}
 
     PointLight()
-        : PointLight(glm::vec4(0.0f), glm::vec4(0.0f), 0.0f)
+        : PointLight(glm::vec3(0.0f), 0.0f, glm::vec3(0.0f), 0.0f, -1)
     {}
 
-    glm::vec4 position;
-    glm::vec4 color;
+    glm::vec3 position;
     float radius;
+    glm::vec3 color;
+    float intensity;
+    int shadowIndex;
     float padding1;
     float padding2;
     float padding3;

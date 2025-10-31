@@ -12,6 +12,7 @@ namespace tinygltf {
 class Texture {
 public:
     Texture(const std::string& path);
+    Texture(const GLuint textureID, const float scale);
     Texture(const aiTexture* texture);
     Texture(const tinygltf::Image& texture);
 
@@ -20,6 +21,7 @@ public:
     float GetScale() const;
 
     static Texture* Create(const std::string& name, const std::string& path);
+    static Texture* Create(const std::string& name, const GLuint texture, const float textureScale);
     static Texture* Create(const std::string& name, const aiTexture* texture);
     static Texture* Create(const std::string& name, const tinygltf::Image& texture);
     static Texture* Find(const std::string& name);

@@ -1,5 +1,6 @@
 #include <managers/render/render.hpp> 
 #include <managers/window/window.hpp> 
+#include <object/material/shader.hpp>
 
 void RenderManager::Initialize(GLfloat FOV, GLfloat Width, GLfloat Height, GLfloat zNear, GLfloat zFar)
 {
