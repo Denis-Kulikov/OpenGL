@@ -1,4 +1,6 @@
 #include <managers/render/render.hpp>
+#include <managers/window/window_manager.hpp>
+#include <managers/window/window.hpp>
 
 
 void BufferManager::Init() {
@@ -28,9 +30,9 @@ void BufferManager::CreateBuffer(const std::string& name, BufferType type, Buffe
 
 void BufferManager::Update() {
     Update(BufferBinding::Matrices, 
-        MatricesUBO(RenderManager::pipeline.ProjTrans,
-                    RenderManager::pipeline.View,
-                    RenderManager::pipeline.camera->GetPosition()
+        MatricesUBO(WindowManager::curWindow->scene->curCamera->Proj,
+                    WindowManager::curWindow->scene->curCamera->View,
+                    WindowManager::curWindow->scene->curCamera->GetPosition()
     ));
 }
 

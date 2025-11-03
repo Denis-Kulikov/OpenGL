@@ -1,6 +1,7 @@
 set(target lib-scene)
 
 add_library(${target} STATIC
+	camera.cpp
 	scene.cpp
 	light/scene_lighting.cpp
 	shadow/scene_shadow.cpp

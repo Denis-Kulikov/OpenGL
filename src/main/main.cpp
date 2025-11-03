@@ -68,35 +68,8 @@ glm::vec3 quatToEuler(const glm::quat& q) {
     return glm::degrees(euler);
 }
 
-
-void Callback(Scene *scene) {
-    TimeManager::Update();
-    BulletManager::StepSimulation(TimeManager::GetDeltaTime());
-    RenderManager::UpdateCamera();
-    RenderManager::pipeline.UpdateView();
-    RenderManager::pipeline.UpdatePV();
-    RenderManager::bufferManager.Update();
-    RenderManager::pipeline.drawSkybox(*scene->skybox);
-    GlobalState::GetPlayer()->MoveForward();
-
-    for (auto &it : scene->actors) {
-        if (it->rootComponent) {
-            it->rootComponent->UpdateTree(TimeManager::GetDeltaTime());
-        }
-    }
-
-    scene->shadow.ShadowPass(scene);
-
-    for (auto &it : scene->actors) {
-        // std::cout << "Name: " << it->GetName() << std::endl;
-        it->Render();
-    }
-}
-
-Scene *createScene()
+void createScene(Scene *scene)
 {
-    auto *scene = new Scene();
-
     Ghost::Initialize();
     Skybox::Initialize();
     StoneFloor::Initialize();
@@ -162,8 +135,6 @@ Scene *createScene()
     // scene->pushObject(dq);
 
     GlobalState::SetPlayer(character);
-
-    return scene;
 }
 
 int main(int argc, char** argv)
@@ -175,18 +146,33 @@ int main(int argc, char** argv)
     const GLfloat width = 1920, height = 992;
 
     WindowManager::Initialize(width, height);
-    RenderManager::Initialize(90.0f, width, height, 0.3f, 512.0f);
+    RenderManager::Initialize();
     BulletManager::Initialize();
     TimeManager::Initialize();
     ImGuiManager::Initialize();
 
-    GlobalState::scene = createScene();
+    WindowManager::curWindow->scene = new Scene();
+    createScene(WindowManager::curWindow->scene);
+
+    // WindowManager::SetWindow(WindowManager::windows.at("Engine2").get());
+    // WindowManager::curWindow->scene = new Scene();
+    // ComponentCamera* camera = new ComponentCamera();
+    // camera->camera.SetPerspectiveProj(90.0f, WindowManager::curWindow->GetWidth(), WindowManager::curWindow->GetHeight(), 0.5f, 512.0f);
+    // WindowManager::curWindow->scene->SetCamera(camera);
+    // glEnable(GL_DEPTH_TEST);
+    // glClearColor(0.12f, 0.12f, 0.12f, 0.0f);
 
     while (GlobalState::fIsAppRunning) {
-        Callback(GlobalState::scene);
-        ImGuiManager::Render(GlobalState::scene);
-        
+        TimeManager::Update();
+        // WindowManager::SetWindow(WindowManager::windows.at("Engine").get());
+        WindowManager::curWindow->scene->Callback(TimeManager::GetDeltaTime());
+        ImGuiManager::Render(WindowManager::curWindow->scene);
         WindowManager::SwapBuffer();
+        
+        // WindowManager::SetWindow(WindowManager::windows.at("Engine2").get());
+        // WindowManager::curWindow->scene->Callback(TimeManager::GetDeltaTime());
+        // ImGuiManager::Render(WindowManager::curWindow->scene);
+        // WindowManager::SwapBuffer();
     }
 
     ImGuiManager::Dispose();

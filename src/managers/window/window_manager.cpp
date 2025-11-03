@@ -13,17 +13,12 @@ void WindowManager::Initialize(int width, int height) {
         exit(EXIT_FAILURE);
     }
 
-    glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
+    glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     curWindow = CreateWindow(width, height, "Engine", nullptr, nullptr);
-
-    // curWindow->Hint(GLFW_RESIZABLE, GL_TRUE);
-    // curWindow->Hint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    // curWindow->Hint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    // curWindow->Hint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     curWindow->MakeContextCurrent();
     curWindow->SetCursorPosCallback(WindowManager::MouseCB);
@@ -31,6 +26,8 @@ void WindowManager::Initialize(int width, int height) {
     curWindow->SetInputMode(GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     curWindow->SetInputMode(GLFW_STICKY_KEYS, GL_TRUE);
     curWindow->SetPosition(0, 32);
+
+    // CreateWindow(320, 200, "Engine2", nullptr, curWindow->GetWindow());
 }
 
 void WindowManager::Dispose()
@@ -40,6 +37,11 @@ void WindowManager::Dispose()
     }
 
     glfwTerminate();
+}
+
+void WindowManager::SetWindow(Window* window) {
+    curWindow = window;
+    BindFrameBuffer();
 }
 
 void WindowManager::BindFrameBuffer() {
@@ -71,10 +73,10 @@ void WindowManager::MouseCB(GLFWwindow* window, double xpos, double ypos) {
     xOffset *= sensitivity * TimeManager::GetDeltaTime();
     yOffset *= sensitivity * TimeManager::GetDeltaTime();
 
-    if (RenderManager::pipeline.camera == nullptr)
+    if (curWindow == nullptr || curWindow->GetScene() == nullptr || curWindow->GetScene()->curCamera == nullptr)
         return;
     
-    Camera& camera = RenderManager::pipeline.camera->camera;
+    Camera& camera = curWindow->GetScene()->curCamera->camera;
     
     camera.yaw += xOffset;
     camera.pitch -= yOffset;
@@ -82,9 +84,8 @@ void WindowManager::MouseCB(GLFWwindow* window, double xpos, double ypos) {
     if (camera.pitch > 89.0f) camera.pitch = 89.0f;
     if (camera.pitch < -89.0f) camera.pitch = -89.0f;
 
-    if (RenderManager::pipeline.camera == nullptr) return;
-    RenderManager::pipeline.camera->camera.SetYaw(camera.yaw);
-    RenderManager::pipeline.camera->camera.SetPitch(camera.pitch);
+    camera.SetYaw(camera.yaw);
+    camera.SetPitch(camera.pitch);
 }
 
 void WindowManager::KeyboardCB(GLFWwindow* window, int key, int scancode, int action, int mods)
@@ -116,8 +117,8 @@ void WindowManager::KeyboardCB(GLFWwindow* window, int key, int scancode, int ac
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     }
     
-    if (RenderManager::pipeline.camera == nullptr) return;
-    glm::vec3 front = -RenderManager::pipeline.camera->camera.Params.Target;
+    if (curWindow == nullptr || curWindow->GetScene() == nullptr || curWindow->GetScene()->curCamera == nullptr) return;
+    glm::vec3 front = -curWindow->GetScene()->curCamera->camera.Params.Target;
     front.y = 0.0f;
     front = glm::normalize(front);
 

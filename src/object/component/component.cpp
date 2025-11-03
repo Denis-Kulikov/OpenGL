@@ -17,6 +17,10 @@ Component::Component(TransformableMatrix *transform)
     invScale = glm::vec3(1.f);
 }
 
+Component::Component()
+    : Component(new Transform()) 
+{}
+
 Component::~Component() {
     if (globalTransform != localTransform)
         delete globalTransform;

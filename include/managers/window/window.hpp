@@ -1,5 +1,5 @@
 #pragma once
-#include <iostream>
+#include <scene/scene.hpp>
 
 struct GLFWwindow;
 struct GLFWmonitor;
@@ -27,15 +27,18 @@ public:
     void BindFrameBuffer();
     void SwapBuffer();
 
-
-    void Hint(int hint, int value);
     void SetInputMode(int mode, int value);
     void SetCursorPosCallback(GLFWcursorposfun callback);
     void SetKeyCallback(GLFWkeyfun callback);
     void SetPosition(int xpos, int ypos);
     GLFWwindow* GetWindow();
+    Scene* GetScene();
+    float GetWidth();
+    float GetHeight();
     Buttons& GetButtons();
 
+    Scene* scene = nullptr;
+    
 protected:
     GLFWmonitor* monitor = nullptr;
     GLFWwindow* window = nullptr;

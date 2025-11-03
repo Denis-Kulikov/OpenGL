@@ -12,6 +12,7 @@ protected:
 
 public:
     Component(TransformableMatrix *transform);
+    Component();
     ~Component();
 
     virtual void UpdateInverse();

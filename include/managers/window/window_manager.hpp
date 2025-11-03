@@ -13,6 +13,7 @@ public:
     static void Initialize(int width, int height);
     static void Dispose();
 
+    static void SetWindow(Window* window);
     static void BindFrameBuffer();
     static void SwapBuffer();
     static void MouseCB(GLFWwindow* window, double xpos, double ypos);

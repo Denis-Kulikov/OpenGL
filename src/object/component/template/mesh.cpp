@@ -3,7 +3,8 @@
 #include <scene/shadow/shadow_map.hpp>
 #include <object/material/material.hpp>
 #include <object/material/shader.hpp>
-#include <managers/global.hpp> 
+#include <managers/window/window_manager.hpp> 
+#include <managers/window/window.hpp> 
 #include <scene/scene.hpp>
 
 
@@ -16,7 +17,7 @@ void ComponentMesh::Render() const {
     );
 
     mesh->material->Set("Model", model_mats4x4);
-    mesh->material->Set("dirLightSpaceMatrix", GlobalState::scene->shadow.directionalLight.lightSpaceMatrix);
+    mesh->material->Set("dirLightSpaceMatrix", WindowManager::curWindow->GetScene()->shadow.directionalLight.lightSpaceMatrix);
 
     mesh->material->Set("hasSpecularMap", bool(false));
     mesh->material->Set("roughness", float(0.6f));
@@ -24,9 +25,9 @@ void ComponentMesh::Render() const {
     mesh->material->Set("ambientStrength", float(0.25f));
     mesh->material->Set("specularStrength", float(0.02f));
 
-    mesh->material->Set("lightPos", GlobalState::scene->shadow.pointLights.GetPosition());
-    mesh->material->Set("farPlanes", GlobalState::scene->shadow.pointLights.GetFar());
-    mesh->material->Set("nearPlanes", GlobalState::scene->shadow.pointLights.GetNear());
+    mesh->material->Set("lightPos", WindowManager::curWindow->GetScene()->shadow.pointLights.GetPosition());
+    mesh->material->Set("farPlanes", WindowManager::curWindow->GetScene()->shadow.pointLights.GetFar());
+    mesh->material->Set("nearPlanes", WindowManager::curWindow->GetScene()->shadow.pointLights.GetNear());
     
     mesh->Bind();
 
@@ -71,8 +72,8 @@ void ComponentMesh::RenderShadowPass(const glm::mat4& shadowProj, ShadowMapType 
 
             glUniformMatrix4fv(mLoc, 1, GL_FALSE, glm::value_ptr(model));
             glUniformMatrix4fv(pLoc, 1, GL_FALSE, glm::value_ptr(shadowProj));
-            glUniform3fv(lLoc, 1, glm::value_ptr(GlobalState::scene->lighting.DataSSBO.pointLights[0].position));
-            glUniform1f(fLoc, GlobalState::scene->shadow.pointLights.GetFar());
+            glUniform3fv(lLoc, 1, glm::value_ptr(WindowManager::curWindow->GetScene()->lighting.DataSSBO.pointLights[0].position));
+            glUniform1f(fLoc, WindowManager::curWindow->GetScene()->shadow.pointLights.GetFar());
             break;
         
         default:

@@ -15,7 +15,6 @@ public:
     inline static IMeshLoader* MeshLoader = new AssimpMeshLoader;
     // inline static IMeshLoader* MeshLoaderTiny = new TinygltfMeshLoader;
     inline static Actor* player = nullptr;
-    inline static Scene* scene = nullptr;
     inline static bool fIsAppRunning = true;
     inline static bool fScreenshot = false;
     inline static int ScreenshotCounter = 0;

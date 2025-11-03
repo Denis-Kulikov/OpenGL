@@ -30,6 +30,9 @@ void Window::MakeContextCurrent() {
 }
 
 void Window::BindFrameBuffer() {
+    if (!window) return;
+    MakeContextCurrent();
+
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glViewport(0, 0, width, height);
     glClearDepth(1.0f);
@@ -39,10 +42,6 @@ void Window::SwapBuffer() {
     glfwSwapBuffers(window);
     glfwPollEvents();
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-}
-
-void Window::Hint(int hint, int value) {
-    glfwWindowHint(hint, value);
 }
 
 void Window::SetInputMode(int mode, int value) {
@@ -60,6 +59,16 @@ void Window::SetKeyCallback(GLFWkeyfun callback) {
 GLFWwindow* Window::GetWindow() {
     return window;
 }
+Scene* Window::GetScene() {
+    return scene;
+}
+float Window::GetWidth() {
+    return width;
+}
+float Window::GetHeight() {
+    return height;
+}
+
 
 Window::Buttons& Window::GetButtons() {
     return buttons;

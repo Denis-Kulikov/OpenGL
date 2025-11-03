@@ -5,7 +5,6 @@ add_library(${target} STATIC
 	time.cpp
 	bullet.cpp
 	render/buffer.cpp
-	render/pipeline.cpp
 	render/render.cpp
 	render/stb_image_impl.cpp
 	window/window.cpp
