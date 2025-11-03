@@ -14,20 +14,21 @@ StoneFloor::StoneFloor()
 {
     ACTOR_SET_NAME;
 
-    btScalar mass = 0.0f;
     glm::vec3 scale(100, 100, 0.1f);
-    btCollisionShape* colliderShape = new btBoxShape(btVector3(scale.x / 2, scale.y / 2, scale.z / 2));
-    RigidTransform * rigidBody = new RigidTransform(colliderShape, mass, scale);
-    ComponentPhysics *body = CreateComponent<ComponentPhysics>(rigidBody);
+    // btScalar mass = 0.0f;
+    // btCollisionShape* colliderShape = new btBoxShape(btVector3(scale.x / 2, scale.y / 2, scale.z / 2));
+    // RigidTransform * rigidBody = new RigidTransform(colliderShape, mass, scale);
+    // ComponentPhysics *body = CreateComponent<ComponentPhysics>(rigidBody);
     // body->SetRotation({-90, 0, 0});
 
     Transform *transform = new Transform();
     ComponentMesh *mesh = CreateComponent<ComponentMesh>(transform);
-    body->AddChild(mesh);
+    // body->AddChild(mesh);
     mesh->mesh = Mesh::Find("stone_floor");
     mesh->SetScale(scale);
 
-    rootComponent = body;
+    // rootComponent = body;
+    rootComponent = mesh;
 }
 
 StoneFloor::~StoneFloor() {}

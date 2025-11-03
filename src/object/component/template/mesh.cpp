@@ -19,10 +19,10 @@ void ComponentMesh::Render() const {
     mesh->material->Set("dirLightSpaceMatrix", GlobalState::scene->shadow.directionalLight.lightSpaceMatrix);
 
     mesh->material->Set("hasSpecularMap", bool(false));
-    mesh->material->Set("roughness", float(0.65f));
-    mesh->material->Set("metallic", float(0.01f));
-    mesh->material->Set("ambientStrength", float(0.375f));
-    mesh->material->Set("specularStrength", float(0.05f));
+    mesh->material->Set("roughness", float(0.6f));
+    mesh->material->Set("metallic", float(0.02f));
+    mesh->material->Set("ambientStrength", float(0.25f));
+    mesh->material->Set("specularStrength", float(0.02f));
 
     mesh->material->Set("lightPos", GlobalState::scene->shadow.pointLights.GetPosition());
     mesh->material->Set("farPlanes", GlobalState::scene->shadow.pointLights.GetFar());
@@ -39,19 +39,46 @@ void ComponentMesh::Render() const {
 void ComponentMesh::RenderShadowPass(const glm::mat4& shadowProj, ShadowMapType type) const {
     if (castsShadow && mesh != nullptr) {
         Shader* shader = nullptr;
-        shader = Shader::Find("ShadowMap");
-
-        Material material;
-
-        auto model_mats4x4 = glm::mat4(
+        GLuint mLoc, pLoc, lLoc, fLoc;
+        auto model = glm::mat4(
             glm::vec4(GetMatrix()[0], 0.0f),
             glm::vec4(GetMatrix()[1], 0.0f),
             glm::vec4(GetMatrix()[2], 0.0f),
             glm::vec4(GetMatrix()[3], 1.0f)
         );
 
-        shader->Bind();
-        mesh->material->BindShadowPass(shader, model_mats4x4, shadowProj);
+        switch (type)
+        {
+        case ShadowMapType::ORTHO:
+            shader = Shader::Find("ShadowMapOrtho");
+            shader->Bind();
+            
+            mLoc = shader->FindUniform("Model")->location;
+            pLoc = shader->FindUniform("ShadowProj")->location;
+
+            glUniformMatrix4fv(mLoc, 1, GL_FALSE, glm::value_ptr(model));
+            glUniformMatrix4fv(pLoc, 1, GL_FALSE, glm::value_ptr(shadowProj));
+            break;
+
+        case ShadowMapType::PERSPECTIVE:
+            shader = Shader::Find("ShadowMapPerspective");
+            shader->Bind();
+            
+            mLoc = shader->FindUniform("Model")->location;
+            pLoc = shader->FindUniform("ShadowProj")->location;
+            lLoc = shader->FindUniform("lightPos")->location;
+            fLoc = shader->FindUniform("farPlane")->location;
+
+            glUniformMatrix4fv(mLoc, 1, GL_FALSE, glm::value_ptr(model));
+            glUniformMatrix4fv(pLoc, 1, GL_FALSE, glm::value_ptr(shadowProj));
+            glUniform3fv(lLoc, 1, glm::value_ptr(GlobalState::scene->lighting.DataSSBO.pointLights[0].position));
+            glUniform1f(fLoc, GlobalState::scene->shadow.pointLights.GetFar());
+            break;
+        
+        default:
+            return;
+        }
+
         mesh->BindGeometry();
 
         for (const auto& m : mesh->m_Entries)

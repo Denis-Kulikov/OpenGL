@@ -1,139 +1,70 @@
-#include <managers/global.hpp> 
-#include <managers/render/render.hpp> 
-#include <managers/time.hpp> 
-#include <managers/window/window.hpp> 
+#include <managers/window/window.hpp>
+#include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-void WindowManager::Initialize(int Width, int Height) {
-    width = Width;
-    height = Height;
 
-    if (!glfwInit()) {
-        std::cerr << "Error: Failed to initialize GLFW" << std::endl;
-        exit(EXIT_FAILURE);
-    }
+Window::Window(int width, int height, const char* title, GLFWmonitor* monitor, GLFWwindow* share)
+    : width(width), height(height)
+{
+    window = glfwCreateWindow(width, height, title, monitor, share);
 
-    glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-    window = glfwCreateWindow(width, height, "Game", NULL, NULL);
     if (!window) {
         glfwTerminate();
         std::cerr << "Error: Failed to create GLFW window" << std::endl;
         exit(EXIT_FAILURE);
     }
+}
+Window::~Window() {
+    Dispose();
+}
 
+void Window::Dispose() {
+    if (window != nullptr) {
+        glfwDestroyWindow(window);
+        window = nullptr;
+    }
+}
+
+void Window::MakeContextCurrent() {
     glfwMakeContextCurrent(window);
-    glfwSetCursorPosCallback(window, WindowManager::MouseCB);
-    glfwSetKeyCallback(window, WindowManager::KeyboardCB);
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-    glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
-    glfwSetWindowPos(window, 0, 32);
 }
 
-void WindowManager::Dispose()
-{
-    glfwDestroyWindow(window);
-    glfwTerminate();
-}
-
-void WindowManager::BindFrameBuffer() {
+void Window::BindFrameBuffer() {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glViewport(0, 0, width, height);
     glClearDepth(1.0f);
 }
 
-void WindowManager::SwapBuffer() {
+void Window::SwapBuffer() {
     glfwSwapBuffers(window);
     glfwPollEvents();
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void WindowManager::MouseCB(GLFWwindow* window, double xpos, double ypos) {
-    const float sensitivity = 20.0f;
-
-    if (buttons.firstMouse) {
-        buttons.lastX = xpos;
-        buttons.lastY = ypos;
-        buttons.firstMouse = false;
-    }
-
-    float xOffset = xpos - buttons.lastX;
-    float yOffset = buttons.lastY - ypos;
-
-    buttons.lastX = xpos;
-    buttons.lastY = ypos;
-
-    if (!buttons.cursor_disable) return;
-
-    xOffset *= sensitivity * TimeManager::GetDeltaTime();
-    yOffset *= sensitivity * TimeManager::GetDeltaTime();
-
-    if (RenderManager::pipeline.camera == nullptr)
-        return;
-    
-    Camera& camera = RenderManager::pipeline.camera->camera;
-    
-    camera.yaw += xOffset;
-    camera.pitch -= yOffset;
-
-    if (camera.pitch > 89.0f) camera.pitch = 89.0f;
-    if (camera.pitch < -89.0f) camera.pitch = -89.0f;
-
-    if (RenderManager::pipeline.camera == nullptr) return;
-    RenderManager::pipeline.camera->camera.SetYaw(camera.yaw);
-    RenderManager::pipeline.camera->camera.SetPitch(camera.pitch);
+void Window::Hint(int hint, int value) {
+    glfwWindowHint(hint, value);
 }
 
-void WindowManager::KeyboardCB(GLFWwindow* window, int key, int scancode, int action, int mods)
-{
-    static bool keys[GLFW_KEY_LAST] = {false};
+void Window::SetInputMode(int mode, int value) {
+    glfwSetInputMode(window, mode, value);
+}
 
-    Actor* player = GlobalState::GetPlayer();
+void Window::SetCursorPosCallback(GLFWcursorposfun callback) {
+    glfwSetCursorPosCallback(window, callback);
+}
 
-    if (action == GLFW_PRESS) 
-        keys[key] = true;
-    else if (action == GLFW_RELEASE) 
-        keys[key] = false;
+void Window::SetKeyCallback(GLFWkeyfun callback) {
+    glfwSetKeyCallback(window, callback);
+}
 
-    if (keys[GLFW_KEY_F]) {
-        glfwSetWindowShouldClose(window, GLFW_TRUE);
-        GlobalState::TerminateApp();
-    }
+GLFWwindow* Window::GetWindow() {
+    return window;
+}
 
-    if (keys[GLFW_KEY_R]) {
-        GlobalState::fScreenshot = true;
-    }  
+Window::Buttons& Window::GetButtons() {
+    return buttons;
+}
 
-    if ((keys[GLFW_KEY_LEFT_ALT] || keys[GLFW_KEY_RIGHT_ALT]) && buttons.cursor_disable) {
-        buttons.cursor_disable = !buttons.cursor_disable;
-        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-    } else if (!buttons.cursor_disable) {
-        buttons.cursor_disable = !buttons.cursor_disable;
-        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-    }
-    
-    if (RenderManager::pipeline.camera == nullptr) return;
-    glm::vec3 front = -RenderManager::pipeline.camera->camera.Params.Target;
-    front.y = 0.0f;
-    front = glm::normalize(front);
-
-    glm::vec3 right = glm::normalize(glm::cross(front, glm::vec3(0.0f, -1.0f, 0.0f)));
-
-    glm::vec3 direction(0.0f);
-
-    if (keys[GLFW_KEY_W]) direction += front;
-    if (keys[GLFW_KEY_S]) direction -= front;
-    if (keys[GLFW_KEY_D]) direction += right;
-    if (keys[GLFW_KEY_A]) direction -= right;
-    if (keys[GLFW_KEY_SPACE]) direction.y += 1.0f;
-    if (keys[GLFW_KEY_LEFT_CONTROL]) direction.y -= 1.0f;
-
-    if (glm::length(direction) > 0.0f) {
-        direction = glm::normalize(direction);
-    }
-
-    player->SetDirection(direction);
+void Window::SetPosition(int xpos, int ypos) {
+    glfwSetWindowPos(window, xpos, ypos);
 }

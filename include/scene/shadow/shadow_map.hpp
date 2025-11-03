@@ -7,7 +7,8 @@ glm::mat4 PerspectiveLH(float fovY, float aspect, float near, float far);
 glm::mat4 OrthoLH(float left, float right, float bottom, float top, float near, float far);
 
 enum ShadowMapType {
-    SHADOW_CUBE_MAP
+    PERSPECTIVE,
+    ORTHO
 };
 
 class ShadowMap {

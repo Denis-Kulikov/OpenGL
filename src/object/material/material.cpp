@@ -38,20 +38,6 @@ void Material::Bind(const Shader* shader) const {
         // }
 }
 
-#include <managers/global.hpp> 
-#include <scene/scene.hpp>
-void Material::BindShadowPass(const Shader* shader, const glm::mat4& model, const glm::mat4& shadowProj) const {
-    auto mLoc = shader->FindUniform("Model")->location;
-    auto pLoc = shader->FindUniform("ShadowProj")->location;
-    auto lLoc = shader->FindUniform("lightPos")->location;
-    auto fLoc = shader->FindUniform("farPlane")->location;
-
-    UploadUniform(mLoc, model);
-    UploadUniform(pLoc, shadowProj);
-    UploadUniform(lLoc, GlobalState::scene->lighting.DataSSBO.pointLights[0].position);
-    UploadUniform(fLoc, GlobalState::scene->shadow.pointLights.GetFar());
-}
-
 void Material::Set(const std::string& name, const MaterialValue& v) {
     values[name] = v;
 }

@@ -6,9 +6,9 @@ SceneLighting::SceneLighting()
 
 void SceneLighting::Initialize() {
     DataSSBO.numPointLights = 1;
-    DataSSBO.pointLights[0] = PointLight(glm::vec3(0.0f, 8.0f, 5.0f), 32.0f, glm::vec3(1.0f, 1.0f, 1.0f), 1.825f, 0);
+    DataSSBO.pointLights[0] = PointLight(glm::vec3(0.0f, 8.0f, 5.0f), 32.0f, glm::vec3(1.0f, 1.0f, 1.0f), 1.0f, 0);
 
-    DataSSBO.numDirectionalLights = 0;
+    DataSSBO.numDirectionalLights = 1;
     // DataSSBO.dirLights = DirectionalLight(glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(1.0f), 0.125f);
-    DataSSBO.dirLights = DirectionalLight(glm::vec3(2.0f, -4.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f), 0.0525f);
+    DataSSBO.dirLights = DirectionalLight(glm::vec3(2.0f, -4.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f), 1.0f);
 }

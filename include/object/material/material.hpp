@@ -21,7 +21,6 @@ public:
     >;
 
     void Bind(const Shader* shader) const;
-    void BindShadowPass(const Shader* shader, const glm::mat4& model, const glm::mat4& shadowProj) const;
     void Set(const std::string& name, const MaterialValue& v);
     GLuint LinkTextureUnits(GLuint unitIndex, const Shader* shader);
     GLuint PushTextureUnits(GLuint unitIndex, TextureUnit* unit, const Shader* shader);

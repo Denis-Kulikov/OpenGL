@@ -2,7 +2,7 @@
 #include <managers/global.hpp> 
 #include <managers/time.hpp> 
 #include <managers/render/render.hpp> 
-#include <managers/window/window.hpp> 
+#include <managers/window/window_manager.hpp> 
 #include <managers/window/imgui.hpp> 
 
 #include <scene/scene.hpp>
@@ -113,25 +113,21 @@ Scene *createScene()
     scene->pushObject(character);
 
     auto female = new Female();
-    female->SetRotation(glm::vec3(0, 0, 0));
+    // female->SetRotation(glm::vec3(0, 0, 0));
     female->Teleport(glm::vec3(4, 0.0, 3.0));
-    female->SetScale(glm::vec3(0.06));
+    // female->SetScale(glm::vec3(0.06));
     scene->pushObject(female);
 
     auto female2 = new Female();
-    female2->SetRotation(glm::vec3(0, 0, 0));
+    // female2->SetRotation(glm::vec3(0, 0, 0));
     female2->Teleport(glm::vec3(0, 5.0, 0.0));
-    female2->SetScale(glm::vec3(0.06));
+    // female2->SetScale(glm::vec3(0.06));
     scene->pushObject(female2);
 
-    auto female3 = new Female();
-    female3->SetRotation(glm::vec3(0, 0, 0));
-    female3->Teleport(glm::vec3(-5, 0.0, 0.0));
-    female3->SetScale(glm::vec3(0.06));
-    scene->pushObject(female3);
 
     auto stoneFloor = new StoneFloor();
-    stoneFloor->Teleport(glm::vec3(0, -0.5, -20.0));
+    stoneFloor->Teleport(glm::vec3(0, -0.5, 0.0));
+    stoneFloor->SetRotation(glm::vec3(-90, 0.0, 0.0));
     scene->pushObject(stoneFloor);
 
     // float f = 0;
@@ -153,9 +149,9 @@ Scene *createScene()
 
 
     // auto ms = new MatrixSkining();
-    // ms->SetRotation(glm::vec3(-90, 0, 0));
-    // ms->Teleport(glm::vec3(4, 0.0, 8.0));
-    // ms->SetScale(glm::vec3(0.05));
+    // // ms->SetRotation(glm::vec3(-90, 0, 0));
+    // ms->Teleport(glm::vec3(4, 1.0, 8.0));
+    // // ms->SetScale(glm::vec3(0.05));
     // // ms->SetScale(glm::vec3(50));
     // scene->pushObject(ms);
 
@@ -176,10 +172,10 @@ int main(int argc, char** argv)
     SetConsoleCP(CP_UTF8);
     std::locale::global(std::locale("en_US.UTF-8"));
 
-    const GLfloat width = 1600, height = 1024;
+    const GLfloat width = 1920, height = 992;
 
     WindowManager::Initialize(width, height);
-    RenderManager::Initialize(90.0f, width, height, 0.1f, 128.0f);
+    RenderManager::Initialize(90.0f, width, height, 0.3f, 512.0f);
     BulletManager::Initialize();
     TimeManager::Initialize();
     ImGuiManager::Initialize();

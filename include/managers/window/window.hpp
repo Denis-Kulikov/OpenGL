@@ -1,23 +1,14 @@
 #pragma once
+#include <iostream>
 
 struct GLFWwindow;
+struct GLFWmonitor;
+typedef void (*GLFWcursorposfun)(GLFWwindow*, double, double);
+typedef void (*GLFWkeyfun)(GLFWwindow*, int, int, int, int);
 
-class WindowManager  
+class Window
 {
 public:
-    static void Initialize(int Width, int Height);
-    static void Dispose();
-
-    static void BindFrameBuffer();
-    static void SwapBuffer();
-    static void MouseCB(GLFWwindow* window, double xpos, double ypos);
-    static void KeyboardCB(GLFWwindow* window, int key, int scancode, int action, int mods);
-
-    inline static GLFWwindow* window = nullptr;
-    inline static int width = 640;
-    inline static int height = 480;
-
-private:
     struct Buttons {
         int yaw = 0;
         int pitch = 0;
@@ -28,6 +19,27 @@ private:
         bool firstMouse = true;
     };
 
-    inline static Buttons buttons = {0, 0, 400, 300, true, true};
+    Window(int width, int height, const char* title, GLFWmonitor* monitor, GLFWwindow* share);
+    ~Window();
 
+    void Dispose();
+    void MakeContextCurrent();
+    void BindFrameBuffer();
+    void SwapBuffer();
+
+
+    void Hint(int hint, int value);
+    void SetInputMode(int mode, int value);
+    void SetCursorPosCallback(GLFWcursorposfun callback);
+    void SetKeyCallback(GLFWkeyfun callback);
+    void SetPosition(int xpos, int ypos);
+    GLFWwindow* GetWindow();
+    Buttons& GetButtons();
+
+protected:
+    GLFWmonitor* monitor = nullptr;
+    GLFWwindow* window = nullptr;
+    int width;
+    int height;
+    Buttons buttons;
 };

@@ -9,6 +9,7 @@ add_library(${target} STATIC
 	render/render.cpp
 	render/stb_image_impl.cpp
 	window/window.cpp
+	window/window_manager.cpp
 	window/imgui.cpp
 )
 

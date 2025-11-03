@@ -194,7 +194,7 @@ bool AssimpMeshLoader::InitMaterials(MeshData& mesh, std::vector<int>& MaterialI
         if (mat->GetTextureCount(aiTextureType_DIFFUSE) > 0) {
             if (mat->GetTexture(aiTextureType_DIFFUSE, 0, &path) == AI_SUCCESS) {
                 texPath = path.C_Str();
-                std::cout << "Texture Path: " << texPath << "\n" << std::endl;
+                std::cout << "Texture Path: " << texPath << std::endl;
                 Texture* t = createTexture();
                 Materials[i]->textureUnits.emplace_back(t, TextureUnit::ALBEDO);
             }
@@ -203,7 +203,7 @@ bool AssimpMeshLoader::InitMaterials(MeshData& mesh, std::vector<int>& MaterialI
         if (mat->GetTextureCount(aiTextureType_EMISSIVE) > 0) {
             if (mat->GetTexture(aiTextureType_EMISSIVE, 0, &path) == AI_SUCCESS) {
                 texPath = path.C_Str();
-                std::cout << "Texture Path (EMISSIVE): " << texPath << "\n" << std::endl;
+                std::cout << "Texture Path (EMISSIVE): " << texPath << std::endl;
                 Texture* t = createTexture();
                 Materials[i]->textureUnits.emplace_back(t, TextureUnit::ALBEDO);
             }

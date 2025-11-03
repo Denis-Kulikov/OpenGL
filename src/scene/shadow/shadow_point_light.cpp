@@ -72,8 +72,8 @@ ShadowPointLight::ShadowPointLight(GLsizei SHADOW_SIZE)
     glDrawBuffer(GL_NONE);
     glReadBuffer(GL_NONE);
 
-    near = 2.0f;
-    far = 16.0f;
+    near = 1.0f;
+    far = 32.0f;
 
     Texture::Create("ShadowMapPoint", map, 1.0f);
 }
@@ -99,7 +99,7 @@ void ShadowPointLight::ShadowPass(const Scene* scene, const glm::vec3 lightPos) 
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, map, 0);
         glClear(GL_DEPTH_BUFFER_BIT);
         for (const auto &it : scene->actors) 
-            it->RenderShadowPass(shadowTransforms[i], SHADOW_CUBE_MAP);
+            it->RenderShadowPass(shadowTransforms[i], PERSPECTIVE);
     }
 
     static bool f = true;

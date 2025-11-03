@@ -1,7 +1,7 @@
 #pragma once
 #include "shadow_directional_light.hpp"
 #include "shadow_point_light.hpp"
-#include <managers/window/window.hpp>
+#include <managers/window/window_manager.hpp>
 #include <array>
 
 class Scene;

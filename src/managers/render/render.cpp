@@ -1,4 +1,5 @@
 #include <managers/render/render.hpp> 
+#include <managers/window/window_manager.hpp> 
 #include <managers/window/window.hpp> 
 #include <object/material/shader.hpp>
 
@@ -12,11 +13,12 @@ void RenderManager::Initialize(GLfloat FOV, GLfloat Width, GLfloat Height, GLflo
     PersProj = {FOV, Width, Height, zNear, zFar};
     glEnable(GL_DEPTH_TEST);
     glClearColor(0.12f, 0.12f, 0.12f, 0.0f);
-    WindowManager::SwapBuffer();
+    WindowManager::curWindow->SwapBuffer();
 
     initializePrimitive();
     Texture::Create("white", "assets/img/white.png");
-    Shader::Create("ShadowMap", "shaders/shadow_map/shadow_map_fs.glsl", "shaders/shadow_map/shadow_map_vs.glsl");
+    Shader::Create("ShadowMapPerspective", "shaders/shadow_map/perspective_fs.glsl", "shaders/shadow_map/perspective_vs.glsl");
+    Shader::Create("ShadowMapOrtho", "shaders/shadow_map/ortho_fs.glsl", "shaders/shadow_map/ortho_vs.glsl");
 
     bufferManager.Init();
 }

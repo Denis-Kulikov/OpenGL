@@ -2,7 +2,7 @@
 #include <managers/global.hpp> 
 #include <managers/render/render.hpp> 
 #include <managers/time.hpp> 
-#include <managers/window/window.hpp> 
+#include <managers/window/window_manager.hpp> 
 #include <GLFW/glfw3.h>
 #include <object/material/shader.hpp>
 
@@ -11,7 +11,7 @@ void ImGuiManager::Initialize(const std::string& version_GLSL) {
     ImGui::CreateContext();
     ImGuiIO& io = GetIO();
     ImGui::StyleColorsDark();
-    ImGui_ImplGlfw_InitForOpenGL(WindowManager::window, true);
+    ImGui_ImplGlfw_InitForOpenGL(WindowManager::curWindow->GetWindow(), true);
     ImGui_ImplOpenGL3_Init(version_GLSL.c_str());
 }
 
