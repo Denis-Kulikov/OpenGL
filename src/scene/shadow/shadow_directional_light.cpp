@@ -25,10 +25,28 @@ ShadowDirectionalLight::ShadowDirectionalLight(GLsizei SHADOW_WIDTH, GLsizei SHA
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-    near = 1.0f;
-    far = 50.0f;
+    near = 2.f;
+    far = 24.0f;
 
     Texture::Create("ShadowMapDirLight", map, SHADOW_WIDTH / SHADOW_HEIGHT);
+}
+
+#include <stb_image_write.h>
+
+void SaveDepthMap(GLuint Map, int size, const std::string& Name)
+{
+    std::vector<float> depthData(size * size);
+    std::vector<unsigned char> image(size * size);
+
+    glBindTexture(GL_TEXTURE_2D, Map);
+    glGetTexImage(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, GL_FLOAT, depthData.data());
+
+    for (int i = 0; i < size * size; ++i) {
+        image[i] = static_cast<unsigned char>(depthData[i] * 255.0f);
+    }
+    
+    stbi_write_png(Name.c_str(), size, size, 1, image.data(), size);
+    glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 void ShadowDirectionalLight::ShadowPass(const Scene* scene, const DirectionalLight* light, const glm::vec3& offset) {
@@ -36,7 +54,7 @@ void ShadowDirectionalLight::ShadowPass(const Scene* scene, const DirectionalLig
     glm::vec3 up       = glm::vec3(0.0f, 1.0f, 0.0f);
 
     glm::vec3 lightDir = glm::normalize(light->direction);
-    glm::vec3 lightPos = offset + lightDir;
+    glm::vec3 lightPos = lightDir * 10.0f;;
 
     glm::mat4 lightView = LookAtLH(lightPos, target, up);
 
@@ -55,6 +73,8 @@ void ShadowDirectionalLight::ShadowPass(const Scene* scene, const DirectionalLig
 
     for (const auto &it : scene->actors) 
         it->RenderShadowPass(lightSpaceMatrix, ORTHO);
+
+    // SaveDepthMap(map, SHADOW_WIDTH, "map.png");
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }

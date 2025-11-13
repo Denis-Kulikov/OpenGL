@@ -1,9 +1,9 @@
 #pragma once
 #include <GL/glew.h>
-#include <string>
 #include <stb_image.h>
 #include <unordered_map>
 #include <memory>
+#include <object/named.hpp>
 
 struct UniformInfo {
     GLint location = 0;
@@ -15,9 +15,9 @@ struct AttributeInfo : public UniformInfo {
     GLint attribute = 0;
 };
 
-class Shader {
+class Shader : public Named {
 public:
-    Shader(const std::string& FS, const std::string& VS);
+    Shader(const std::string& name, const std::string& FS, const std::string& VS);
     void Bind() const;
     GLuint GetID() const;
     const UniformInfo* FindUniform(const std::string& name) const;

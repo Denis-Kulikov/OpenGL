@@ -4,26 +4,30 @@
 #include <cmath>
 #include <cassert>
 
-#include <tiny_gltf.h>
+// #include <tiny_gltf.h>
 
 #include <stb_image.h>
 #include <stb_image_resize.h>
 
 
-Texture::Texture(const std::string& path)
+Texture::Texture(const std::string& name, const std::string& path)
+    : Named(name)
 {
     Load(path);
 }
-Texture::Texture(const GLuint textureID, const float scale)
-    : textureID(textureID), scale(scale)
+Texture::Texture(const std::string& name, const GLuint textureID, const float scale)
+    : textureID(textureID), scale(scale), Named(name)
 {}
-Texture::Texture(const aiTexture* texture) 
+Texture::Texture(const std::string& name, const aiTexture* texture)
+    : Named(name)
 {
     Load(texture);
 }
-Texture::Texture(const tinygltf::Image& texture) {
-    Load(texture);
-}
+// Texture::Texture(const std::string& name, const tinygltf::Image& texture)
+//     : Named(name)
+// {
+//     Load(texture);
+// }
 
 void Texture::Bind() const {
     glBindTexture(GL_TEXTURE_2D, textureID);
@@ -38,21 +42,21 @@ float Texture::GetScale() const {
 }
 
 Texture* Texture::Create(const std::string& name, const std::string& path) {
-    auto [it, inserted] = cache.try_emplace(name, path);
+    auto [it, inserted] = cache.try_emplace(name, name, path);
     return &it->second;
 }
 Texture* Texture::Create(const std::string& name, const GLuint texture, const float textureScale) {
-    auto [it, inserted] = cache.try_emplace(name, texture, textureScale);
+    auto [it, inserted] = cache.try_emplace(name, name, texture, textureScale);
     return &it->second;
 }
 Texture* Texture::Create(const std::string& name, const aiTexture* texture) {
-    auto [it, inserted] = cache.try_emplace(name, texture);
+    auto [it, inserted] = cache.try_emplace(name, name, texture);
     return &it->second;
 }
-Texture* Texture::Create(const std::string& name, const tinygltf::Image& texture) {
-    auto [it, inserted] = cache.try_emplace(name, texture);
-    return &it->second;
-}
+// Texture* Texture::Create(const std::string& name, const tinygltf::Image& texture) {
+//     auto [it, inserted] = cache.try_emplace(name, texture);
+//     return &it->second;
+// }
 
 Texture* Texture::Find(const std::string& name) {
     auto it = cache.find(name);
@@ -166,30 +170,30 @@ void Texture::Load(const aiTexture* texture) {
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-void Texture::Load(const tinygltf::Image& texture) {
-    int width = texture.width;
-    int height = texture.height;
-    int channels = texture.component;
-    const unsigned char* data = texture.image.data();
+// void Texture::Load(const tinygltf::Image& texture) {
+//     int width = texture.width;
+//     int height = texture.height;
+//     int channels = texture.component;
+//     const unsigned char* data = texture.image.data();
     
-    scale = height > 0? static_cast<GLfloat>(width) / static_cast<GLfloat>(height) : 0;
+//     scale = height > 0? static_cast<GLfloat>(width) / static_cast<GLfloat>(height) : 0;
 
-    GLenum format = GL_RGB;
-    if (channels == 4) format = GL_RGBA;
-    else if (channels == 3) format = GL_RGB;
-    else if (channels == 1) format = GL_RED;
+//     GLenum format = GL_RGB;
+//     if (channels == 4) format = GL_RGBA;
+//     else if (channels == 3) format = GL_RGB;
+//     else if (channels == 1) format = GL_RED;
 
-    glGenTextures(1, &textureID);
-    glBindTexture(GL_TEXTURE_2D, textureID);
+//     glGenTextures(1, &textureID);
+//     glBindTexture(GL_TEXTURE_2D, textureID);
 
-    glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+//     glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+//     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+//     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+//     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+//     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    glGenerateMipmap(GL_TEXTURE_2D);
+//     glGenerateMipmap(GL_TEXTURE_2D);
 
-    glBindTexture(GL_TEXTURE_2D, 0);
-}
+//     glBindTexture(GL_TEXTURE_2D, 0);
+// }

@@ -7,6 +7,16 @@
 #include <managers/window/window.hpp> 
 #include <scene/scene.hpp>
 
+void ComponentMesh::SetMesh(Mesh* new_mesh) {
+    if (new_mesh != nullptr) {
+        mesh = new_mesh;
+
+        mesh->material->Set("roughness", float(0.35f));
+        mesh->material->Set("metallic", float(0.02f));
+        mesh->material->Set("ambientStrength", float(0.0f));
+        mesh->material->Set("specularStrength", float(1.0f));
+    }
+}
 
 void ComponentMesh::Render() const {
     auto model_mats4x4 = glm::mat4(
@@ -20,10 +30,6 @@ void ComponentMesh::Render() const {
     mesh->material->Set("dirLightSpaceMatrix", WindowManager::curWindow->GetScene()->shadow.directionalLight.lightSpaceMatrix);
 
     mesh->material->Set("hasSpecularMap", bool(false));
-    mesh->material->Set("roughness", float(0.6f));
-    mesh->material->Set("metallic", float(0.02f));
-    mesh->material->Set("ambientStrength", float(0.25f));
-    mesh->material->Set("specularStrength", float(0.02f));
 
     mesh->material->Set("lightPos", WindowManager::curWindow->GetScene()->shadow.pointLights.GetPosition());
     mesh->material->Set("farPlanes", WindowManager::curWindow->GetScene()->shadow.pointLights.GetFar());
@@ -32,6 +38,7 @@ void ComponentMesh::Render() const {
     mesh->Bind();
 
     for (const auto& m : mesh->m_Entries) {
+        mesh->material->Bind(mesh->shader);
         m.material->Bind(mesh->shader);
         m.Draw();
     }

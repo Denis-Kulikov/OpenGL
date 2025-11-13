@@ -2,11 +2,11 @@
 #include "../../actor.hpp"
 #include <object/mesh/skeletal_mesh.hpp>
 
-class Female : public Actor
+class TModel : public Actor
 {
 public:
-    Female();
-    ~Female();
+    TModel();
+    ~TModel();
     
     ACTOR_BASE;
 };

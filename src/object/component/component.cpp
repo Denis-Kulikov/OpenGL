@@ -3,22 +3,22 @@
 #include <glm/gtc/quaternion.hpp>
 #include <scene/shadow/shadow_map.hpp>
 
-Component::Component(RigidTransform *transform)
-    : localTransform(transform), globalTransform(transform)
+Component::Component(const std::string& name, RigidTransform *transform)
+    : localTransform(transform), globalTransform(transform), Named(name)
 {
     scale = glm::vec3(1.f);
     invScale = glm::vec3(1.f);
 }
 
-Component::Component(TransformableMatrix *transform)
-    : localTransform(transform), globalTransform(new Transform()) 
+Component::Component(const std::string& name, TransformableMatrix *transform)
+    : localTransform(transform), globalTransform(new Transform()), Named(name)
 {
     scale = glm::vec3(1.f);
     invScale = glm::vec3(1.f);
 }
 
-Component::Component()
-    : Component(new Transform()) 
+Component::Component(const std::string& name)
+    : Component(name, new Transform()) 
 {}
 
 Component::~Component() {

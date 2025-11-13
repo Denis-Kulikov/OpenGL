@@ -9,65 +9,23 @@ Mesh::Mesh(const MeshData& meshData, Shader* shader)
     : shader(shader)
 {
     InitBuffers();
-
-    glBindVertexArray(vao);
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(meshData.Indices[0]) * meshData.Indices.size(), meshData.Indices.data(), GL_STATIC_DRAW);
-
-    // Добавление массивов вершинных атрибутов
-    AddAttribute(meshData.Positions.data(), meshData.Positions.size() * sizeof(glm::vec3), "aPosition", 3);
-    AddAttribute(meshData.TexCoords.data(), meshData.TexCoords.size() * sizeof(glm::vec2), "aTexCoord", 2);
-    AddAttribute(meshData.Normals.data(), meshData.Normals.size() * sizeof(glm::vec3), "aNormal", 3); // нет в шейдере
-    // AddAttribute(meshData.Tangent.data(), meshData.Tangent.size() * sizeof(glm::vec3), "aTangent", 3);
-    // AddAttribute(meshData.Bitangent.data(), meshData.Bitangent.size() * sizeof(glm::vec3), "aBitangent", 3);
-    // AddAttribute(meshData.Color.data(), meshData.Color.size() * sizeof(glm::vec3), "aColor", 3);
-    // AddAttribute(meshData.InstanceID.data(), meshData.InstanceID.size() * sizeof(float), "aInstanceID", 1);
-    // AddAttribute(meshData.InstanceMatrix.data(), meshData.InstanceMatrix.size() * sizeof(glm::mat4), "aInstanceMatrix", 16);
-
-    material = std::make_shared<Material>();
-    m_Entries.reserve(meshData.m_Entries.size());
-    for (const auto& m : meshData.m_Entries) {
-        m_Entries.emplace_back(m.NumIndices, m.BaseVertex, m.BaseIndex, m.material.get());
-    }
-    LinkUniforms();
-
-    GLuint unitIndex = 0;
-    Texture* tex = Texture::Find("ShadowMapPoint");
-    auto texName = TextureUnit::Types.at(TextureUnit::TextureType::SHADOW_MAP_CUBE);
-
-    auto loc = shader->FindUniform(texName);
-    if (loc == nullptr) {
-        std::cout << "Material::LinkTextureUnits(...): not found textre location \"" << texName << "\"" << std::endl;
-    } else {
-        TextureUnit tUnit(tex, TextureUnit::TextureType::SHADOW_MAP_CUBE);
-        tUnit.unit = unitIndex;
-        material->textureUnits.push_back(tUnit);
-        material->Set(texName, unitIndex);
-        ++unitIndex;
-    }
-
-    
-    tex = Texture::Find("ShadowMapDirLight");
-    texName = TextureUnit::Types.at(TextureUnit::TextureType::SHADOW_MAP_DIR);
-
-    loc = shader->FindUniform(texName);
-    if (loc == nullptr) {
-        std::cout << "Material::LinkTextureUnits(...): not found textre location \"" << texName << "\"" << std::endl;
-    } else {
-        TextureUnit tUnit(tex, TextureUnit::TextureType::SHADOW_MAP_DIR);
-        tUnit.unit = unitIndex;
-        material->textureUnits.push_back(tUnit);
-        material->Set(texName, unitIndex);
-        ++unitIndex;
-    }
-
-    for (auto& m : m_Entries) {
-        m.material->LinkTextureUnits(unitIndex, shader);
-    }
-
+    InitAttributes(meshData);
+    InitMaterials(meshData);
+    InitTextereUnites(meshData);
     glBindVertexArray(0);	
 }
+Mesh::Mesh(const std::string& path, Shader* shader)
+    : shader(shader)
+{
+    MeshData meshData;
+    GlobalState::MeshLoader->LoadMesh(path, meshData);
+    InitBuffers();
+    InitAttributes(meshData);
+    InitMaterials(meshData);
+    InitTextereUnites(meshData);
+    glBindVertexArray(0);
+}
+
 
 void Mesh::LinkUniforms() {
     auto& values = material->values;
@@ -151,6 +109,68 @@ void Mesh::InitBuffers() {
     glGenBuffers(shader->attributes.size(), buffers.data());
 }
 
+void Mesh::InitAttributes(const MeshData& meshData) {
+    glBindVertexArray(vao);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(meshData.Indices[0]) * meshData.Indices.size(), meshData.Indices.data(), GL_STATIC_DRAW);
+
+    // Добавление массивов вершинных атрибутов
+    AddAttribute(meshData.Positions.data(), meshData.Positions.size() * sizeof(glm::vec3), "aPosition", 3);
+    AddAttribute(meshData.TexCoords.data(), meshData.TexCoords.size() * sizeof(glm::vec2), "aTexCoord", 2);
+    AddAttribute(meshData.Normals.data(), meshData.Normals.size() * sizeof(glm::vec3), "aNormal", 3); // нет в шейдере
+    // AddAttribute(meshData.Tangent.data(), meshData.Tangent.size() * sizeof(glm::vec3), "aTangent", 3);
+    // AddAttribute(meshData.Bitangent.data(), meshData.Bitangent.size() * sizeof(glm::vec3), "aBitangent", 3);
+    // AddAttribute(meshData.Color.data(), meshData.Color.size() * sizeof(glm::vec3), "aColor", 3);
+    // AddAttribute(meshData.InstanceID.data(), meshData.InstanceID.size() * sizeof(float), "aInstanceID", 1);
+    // AddAttribute(meshData.InstanceMatrix.data(), meshData.InstanceMatrix.size() * sizeof(glm::mat4), "aInstanceMatrix", 16);
+
+}
+
+void Mesh::InitMaterials(const MeshData& meshData) {
+    material = std::make_shared<Material>();
+    m_Entries.reserve(meshData.m_Entries.size());
+    for (const auto& m : meshData.m_Entries) {
+        m_Entries.emplace_back(m.NumIndices, m.BaseVertex, m.BaseIndex, m.material.get());
+    }
+    LinkUniforms();
+}
+void Mesh::InitTextereUnites(const MeshData& meshData) {
+    GLuint unitIndex = 0;
+    Texture* tex = Texture::Find("ShadowMapPoint");
+    auto texName = TextureUnit::Types.at(TextureUnit::TextureType::SHADOW_MAP_CUBE);
+
+    auto loc = shader->FindUniform(texName);
+    if (loc == nullptr) {
+        std::cout << "Material::LinkTextureUnits(...): not found textre location \"" << texName << "\"" << std::endl;
+    } else {
+        TextureUnit tUnit(tex, TextureUnit::TextureType::SHADOW_MAP_CUBE);
+        tUnit.unit = unitIndex;
+        material->textureUnits.push_back(tUnit);
+        material->Set(texName, unitIndex);
+        ++unitIndex;
+    }
+
+    tex = Texture::Find("ShadowMapDirLight");
+    texName = TextureUnit::Types.at(TextureUnit::TextureType::SHADOW_MAP_DIR);
+
+    loc = shader->FindUniform(texName);
+    if (loc == nullptr) {
+        std::cout << "Material::LinkTextureUnits(...): not found textre location \"" << texName << "\"" << std::endl;
+    } else {
+        TextureUnit tUnit(tex, TextureUnit::TextureType::SHADOW_MAP_DIR);
+        tUnit.unit = unitIndex;
+        material->textureUnits.push_back(tUnit);
+        material->Set(texName, unitIndex);
+        ++unitIndex;
+    }
+
+    for (auto& m : m_Entries) {
+        m.material->LinkTextureUnits(unitIndex, shader);
+    }
+}
+
+
 void Mesh::AddAttribute(const void* data, size_t size, const std::string& attrName, GLint sizePerVertex,
                 GLenum type, GLboolean normalized, GLsizei stride, size_t offset)
 {
@@ -191,6 +211,10 @@ void Mesh::BindGeometry() const {
 
 Mesh* Mesh::Create(const std::string& name, const MeshData& meshData, Shader* shader) {
     auto [it, inserted] = cache.try_emplace(name, meshData, shader);
+    return &it->second;
+}
+Mesh* Mesh::Create(const std::string& name, const std::string& path, Shader* shader) {
+    auto [it, inserted] = cache.try_emplace(name, path, shader);
     return &it->second;
 }
 Mesh* Mesh::Find(const std::string& name) {

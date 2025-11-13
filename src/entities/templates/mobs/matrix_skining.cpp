@@ -9,9 +9,8 @@ MatrixSkining::MatrixSkining()
 {
     ACTOR_SET_NAME;
 
-    Transform *transform = new Transform();
-    ComponentMesh *mesh = CreateComponent<ComponentMesh>(transform);
-    mesh->mesh = SkeletalMesh::Find("MatrixSkining");
+    ComponentMesh *mesh = CreateComponent<ComponentMesh>("Mesh");
+    mesh->SetMesh(SkeletalMesh::Find("MatrixSkining"));
     // ComponentSkeletalMatrixMesh *mesh = CreateComponent<ComponentSkeletalMatrixMesh>(transform);
     // mesh->SetSkeletalMesh(SkeletalMesh::Find("MatrixSkining"));
     // mesh->animator->SetAnimationAny();
@@ -35,11 +34,11 @@ void MatrixSkining::Initialize()
     // std::string path("assets/model/zhu_yuan_from_zenless_zone_zero.glb");
 
     auto shader_mesh = Shader::Create("skeletal_mesh", "shaders/sprite_fs.glsl", "shaders/mesh_vs.glsl");
-    SkeletalMeshData mDatal;
-    GlobalState::MeshLoader->LoadMesh(path, mDatal);
+    // SkeletalMeshData mDatal;
+    // GlobalState::MeshLoader->LoadMesh(path, mDatal);
     // GlobalState::MeshLoaderTiny->LoadMesh(path, mDatal);
     std::cout << "Load SkeletalMesh: " << std::endl;
-    SkeletalMesh::Create("MatrixSkining", mDatal, shader_mesh);
+    SkeletalMesh::Create("MatrixSkining", path, shader_mesh);
     std::cout << "End load SkeletalMesh: " << std::endl;
 }
 

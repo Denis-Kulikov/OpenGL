@@ -28,11 +28,12 @@ void BufferManager::CreateBuffer(const std::string& name, BufferType type, Buffe
     binds[binding] = {buffer, type, binding, size};
 }
 
+std::string printVec3(const glm::vec3& v);
 void BufferManager::Update() {
     Update(BufferBinding::Matrices, 
         MatricesUBO(WindowManager::curWindow->scene->curCamera->Proj,
                     WindowManager::curWindow->scene->curCamera->View,
-                    WindowManager::curWindow->scene->curCamera->GetPosition()
+                    WindowManager::curWindow->scene->curCamera->GetGlobalPosition()
     ));
 }
 

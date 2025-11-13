@@ -1,18 +1,20 @@
 #pragma once
 #include <object/transform/transform.hpp>
 #include <object/transform/rigid_transform.hpp>
+#include <ui/visitor/component.hpp>
+#include <object/named.hpp>
 
 enum ShadowMapType;
 
 class Actor;
 
-class Component {
+class Component : public Named {
 protected:
-    Component(RigidTransform *transform);
+    Component(const std::string& name, RigidTransform *transform);
 
 public:
-    Component(TransformableMatrix *transform);
-    Component();
+    Component(const std::string& name, TransformableMatrix *transform);
+    Component(const std::string& name);
     ~Component();
 
     virtual void UpdateInverse();
@@ -25,6 +27,8 @@ public:
     virtual void RenderShadowPass(const glm::mat4& shadowProj, ShadowMapType type) const;
     void RenderTree() const;
     void RenderTreeShadowPass(const glm::mat4& shadowProj, ShadowMapType type) const;
+
+    virtual void Accept(UIVisitorComponent& visitor) = 0;
 
     glm::vec3 GetPosition() const;
     glm::quat GetRotation() const;
@@ -63,5 +67,5 @@ public:
     TransformableMatrix *localTransform = nullptr;
     glm::vec3 scale;
     glm::vec3 invScale;
-    bool castsShadow = true; 
+    bool castsShadow = false; 
 };

@@ -13,6 +13,7 @@ protected:
 
 public:
     explicit Mesh(const MeshData& meshData, Shader* shader);
+    explicit Mesh(const std::string& path, Shader* shader);
     void InitBuffers();
     void AddAttribute(const void* data, size_t size, const std::string& attrName, GLint sizePerVertex,
                    GLenum type = GL_FLOAT, GLboolean normalized = GL_FALSE,
@@ -23,6 +24,7 @@ public:
     Shader* GetShader() const;
 
     static Mesh* Create(const std::string& name, const MeshData& meshData, Shader* shader);
+    static Mesh* Create(const std::string& name, const std::string& path, Shader* shader);
     static Mesh* Find(const std::string &name);
     static void Delete(const std::string &name);
     static void ClearСache();
@@ -44,6 +46,11 @@ public:
     std::vector<MeshEntry> m_Entries;
     std::shared_ptr<Material> material;
     Shader* shader = nullptr;
-    
+
     inline static std::unordered_map<std::string, Mesh> cache;
+    
+protected:
+    void InitAttributes(const MeshData& meshData);
+    void InitMaterials(const MeshData& meshData);
+    void InitTextereUnites(const MeshData& meshData);
 };

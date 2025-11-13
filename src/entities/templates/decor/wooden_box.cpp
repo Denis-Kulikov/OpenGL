@@ -27,10 +27,10 @@ WoodenBox::WoodenBox()
 
     // ComponentPhysics *body = CreateComponent<ComponentPhysics>(rigidBody);
 
-    ComponentMesh *mesh = CreateComponent<ComponentMesh>(new Transform());
+    ComponentMesh *mesh = CreateComponent<ComponentMesh>("Mesh");
     // body->AddChild(mesh);
     // mesh->SetScale(scale * 5.f);
-    mesh->mesh = Mesh::Find("WoodenBox");
+    mesh->SetMesh(Mesh::Find("WoodenBox"));
 
     rootComponent = mesh;
     // rootComponent = body;

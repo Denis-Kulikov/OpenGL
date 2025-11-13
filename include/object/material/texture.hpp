@@ -2,19 +2,19 @@
 #include <GL/glew.h>
 #include <assimp/scene.h>
 #include <iostream>
-#include <string>
+#include <object/named.hpp>
 #include <unordered_map>
 
 namespace tinygltf {
     class Image;
 }
 
-class Texture {
+class Texture : public Named {
 public:
-    Texture(const std::string& path);
-    Texture(const GLuint textureID, const float scale);
-    Texture(const aiTexture* texture);
-    Texture(const tinygltf::Image& texture);
+    Texture(const std::string& name, const std::string& path);
+    Texture(const std::string& name, const GLuint textureID, const float scale);
+    Texture(const std::string& name, const aiTexture* texture);
+    // Texture(const std::string& name, const tinygltf::Image& texture);
 
     void Bind() const;
     GLuint GetID() const;
@@ -23,7 +23,7 @@ public:
     static Texture* Create(const std::string& name, const std::string& path);
     static Texture* Create(const std::string& name, const GLuint texture, const float textureScale);
     static Texture* Create(const std::string& name, const aiTexture* texture);
-    static Texture* Create(const std::string& name, const tinygltf::Image& texture);
+    // static Texture* Create(const std::string& name, const tinygltf::Image& texture);
     static Texture* Find(const std::string& name);
     static void Delete(const std::string& path);
     static void ClearСache();
@@ -33,7 +33,7 @@ public:
 private:
     void Load(std::string path);
     void Load(const aiTexture* texture);
-    void Load(const tinygltf::Image& texture);
+    // void Load(const tinygltf::Image& texture);
 
     GLuint textureID;
     float scale;

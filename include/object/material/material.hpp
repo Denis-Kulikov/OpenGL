@@ -8,11 +8,13 @@
 #include "texture_unit.hpp"
 #include <variant>
 #include <vector>
+#include <set>
+#include <object/named.hpp>
 
 class Shader;
 class TextureUnit;
 
-class Material {
+class Material : public Named {
 public:
     using MaterialValue = std::variant<
         int, float, GLuint,
@@ -20,8 +22,19 @@ public:
         std::vector<glm::vec4>, std::vector<glm::dualquat>, std::vector<glm::mat4>
     >;
 
+    static inline std::set<std::string> ConfigurableFields = {
+        "roughness",
+        "metallic",
+        "ambientStrength",
+        "specularStrength"
+    };
+
+
+    Material(const std::string& name = "NoName");
+
     void Bind(const Shader* shader) const;
     void Set(const std::string& name, const MaterialValue& v);
+    void UniformUIController(const std::string& name);
     GLuint LinkTextureUnits(GLuint unitIndex, const Shader* shader);
     GLuint PushTextureUnits(GLuint unitIndex, TextureUnit* unit, const Shader* shader);
 
@@ -45,6 +58,18 @@ private:
     void UploadUniform(const GLint loc, const std::vector<glm::vec4>& v) const;
     void UploadUniform(const GLint loc, const std::vector<glm::mat4>& v) const;
     void UploadUniform(const GLint loc, const std::vector<glm::dualquat>& v) const;
+
+    void UniformUIController(const std::string& name, int& v);
+    void UniformUIController(const std::string& name, float& v);
+    void UniformUIController(const std::string& name, GLuint& v);
+    void UniformUIController(const std::string& name, glm::vec2& v);
+    void UniformUIController(const std::string& name, glm::vec3& v);
+    void UniformUIController(const std::string& name, glm::vec4& v);
+    void UniformUIController(const std::string& name, glm::dualquat& v);
+    void UniformUIController(const std::string& name, glm::mat4& v);
+    void UniformUIController(const std::string& name, std::vector<glm::vec4>& v);
+    void UniformUIController(const std::string& name, std::vector<glm::mat4>& v);
+    void UniformUIController(const std::string& name, std::vector<glm::dualquat>& v);
 
     inline static std::unordered_map<std::string, Material> cache;
 };

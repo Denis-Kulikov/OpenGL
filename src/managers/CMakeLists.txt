@@ -23,6 +23,8 @@ target_link_libraries(
 	BulletCollision_Debug
 	BulletDynamics_Debug
 	LinearMath_Debug
+	imgui
+	lib-ui
 )
 else()
 target_link_libraries(${target} PRIVATE
@@ -32,5 +34,7 @@ target_link_libraries(${target} PRIVATE
 	assimp
 	lib-entities
 	lib-object
+	imgui
+	lib-ui
 )
 endif()

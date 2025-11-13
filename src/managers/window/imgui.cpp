@@ -35,11 +35,11 @@ void ImGuiManager::NewFrame() {
 void ImGuiManager::Render(Scene* scene) {
     ImGuiManager::NewFrame();
 
-    DrawMainMenu();
     DrawSceneHierarchy(scene);
-    DrawInspector(scene);
     DrawResources();
-    DrawPerformance();
+
+    DrawInspectorActor();
+    DrawInspectorComponent();
 
     ImGuiManager::Render();
 }
@@ -49,7 +49,6 @@ void ImGuiManager::Render() {
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
-void ImGuiManager::DrawMainMenu() {}
 void ImGuiManager::DrawSceneHierarchy(Scene* scene) {
     ImGui::Begin("Scene Hierarchy");
     for (auto actor : scene->actors) {
@@ -66,39 +65,84 @@ void ImGuiManager::DrawSceneHierarchy(Scene* scene) {
     ImGui::End();
 }
 
-void ImGuiManager::DrawInspector(Scene* scene) {
+void ImGuiManager::DrawComponentTree(Component* node) {
+    ImGuiTreeNodeFlags flags =
+        ImGuiTreeNodeFlags_OpenOnArrow |
+        ImGuiTreeNodeFlags_OpenOnDoubleClick |
+        (node->children.empty() ? ImGuiTreeNodeFlags_Leaf : 0) |
+        ((selectedComponent == node) ? ImGuiTreeNodeFlags_Selected : 0);
+
+    bool opened = ImGui::TreeNodeEx((void*)node, flags, "");
+
+    ImGui::SameLine();
+    node->Accept(visitorCompTitle);
+
+    if (ImGui::IsItemClicked())
+        selectedComponent = node;
+
+    if (opened) {
+        for (auto& child : node->children)
+            DrawComponentTree(child);
+
+        ImGui::TreePop();
+    }
+}
+
+void ImGuiManager::DrawInspectorActor() {
     if (!selectedActor) return;
 
-    ImGui::Begin("Inspector");
-    ImGui::Text("Name: %s", selectedActor->GetName().c_str());
+    ImGui::Begin("Actor Hierarchy");
+
+    if (selectedActor->rootComponent)
+        DrawComponentTree(selectedActor->rootComponent);
+
+    ImGui::End();
+
+    // ImGui::Begin("Inspector");
+    // ImGui::Text("Name: %s", selectedActor->GetName().c_str());
     
-    Component* comp = selectedActor->rootComponent;
-    if (!comp) {
+    // Component* comp = selectedActor->rootComponent;
+    // if (!comp) {
+    //     ImGui::TextDisabled("No Transform component");
+    //     ImGui::End();
+    //     return;
+    // }
+
+    // glm::vec3 pos = comp->GetPosition();
+    // glm::quat rot = comp->GetRotation();
+    // glm::vec3 scl = comp->GetScale();
+
+    // float v = 8.0f;
+
+    // if (ImGui::DragFloat3("Position", &pos.x, v * 1.6f))
+    //     comp->SetPosition(pos);
+    // if (ImGui::DragFloat3("Scale", &scl.x, v * 0.1f))
+    //     comp->SetScale(scl);
+
+    // glm::vec3 euler = glm::degrees(glm::eulerAngles(rot));
+    // if (ImGui::DragFloat3("Rotation", &euler.x, v * 4.0f)) {
+    //     glm::quat newRot = glm::quat(glm::radians(euler));
+    //     comp->SetRotation(newRot);
+    // }
+
+    // ImGui::End();
+}
+
+void ImGuiManager::DrawInspectorComponent() {
+    if (!selectedComponent) return;
+
+    ImGui::Begin("Component controller");
+
+    if (!selectedComponent) {
         ImGui::TextDisabled("No Transform component");
         ImGui::End();
         return;
     }
 
-    glm::vec3 pos = comp->GetPosition();
-    glm::quat rot = comp->GetRotation();
-    glm::vec3 scl = comp->GetScale();
-
-    float v = 8.0f;
-
-    if (ImGui::DragFloat3("Position", &pos.x, v * 1.6f))
-        comp->SetPosition(pos);
-    if (ImGui::DragFloat3("Scale", &scl.x, v * 0.1f))
-        comp->SetScale(scl);
-
-    glm::vec3 euler = glm::degrees(glm::eulerAngles(rot));
-    if (ImGui::DragFloat3("Rotation", &euler.x, v * 4.0f)) {
-        glm::quat newRot = glm::quat(glm::radians(euler));
-        comp->SetRotation(newRot);
-    }
+    selectedComponent->Accept(visitorCompController);
 
     ImGui::End();
 }
-
 
 template<typename Map>
 void ShowResourceMapKeys(const char* title, Map const& m) {
@@ -132,7 +176,7 @@ void ShowResourceMapKeys(const char* title, std::unordered_map<std::string, Text
 
             ImGui::Image(
                 reinterpret_cast<void*>((intptr_t)tex.GetID()),
-                ImVec2(192, 192),
+                ImVec2(512, 512),
                 ImVec2(0, 1),
                 ImVec2(1, 0)
             );
@@ -152,4 +196,3 @@ void ImGuiManager::DrawResources() {
         ShowResourceMapKeys("Meshes", Mesh::cache);
     }
 }
-void ImGuiManager::DrawPerformance() {}

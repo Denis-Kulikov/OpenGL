@@ -9,8 +9,7 @@ DualQuatSkining::DualQuatSkining()
 {
     ACTOR_SET_NAME;
 
-    Transform *transform = new Transform();
-    ComponentSkeletalDQMesh *mesh = CreateComponent<ComponentSkeletalDQMesh>(transform);
+    ComponentSkeletalDQMesh *mesh = CreateComponent<ComponentSkeletalDQMesh>("Mesh");
     mesh->SetSkeletalMesh(SkeletalMesh::Find("DualQuatSkining"));
     mesh->animator->SetAnimationAny();
 

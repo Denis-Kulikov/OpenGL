@@ -5,16 +5,13 @@
 
 class ComponentCamera : public Component {
 public:
-    ComponentCamera(TransformableMatrix *transform)
-        : Component(transform)
-    {
-        castsShadow = false;
-    }
+    ComponentCamera(const std::string& name, TransformableMatrix *transform)
+        : Component(name, transform) {}
+    ComponentCamera(const std::string& name) 
+        : Component(name)
+    {}
 
-    ComponentCamera()
-    {
-        castsShadow = false;
-    }
+    void Accept(UIVisitorComponent& visitor) override { visitor.Visit(*this); }
 
     // Рендер использует Left-Handed (LH) координатная система
     // glm::perspective и glm::lookAt не подходят. Используйте LookAtLH и PerspectiveLH.

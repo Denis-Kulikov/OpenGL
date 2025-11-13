@@ -3,7 +3,7 @@
 
 class ComponentPhysics : public Component {
 public:
-    ComponentPhysics(RigidTransform *transform);
+    ComponentPhysics(const std::string& name, RigidTransform *transform);
 
-    void Render() const override {};
+    void Accept(UIVisitorComponent& visitor) override { visitor.Visit(*this); }
 };

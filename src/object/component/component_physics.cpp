@@ -1,8 +1,8 @@
 #include <object/component/component_physics.hpp>
 
 
-ComponentPhysics::ComponentPhysics(RigidTransform *transform)
-    : Component(transform)
+ComponentPhysics::ComponentPhysics(const std::string& name, RigidTransform *transform)
+    : Component(name, transform)
 {
     castsShadow = false;
 }

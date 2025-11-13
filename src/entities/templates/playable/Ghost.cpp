@@ -8,11 +8,8 @@
 Ghost::Ghost() {
     ACTOR_SET_NAME;
 
-    Transform *transformPoint = new Transform();
-    ComponentPoint *point = CreateComponent<ComponentPoint>(transformPoint);
-
-    Transform *transformCamera = new Transform();
-    ComponentCamera *camera = CreateComponent<ComponentCamera>(transformCamera);
+    ComponentPoint *point = CreateComponent<ComponentPoint>("Point");
+    ComponentCamera *camera = CreateComponent<ComponentCamera>("Camera");
     camera->camera.SetPerspectiveProj(90.0f, WindowManager::curWindow->GetWidth(), WindowManager::curWindow->GetHeight(), 0.5f, 512.0f);
     WindowManager::curWindow->GetScene()->SetCamera(camera);
 

@@ -21,11 +21,10 @@ StoneFloor::StoneFloor()
     // ComponentPhysics *body = CreateComponent<ComponentPhysics>(rigidBody);
     // body->SetRotation({-90, 0, 0});
 
-    Transform *transform = new Transform();
-    ComponentMesh *mesh = CreateComponent<ComponentMesh>(transform);
+    ComponentMesh *mesh = CreateComponent<ComponentMesh>("Mesh");
     // body->AddChild(mesh);
-    mesh->mesh = Mesh::Find("stone_floor");
-    mesh->SetScale(scale);
+    mesh->SetMesh(Mesh::Find("stone_floor"));
+    mesh->SetScale(scale * 0.5f);
 
     // rootComponent = body;
     rootComponent = mesh;

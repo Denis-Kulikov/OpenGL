@@ -7,7 +7,7 @@
 
 #include <scene/scene.hpp>
 // #include <entities/templates/decor/grass.hpp>
-#include <entities/templates/decor/house.hpp>
+// #include <entities/templates/decor/house.hpp>
 #include <entities/templates/decor/stone_floor.hpp>
 // #include <entities/templates/decor/brick_sphere.hpp>
 #include <entities/templates/decor/wooden_box.hpp>
@@ -15,7 +15,7 @@
 #include <entities/templates/decor/skybox.hpp>
 // #include <entities/templates/decor/test_dq.hpp>
 
-#include <entities/templates/mobs/female.hpp>
+#include <entities/templates/mobs/tmodel.hpp>
 #include <entities/templates/mobs/dual_quat_skining.hpp>
 #include <entities/templates/mobs/matrix_skining.hpp>
 #include <entities/templates/playable/Ghost.hpp>
@@ -74,10 +74,10 @@ void createScene(Scene *scene)
     Skybox::Initialize();
     StoneFloor::Initialize();
     WoodenBox::Initialize();
-    House::Initialize();
-    Female::Initialize();
+    // House::Initialize();
+    TModel::Initialize();
     // DualQuatSkining::Initialize();
-    MatrixSkining::Initialize();
+    // MatrixSkining::Initialize();
 
     scene->skybox = new Skybox();
 
@@ -85,21 +85,22 @@ void createScene(Scene *scene)
     // character->Teleport(glm::vec3(0, 2, 0));
     scene->pushObject(character);
 
-    auto female = new Female();
+    auto tmodel = new TModel();
     // female->SetRotation(glm::vec3(0, 0, 0));
-    female->Teleport(glm::vec3(4, 0.0, 3.0));
-    // female->SetScale(glm::vec3(0.06));
-    scene->pushObject(female);
+    tmodel->Teleport(glm::vec3(4, 0.0, -10.0));
+    // tmodel->SetScale(glm::vec3(0.05));
+    // female->SetScale(glm::vec3(10.0f));
+    scene->pushObject(tmodel);
 
-    auto female2 = new Female();
-    // female2->SetRotation(glm::vec3(0, 0, 0));
-    female2->Teleport(glm::vec3(0, 5.0, 0.0));
-    // female2->SetScale(glm::vec3(0.06));
-    scene->pushObject(female2);
+    // auto female2 = new TModel();
+    // // female2->SetRotation(glm::vec3(0, 0, 0));
+    // female2->Teleport(glm::vec3(0, 5.0, 0.0));
+    // // female2->SetScale(glm::vec3(0.06));
+    // scene->pushObject(female2);
 
 
     auto stoneFloor = new StoneFloor();
-    stoneFloor->Teleport(glm::vec3(0, -0.5, 0.0));
+    // stoneFloor->Teleport(glm::vec3(0, -5.0, 0.0));
     stoneFloor->SetRotation(glm::vec3(-90, 0.0, 0.0));
     scene->pushObject(stoneFloor);
 
@@ -154,25 +155,11 @@ int main(int argc, char** argv)
     WindowManager::curWindow->scene = new Scene();
     createScene(WindowManager::curWindow->scene);
 
-    // WindowManager::SetWindow(WindowManager::windows.at("Engine2").get());
-    // WindowManager::curWindow->scene = new Scene();
-    // ComponentCamera* camera = new ComponentCamera();
-    // camera->camera.SetPerspectiveProj(90.0f, WindowManager::curWindow->GetWidth(), WindowManager::curWindow->GetHeight(), 0.5f, 512.0f);
-    // WindowManager::curWindow->scene->SetCamera(camera);
-    // glEnable(GL_DEPTH_TEST);
-    // glClearColor(0.12f, 0.12f, 0.12f, 0.0f);
-
     while (GlobalState::fIsAppRunning) {
         TimeManager::Update();
-        // WindowManager::SetWindow(WindowManager::windows.at("Engine").get());
         WindowManager::curWindow->scene->Callback(TimeManager::GetDeltaTime());
         ImGuiManager::Render(WindowManager::curWindow->scene);
         WindowManager::SwapBuffer();
-        
-        // WindowManager::SetWindow(WindowManager::windows.at("Engine2").get());
-        // WindowManager::curWindow->scene->Callback(TimeManager::GetDeltaTime());
-        // ImGuiManager::Render(WindowManager::curWindow->scene);
-        // WindowManager::SwapBuffer();
     }
 
     ImGuiManager::Dispose();

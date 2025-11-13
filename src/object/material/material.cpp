@@ -2,6 +2,12 @@
 #include <object/material/shader.hpp>
 #include <object/material/texture_unit.hpp>
 #include <object/material/texture.hpp>
+#include <imgui.h>
+
+
+Material::Material(const std::string& name) 
+    : Named(name)
+{}
 
 
 void Material::Bind(const Shader* shader) const {
@@ -40,6 +46,16 @@ void Material::Bind(const Shader* shader) const {
 
 void Material::Set(const std::string& name, const MaterialValue& v) {
     values[name] = v;
+}
+
+void Material::UniformUIController(const std::string& name) {
+    auto it = values.find(name);
+    if (it == values.end()) return;
+
+    auto& val = it->second;
+    std::visit([&](auto&& v) {
+        UniformUIController(name, v);
+    }, val);
 }
 
 GLuint Material::LinkTextureUnits(GLuint unitIndex, const Shader* shader) {
@@ -106,8 +122,53 @@ void Material::UploadUniform(const GLint loc, const std::vector<glm::dualquat>& 
     glUniform4fv(loc, v.size() * 2, glm::value_ptr(v.data()[0].real));
 }
 
+void Material::UniformUIController(const std::string& name, int& v) {
+
+}
+
+void Material::UniformUIController(const std::string& name, float& v) {
+    ImGui::DragFloat(name.c_str(), &v, 0.05f);
+    // Set(name, v);
+}
+
+void Material::UniformUIController(const std::string& name, GLuint& v) {
+
+}
+
+void Material::UniformUIController(const std::string& name, glm::vec2& v) {
+
+}
+
+void Material::UniformUIController(const std::string& name, glm::vec3& v) {
+
+}
+
+void Material::UniformUIController(const std::string& name, glm::vec4& v) {
+
+}
+
+void Material::UniformUIController(const std::string& name, glm::dualquat& v) {
+
+}
+
+void Material::UniformUIController(const std::string& name, glm::mat4& v) {
+
+}
+
+void Material::UniformUIController(const std::string& name, std::vector<glm::vec4>& v) {
+
+}
+
+void Material::UniformUIController(const std::string& name, std::vector<glm::mat4>& v) {
+
+}
+
+void Material::UniformUIController(const std::string& name, std::vector<glm::dualquat>& v) {
+
+}
+
 Material* Material::Create(const std::string& name) {
-    auto [it, inserted] = cache.try_emplace(name);
+    auto [it, inserted] = cache.try_emplace(name, name);
     
     if (inserted) {
         // it->second.SetShader(shader); !!!

@@ -1,10 +1,11 @@
 #include <iostream>
 #include <fstream>
-#include <object/material/shader.hpp>
 #include <sstream>
+#include <object/material/shader.hpp>
 #include <managers/render/render.hpp>
 
-Shader::Shader(const std::string& FS, const std::string& VS)
+Shader::Shader(const std::string& name, const std::string& FS, const std::string& VS)
+    : Named(name)
 {
     Link(FS, VS);
     RegisterAttributes();
@@ -174,7 +175,7 @@ const UniformInfo* Shader::FindUniform(const std::string& name) const {
 }
 
 Shader* Shader::Create(const std::string& name, const std::string& FS, const std::string& VS) {
-    auto [it, inserted] = cache.try_emplace(name, FS, VS);
+    auto [it, inserted] = cache.try_emplace(name, name, FS, VS);
     return &it->second;
 }
 Shader* Shader::Find(const std::string &name) {

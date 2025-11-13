@@ -6,8 +6,15 @@
 
 class ComponentSkeletalMesh : public Component {
 public:
-    ComponentSkeletalMesh(TransformableMatrix *transform)
-        : Component(transform) {}
+    ComponentSkeletalMesh(const std::string& name, TransformableMatrix *transform)
+        : Component(name, transform) {
+        castsShadow = true;
+    }
+    ComponentSkeletalMesh(const std::string& name)
+        : Component(name)
+    {
+        castsShadow = true;
+    }
 
     void Render() const = 0;
     virtual void Update(float deltaTime) = 0;

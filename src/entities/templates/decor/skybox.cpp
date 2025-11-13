@@ -9,9 +9,8 @@ Skybox::Skybox()
 {
     ACTOR_SET_NAME;
 
-    Transform *transform = new Transform();
-    ComponentMesh *mesh = CreateComponent<ComponentMesh>(transform);
-    mesh->mesh = Mesh::Find("skybox");
+    ComponentMesh *mesh = CreateComponent<ComponentMesh>("Mesh");
+    mesh->SetMesh(Mesh::Find("skybox"));
     rootComponent = mesh;
 }
 
